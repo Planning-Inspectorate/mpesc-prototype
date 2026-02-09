@@ -1,0 +1,114 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Question page template – {{ serviceName }} – GOV.UK Prototype Kit
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+  text: "Back",
+  href: "/cases/create-a-case/questions/peas-type-of-case"
+}) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">
+        Which Other Secretary of State casework subtype is it?
+      </h1>
+
+      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
+
+        <p>
+         {% from "govuk/components/radios/macro.njk" import govukRadios %}
+         {% from "govuk/components/input/macro.njk" import govukInput %}
+
+         {% set otherHtml %}
+  {{ govukInput({
+    classes: "govuk-input--width-10",
+    id: "sos-other-textbox",
+    name: "sos-other-textbox",
+    value: data['sos-other-textbox'],
+    type: "text",
+    attributes: {
+      "autocomplete": "off"
+    }
+  }) }}
+{% endset %}
+
+{{ govukRadios({
+  name: "other-sos-casework-subtype",
+  value: data['other-sos-casework-subtype'], fieldset: {
+    legend: {
+      text: "",
+      isPageHeading: true,
+      classes: "govuk-fieldset__legend--l"
+    }
+  },
+
+  items: [
+    {
+      value: "DEFRA CPO",
+      text: "DEFRA CPO"
+    },
+    {
+      value: "DESNZ CPO",
+      text: "DESNZ CPO"
+    },
+    {
+      value: "DfT CPO",
+      text: "DfT CPO"
+    },
+    {
+      value: "Ad hoc CPO",
+      text: "Ad hoc CPO"
+    },
+    {
+      value: "Advert",
+      text: "Advert"
+    },
+    {
+      value: "Completion notice",
+      text: "Completion notice"
+    },
+    {
+      value: "Discontinuance notice",
+      text: "Discontinuance notice"
+    },
+    {
+      value: "Modification to planning permission",
+      text: "Modification to planning permission"
+    },
+    {
+      value: "Review of mineral permission",
+      text: "Review of mineral permission"
+    },
+    {
+      value: "Revocation of planning permission",
+      text: "Revocation of planning permission"
+    },
+    {
+      value: "other",
+      text: "Other",
+      conditional: {
+        html: otherHtml
+      }
+    }
+    
+  ]
+}) }}
+        </p>
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

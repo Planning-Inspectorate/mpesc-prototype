@@ -1,0 +1,205 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
+{% endblock %}
+
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      <h1 class="govuk-heading-l">
+        Check your answers 
+      </h1>
+
+
+
+
+{% if data['case-received-date-year'] and data['case-received-date-month'] and data['case-received-date-day'] %}
+
+  {% set monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
+
+  {% set day = data['case-received-date-day'] | int %}
+  {% set monthIndex = data['case-received-date-month'] | int %}
+  {% set year = data['case-received-date-year'] %}
+
+  {% set formattedDate = day + " " + monthNames[monthIndex] + " " + year %}
+
+{% endif %}
+
+
+      {% set addressHtml %}
+  {{ data['addressLine1'] }}
+
+  {% if data['addressLine2'] %}
+    <br>{{ data['addressLine2'] }}
+  {% endif %}
+
+  {% if data['addressTown'] %}
+    <br>{{ data['addressTown'] }}
+  {% endif %}
+
+  {% if data['addressCounty'] %}
+    <br>{{ data['addressCounty'] }}
+  {% endif %}
+
+  <br>{{ data['addressPostcode'] }}
+  {% endset %}
+
+
+
+                                                {# 1. LIST CREATION #}
+{% set rows = [
+  {
+    key: { text: "What area does this new case relate to?" },
+    value: { text: data['casework-area'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/casework-area", text: "Change", visuallyHiddenText: "What area does this new case relate to?" }] }
+  }
+] %}
+
+{% if data['casework-area'] == 'Planning, Environmental and Applications' %}
+  {% set _ = rows.push({
+    key: { text: "Which case type is it?" },
+    value: { text: data['peas-type-of-case'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/peas-type-of-case", text: "Change", visuallyHiddenText: "peas type of case" }] }
+  }) %}
+
+  {% elseif data['casework-area'] == 'Rights of Way and Common Land' %}
+    {% set _ = rows.push({
+    key: { text: "Which case type is it?" },
+    value: { text: data['row-type-of-case'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/row-type-of-case", text: "Change", visuallyHiddenText: "row type of case" }] }
+  }) %}
+{% endif %}
+
+                                                {# 2. DYNAMICALLY QUESTIONS #}
+{# -- Coastal Access Branch -- #}
+{% if data['row-type-of-case'] == 'Coastal Access' %}
+  {% set _ = rows.push({
+    key: { text: "Which Coastal Access subtype is it?" },
+    value: { text: data['coastal-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/coastal-subtype", text: "Change", visuallyHiddenText: "coastal access subtype" }] }
+  }) %}
+{% endif %}
+
+{# -- Common Land Branch -- #}
+{% if data['row-type-of-case'] == 'Common Land' %}
+  {% set _ = rows.push({
+    key: { text: "Which Common Land subtype is it?" },
+    value: { text: data['common-land-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/common-land-subtype", text: "Change", visuallyHiddenText: "common land subtype" }] }
+  }) %}
+{% endif %}
+
+{# -- Rights of Way Branch -- #}
+{% if data['row-type-of-case'] == 'Rights of Way' %}
+  {% set _ = rows.push({
+    key: { text: "Which Rights of Way subtype is it?" },
+    value: { text: data['row-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/row-subtype", text: "Change", visuallyHiddenText: "rights of way subtype" }] }
+  }) %}
+{% endif %}
+
+{# -- Drought Branch -- #}
+{% if data['peas-type-of-case'] == 'Drought' %}
+  {% set _ = rows.push({
+    key: { text: "Which Drought subtype is it?" },
+    value: { text: data['drought-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/drought-subtype", text: "Change", visuallyHiddenText: "drought subtype" }] }
+  }) %}
+{% endif %}
+
+{# -- Housing Branch -- #}
+{% if data['peas-type-of-case'] == 'Housing and Planning CPOs' %}
+  {% set _ = rows.push({
+    key: { text: "Select the subtype that covers this Compulsory Purchase Order (CPO)" },
+    value: { text: data['housing-planning-cpos-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/housing-planning-cpos-subtype", text: "Change", visuallyHiddenText: "housing and planning cpos subtype" }] }
+  }) %}
+{% endif %}
+
+{# -- Other SOS Branch -- #}
+{% if data['peas-type-of-case'] == 'Other Secretary of State casework' %}
+  {% set _ = rows.push({
+    key: { text: "Which Other Secretary of State casework subtype is it?" },
+    value: { text: data['other-sos-casework-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/other-sos-casework-subtype", text: "Change", visuallyHiddenText: "other secretary of state casework subtype" }] }
+  }) %}
+{% endif %}
+
+{# -- Wayleaves Branch -- #}
+{% if data['peas-type-of-case'] == 'Wayleaves' %}
+  {% set _ = rows.push({
+    key: { text: "What Wayleaves subtype is it?" },
+    value: { text: data['wayleaves-subtype'] },
+    actions: { items: [{ href: "/cases/create-a-case/questions/wayleaves-subtype", text: "Change", visuallyHiddenText: "wayleaves subtype" }] }
+  }) %}
+{% endif %}
+
+                                                {# ALWAYS SHOWN QUESTIONS #}
+{% set _ = rows.push({
+  key: { text: "What is the case name?" },
+  value: { text: data['caseName'] },
+  actions: { items: [{ href: "/cases/create-a-case/questions/case-name", text: "Change", visuallyHiddenText: "case name" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "What is the external reference? (optional)" },
+  value: { text: data['externalReference'] },
+  actions: { items: [{ href: "/cases/create-a-case/questions/external-reference", text: "Change", visuallyHiddenText: "external reference" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "When was the case received?" },
+  value: { text: formattedDate },
+  actions: { items: [{ href: "/cases/create-a-case/questions/case-received-date", text: "Change", visuallyHiddenText: "case received date" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "Who is the applicant?" },
+  value: { text: data['applicantName'] },
+  actions: { items: [{ href: "/cases/create-a-case/questions/applicant", text: "Change", visuallyHiddenText: "applicant name" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "What is the site address?" },
+  value: { html: addressHtml },
+  actions: { items: [{ href: "/cases/create-a-case/questions/site-address", text: "Change", visuallyHiddenText: "site address" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "What is the site location if no address was added?" },
+  value: { text: data['siteLocation'] },
+  actions: { items: [{ href: "/cases/create-a-case/questions/location", text: "Change", visuallyHiddenText: "site location" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "Who is the authority?" },
+  value: { text: data['authorityName'] },
+  actions: { items: [{ href: "/cases/create-a-case/questions/authority", text: "Change", visuallyHiddenText: "authority" }] }
+}) %}
+
+{% set _ = rows.push({
+  key: { text: "Who is the assigned case officer?" },
+  value: { text: data['caseOfficer'] },
+  actions: { items: [{ href: "/cases/create-a-case/questions/case-officer", text: "Change", visuallyHiddenText: "assigned case officer" }] }
+}) %}
+
+{# RENDER THE COMPONENT #}
+{{ govukSummaryList({
+  rows: rows
+}) }}
+
+      <form action="/confirmation" method="post" novalidate>
+
+        {{ govukButton({
+          text: "Accept & Submit"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% set activePage = "create-case" %}
+
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Question page template – {{ serviceName }} – GOV.UK Prototype Kit
+{% endblock %}
+
+{% block beforeContent %}
+
+  {{ govukBackLink({
+  text: "Back",
+  href: "javascript:window.history.back()"
+}) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">
+        What area does this new case relate to?
+      </h1>
+
+      <form class="form" action="/casework-area-answer" method="post">
+
+        <p>
+         {% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{{ govukRadios({
+  name: "casework-area",
+  value: data['casework-area'], fieldset: {
+    legend: {
+      text: "",
+      isPageHeading: true,
+      classes: "govuk-fieldset__legend--l"
+    }
+  },
+
+  items: [
+    {
+      value: "Planning, Environmental and Applications",
+      text: "Planning, Environmental and Applications"
+    },
+    {
+      value: "Rights of Way and Common Land",
+      text: "Rights of Way and Common Land"
+    }
+    
+  ]
+}) }}
+        </p>
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

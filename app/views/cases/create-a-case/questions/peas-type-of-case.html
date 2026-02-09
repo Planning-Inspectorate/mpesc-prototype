@@ -1,0 +1,67 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Question page template – {{ serviceName }} – GOV.UK Prototype Kit
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+  text: "Back",
+  href: "/cases/create-a-case/questions/casework-area"
+}) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <form class="form" action="/peas-type-of-case-answer" method="post">
+
+        <p>
+          {% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{{ govukRadios({
+  name: "peas-type-of-case",
+  value: data['peas-type-of-case'], fieldset: {
+    legend: {
+      text: "Which case type is it?",
+      isPageHeading: true,
+      classes: "govuk-fieldset__legend--l"
+    }
+  },
+  items: [
+    {
+      value: "Drought",
+      text: "Drought"
+    },
+    {
+      value: "Housing and Planning CPOs",
+      text: "Housing and Planning CPOs"
+    },
+    {
+      value: "Other Secretary of State casework",
+      text: "Other Secretary of State casework"
+    },
+    {
+      value: "Purchase Notices",
+      text: "Purchase Notices"
+    },
+ {
+      value: "Wayleaves",
+      text: "Wayleaves"
+    }
+  ]
+}) }}
+        </p>
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

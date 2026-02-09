@@ -1,0 +1,87 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Question page template – {{ serviceName }} – GOV.UK Prototype Kit
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+  text: "Back",
+  href: "/cases/create-a-case/questions/row-type-of-case"
+}) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">
+        Which Rights of Way subtype is it?
+      </h1>
+
+      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
+        <p>
+         {% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{{ govukRadios({
+  name: "row-subtype",
+  value: data['row-subtype'], fieldset: {
+    legend: {
+      text: "",
+      isPageHeading: true,
+      classes: "govuk-fieldset__legend--l"
+    }
+  },
+
+  items: [
+    {
+      value: "Dispensation for Serving Notice HA80",
+      text: "Dispensation for Serving Notice HA80"
+    },
+    {
+      value: "Dispensation for Serving Notice TCPA90",
+      text: "Dispensation for Serving Notice TCPA90"
+    },
+    {
+      value: "Dispensation for Serving Notice WCA81",
+      text: "Dispensation for Serving Notice WCA81"
+    },
+    {
+      value: "Opposed Definitive Map Modification Order (DMMO)",
+      text: "Opposed Definitive Map Modification Order (DMMO)"
+    },
+    {
+      value: "Opposed Public Path Order (PPO) HA80",
+      text: "Opposed Public Path Order (PPO) HA80"
+    },
+    {
+      value: "Opposed Public Path Order (PPO) TCPA90",
+      text: "Opposed Public Path Order (PPO) TCPA90"
+    },
+    {
+      value: "Schedule 14 Appeal",
+      text: "Schedule 14 Appeal"
+    },
+    {
+      value: "Schedule 14 Direction",
+      text: "Schedule 14 Direction"
+    },
+    {
+      value: "Schedule 13A Appeal",
+      text: "Schedule 13A Appeal"
+    }
+  ]
+}) }}
+        </p>
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}
