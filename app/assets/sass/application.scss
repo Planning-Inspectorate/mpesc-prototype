@@ -4,3 +4,14 @@
 // 
 
 // Add extra styles here
+
+/* FORCE the background to be grey, overriding the 'rebranded' template styles */
+
+.govuk-template--rebranded  {
+  background-color: #f3f2f1;
+}
+
+/* Ensure the main content container stays white (if you want that contrast) */
+.govuk-width-container {
+  background-color: #ffffff !important;
+}

@@ -108,11 +108,12 @@
       gap: 10px;
     }
   }
+
 </style>
 
 <div class="pins-header-demo">
   <header role="banner">
-    <div class="govuk-width-container">
+    <div class="govuk-width-container" style="background-color: #f3f2f1 !important;">
       <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
     </div>
   </header>
@@ -155,8 +156,9 @@
 {% endblock %}
 
 
+
 {% block footer %}
- <!-- Custom styling -->
+<!-- Custom styling -->
     <style>
     .pins-footer {
     background: #f3f2f1;
@@ -164,7 +166,7 @@
     padding: 0 15px;
     }
     .pins-footer-container {
-    max-width: 1200px;;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px 15px;
     font-family: Arial, sans-serif;
@@ -179,7 +181,7 @@
     .govuk-footer__inline-list {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin-left: 130px;
     display: flex;
     gap: 20px;
     }
@@ -210,10 +212,10 @@
           <div>
             <ul class="govuk-footer__inline-list">
               <li class="govuk-footer__inline-list-item">
-                <a class="govuk-footer__link" href="">Terms and conditions</a>
+                <a class="govuk-footer__link" href="">Terms and Conditions</a>
               </li>
               <li class="govuk-footer__inline-list-item">
-                <a class="govuk-footer__link" href="">Accessibility</a>
+                <a class="govuk-footer__link" href="">Accessibility Statement</a>
               </li>
             </ul>
           </div>
@@ -224,6 +226,7 @@
       </div>
     </div>
     </footer>
+    
     
 {% endblock %}
 
