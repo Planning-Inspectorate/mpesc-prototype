@@ -16,49 +16,61 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <form class="form" action="/cases/create-a-case/questions/applicant" method="post">
-
        {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 
-{{ govukDateInput({
-  id: "case-received-date",
-  namePrefix: "case-received-date",
-  fieldset: {
-    legend: {
-      text: "When was the case received?",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-  hint: {
-    text: "For example, 27 3 2007"
-  },
-  items: [
-    {
-      name: "day",
-      classes: "govuk-input--width-2",
-      value: data['case-received-date-day']
-    },
-    {
-      name: "month",
-      classes: "govuk-input--width-2",
-      value: data['case-received-date-month']
-    },
-    {
-      name: "year",
-      classes: "govuk-input--width-4",
-      value: data['case-received-date-year']
-    }
-  ]
-}) }}
+{% if errorList %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
 
-        {{ govukButton({
-          text: "Continue"
-        }) }}
+    <form class="form" action="/case-received-date-answer" method="post">
 
-      </form>
+      {{ govukDateInput({
+        id: "case-received-date",
+        namePrefix: "case-received-date",
+        fieldset: {
+          legend: {
+            text: "When was the case received?",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        hint: {
+          text: "For example, 27 3 2007"
+        },
+        
+        errorMessage: {
+          html: fieldErrorMessage
+        } if fieldErrorMessage else null,
+        
+        items: [
+          {
+            name: "day",
+            classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and "day" in errorFields else ""),
+            value: day or data['case-received-date-day']
+          },
+          {
+            name: "month",
+            classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and "month" in errorFields else ""),
+            value: month or data['case-received-date-month']
+          },
+          {
+            name: "year",
+            classes: "govuk-input--width-4" + (" govuk-input--error" if errorFields and "year" in errorFields else ""),
+            value: year or data['case-received-date-year']
+          }
+        ]
+      }) }}
 
-    </div>
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
   </div>
+</div>
 
 {% endblock %}

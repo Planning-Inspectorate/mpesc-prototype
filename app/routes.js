@@ -87,3 +87,92 @@ router.post('/case-name-answer', function (req, res) {
   }
 
 })
+
+router.post('/case-received-date-answer', function (req, res) {
+
+  var day = req.session.data['case-received-date-day']
+  var month = req.session.data['case-received-date-month']
+  var year = req.session.data['case-received-date-year']
+
+  var errorList = []   // Stores every error found
+  var errorFields = [] // Stores which boxes to highlight
+
+  // --- 1. CHECK FOR MISSING DATA ---
+
+  // CRITICAL: If EVERYTHING is empty, just stop here.
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter received date of submission", href: "#case-received-date-day" })
+    errorFields = ['day', 'month', 'year']
+  } 
+  else {
+    // If specific parts are missing, identify which ones
+    var missing = []
+    if (!day) missing.push('day')
+    if (!month) missing.push('month')
+    if (!year) missing.push('year')
+
+    // If we found missing parts, create the specific error message
+    if (missing.length > 0) {
+      var missingText = ""
+      if (missing.length === 2) {
+        missingText = "Received date of submission must include a " + missing[0] + " and " + missing[1]
+      } else {
+        missingText = "Received date of submission must include a " + missing[0]
+      }
+      
+      errorList.push({ text: missingText, href: "#case-received-date-" + missing[0] })
+      errorFields = errorFields.concat(missing) // Add missing fields to highlight list
+    }
+  }
+
+  // --- 2. CHECK FOR INVALID DATA ---
+  // We run these checks INDEPENDENTLY of the missing checks above.
+  // This allows us to catch "Day is 213" (Invalid) AND "Month is empty" (Missing) at the same time.
+
+  // Check Day (only if user typed something)
+  if (day) {
+    var dayNum = Number(day)
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Received date of submission day must be a real day", href: "#case-received-date-day" })
+      if (!errorFields.includes('day')) errorFields.push('day')
+    }
+  }
+
+  // Check Month (only if user typed something)
+  if (month) {
+    var monthNum = Number(month)
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Received date of submission month must be between 1 and 12", href: "#case-received-date-month" })
+      if (!errorFields.includes('month')) errorFields.push('month')
+    }
+  }
+
+  // Check Year (only if user typed something)
+  if (year) {
+    var yearNum = Number(year)
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Received date of submission year must include four numbers", href: "#case-received-date-year" })
+      if (!errorFields.includes('year')) errorFields.push('year')
+    }
+  }
+
+  // --- 3. RENDER OR REDIRECT ---
+
+  if (errorList.length > 0) {
+    // combine the error messages for the field label (separated by <br>)
+    var fieldErrorMessage = errorList.map(e => e.text).join('<br>')
+
+    res.render('/cases/create-a-case/questions/case-received-date', {
+      errorList: errorList,
+      errorFields: errorFields,
+      fieldErrorMessage: fieldErrorMessage, // Send the combined string
+      // Send back input values
+      day: day,
+      month: month,
+      year: year
+    })
+  } else {
+    res.redirect('/cases/create-a-case/questions/applicant')
+  }
+
+})
