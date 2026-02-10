@@ -18,7 +18,7 @@
 
       <form class="form" action="/cases/create-a-case/questions/case-received-date" method="post">
 
-        <p>
+        
     {% from "govuk/components/input/macro.njk" import govukInput %}
 
 {{ govukInput({
@@ -31,7 +31,7 @@
   name: "externalReference",
   value: data['externalReference']
 }) }}
-        </p>
+     
 
         {{ govukButton({
           text: "Continue"

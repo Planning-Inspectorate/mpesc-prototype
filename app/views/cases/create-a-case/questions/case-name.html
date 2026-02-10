@@ -16,10 +16,21 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <form class="form" action="/cases/create-a-case/questions/external-reference" method="post">
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
-        <p>
-    {% from "govuk/components/input/macro.njk" import govukInput %}
+{% if errorCaseName %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          {
+            text: "Enter the case name",
+            href: "#case-name"
+          }
+        ]
+      }) }}
+    {% endif %}
+
+    <form class="form" action="/case-name-answer" method="post">
 
 {{ govukInput({
   label: {
@@ -29,10 +40,14 @@
   },
   id: "case-name",
   name: "caseName",
-  value: data['caseName']
-}) }}
-        </p>
+  value: data['caseName'],
 
+        errorMessage: {
+          text: "Enter the case name"
+        } 
+        if errorCaseName else null
+      }) }}
+  
         {{ govukButton({
           text: "Continue"
         }) }}

@@ -74,6 +74,7 @@
 {% endif %}
 
                                                 {# 2. DYNAMICALLY QUESTIONS #}
+{% if data['casework-area'] == 'Rights of Way and Common Land' %}
 {# -- Coastal Access Branch -- #}
 {% if data['row-type-of-case'] == 'Coastal Access' %}
   {% set _ = rows.push({
@@ -100,6 +101,8 @@
     actions: { items: [{ href: "/cases/create-a-case/questions/row-subtype", text: "Change", visuallyHiddenText: "rights of way subtype" }] }
   }) %}
 {% endif %}
+{% endif %}
+
 
 {# -- Drought Branch -- #}
 {% if data['peas-type-of-case'] == 'Drought' %}

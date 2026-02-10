@@ -72,3 +72,18 @@ router.post('/row-type-of-case-answer', function (req, res) {
 }
 
 })
+
+
+// Error Messages
+
+router.post('/case-name-answer', function (req, res) {
+  var caseName = req.session.data['caseName']
+  if (caseName == "") {
+    res.render('/cases/create-a-case/questions/case-name', {
+      errorCaseName: "Enter the case name"
+    })
+  } else {
+    res.redirect('/cases/create-a-case/questions/external-reference')
+  }
+
+})
