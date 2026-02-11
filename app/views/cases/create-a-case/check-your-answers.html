@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
+  Manage planning, environmental and specialist casework
 {% endblock %}
 
 
@@ -194,7 +194,7 @@
   rows: rows
 }) }}
 
-      <form action="/confirmation" method="post" novalidate>
+      <form action="/cases/create-a-case/success" method="post" novalidate>
 
         {{ govukButton({
           text: "Accept & Submit"
