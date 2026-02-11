@@ -16,9 +16,21 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <form class="form" action="/cases/create-a-case/questions/site-address" method="post">
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
-       {% from "govuk/components/input/macro.njk" import govukInput %}
+{% if errorApplicantName %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          {
+            text: "Enter the applicant",
+            href: "#applicant-name"
+          }
+        ]
+      }) }}
+    {% endif %}
+
+    <form class="form" action="/applicant-name-answer" method="post">
 
 {{ govukInput({
   label: {
@@ -26,14 +38,20 @@
     classes: "govuk-label--l",
     isPageHeading: true
   },
-  hint: {
+   hint: {
     text: "Enter the main party e.g applicant, server, utility company"
+
   },
   id: "applicant-name",
   name: "applicantName",
-  value: data['applicantName']
-}) }}
+  value: data['applicantName'],
 
+        errorMessage: {
+          text: "Enter the applicant"
+        } 
+        if errorApplicantName else null
+      }) }}
+  
         {{ govukButton({
           text: "Continue"
         }) }}

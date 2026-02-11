@@ -49,17 +49,17 @@
           {
             name: "day",
             classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and "day" in errorFields else ""),
-            value: day or data['case-received-date-day']
+            value: data['case-received-date-day']
           },
           {
             name: "month",
             classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and "month" in errorFields else ""),
-            value: month or data['case-received-date-month']
+            value: data['case-received-date-month']
           },
           {
             name: "year",
             classes: "govuk-input--width-4" + (" govuk-input--error" if errorFields and "year" in errorFields else ""),
-            value: year or data['case-received-date-year']
+            value: data['case-received-date-year']
           }
         ]
       }) }}

@@ -94,24 +94,21 @@ router.post('/case-received-date-answer', function (req, res) {
   var month = req.session.data['case-received-date-month']
   var year = req.session.data['case-received-date-year']
 
-  var errorList = []   // Stores every error found
-  var errorFields = [] // Stores which boxes to highlight
+  var errorList = []   
+  var errorFields = [] 
 
-  // --- 1. CHECK FOR MISSING DATA ---
-
-  // CRITICAL: If EVERYTHING is empty, just stop here.
   if (!day && !month && !year) {
     errorList.push({ text: "Enter received date of submission", href: "#case-received-date-day" })
     errorFields = ['day', 'month', 'year']
   } 
   else {
-    // If specific parts are missing, identify which ones
+    
     var missing = []
     if (!day) missing.push('day')
     if (!month) missing.push('month')
     if (!year) missing.push('year')
 
-    // If we found missing parts, create the specific error message
+  
     if (missing.length > 0) {
       var missingText = ""
       if (missing.length === 2) {
@@ -125,11 +122,6 @@ router.post('/case-received-date-answer', function (req, res) {
     }
   }
 
-  // --- 2. CHECK FOR INVALID DATA ---
-  // We run these checks INDEPENDENTLY of the missing checks above.
-  // This allows us to catch "Day is 213" (Invalid) AND "Month is empty" (Missing) at the same time.
-
-  // Check Day (only if user typed something)
   if (day) {
     var dayNum = Number(day)
     if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
@@ -138,7 +130,6 @@ router.post('/case-received-date-answer', function (req, res) {
     }
   }
 
-  // Check Month (only if user typed something)
   if (month) {
     var monthNum = Number(month)
     if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
@@ -147,7 +138,6 @@ router.post('/case-received-date-answer', function (req, res) {
     }
   }
 
-  // Check Year (only if user typed something)
   if (year) {
     var yearNum = Number(year)
     if (year.length != 4 || isNaN(yearNum)) {
@@ -156,23 +146,67 @@ router.post('/case-received-date-answer', function (req, res) {
     }
   }
 
-  // --- 3. RENDER OR REDIRECT ---
 
   if (errorList.length > 0) {
-    // combine the error messages for the field label (separated by <br>)
+
     var fieldErrorMessage = errorList.map(e => e.text).join('<br>')
 
     res.render('/cases/create-a-case/questions/case-received-date', {
       errorList: errorList,
       errorFields: errorFields,
-      fieldErrorMessage: fieldErrorMessage, // Send the combined string
-      // Send back input values
+      fieldErrorMessage: fieldErrorMessage, 
       day: day,
       month: month,
       year: year
     })
   } else {
     res.redirect('/cases/create-a-case/questions/applicant')
+  }
+
+})
+
+router.post('/applicant-name-answer', function (req, res) {
+  var applicantName = req.session.data['applicantName']
+  if (applicantName == "") {
+    res.render('/cases/create-a-case/questions/applicant', {
+      errorApplicantName: "Enter the applicant name"
+    })
+  } else {
+    res.redirect('/cases/create-a-case/questions/site-address')
+  }
+
+})
+
+router.post('/case-officer-answer', function (req, res) {
+
+  var selectedOfficer = req.session.data['caseOfficer']
+
+  var allowedOfficers = [
+    "Kieran De La Cruz",
+    "Edward Mitchell",
+    "Sarah Tudor",
+    "Steve Waterfield",
+    "Alex Hudd",
+    "Harry Wood",
+    "Rob Davis",
+    "Deborah Board",
+    "(Service Account) Automated Tester",
+    "Owen Woodwards"
+  ]
+
+
+  if (selectedOfficer == "") {
+    res.render('/cases/create-a-case/questions/case-officer', {
+      errorCaseOfficer: "Select a case officer"
+    })
+  } 
+  else if (!allowedOfficers.includes(selectedOfficer)) {
+    res.render('/cases/create-a-case/questions/case-officer', {
+      errorCaseOfficer: "Select a case officer"
+    })
+  } 
+  else {
+    res.redirect('/cases/create-a-case/check-your-answers')
   }
 
 })

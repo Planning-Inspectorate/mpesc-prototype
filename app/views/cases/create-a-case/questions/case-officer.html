@@ -16,29 +16,83 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <form class="form" action="/cases/create-a-case/check-your-answers" method="post">
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% if errorCaseOfficer %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          {
+            text: errorCaseOfficer,
+            href: "#case-officer"
+          }
+        ]
+      }) }}
+    {% endif %}
 
-       {% from "govuk/components/input/macro.njk" import govukInput %}
+    <form class="form" action="/case-officer-answer" method="post">
 
-{{ govukInput({
-  label: {
-    text: "Who is the assigned case officer?",
-    classes: "govuk-label--l",
-    isPageHeading: true
-  },
+      <div class="govuk-form-group {{ 'govuk-form-group--error' if errorCaseOfficer }}">
+        
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--l" for="case-officer">
+            Who is the assigned case officer?
+          </label>
+        </h1>
+        
+        {# --- Error Message --- #}
+        {% if errorCaseOfficer %}
+          <p id="case-officer-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ errorCaseOfficer }}
+          </p>
+        {% endif %}
 
-  id: "case-officer",
-  name: "caseOfficer",
-  value: data['caseOfficer']
-}) }}
+        {# --- CONTAINER --- #}
+        <div id="case-officer-container"></div>
 
-        {{ govukButton({
-          text: "Continue"
-        }) }}
+      </div>
 
-      </form>
+      {{ govukButton({
+        text: "Continue"
+      }) }}
 
-    </div>
+    </form>
+
   </div>
+</div>
 
 {% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  
+  const officers = [
+    "Kieran De La Cruz",
+    "Edward Mitchell",
+    "Sarah Tudor",
+    "Steve Waterfield",
+    "Alex Hudd",
+    "Harry Wood",
+    "Rob Davis",
+    "Deborah Board",
+    "(Service Account) Automated Tester",
+    "Owen Woodwards"
+  ]
+
+  accessibleAutocomplete({
+    element: document.querySelector('#case-officer-container'),
+    id: 'case-officer', 
+    name: 'caseOfficer',
+    source: officers,
+    defaultValue: "{{ data['caseOfficer'] }}",
+    showAllValues: false,
+    
+  
+    confirmOnBlur: false, 
+    autoselect: true
+  })
+</script>
+{% endblock %}
+
+
