@@ -252,7 +252,7 @@ router.post('/create-case-submit', function (req, res) {
       break;
     case 'Housing and Planning CPOs':
     case 'Housing':
-      subtype = req.session.data['housing-subtype'];
+      subtype = req.session.data['housing-planning-cpos-subtype'];
       break;
     case 'Other Secretary of State casework':
     case 'Other':
@@ -285,7 +285,7 @@ router.post('/create-case-submit', function (req, res) {
       "Drought Permits": ["DRO", "PER"], "Drought permits": ["DRO", "PER"]
     },
     "Housing and Planning CPOs": { 
-      "Housing": ["CPO", "HOU"], "Planning": ["CPO", "PLA"], "Ad hoc CPO": ["CPO", "ADH"] 
+      "Housing": ["CPO", "HOU"], "Planning": ["CPO", "PLA"], "Ad hoc": ["CPO", "ADH"] 
     },
     "Other Secretary of State casework": {
       "DEFRA CPO": ["SOS", "ENV"], "DESNZ CPO": ["SOS", "ENG"], "DfT CPO": ["SOS", "TRN"],

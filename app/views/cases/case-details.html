@@ -13,39 +13,261 @@
 
 {% block content %}
 
-{# 1. RETRIEVE THE CASE #}
-{# We loop through all cases and find the one that matches the URL query '?ref=...' #}
+{# 1. FIND THE CASE #}
 {% set currentCase = null %}
-{% for case in data['cases'] %}
-  {% if case.reference == data['ref'] %}
-    {% set currentCase = case %}
-  {% endif %}
-{% endfor %}
+{% if data['cases'] %}
+  {% for case in data['cases'] %}
+    {% if case.reference == data['ref'] %}
+      {% set currentCase = case %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
 
-{# 2. DEBUGGING (Optional: Remove this after it works) #}
-{# If this prints nothing, the ID in the URL doesn't match the ID in the database #}
 {% if currentCase %}
 
+  {# --- ROW 1: HEADER --- #}
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <span class="govuk-caption-xl">{{ currentCase.type }} — {{ currentCase.subtype }}</span>
-      <h1 class="govuk-heading-xl">{{ currentCase.reference }}</h1>
-      <strong class="govuk-tag govuk-tag--blue">{{ currentCase.status }}</strong>
-      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+    <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+      <span class="govuk-caption-m">{{ currentCase.reference }}</span>
+      <h1 class="govuk-heading-l">
+        {% if currentCase.caseName %}
+          {{ currentCase.caseName }}
+        {% else %}
+          {{ currentCase.type }} Case
+        {% endif %}
+      </h1>
     </div>
   </div>
 
-  {# ... The rest of your summary cards ... #}
+  {# --- ROW 2: NAV, BUTTON & CARDS --- #}
+  <div class="govuk-grid-row">
+
+    {# LEFT COLUMN: Navigation Links & Case Notes #}
+    <div class="govuk-grid-column-two-thirds">
+      
+      {# Navigation Links #}
+      <ul class="govuk-list">
+        <li><a href="#overview" class="govuk-link govuk-link--no-visited-state">Overview</a></li>
+        <li><a href="#case-details" class="govuk-link govuk-link--no-visited-state">Case details</a></li>
+        <li><a href="#team" class="govuk-link govuk-link--no-visited-state">Team</a></li>
+        <li><a href="#timetable" class="govuk-link govuk-link--no-visited-state">Timetable</a></li>
+        <li><a href="#key-contacts" class="govuk-link govuk-link--no-visited-state">Key contacts</a></li>
+        <li><a href="#procedure-1" class="govuk-link govuk-link--no-visited-state">Procedure 1</a></li>
+        <li><a href="#procedure-2" class="govuk-link govuk-link--no-visited-state">Procedure 2</a></li>
+        <li><a href="#procedure-3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
+        <li><a href="#outcome" class="govuk-link govuk-link--no-visited-state">Outcome</a></li>
+        <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
+        <li><a href="#withdrawal" class="govuk-link govuk-link--no-visited-state">Withdrawal or abeyance</a></li>
+        <li><a href="#costs" class="govuk-link govuk-link--no-visited-state">Costs</a></li>
+      </ul>
+
+      {# Case Notes Component #}
+      {% set caseNotesHtml %}
+        <form method="POST" action="#">
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+              {{ govukCharacterCount({
+                name: "comment",
+                id: "comment",
+                maxlength: 500,
+                rows: 5,
+                label: {
+                  text: "Add case note",
+                  classes: "govuk-visually-hidden"
+                }
+              }) }}
+            </div>
+          </div>
+          {{ govukButton({
+            text: "Add case note",
+            classes: "govuk-button--secondary govuk-!-margin-bottom-1"
+          }) }}
+        </form>
+        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "0 case notes",
+        html: caseNotesHtml
+      }) }}
+
+    </div>
+
+    {# RIGHT COLUMN: Manage Files Button #}
+    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
+      {{ govukButton({
+        text: "Manage case files",
+        classes: "govuk-button--secondary",
+        href: "#"
+      }) }}
+    </div>
+
+    {# FULL WIDTH COLUMN: Summary Cards #}
+    <div class="govuk-grid-column-full">
+      
+      {# 1. OVERVIEW #}
+      {{ govukSummaryList({
+        attributes: { id: "overview" },
+        card: { title: { text: "Overview" } },
+        rows: [
+          { key: { text: "Case type" }, value: { text: currentCase.type or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.type else "Add", visuallyHiddenText: "case type" }] } },
+          { key: { text: "Subtype" }, value: { text: currentCase.subtype or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.subtype else "Add", visuallyHiddenText: "subtype" }] } },
+          { key: { text: "Act" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "act" }] } },
+          { key: { text: "Consent sought" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "consent sought" }] } },
+          { key: { text: "Inspector band" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "inspector band" }] } },
+          { key: { text: "Primary procedure" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "primary procedure" }] } },
+          { key: { text: "Related case(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "related cases" }] } },
+          { key: { text: "Linked case(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "linked cases" }] } }
+        ]
+      }) }}
+
+      {# 2. CASE DETAILS #}
+      {{ govukSummaryList({
+        attributes: { id: "case-details" },
+        card: { title: { text: "Case details" } },
+        rows: [
+          { key: { text: "Case reference" }, value: { text: currentCase.reference or "-" } },
+          { key: { text: "External reference" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "external reference" }] } },
+          { key: { text: "Historical reference" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "historical reference" }] } },
+          { key: { text: "Case name" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "case name" }] } },
+          { key: { text: "Case status" }, value: { text: currentCase.status or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.status else "Add", visuallyHiddenText: "case status" }] } },
+          { key: { text: "Advertised modification status" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "modification status" }] } },
+          { key: { text: "Applicant / Server" }, value: { text: currentCase.appellantName or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.appellantName else "Add", visuallyHiddenText: "applicant" }] } },
+          { key: { text: "Site address" }, value: { text: currentCase.siteAddress or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.siteAddress else "Add", visuallyHiddenText: "site address" }] } },
+          { key: { text: "Site location" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "site location" }] } },
+          { key: { text: "Authority (LPA, OMA, CRA)" }, value: { text: currentCase.lpa or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.lpa else "Add", visuallyHiddenText: "authority" }] } },
+          { key: { text: "Priority" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "priority" }] } }
+        ]
+      }) }}
+
+      {# 3. TEAM #}
+      {{ govukSummaryList({
+        attributes: { id: "team" },
+        card: { title: { text: "Team" } },
+        rows: [
+          { key: { text: "Case officer" }, value: { text: currentCase.caseOfficer or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.caseOfficer else "Add", visuallyHiddenText: "case officer" }] } },
+          { key: { text: "Inspector(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "inspectors" }] } }
+        ]
+      }) }}
+
+      {# 4. TIMETABLE #}
+      {{ govukSummaryList({
+        attributes: { id: "timetable" },
+        card: { title: { text: "Timetable" } },
+        rows: [
+          { key: { text: "Case received / submitted" }, value: { text: currentCase.receivedDay ~ "/" ~ currentCase.receivedMonth ~ "/" ~ currentCase.receivedYear if currentCase.receivedDay else "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.receivedDay else "Add", visuallyHiddenText: "received date" }] } },
+          { key: { text: "Start date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "start date" }] } },
+          { key: { text: "Expected submission date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "expected submission" }] } },
+          { key: { text: "Target decision date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "target decision" }] } },
+          { key: { text: "Case officer verification date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "verification date" }] } },
+          { key: { text: "Date proposed modifications advertised" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "modifications advertised" }] } },
+          { key: { text: "Objection period ends" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "objection ends" }] } },
+          { key: { text: "Deadline for consent" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "deadline consent" }] } },
+          { key: { text: "Date due to Other Government Department (OGD)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "ogd date" }] } },
+          { key: { text: "Proposal letter date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "proposal letter" }] } },
+          { key: { text: "Date decision must be issued by / expiry date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "expiry date" }] } },
+          { key: { text: "Date to notify parties of decision" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "notify parties" }] } }
+        ]
+      }) }}
+
+      {# 5. KEY CONTACTS #}
+      {{ govukSummaryList({
+        attributes: { id: "key-contacts" },
+        card: { title: { text: "Key contacts" } },
+        rows: [
+          { key: { text: "Objector(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "objector" }] } },
+          { key: { text: "Contact(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "contact" }] } }
+        ]
+      }) }}
+
+      {# 6. PROCEDURE 1 #}
+      {{ govukSummaryList({
+        attributes: { id: "procedure-1" },
+        card: { title: { text: "Procedure 1" } },
+        rows: [
+          { key: { text: "Procedure type" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "procedure type" }] } }
+        ]
+      }) }}
+
+      {# 7. PROCEDURE 2 #}
+      {{ govukSummaryList({
+        attributes: { id: "procedure-2" },
+        card: { title: { text: "Procedure 2" } },
+        rows: [
+          { key: { text: "Procedure type" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "procedure type" }] } }
+        ]
+      }) }}
+
+      {# 8. PROCEDURE 3 #}
+      {{ govukSummaryList({
+        attributes: { id: "procedure-3" },
+        card: { title: { text: "Procedure 3" } },
+        rows: [
+          { key: { text: "Procedure type" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "procedure type" }] } }
+        ]
+      }) }}
+
+      {# 9. OUTCOME #}
+      {{ govukSummaryList({
+        attributes: { id: "outcome" },
+        card: { title: { text: "Outcome" } },
+        rows: [
+          { key: { text: "Type of decision or report" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision type" }] } },
+          { key: { text: "Decision maker" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision maker" }] } },
+          { key: { text: "Outcome" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "outcome" }] } },
+          { key: { text: "In target?" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "in target" }] } },
+          { key: { text: "Outcome date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "outcome date" }] } },
+          { key: { text: "Decision received" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision received" }] } },
+          { key: { text: "Parties notified of outcome" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "parties notified" }] } },
+          { key: { text: "Order decision dispatch" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision dispatch" }] } },
+          { key: { text: "Sealed order returned" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "sealed order" }] } },
+          { key: { text: "Decision published" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision published" }] } },
+          { key: { text: "Is fencing permanent" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "fencing permanent" }] } }
+        ]
+      }) }}
+
+      {# 10. DOCUMENTS #}
+      {{ govukSummaryList({
+        attributes: { id: "documents" },
+        card: { title: { text: "Documents" } },
+        rows: [
+          { key: { text: "Physical file location" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "file location" }] } }
+        ]
+      }) }}
+
+      {# 11. WITHDRAWAL #}
+      {{ govukSummaryList({
+        attributes: { id: "withdrawal" },
+        card: { title: { text: "Withdrawal or abeyance" } },
+        rows: [
+          { key: { text: "Withdrawal date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "withdrawal date" }] } },
+          { key: { text: "Abeyance start date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "abeyance start" }] } },
+          { key: { text: "Abeyance end date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "abeyance end" }] } }
+        ]
+      }) }}
+
+      {# 12. COSTS #}
+      {{ govukSummaryList({
+        attributes: { id: "costs" },
+        card: { title: { text: "Costs" } },
+        rows: [
+          { key: { text: "Rechargeable" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "rechargeable" }] } },
+          { key: { text: "Final cost" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "final cost" }] } },
+          { key: { text: "Fee received" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "fee received" }] } },
+          { key: { text: "Invoice sent" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "invoice sent" }] } }
+        ]
+      }) }}
+
+    </div>
+  </div>
 
 {% else %}
 
-  {# 3. ERROR STATE #}
+  {# --- ERROR STATE --- #}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">Case not found</h1>
-      <p class="govuk-body">
-        Could not find a case with reference: <strong>{{ data['ref'] }}</strong>
-      </p>
+      <p class="govuk-body">We could not find a case with reference: <strong>{{ data['ref'] }}</strong></p>
       <p><a href="/cases/create-a-case/questions/casework-area">Start a new case</a></p>
     </div>
   </div>

@@ -8,7 +8,58 @@
 
 {% block content %}
 
+<h1 class="govuk-heading-l">All cases</h1>
+
+<table class="govuk-table">
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header">Reference</th>
+      <th scope="col" class="govuk-table__header">Type</th>
+      <th scope="col" class="govuk-table__header">Status</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    
+    {# 1. LOOP THROUGH SAVED CASES #}
+    {% for case in data['cases'] %}
+      <tr class="govuk-table__row">
+        
+        {# Reference Number (Link to details) #}
+        <td class="govuk-table__cell">
+          <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">
+            {{ case.reference }}
+          </a>
+        </td>
+
+        {# Case Type #}
+        <td class="govuk-table__cell">
+          {{ case.type }}<br>
+          <span class="govuk-hint" style="margin-bottom: 0">
+            {{ case.subtype }}
+          </span>
+        </td>
+
+        {# Status #}
+        <td class="govuk-table__cell">
+          <strong class="govuk-tag govuk-tag--blue">
+            {{ case.status }}
+          </strong>
+        </td>
+
+      </tr>
+    {% else %}
+      
+      {# Empty State (If no cases exist yet) #}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell" colspan="3">
+          No cases found. <a href="/cases/create-a-case/start">Create a new case</a>
+        </td>
+      </tr>
+
+    {% endfor %}
+
+  </tbody>
+</table>
 
 {% endblock %}
-
 
