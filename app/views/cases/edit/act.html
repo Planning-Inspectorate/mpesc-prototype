@@ -1,0 +1,46 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+What is the relevant legislation/act for this case?
+{% endblock %}
+
+{% block beforeContent %}
+  {# Simple back link to the case details page #}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/cases/case-details?ref=" + ref
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {# The form posts to the smart route, keeping the reference in the URL #}
+      <form action="/cases/edit/act?ref={{ ref }}" method="post" novalidate>
+
+        {{ govukInput({
+          label: {
+            text: "What is the relevant legislation/act for this case?",
+            classes: "govuk-label--l",
+            isPageHeading: true
+          },
+          hint: {
+            text: "For example, Town and Country Planning Act 1990"
+          },
+          id: "act",
+          name: "act",
+          value: data['act'] 
+        }) }}
+
+        {{ govukButton({
+          text: "Save"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

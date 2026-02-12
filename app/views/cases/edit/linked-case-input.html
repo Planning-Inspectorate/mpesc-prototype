@@ -1,0 +1,57 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+{% if error %}Error: {% endif %}Add linked case details
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/cases/edit/check-linked-cases?ref=" + ref
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {# ERROR SUMMARY #}
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errorMessage.text,
+              href: "#linkedCaseRef"
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <form action="/cases/linked-cases/step-1?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+
+        <h1 class="govuk-heading-l">
+          {% if id %}Edit{% else %}Add{% endif %} linked case details
+        </h1>
+
+        {{ govukInput({
+          label: {
+            text: "Linked case reference"
+          },
+          id: "linkedCaseRef",
+          name: "linkedCaseRef",
+          value: value,
+          errorMessage: errorMessage if error else null
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

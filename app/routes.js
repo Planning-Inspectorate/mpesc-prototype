@@ -211,6 +211,10 @@ router.post('/case-officer-answer', function (req, res) {
 
 })
 
+
+
+
+
 //Reference Number Validation
 
 router.post('/create-case-submit', function (req, res) {
@@ -367,4 +371,285 @@ router.post('/create-case-submit', function (req, res) {
   // Pass the ref in the URL so the Success Page sees it immediately
   res.redirect('/cases/create-a-case/success?caseRef=' + encodeURIComponent(finalRef));
 
+});
+
+
+
+// --- SMART EDIT ROUTES ---
+
+// 1. GET request: Renders the page dynamically
+// Example: /cases/edit/act -> renders 'app/views/cases/edit/act.html'
+router.get('/cases/edit/:field', function (req, res) {
+  var field = req.params.field;
+  var ref = req.query.ref; // Get the reference from the URL
+  
+  // Pass the ref to the page so the back link works
+  res.render('cases/edit/' + field, { 
+    ref: ref 
+  });
+});
+
+// 2. POST request: Saves OR Removes the data
+router.post('/cases/edit/:field', function (req, res) {
+  var field = req.params.field;
+  var ref = req.session.data['ref'] || req.query.ref;
+  
+  // Check if the user clicked the "Remove" button
+  // We will name the remove button 'action' and give it value 'remove'
+  var action = req.body.action;
+
+  // Find the case
+  var cases = req.session.data['cases'];
+  var caseToUpdate = cases.find(c => c.reference === ref);
+
+  if (caseToUpdate) {
+    if (action === 'remove') {
+      // User clicked "Remove and save" -> Delete the data
+      console.log(`--- REMOVING: ${field} from case ${ref} ---`);
+      delete caseToUpdate[field]; 
+      
+      // Also clear it from the session so the form is empty next time
+      delete req.session.data[field];
+    } 
+    else {
+      // User clicked "Save and continue" -> Update the data
+      var newValue = req.body[field];
+      console.log(`--- SAVING: ${field} = ${newValue} for case ${ref} ---`);
+      caseToUpdate[field] = newValue;
+    }
+  } else {
+    console.log("ERROR: Case not found");
+  }
+
+  // Redirect back to details
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+
+
+// --- RELATED CASES LOGIC (With Validation) ---
+
+// 1. SHOW THE LIST PAGE
+router.get('/cases/edit/check-related-cases', function (req, res) {
+  res.render('cases/edit/check-related-cases', { ref: req.query.ref });
+});
+
+// 2. SHOW THE ADD PAGE
+router.get('/cases/related-cases/add', function (req, res) {
+  res.render('cases/edit/related-case-input', { 
+    ref: req.query.ref,
+    id: "",      
+    value: "",
+    error: false 
+  });
+});
+
+// 3. SHOW THE EDIT PAGE
+router.get('/cases/related-cases/edit', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  
+  var cases = req.session.data['cases'];
+  var myCase = cases.find(c => c.reference === ref);
+  
+  var item = null;
+  if (myCase && myCase.relatedCases) {
+    item = myCase.relatedCases.find(i => i.id === id);
+  }
+
+  res.render('cases/edit/related-case-input', { 
+    ref: ref,
+    id: id,
+    value: item ? item.reference : "",
+    error: false 
+  });
+});
+
+// 4. SAVE (Add or Update) - WITH VALIDATION
+router.post('/cases/related-cases/save', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var newVal = req.body.relatedCaseRef;
+
+  // VALIDATION CHECK
+  if (!newVal || newVal.trim() === "") {
+    return res.render('cases/edit/related-case-input', {
+      ref: ref,
+      id: id,
+      value: newVal,
+      error: true,
+      errorMessage: { text: "Enter related case reference" }
+    });
+  }
+
+  // If valid, proceed to save
+  var cases = req.session.data['cases'];
+  var myCase = cases.find(c => c.reference === ref);
+  
+  if (myCase) {
+    if (!myCase.relatedCases) { myCase.relatedCases = []; }
+
+    if (id) {
+      // Update existing
+      var item = myCase.relatedCases.find(i => i.id === id);
+      if (item) { item.reference = newVal; }
+    } else {
+      // Add new
+      var newId = 'rc-' + Math.floor(Math.random() * 10000);
+      myCase.relatedCases.push({ id: newId, reference: newVal });
+    }
+  }
+
+  res.redirect('/cases/edit/check-related-cases?ref=' + ref);
+});
+
+// 5. REMOVE
+router.get('/cases/related-cases/remove', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+
+  var cases = req.session.data['cases'];
+  var myCase = cases.find(c => c.reference === ref);
+  
+  if (myCase && myCase.relatedCases) {
+    myCase.relatedCases = myCase.relatedCases.filter(i => i.id !== id);
+  }
+
+  res.redirect('/cases/edit/check-related-cases?ref=' + ref);
+});
+
+
+
+
+// --- LINKED CASES LOGIC (2-Step Flow with Validation) ---
+
+// 1. SHOW THE LIST PAGE
+router.get('/cases/edit/check-linked-cases', function (req, res) {
+  res.render('cases/edit/check-linked-cases', { ref: req.query.ref });
+});
+
+// 2. STEP 1: SHOW INPUT (Reference)
+router.get('/cases/linked-cases/step-1', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var value = "";
+
+  // If editing, find the existing value
+  if (id) {
+    var myCase = req.session.data['cases'].find(c => c.reference === ref);
+    var item = myCase.linkedCases ? myCase.linkedCases.find(i => i.id === id) : null;
+    if (item) value = item.reference;
+  }
+
+  res.render('cases/edit/linked-case-input', { 
+    ref: ref, 
+    id: id, 
+    value: value,
+    error: false // No error initially
+  });
+});
+
+// 3. STEP 1: VALIDATE & POST
+router.post('/cases/linked-cases/step-1', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var val = req.body.linkedCaseRef;
+
+  // VALIDATION: Check if empty
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/linked-case-input', {
+      ref: ref,
+      id: id,
+      value: val,
+      error: true, // Trigger error state
+      errorMessage: { text: "Enter linked case reference" }
+    });
+  }
+
+  // Success: Store in session temporarily and go to Step 2
+  req.session.data['tempLinkedRef'] = val;
+  res.redirect(`/cases/linked-cases/step-2?ref=${ref}&id=${id}`);
+});
+
+// 4. STEP 2: SHOW RADIOS (Is Lead?)
+router.get('/cases/linked-cases/step-2', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var isLead = "";
+
+  // If editing, find existing value
+  if (id) {
+    var myCase = req.session.data['cases'].find(c => c.reference === ref);
+    var item = myCase.linkedCases ? myCase.linkedCases.find(i => i.id === id) : null;
+    if (item) isLead = item.isLead;
+  }
+
+  res.render('cases/edit/linked-case-lead', { 
+    ref: ref, 
+    id: id, 
+    isLead: isLead,
+    error: false 
+  });
+});
+
+// 5. STEP 2: VALIDATE & SAVE
+router.post('/cases/linked-cases/save', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var isLead = req.body.isLead;
+
+  // VALIDATION: Check if empty
+  if (!isLead) {
+    return res.render('cases/edit/linked-case-lead', {
+      ref: ref,
+      id: id,
+      isLead: isLead,
+      error: true,
+      errorMessage: { text: "Select yes if this is the lead case" }
+    });
+  }
+
+  // SUCCESS: Save everything
+  var cases = req.session.data['cases'];
+  var myCase = cases.find(c => c.reference === ref);
+  var refVal = req.session.data['tempLinkedRef']; // Retrieve from temp session
+
+  if (myCase) {
+    if (!myCase.linkedCases) { myCase.linkedCases = []; }
+
+    if (id) {
+      // Edit existing
+      var item = myCase.linkedCases.find(i => i.id === id);
+      if (item) {
+        // If we came from Step 1, update ref. If we jumped straight here (unlikely), keep old ref.
+        if(refVal) item.reference = refVal; 
+        item.isLead = isLead;
+      }
+    } else {
+      // Add new
+      var newId = 'lc-' + Math.floor(Math.random() * 10000);
+      myCase.linkedCases.push({ 
+        id: newId, 
+        reference: refVal, 
+        isLead: isLead 
+      });
+    }
+  }
+
+  // Clear temp data
+  delete req.session.data['tempLinkedRef'];
+  
+  res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
+});
+
+// 6. REMOVE LINKED CASE
+router.get('/cases/linked-cases/remove', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  
+  if (myCase && myCase.linkedCases) {
+    myCase.linkedCases = myCase.linkedCases.filter(i => i.id !== id);
+  }
+  res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
 });
