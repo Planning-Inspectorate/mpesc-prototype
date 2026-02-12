@@ -213,137 +213,158 @@ router.post('/case-officer-answer', function (req, res) {
 
 //Reference Number Validation
 
-router.post('/cases/create-a-case/success', function (req, res) {
+router.post('/create-case-submit', function (req, res) {
 
-  // --- DEBUGGING ---
-  console.log("--- Creating Case Reference ---");
-  console.log("PEAS Type:", req.session.data['peas-type-of-case']);
-  console.log("ROW Type:", req.session.data['row-type-of-case']);
-  console.log("Subtype Answer:", req.session.data['peas-subtype'] || req.session.data['row-subtype']);
+  // --- 1. DEBUG LOGS (Keep this forever!) ---
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  console.log("!!! ROUTE TRIGGERED: /create-case-submit !!!");
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-  // 1. Get the Case Type
-  // We check 'row-type-of-case' first (for Coastal/Common/ROW), then 'peas-type-of-case'
-  var caseType = req.session.data['row-type-of-case'] || 
-                 req.session.data['peas-type-of-case'] || 
-                 req.session.data['casework-area'];
+  // --- 2. DETERMINE CASE TYPE (ROBUST MODE) ---
+  // We use .toLowerCase() to match loosely (avoids capitalization errors)
+  var area = (req.session.data['casework-area'] || "").toLowerCase();
+  var caseType = "";
 
-  // 2. Get the Subtype
-  // We check all possible variables where the subtype might be stored
-  var subtype = req.session.data['row-subtype'] || 
-                req.session.data['common-land-subtype'] || 
-                req.session.data['coastal-subtype'] ||
-                req.session.data['wayleaves-subtype'] ||
-                req.session.data['peas-subtype'] ||
-                req.session.data['other-sos-casework-subtype'] ||
-                req.session.data['housing-subtype'] ||
-                req.session.data['drought-subtype'];
+  // Logic: Check keywords rather than exact strings
+  if (area.includes('rights') || area.includes('common')) {
+     caseType = req.session.data['row-type-of-case']; 
+  } 
+  else {
+     // Default to PEAS if it's not ROW/Common Land
+     caseType = req.session.data['peas-type-of-case'];
+  }
+  
+  // Fallback if still empty
+  if (!caseType) {
+    caseType = req.session.data['row-type-of-case'] || req.session.data['peas-type-of-case'] || "UNKNOWN";
+  }
 
-  // 3. Define the Data Map (Based strictly on your Sheet)
-  // Structure: { CaseType: { Subtype: [Prefix, Code] } }
+  console.log("DEBUG: Area identified as:", area);
+  console.log("DEBUG: Case Type identified as:", caseType);
+
+
+  // --- 3. GET SUBTYPE (STRICT SWITCH) ---
+  var subtype = "";
+
+  switch(caseType) {
+    case 'Drought':
+      subtype = req.session.data['drought-subtype']; 
+      break;
+    case 'Housing and Planning CPOs':
+    case 'Housing':
+      subtype = req.session.data['housing-subtype'];
+      break;
+    case 'Other Secretary of State casework':
+    case 'Other':
+      subtype = req.session.data['other-sos-casework-subtype'];
+      break;
+    case 'Purchase Notices':
+      subtype = ""; // No subtype
+      break;
+    case 'Wayleaves':
+      subtype = req.session.data['wayleaves-subtype'];
+      break;
+    case 'Coastal Access':
+      subtype = req.session.data['coastal-subtype'];
+      break;
+    case 'Common Land':
+      subtype = req.session.data['common-land-subtype'];
+      break;
+    case 'Rights of Way':
+      subtype = req.session.data['row-subtype'];
+      break;
+    default:
+      subtype = "UNKNOWN";
+  }
+
+
+  // --- 4. THE FULL DATA MAP ---
   const refData = {
-    // --- Planning and Environmental Applications ---
-    "Drought": {
-      "Drought orders": ["DRO", "ORD"],
-      "Drought permits": ["DRO", "PER"]
+    "Drought": { 
+      "Drought Orders": ["DRO", "ORD"], "Drought orders": ["DRO", "ORD"], 
+      "Drought Permits": ["DRO", "PER"], "Drought permits": ["DRO", "PER"]
     },
-    "Housing and Planning CPOs": {
-      "Housing": ["CPO", "HOU"],
-      "Planning": ["CPO", "PLA"],
-      "Ad hoc CPO": ["CPO", "ADH"] 
+    "Housing and Planning CPOs": { 
+      "Housing": ["CPO", "HOU"], "Planning": ["CPO", "PLA"], "Ad hoc CPO": ["CPO", "ADH"] 
     },
     "Other Secretary of State casework": {
-      "DEFRA CPO": ["SOS", "ENV"],
-      "DESNZ CPO": ["SOS", "ENG"],
-      "DfT CPO": ["SOS", "TRN"],
-      "Ad hoc CPO": ["SOS", "CPO"], // Note: Different code from Housing CPO
-      "Advert": ["SOS", "ADV"],
-      "Completion notice": ["SOS", "COM"],
-      "Discontinuance notice": ["SOS", "DIS"],
-      "Modification to planning permission": ["SOS", "MOD"],
-      "Review of mineral permission": ["SOS", "MIN"],
-      "Revocation": ["SOS", "REV"],
-      "Other": ["SOS", "OTH"]
+      "DEFRA CPO": ["SOS", "ENV"], "DESNZ CPO": ["SOS", "ENG"], "DfT CPO": ["SOS", "TRN"],
+      "Ad hoc CPO": ["SOS", "CPO"], "Advert": ["SOS", "ADV"], "Completion notice": ["SOS", "COM"],
+      "Discontinuance notice": ["SOS", "DIS"], "Modification to planning permission": ["SOS", "MOD"],
+      "Review of mineral permission": ["SOS", "MIN"], "Revocation": ["SOS", "REV"], "Other": ["SOS", "OTH"]
     },
-    "Purchase Notices": {
-      // Purchase Notices has no subtype code in the sheet, handled separately
+    "Purchase Notices": {},
+    "Wayleaves": { 
+      "New lines": ["WAY", "LIN"], "Tree lopping": ["WAY", "TRE"], "Wayleaves": ["WAY", "WAY"] 
     },
-    "Wayleaves": {
-      "New lines": ["WAY", "LIN"],
-      "Tree Loping": ["WAY", "TRE"], // Note: Sheet said 'Tree lopping', code TRE
-      "Wayleaves": ["WAY", "WAY"]
-    },
-
-    // --- Rights of Way and Common Land ---
     "Coastal Access": {
-      "Coastal access appeal": ["MCA", "CAA"],
-      "Notice appeal": ["MCA", "NOT"],
-      "Objection": ["MCA", "OBJ"],
-      "Restriction appeal (access land)": ["MCA", "RES"]
+      "Coastal access appeal": ["MCA", "CAA"], "Notice appeal": ["MCA", "NOT"], 
+      "Objection": ["MCA", "OBJ"], "Restriction appeal (access land)": ["MCA", "RES"]
     },
     "Common Land": {
-      "Commons for Ecclesiastical Purposes": ["COM", "ECC"],
-      "Commons in Greater London": ["COM", "LDN"],
-      "Compulsory Purchase of Common Land": ["COM", "PCL"],
-      "Correction of the Common Land or Village Green Registers": ["COM", "COR"],
-      "Deregistration & Exchange": ["COM", "DRE"],
-      "Inclosure": ["COM", "INC"],
-      "Inclosure : obsolescent functions": ["COM", "OBS"],
-      "Land Exchange": ["COM", "LEX"],
-      "Local Acts and Provisional Order Confirmation Acts": ["COM", "LCA"],
-      "Public Access to Commons - limitations and restrictions": ["COM", "PAC"],
-      "Scheme of Management": ["COM", "SOM"],
-      "Stint Rates": ["COM", "STI"],
-      "Works on Common Land": ["COM", "WCL"],
-      "Works on Common Land (National Trust)": ["COM", "WNT"]
+      "Commons for Ecclesiastical Purposes": ["COM", "ECC"], "Commons in Greater London": ["COM", "LDN"], 
+      "Compulsory Purchase of Common Land": ["COM", "PCL"], "Correction of the Common Land or Village Green Registers": ["COM", "COR"], 
+      "Deregistration & Exchange": ["COM", "DRE"], "Inclosure": ["COM", "INC"], 
+      "Inclosure : obsolescent functions": ["COM", "OBS"], "Land Exchange": ["COM", "LEX"], 
+      "Local Acts and Provisional Order Confirmation Acts": ["COM", "LCA"], "Public Access to Commons - limitations and restrictions": ["COM", "PAC"], 
+      "Scheme of Management": ["COM", "SOM"], "Stint Rates": ["COM", "STI"], 
+      "Works on Common Land": ["COM", "WCL"], "Works on Common Land (National Trust)": ["COM", "WNT"]
     },
     "Rights of Way": {
-      "Dispensation for Serving Notice HA80": ["ROW", "SNH"],
-      "Dispensation for Serving Notice TCPA90": ["ROW", "SNT"],
-      "Dispensation for Serving Notice WCA81": ["ROW", "SNW"],
-      "Opposed Definitive Map Modification Order (DMMO)": ["ROW", "DMM"],
-      "Opposed Public Path Order (PPO) HA80": ["ROW", "PPH"],
-      "Opposed Public Path Order (PPO) TCPA90": ["ROW", "PPT"],
-      "Schedule 14 Appeal": ["ROW", "S14A"],
-      "Schedule 14 Direction": ["ROW", "S14D"],
-      "Schedule 13A Appeal": ["ROW", "S13A"]
+      "Dispensation for Serving Notice HA80": ["ROW", "SNH"], "Dispensation for Serving Notice TCPA90": ["ROW", "SNT"],
+      "Dispensation for Serving Notice WCA81": ["ROW", "SNW"], "Opposed Definitive Map Modification Order (DMMO)": ["ROW", "DMM"],
+      "Opposed Public Path Order (PPO) HA80": ["ROW", "PPH"], "Opposed Public Path Order (PPO) TCPA90": ["ROW", "PPT"],
+      "Schedule 14 Appeal": ["ROW", "S14A"], "Schedule 14 Direction": ["ROW", "S14D"], "Schedule 13A Appeal": ["ROW", "S13A"]
     }
   };
 
-  // 4. Generate the Reference Number
-  var finalRef = "";
-  
-  // Random 5-digit sequence (e.g., 00042)
+
+  // --- 5. GENERATE REFERENCE ---
+  var finalRef = "ERROR/REF/000"; 
   var seq = "000" + Math.floor(1 + Math.random() * 99); 
 
-  // LOGIC: Check Purchase Notices first, then look up the map
   if (caseType == "Purchase Notices") {
-    // Format: PUR/00001
     finalRef = `PUR/${seq}`;
   } 
-  else {
-    // Try to find the codes in our map
-    // We safely check if the caseType exists, then if the subtype exists
+  else if (refData[caseType]) {
     var typeGroup = refData[caseType];
+    var codes = typeGroup[subtype];
     
-    if (typeGroup && typeGroup[subtype]) {
-      var codes = typeGroup[subtype]; // e.g. ["SOS", "ENV"]
-      var prefix = codes[0];
-      var subCode = codes[1];
-      
-      // Format: PREFIX/CODE/NUMBER (e.g., SOS/ENV/00001)
-      finalRef = `${prefix}/${subCode}/${seq}`;
-    } 
-    else {
-      // Fallback if data is missing or doesn't match
-      console.log("ERROR: Could not find mapping for", caseType, "->", subtype);
-      finalRef = `UNKNOWN/${seq}`;
+    if (codes) {
+      finalRef = `${codes[0]}/${codes[1]}/${seq}`;
+    } else {
+      console.log("WARNING: Code not found for subtype '" + subtype + "'. Using fallback.");
+      finalRef = `UNK/NOWN/${seq}`;
     }
+  } 
+  else {
+    finalRef = `GEN/ERIC/${seq}`; 
   }
 
-  // 5. Save and Redirect
-  req.session.data['caseRef'] = finalRef;
-  console.log("Generated Ref:", finalRef);
+
+  // --- 6. SAVE THE CASE ---
+  var newCase = {
+    "reference": finalRef,
+    "status": "Received",
+    "type": caseType,
+    "subtype": subtype,
+    "receivedDay": req.session.data['case-received-date-day'],
+    "receivedMonth": req.session.data['case-received-date-month'],
+    "receivedYear": req.session.data['case-received-date-year'],
+    "caseOfficer": req.session.data['caseOfficer'],
+    "siteAddress": "",
+    "appellantName": "",
+    "lpa": ""
+  };
+
+  if (!req.session.data['cases']) { req.session.data['cases'] = []; }
+  req.session.data['cases'].push(newCase);
+
+
+  // --- 7. REDIRECT WITH URL PARAM (Crucial for Success Page) ---
+  console.log("SUCCESS: Case Saved with Ref:", finalRef);
   
-  res.render('cases/create-a-case/success');
+  // Pass the ref in the URL so the Success Page sees it immediately
+  res.redirect('/cases/create-a-case/success?caseRef=' + encodeURIComponent(finalRef));
 
 });

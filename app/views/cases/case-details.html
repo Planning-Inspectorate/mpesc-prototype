@@ -1,0 +1,55 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Manage planning, environmental and specialist casework
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+  text: "Back",
+  href: "javascript:window.history.back()"
+}) }}
+{% endblock %}
+
+{% block content %}
+
+{# 1. RETRIEVE THE CASE #}
+{# We loop through all cases and find the one that matches the URL query '?ref=...' #}
+{% set currentCase = null %}
+{% for case in data['cases'] %}
+  {% if case.reference == data['ref'] %}
+    {% set currentCase = case %}
+  {% endif %}
+{% endfor %}
+
+{# 2. DEBUGGING (Optional: Remove this after it works) #}
+{# If this prints nothing, the ID in the URL doesn't match the ID in the database #}
+{% if currentCase %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <span class="govuk-caption-xl">{{ currentCase.type }} — {{ currentCase.subtype }}</span>
+      <h1 class="govuk-heading-xl">{{ currentCase.reference }}</h1>
+      <strong class="govuk-tag govuk-tag--blue">{{ currentCase.status }}</strong>
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+    </div>
+  </div>
+
+  {# ... The rest of your summary cards ... #}
+
+{% else %}
+
+  {# 3. ERROR STATE #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Case not found</h1>
+      <p class="govuk-body">
+        Could not find a case with reference: <strong>{{ data['ref'] }}</strong>
+      </p>
+      <p><a href="/cases/create-a-case/questions/casework-area">Start a new case</a></p>
+    </div>
+  </div>
+
+{% endif %}
+
+{% endblock %}
