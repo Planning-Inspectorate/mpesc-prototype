@@ -1,0 +1,88 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if error %}Error: {% endif %}Who is the assigned case officer? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/cases/case-details?ref=" + ref
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {# ERROR SUMMARY #}
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [{ text: errorMessage.text, href: "#case-officer" }]
+        }) }}
+      {% endif %}
+
+      <form action="/cases/edit/case-officer?ref={{ ref }}" method="post" novalidate>
+
+        <div class="govuk-form-group {% if error %}govuk-form-group--error{% endif %}">
+          
+          <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--l" for="case-officer">
+              Who is the assigned case officer?
+            </label>
+          </h1>
+          
+          {% if error %}
+            <p id="case-officer-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ errorMessage.text }}
+            </p>
+          {% endif %}
+
+          {# AUTOCOMPLETE CONTAINER #}
+          <div id="case-officer-container"></div>
+
+        </div>
+
+        {{ govukButton({ text: "Save" }) }}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  const officers = [
+    "Kieran De La Cruz",
+    "Edward Mitchell",
+    "Sarah Tudor",
+    "Steve Waterfield",
+    "Alex Hudd",
+    "Harry Wood",
+    "Rob Davis",
+    "Deborah Board",
+    "(Service Account) Automated Tester",
+    "Owen Woodwards"
+  ];
+
+  accessibleAutocomplete({
+    element: document.querySelector('#case-officer-container'),
+    id: 'case-officer', 
+    name: 'caseOfficer',
+    source: officers,
+    
+    // CRITICAL UPDATE: Use the 'value' passed from the route
+    defaultValue: "{{ value }}",
+    
+    showAllValues: false,
+    confirmOnBlur: false, 
+    autoselect: true
+  })
+</script>
+{% endblock %}

@@ -287,13 +287,44 @@
         ]
       }) }}
 
-      {# 3. TEAM #}
+      {# --- 3. TEAM --- #}
+      {% set inspectorsHtml %}
+        {% if currentCase.inspectors and currentCase.inspectors.length > 0 %}
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-4 govuk-!-margin-bottom-0">
+            {% for item in currentCase.inspectors %}
+              <li>
+                {{ item.name }}<br>
+                {{ item.date }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          -
+        {% endif %}
+      {% endset %}
+
       {{ govukSummaryList({
         attributes: { id: "team" },
         card: { title: { text: "Team" } },
         rows: [
-          { key: { text: "Case officer" }, value: { text: currentCase.caseOfficer or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.caseOfficer else "Add", visuallyHiddenText: "case officer" }] } },
-          { key: { text: "Inspector(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "inspectors" }] } }
+          { 
+            key: { text: "Case officer" }, 
+            value: { text: currentCase.caseOfficer or currentCase['case-officer'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/case-officer?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.caseOfficer or currentCase['case-officer']) else "Add", 
+              visuallyHiddenText: "case officer" 
+            }] } 
+          },
+          { 
+            key: { text: "Inspector(s)" }, 
+            value: { html: inspectorsHtml }, 
+            actions: { items: [{ 
+              href: "/cases/edit/check-inspectors?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.inspectors and currentCase.inspectors.length > 0) else "Add", 
+              visuallyHiddenText: "inspectors" 
+            }] } 
+          }
         ]
       }) }}
 

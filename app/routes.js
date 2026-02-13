@@ -792,6 +792,293 @@ router.post('/cases/edit/priority', function(req, res) {
 });
 
 
+// --- TEAM / CASE OFFICER LOGIC ---
+
+router.get('/cases/edit/case-officer', function(req, res) {
+  var c = getCase(req);
+  // Read caseOfficer (camelCase) or fallback to case-officer (kebab)
+  var val = c.caseOfficer || c['case-officer'];
+  
+  res.render('cases/edit/case-officer', { 
+    ref: c.reference, 
+    value: val 
+  });
+});
+
+router.post('/cases/edit/case-officer', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.caseOfficer;
+  var action = req.body.action;
+  var c = getCase(req);
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.caseOfficer;
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
+  }
+
+  // 2. Validation
+  // We can check if it's empty
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/case-officer', {
+      ref: ref,
+      error: true,
+      errorMessage: { text: "Select a case officer" }
+    });
+  }
+
+  // OPTIONAL: Check if the name is actually in the allowed list
+  var officers = [
+    "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
+    "(Service Account) Automated Tester", "Owen Woodwards"
+  ];
+  
+  if (!officers.includes(val)) {
+     return res.render('cases/edit/case-officer', {
+      ref: ref,
+      value: val, // keep what they typed
+      error: true,
+      errorMessage: { text: "Select a case officer" }
+    });   
+  }
+
+  // 3. Save
+  c.caseOfficer = val;
+  delete c['case-officer']; // Cleanup old variable
+  
+  // Note: updated=team refers to the ID of the new summary card below
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
+});
+
+
+
+
+// --- INSPECTOR LOGIC (Add, Edit, Delete & Validation) ---
+
+// 1. HUB PAGE: Check Inspectors
+router.get('/cases/edit/check-inspectors', function (req, res) {
+  var c = getCase(req);
+  if (!c.inspectors) { c.inspectors = []; }
+
+  // CLEAR TEMP DATA (So "Add details" starts fresh)
+  req.session.data['inspectorTemp'] = null; 
+
+  res.render('cases/edit/check-inspectors', { 
+    ref: c.reference,
+    inspectors: c.inspectors
+  });
+});
+
+// 2. CHANGE ROUTE: Load existing data into session
+router.get('/cases/edit/inspector-change', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var c = getCase(req);
+
+  var item = c.inspectors.find(i => i.id === id);
+
+  if (item) {
+    // Save existing data to a temp object in session
+    req.session.data['inspectorTemp'] = {
+      id: item.id,             // We track the ID to know we are editing
+      name: item.name,
+      day: item.rawDay,
+      month: item.rawMonth,
+      year: item.rawYear
+    };
+  }
+
+  // Redirect to the first step (Name)
+  res.redirect('/cases/edit/inspector-name?ref=' + ref);
+});
+
+// 3. STEP 1: Inspector Name (GET)
+router.get('/cases/edit/inspector-name', function (req, res) {
+  // Use temp data if it exists (for editing), otherwise empty
+  var temp = req.session.data['inspectorTemp'] || {};
+  
+  res.render('cases/edit/inspector-name', { 
+    ref: req.query.ref,
+    value: temp.name
+  });
+});
+
+// 4. STEP 1: Inspector Name (POST)
+router.post('/cases/edit/inspector-name', function (req, res) {
+  var ref = req.query.ref;
+  var val = req.body.inspectorName;
+  
+  // Validation
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/inspector-name', {
+      ref: ref,
+      error: true,
+      errorMessage: { text: "Select an inspector" }
+    });
+  }
+
+  // Check valid list (Optional)
+  var officers = [
+    "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
+    "(Service Account) Automated Tester", "Owen Woodwards"
+  ];
+  if (!officers.includes(val)) {
+     return res.render('cases/edit/inspector-name', {
+      ref: ref,
+      value: val,
+      error: true,
+      errorMessage: { text: "Select an inspector" }
+    });   
+  }
+
+  // Save to temp object
+  if (!req.session.data['inspectorTemp']) { req.session.data['inspectorTemp'] = {}; }
+  req.session.data['inspectorTemp'].name = val;
+
+  res.redirect('/cases/edit/inspector-date?ref=' + ref);
+});
+
+// 5. STEP 2: Inspector Date (GET)
+router.get('/cases/edit/inspector-date', function (req, res) {
+  var temp = req.session.data['inspectorTemp'] || {};
+  
+  res.render('cases/edit/inspector-date', { 
+    ref: req.query.ref,
+    day: temp.day,
+    month: temp.month,
+    year: temp.year
+  });
+});
+
+// 6. STEP 2: Inspector Date (POST - Save/Update)
+router.post('/cases/edit/inspector-date', function (req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+
+  var errorList = [];
+  var errorFields = []; 
+
+  // --- ROBUST DATE VALIDATION ---
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the Inspector allocated date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } else {
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Inspector allocated date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Inspector allocated date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Inspector allocated date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Inspector allocated date month must be between 1 and 12", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Inspector allocated date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // --- ERROR HANDLING ---
+  if (errorList.length > 0) {
+    return res.render('cases/edit/inspector-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // --- SUCCESS: SAVE ---
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var formattedDate = day + " " + months[month - 1] + " " + year;
+  
+  // Get the name from temp storage
+  var temp = req.session.data['inspectorTemp'] || {};
+  var name = temp.name;
+  var editingId = temp.id; // Check if we are editing an existing ID
+
+  if (editingId) {
+    // UPDATE EXISTING
+    var item = c.inspectors.find(i => i.id === editingId);
+    if (item) {
+      item.name = name;
+      item.date = formattedDate;
+      item.rawDay = day;
+      item.rawMonth = month;
+      item.rawYear = year;
+    }
+  } else {
+    // CREATE NEW
+    if (!c.inspectors) { c.inspectors = []; }
+    c.inspectors.push({
+      id: 'insp-' + Math.floor(Math.random() * 10000),
+      name: name,
+      date: formattedDate,
+      rawDay: day,
+      rawMonth: month,
+      rawYear: year
+    });
+  }
+
+  // Clear temp data
+  req.session.data['inspectorTemp'] = null;
+
+  res.redirect('/cases/edit/check-inspectors?ref=' + ref);
+});
+
+// 7. REMOVE ROUTE
+router.get('/cases/edit/inspector-remove', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var c = getCase(req);
+
+  if (c.inspectors) {
+    c.inspectors = c.inspectors.filter(i => i.id !== id);
+  }
+
+  res.redirect('/cases/edit/check-inspectors?ref=' + ref);
+});
 
 
 // --- SMART EDIT ROUTES ---
@@ -1072,4 +1359,6 @@ router.get('/cases/linked-cases/remove', function (req, res) {
   }
   res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
 });
+
+
 
