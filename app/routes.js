@@ -211,6 +211,63 @@ router.post('/case-officer-answer', function (req, res) {
 
 })
 
+router.post('/site-address-answer', function(req, res) {
+  
+  // Get values from form
+  var line1 = req.body['addressLine1'];
+  var line2 = req.body['addressLine2'];
+  var town = req.body['addressTown'];
+  var county = req.body['addressCounty'];
+  var postcode = req.body['addressPostcode'];
+
+  // --- VALIDATION LOGIC ---
+  var error = false;
+  var errorMsg = "";
+
+  // Only validate if postcode is NOT empty (since it's optional)
+  if (postcode && postcode.trim() !== "") {
+    
+    // Clean up input (remove spaces, uppercase)
+    var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+    
+    // Strict UK Postcode Regex
+    var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
+
+    if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
+      error = true;
+      errorMsg = "Postcode must be between 5 and 7 characters";
+    } 
+    else if (!postcodeRegex.test(cleanPostcode)) {
+      error = true;
+      errorMsg = "Enter a real postcode";
+    }
+  }
+
+  // IF ERROR: Re-render the page with errors
+  if (error) {
+    return res.render('/cases/create-a-case/questions/site-address', { // Note: 'site-address' is likely in the root views folder for create flow
+      // Pass back values so user doesn't have to re-type
+      addressLine1: line1,
+      addressLine2: line2,
+      addressTown: town,
+      addressCounty: county,
+      addressPostcode: postcode,
+      error: true,
+      errorMessage: { text: errorMsg }
+    });
+  }
+
+  // --- SUCCESS ---
+  // Save to session (Create flow uses session data)
+  req.session.data['addressLine1'] = line1;
+  req.session.data['addressLine2'] = line2;
+  req.session.data['addressTown'] = town;
+  req.session.data['addressCounty'] = county;
+  req.session.data['addressPostcode'] = postcode;
+
+  // Continue to next step
+  res.redirect('/cases/create-a-case/questions/location'); // or whatever your next step is
+});
 
 
 
@@ -346,19 +403,51 @@ router.post('/create-case-submit', function (req, res) {
   }
 
 
-  // --- 6. SAVE THE CASE ---
+// --- 6. SAVE THE CASE ---
+
+  // 1. Construct the address string first
+  var fullAddress = [
+    req.session.data['addressLine1'],
+    req.session.data['addressLine2'],
+    req.session.data['addressTown'],
+    req.session.data['addressCounty'],
+    req.session.data['addressPostcode']
+  ].filter(Boolean).join(',\n');
+
   var newCase = {
     "reference": finalRef,
-    "status": "Received",
+    "status": "",
     "type": caseType,
     "subtype": subtype,
     "receivedDay": req.session.data['case-received-date-day'],
     "receivedMonth": req.session.data['case-received-date-month'],
     "receivedYear": req.session.data['case-received-date-year'],
     "caseOfficer": req.session.data['caseOfficer'],
-    "siteAddress": "",
-    "appellantName": "",
-    "lpa": ""
+    
+    // Mapped Fields:
+    "caseName": req.session.data['caseName'] || req.session.data['case-name'],
+    
+    // Use the variable we created above
+    "siteAddress": fullAddress, 
+    
+    // Save the individual address parts too (so you can edit them later)
+    "addressLine1": req.session.data['addressLine1'],
+    "addressLine2": req.session.data['addressLine2'],
+    "addressTown": req.session.data['addressTown'],
+    "addressCounty": req.session.data['addressCounty'],
+    "addressPostcode": req.session.data['addressPostcode'],
+
+    // Fix the typo (applicantName) and map the data
+    "applicantName": req.session.data['applicantName'] || req.session.data['applicant-name'],
+    
+    // Map the authority/LPA
+    "authorityName": req.session.data['authorityName'] || req.session.data['authority'] || req.session.data['lpa'],
+
+    // Map the external reference
+    "externalReference": req.session.data['externalReference'] || req.session.data['external-reference'],
+
+    // Map the site location (grid ref)
+    "siteLocation": req.session.data['siteLocation'] || req.session.data['site-location']
   };
 
   if (!req.session.data['cases']) { req.session.data['cases'] = []; }
@@ -372,6 +461,221 @@ router.post('/create-case-submit', function (req, res) {
   res.redirect('/cases/create-a-case/success?caseRef=' + encodeURIComponent(finalRef));
 
 });
+
+
+
+
+// --- CASE DETAILS EDIT LOGIC ---
+
+// Helper to find a case
+function getCase(req) {
+  var ref = req.query.ref || req.body.ref || req.params.ref;
+  var cases = req.session.data['cases'] || [];
+  return cases.find(c => c.reference === ref);
+}
+
+// --- SPECIFIC FIELD ROUTES (Must be above the generic :field route) ---
+
+// 1. CASE NAME (Migration Logic: Reads old 'case-name', saves new 'caseName')
+router.get('/cases/edit/case-name', function(req, res) {
+  var c = getCase(req);
+  
+  // LOGIC: Check for the new camelCase variable first. 
+  // If it doesn't exist, check the old kebab-case variable.
+  var currentValue = c.caseName || c['case-name'];
+
+  res.render('cases/edit/case-name', { 
+    ref: c.reference, 
+    value: currentValue 
+  });
+});
+
+router.post('/cases/edit/case-name', function(req, res) {
+  var ref = req.query.ref;
+  // Ensure we read from the form correctly (Make sure input name="caseName")
+  var val = req.body.caseName; 
+  
+  // VALIDATION
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/case-name', { 
+      ref: ref, 
+      value: val, 
+      error: true, 
+      errorMessage: { text: "Enter the case name" } 
+    });
+  }
+
+  var c = getCase(req);
+  
+  // SAVE to new variable
+  c.caseName = val;
+  
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+router.post('/cases/edit/applicant-name', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body['applicantName'];
+
+  if (!val) {
+    return res.render('cases/edit/applicant-name', { ref: ref, error: true, errorMessage: { text: "Enter the applicant name" } });
+  }
+
+  var c = getCase(req);
+  c['applicantName'] = val;
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 2. EXTERNAL REFERENCE (No validation, migrate to externalReference) ---
+router.get('/cases/edit/external-reference', function(req, res) {
+  var c = getCase(req);
+  var val = c.externalReference || c['external-reference'];
+  res.render('cases/edit/external-reference', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/external-reference', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.externalReference;
+  var c = getCase(req);
+  
+  c.externalReference = val;
+  
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 3. APPLICANT / SERVER (Validation required, migrate to applicantName) ---
+router.get('/cases/edit/applicant-name', function(req, res) {
+  var c = getCase(req);
+  var val = c.applicantName || c['applicant-name'];
+  res.render('cases/edit/applicant-name', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/applicant-name', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.applicantName;
+
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/applicant-name', { 
+      ref: ref, 
+      value: val, 
+      error: true, 
+      errorMessage: { text: "Enter the applicant name" } 
+    });
+  }
+
+  var c = getCase(req);
+  c.applicantName = val;
+  delete c['applicant-name']; 
+  
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 4. EDIT SITE ADDRESS (With Strict Postcode Validation) ---
+router.post('/cases/edit/site-address', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get values
+  var line1 = req.body['addressLine1'];
+  var line2 = req.body['addressLine2'];
+  var town = req.body['addressTown'];
+  var county = req.body['addressCounty'];
+  var postcode = req.body['addressPostcode'];
+
+  // --- VALIDATION LOGIC ---
+  var error = false;
+  var errorMsg = "";
+
+  if (postcode && postcode.trim() !== "") {
+    // 1. Clean up the input (remove spaces to check pattern easier)
+    var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+
+    // 2. Strict UK Postcode Regex
+    // Breakdown:
+    // ^[A-Z]{1,2}    -> Starts with 1 or 2 letters
+    // [0-9][A-Z0-9]? -> Followed by a number (and optionally another number or letter)
+    // [0-9][A-Z]{2}$ -> Ends with a number and 2 letters
+    var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
+
+    if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
+      error = true;
+      errorMsg = "Postcode must be between 5 and 7 characters (excluding spaces)";
+    } 
+    else if (!postcodeRegex.test(cleanPostcode)) {
+      error = true;
+      errorMsg = "Enter a real postcode";
+    }
+  }
+
+  // IF ERROR: Re-render
+  if (error) {
+    return res.render('cases/edit/site-address', {
+      ref: ref,
+      addressLine1: line1,
+      addressLine2: line2,
+      addressTown: town,
+      addressCounty: county,
+      addressPostcode: postcode,
+      error: true,
+      errorMessage: { text: errorMsg }
+    });
+  }
+
+  // --- SUCCESS ---
+  c.addressLine1 = line1;
+  c.addressLine2 = line2;
+  c.addressTown = town;
+  c.addressCounty = county;
+  c.addressPostcode = postcode;
+
+  // Join by newline, filter empty lines
+  var fullAddress = [line1, line2, town, county, postcode]
+    .filter(Boolean)
+    .join('\n');
+  
+  c.siteAddress = fullAddress; 
+  delete c['site-address']; 
+
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 5. SITE LOCATION (No validation, migrate to siteLocation) ---
+router.get('/cases/edit/site-location', function(req, res) {
+  var c = getCase(req);
+  var val = c.siteLocation || c['site-location'];
+  res.render('cases/edit/site-location', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/site-location', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.siteLocation;
+  var c = getCase(req);
+  
+  c.siteLocation = val;
+  delete c['site-location'];
+
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 6. AUTHORITY (No validation, migrate to authorityName) ---
+router.get('/cases/edit/authority', function(req, res) {
+  var c = getCase(req);
+  var val = c.authorityName || c['authority'];
+  res.render('cases/edit/authority', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/authority', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.authorityName;
+  var c = getCase(req);
+  
+  c.authorityName = val;
+  delete c['authority'];
+
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+
 
 
 
@@ -653,3 +957,4 @@ router.get('/cases/linked-cases/remove', function (req, res) {
   }
   res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
 });
+

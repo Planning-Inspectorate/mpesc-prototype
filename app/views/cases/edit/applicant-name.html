@@ -1,0 +1,27 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if error %}Error: {% endif %}Who is the applicant? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errorMessage.text, href: "#applicant-name" }] }) }}
+      {% endif %}
+      <form action="/cases/edit/applicant-name?ref={{ ref }}" method="post" novalidate>
+        {{ govukInput({
+          label: { text: "Who is the applicant?", classes: "govuk-label--l", isPageHeading: true },
+   hint: {
+    text: "Enter the main party e.g applicant, server, utility company"
+
+  },
+          id: "applicant-name",
+          name: "applicantName",
+          value: value,
+          errorMessage: errorMessage if error else null
+        }) }}
+        {{ govukButton({ text: "Save" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

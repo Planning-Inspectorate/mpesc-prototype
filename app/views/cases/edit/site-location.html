@@ -1,0 +1,20 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}What is the site location if no address was added? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form action="/cases/edit/site-location?ref={{ ref }}" method="post" novalidate>
+        {{ govukInput({
+          label: { text: "What is the site location if no address was added?", classes: "govuk-label--l", isPageHeading: true },
+          hint: { text: "For example, name of common, village green, area or body of water" },
+          id: "site-location",
+          name: "siteLocation",
+          value: value
+        }) }}
+        {{ govukButton({ text: "Save" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

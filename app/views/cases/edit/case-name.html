@@ -1,0 +1,23 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if error %}Error: {% endif %}What is the case name? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errorMessage.text, href: "#case-name" }] }) }}
+      {% endif %}
+      <form action="/cases/edit/case-name?ref={{ ref }}" method="post" novalidate>
+        {{ govukInput({
+          label: { text: "What is the case name?", classes: "govuk-label--l", isPageHeading: true },
+          id: "case-name",
+          name: "caseName",
+          value: value,
+          errorMessage: errorMessage if error else null
+        }) }}
+        {{ govukButton({ text: "Save" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,22 +1,12 @@
 {% extends "layouts/main.html" %}
-
-{% block pageTitle %}
-  What is the site address? - Planning Inspectorate Portal
-{% endblock %}
-
-{% block beforeContent %}
-  {{ govukBackLink({
-  text: "Back",
-  href: "javascript:window.history.back()"
-}) }}
-{% endblock %}
+{% block pageTitle %}What is the site address? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
 
 {% block content %}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      {# 1. ERROR SUMMARY (Only shows if there is an error) #}
+        {# 1. ERROR SUMMARY (Only shows if there is an error) #}
       {% if error %}
         {{ govukErrorSummary({
           titleText: "There is a problem",
@@ -29,12 +19,10 @@
         }) }}
       {% endif %}
 
-      <form class="form" action="/site-address-answer" method="post">
+    
+      <form action="/cases/edit/site-address?ref={{ ref }}" method="post" novalidate>
 
-{% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/fieldset/macro.njk" import govukFieldset %}
-
-{% call govukFieldset({
+        {% call govukFieldset({
   legend: {
     text: "What is the site address?",
     classes: "govuk-fieldset__legend--l",
@@ -53,8 +41,7 @@
     },
     id: "address-line-1",
     name: "addressLine1",
-    value: data['addressLine1'],
-    autocomplete: "address-line1"
+    value: data['addressLine1']
 
   }) }}
 
@@ -64,8 +51,8 @@
     },
     id: "address-line-2",
     name: "addressLine2",
-    value: data['addressLine2'],
-    autocomplete: "address-line2"
+    value: data['addressLine2']
+
   }) }}
 
   {{ govukInput({
@@ -75,8 +62,8 @@
     classes: "govuk-!-width-two-thirds",
     id: "address-town",
     name: "addressTown",
-    value: data['addressTown'],
-    autocomplete: "address-level2"
+    value: data['addressTown']
+ 
   }) }}
 
   {{ govukInput({
@@ -97,19 +84,13 @@
     id: "address-postcode",
     name: "addressPostcode",
     value: data['addressPostcode'],
-    autocomplete: "postal-code",
     errorMessage: errorMessage if error else null
   }) }}
 
 {% endcall %}
 
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
+        {{ govukButton({ text: "Save" }) }}
       </form>
-
     </div>
   </div>
-
 {% endblock %}

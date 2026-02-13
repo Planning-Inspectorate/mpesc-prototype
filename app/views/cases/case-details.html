@@ -30,11 +30,7 @@
     <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
       <span class="govuk-caption-m">{{ currentCase.reference }}</span>
       <h1 class="govuk-heading-l">
-        {% if currentCase.caseName %}
-          {{ currentCase.caseName }}
-        {% else %}
-          {{ currentCase.type }} Case
-        {% endif %}
+        {{ currentCase.caseName }}
       </h1>
     </div>
   </div>
@@ -204,22 +200,90 @@
 ]
       }) }}
 
-      {# 2. CASE DETAILS #}
+{# --- 2. CASE DETAILS --- #}
       {{ govukSummaryList({
         attributes: { id: "case-details" },
         card: { title: { text: "Case details" } },
         rows: [
-          { key: { text: "Case reference" }, value: { text: currentCase.reference or "-" } },
-          { key: { text: "External reference" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "external reference" }] } },
-          { key: { text: "Historical reference" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "historical reference" }] } },
-          { key: { text: "Case name" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "case name" }] } },
-          { key: { text: "Case status" }, value: { text: currentCase.status or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.status else "Add", visuallyHiddenText: "case status" }] } },
-          { key: { text: "Advertised modification status" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "modification status" }] } },
-          { key: { text: "Applicant / Server" }, value: { text: currentCase.appellantName or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.appellantName else "Add", visuallyHiddenText: "applicant" }] } },
-          { key: { text: "Site address" }, value: { text: currentCase.siteAddress or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.siteAddress else "Add", visuallyHiddenText: "site address" }] } },
-          { key: { text: "Site location" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "site location" }] } },
-          { key: { text: "Authority (LPA, OMA, CRA)" }, value: { text: currentCase.lpa or "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.lpa else "Add", visuallyHiddenText: "authority" }] } },
-          { key: { text: "Priority" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "priority" }] } }
+          { 
+            key: { text: "Case reference" }, 
+            value: { text: currentCase.reference }, 
+            actions: { items: [] } 
+          },
+          {
+            key: { text: "External reference" }, 
+            value: { text: currentCase.externalReference or currentCase['external-reference'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/external-reference?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.externalReference or currentCase['external-reference']) else "Add", 
+              visuallyHiddenText: "external reference" 
+            }] } 
+          },
+          { 
+            key: { text: "Historical reference" }, 
+            value: { text: currentCase['historical-reference'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/historical-reference?ref=" + currentCase.reference, text: "Change" if currentCase['historical-reference'] else "Add", visuallyHiddenText: "historical reference" }] } 
+          },
+          { 
+            key: { text: "Case name" }, 
+            value: { text: currentCase.caseName or currentCase['case-name'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/case-name?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.caseName or currentCase['case-name']) else "Add", 
+              visuallyHiddenText: "case name" 
+            }] } 
+          },
+          { 
+            key: { text: "Case status" }, 
+            value: { text: currentCase['case-status'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/case-status?ref=" + currentCase.reference, text: "Change" if currentCase['case-status'] else "Add", visuallyHiddenText: "case status" }] } 
+          },
+          { 
+            key: { text: "Advertised modification status" }, 
+            value: { text: currentCase['modification-status'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/modification-status?ref=" + currentCase.reference, text: "Change" if currentCase['modification-status'] else "Add", visuallyHiddenText: "modification status" }] } 
+          },
+          { 
+            key: { text: "Applicant / Server" }, 
+            value: { text: currentCase.applicantName or currentCase['applicant-name'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/applicant-name?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.applicantName or currentCase['applicant-name']) else "Add", 
+              visuallyHiddenText: "applicant name" 
+            }] } 
+          },
+          { 
+            key: { text: "Site address" }, 
+            value: { html: ( (currentCase.siteAddress or currentCase['site-address']) | replace('\n', '<br>') | safe ) if (currentCase.siteAddress or currentCase['site-address']) else "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/site-address?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.siteAddress or currentCase['site-address']) else "Add", 
+              visuallyHiddenText: "site address" 
+            }] } 
+          },
+          { 
+            key: { text: "Site location" }, 
+            value: { text: currentCase.siteLocation or currentCase['site-location'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/site-location?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.siteLocation or currentCase['site-location']) else "Add", 
+              visuallyHiddenText: "site location" 
+            }] } 
+          },
+          { 
+            key: { text: "Authority (LPA, OMA, CRA)" }, 
+            value: { text: currentCase.authorityName or currentCase['authority'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/authority?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.authorityName or currentCase['authority']) else "Add", 
+              visuallyHiddenText: "authority" 
+            }] } 
+          },
+          { 
+            key: { text: "Priority" }, 
+            value: { text: currentCase['priority'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
+          }
         ]
       }) }}
 
