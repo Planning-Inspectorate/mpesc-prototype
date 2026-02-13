@@ -1,0 +1,41 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if error %}Error: {% endif %}What is the case status? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errorMessage.text, href: "#case-status" }] }) }}
+      {% endif %}
+      
+      <form action="/cases/edit/case-status?ref={{ ref }}" method="post" novalidate>
+        {{ govukRadios({
+          name: "caseStatus",
+          fieldset: { legend: { text: "What is the case status?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
+          items: [
+            { value: "New case", text: "New case" },
+            { value: "Initial checks / validation", text: "Initial checks / validation" },
+            { value: "Rejected", text: "Rejected" },
+            { value: "Send letter", text: "Send letter" },
+            { value: "Allocate inspector", text: "Allocate inspector" },
+            { value: "Arrange event", text: "Arrange event" },
+            { value: "Exchange correspondence", text: "Exchange correspondence" },
+            { value: "Ready for inspector", text: "Ready for inspector" },
+            { value: "Check decision", text: "Check decision" },
+            { value: "Despatch", text: "Despatch" },
+            { value: "Final check", text: "Final check" },
+            { value: "Closed", text: "Closed" }
+          ],
+          value: value,
+          errorMessage: errorMessage if error else null
+        }) }}
+        
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save" }) }}
+          {{ govukButton({ text: "Remove and save", classes: "govuk-button--secondary", name: "action", value: "remove" }) }}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

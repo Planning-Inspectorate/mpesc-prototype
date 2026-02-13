@@ -1,0 +1,34 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if error %}Error: {% endif %}Which round of advertised modifications is the case at? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errorMessage.text, href: "#modification-status" }] }) }}
+      {% endif %}
+      
+      <form action="/cases/edit/modification-status?ref={{ ref }}" method="post" novalidate>
+        {{ govukRadios({
+          name: "modificationStatus",
+          fieldset: { legend: { text: "Which round of advertised modifications is the case at?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
+          items: [
+            { value: "Advertised modification 1", text: "Advertised modification 1" },
+            { value: "Advertised modification 2", text: "Advertised modification 2" },
+            { value: "Advertised modification 3", text: "Advertised modification 3" },
+            { value: "Advertised modification 4", text: "Advertised modification 4" },
+            { value: "Advertised modification 5", text: "Advertised modification 5" }
+          ],
+          value: value,
+          errorMessage: errorMessage if error else null
+        }) }}
+        
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save" }) }}
+          {{ govukButton({ text: "Remove and save", classes: "govuk-button--secondary", name: "action", value: "remove" }) }}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

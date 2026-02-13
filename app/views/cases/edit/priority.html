@@ -1,0 +1,32 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if error %}Error: {% endif %}What is the priority? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errorMessage.text, href: "#priority" }] }) }}
+      {% endif %}
+      
+      <form action="/cases/edit/priority?ref={{ ref }}" method="post" novalidate>
+        {{ govukRadios({
+          name: "priority",
+          fieldset: { legend: { text: "What is the priority?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
+          items: [
+            { value: "High", text: "High" },
+            { value: "Medium", text: "Medium" },
+            { value: "Low", text: "Low" }
+          ],
+          value: value,
+          errorMessage: errorMessage if error else null
+        }) }}
+        
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save" }) }}
+          {{ govukButton({ text: "Remove and save", classes: "govuk-button--secondary", name: "action", value: "remove" }) }}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

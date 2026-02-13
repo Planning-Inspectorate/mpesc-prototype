@@ -221,8 +221,8 @@
           },
           { 
             key: { text: "Historical reference" }, 
-            value: { text: currentCase['historical-reference'] or "-" }, 
-            actions: { items: [{ href: "/cases/edit/historical-reference?ref=" + currentCase.reference, text: "Change" if currentCase['historical-reference'] else "Add", visuallyHiddenText: "historical reference" }] } 
+            value: { text: currentCase['historicalReference'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/historical-reference?ref=" + currentCase.reference, text: "Change" if currentCase['historicalReference'] else "Add", visuallyHiddenText: "historical reference" }] } 
           },
           { 
             key: { text: "Case name" }, 
@@ -235,13 +235,13 @@
           },
           { 
             key: { text: "Case status" }, 
-            value: { text: currentCase['case-status'] or "-" }, 
-            actions: { items: [{ href: "/cases/edit/case-status?ref=" + currentCase.reference, text: "Change" if currentCase['case-status'] else "Add", visuallyHiddenText: "case status" }] } 
+            value: { text: currentCase['caseStatus'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/case-status?ref=" + currentCase.reference, text: "Change" if currentCase['caseStatus'] else "Add", visuallyHiddenText: "case status" }] } 
           },
           { 
             key: { text: "Advertised modification status" }, 
-            value: { text: currentCase['modification-status'] or "-" }, 
-            actions: { items: [{ href: "/cases/edit/modification-status?ref=" + currentCase.reference, text: "Change" if currentCase['modification-status'] else "Add", visuallyHiddenText: "modification status" }] } 
+            value: { text: currentCase['modificationStatus'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/modification-status?ref=" + currentCase.reference, text: "Change" if currentCase['modificationStatus'] else "Add", visuallyHiddenText: "modification status" }] } 
           },
           { 
             key: { text: "Applicant / Server" }, 

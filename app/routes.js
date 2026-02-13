@@ -675,6 +675,121 @@ router.post('/cases/edit/authority', function(req, res) {
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
+// --- 7. HISTORICAL REFERENCE (Text input, no validation) ---
+router.get('/cases/edit/historical-reference', function(req, res) {
+  var c = getCase(req);
+  // specific variable OR generic fallback
+  var val = c.historicalReference || c['historical-reference'];
+  res.render('cases/edit/historical-reference', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/historical-reference', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  
+  c.historicalReference = req.body.historicalReference;
+  delete c['historical-reference']; // Cleanup old var
+
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 8. CASE STATUS (12 Radios + Remove logic) ---
+router.get('/cases/edit/case-status', function(req, res) {
+  var c = getCase(req);
+  var val = c.caseStatus || c['case-status'];
+  res.render('cases/edit/case-status', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/case-status', function(req, res) {
+  var ref = req.query.ref;
+  var action = req.body.action; // Check if "Remove" was clicked
+  var val = req.body.caseStatus;
+  var c = getCase(req);
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.caseStatus;
+    delete c['case-status'];
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  }
+
+  // 2. Validation (Required)
+  if (!val) {
+    return res.render('cases/edit/case-status', { 
+      ref: ref, 
+      error: true, 
+      errorMessage: { text: "Select a case status" } 
+    });
+  }
+
+  // 3. Save
+  c.caseStatus = val;
+  delete c['case-status'];
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 9. MODIFICATION STATUS (5 Radios + Remove logic) ---
+router.get('/cases/edit/modification-status', function(req, res) {
+  var c = getCase(req);
+  var val = c.modificationStatus || c['modification-status'];
+  res.render('cases/edit/modification-status', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/modification-status', function(req, res) {
+  var ref = req.query.ref;
+  var action = req.body.action;
+  var val = req.body.modificationStatus;
+  var c = getCase(req);
+
+  if (action === 'remove') {
+    delete c.modificationStatus;
+    delete c['modification-status'];
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  }
+
+  if (!val) {
+    return res.render('cases/edit/modification-status', { 
+      ref: ref, 
+      error: true, 
+      errorMessage: { text: "Select a modification status" } 
+    });
+  }
+
+  c.modificationStatus = val;
+  delete c['modification-status'];
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- 10. PRIORITY (3 Radios + Remove logic) ---
+router.get('/cases/edit/priority', function(req, res) {
+  var c = getCase(req);
+  var val = c.priority || c['priority'];
+  res.render('cases/edit/priority', { ref: c.reference, value: val });
+});
+
+router.post('/cases/edit/priority', function(req, res) {
+  var ref = req.query.ref;
+  var action = req.body.action;
+  var val = req.body.priority;
+  var c = getCase(req);
+
+  if (action === 'remove') {
+    delete c.priority;
+    delete c['priority'];
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  }
+
+  if (!val) {
+    return res.render('cases/edit/priority', { 
+      ref: ref, 
+      error: true, 
+      errorMessage: { text: "Select a priority" } 
+    });
+  }
+
+  c.priority = val;
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
 
 
 
