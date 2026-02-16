@@ -1081,7 +1081,1480 @@ router.get('/cases/edit/inspector-remove', function (req, res) {
 });
 
 
-// --- SMART EDIT ROUTES ---
+// ------------------------------------- TIMETABLE SUMMARY CARD --------------------------------------------
+
+// --- 1. CASE RECEIVED DATE (Clean & Validated) ---
+
+router.get('/cases/edit/case-received-date', function(req, res) {
+  var c = getCase(req);
+
+  // Look for the date in all possible locations:
+  // 1. The new formatted object (if edited)
+  // 2. The variables from the Create flow (receivedDay)
+  // 3. The raw variables from older prototypes (case-received-date-day)
+  
+  var day = (c.caseReceivedDate && c.caseReceivedDate.day) 
+            || c.receivedDay 
+            || c['case-received-date-day'];
+
+  var month = (c.caseReceivedDate && c.caseReceivedDate.month) 
+              || c.receivedMonth 
+              || c['case-received-date-month'];
+
+  var year = (c.caseReceivedDate && c.caseReceivedDate.year) 
+             || c.receivedYear 
+             || c['case-received-date-year'];
+
+  res.render('cases/edit/case-received-date', {
+    ref: c.reference,
+    day: day,
+    month: month,
+    year: year
+  });
+});
+
+router.post('/cases/edit/case-received-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs (matches HTML namePrefix 'date')
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.caseReceivedDate;
+    delete c.receivedDay; 
+    delete c.receivedMonth; 
+    delete c.receivedYear;
+    delete c['case-received-date-day'];
+    delete c['case-received-date-month'];
+    delete c['case-received-date-year'];
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter Case received / submitted date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Case received / submitted date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Case received / submitted date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Case received / submitted must include a day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Case received / submitted month must be between 1 and 12", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Case received / submitted year must include 4 numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload the page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/case-received-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      // Pass back values so user doesn't re-type
+      day: day,
+      month: month,
+      year: year
+    });
+  }
+
+  // 3. Success: Save Data
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  // Save as the new standard object
+  c.caseReceivedDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+  
+  // Update legacy variables to keep everything in sync
+  c.receivedDay = day;
+  c.receivedMonth = month;
+  c.receivedYear = year;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 2. START DATE (With Robust Validation) ---
+
+router.get('/cases/edit/start-date', function(req, res) {
+  var c = getCase(req);
+  // We look for our specific object "startDate"
+  var val = c.startDate || {};
+  
+  res.render('cases/edit/start-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/start-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.startDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the start date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Start date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Start date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Start date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Start date month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Start date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/start-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.startDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 3. EXPECTED SUBMISSION DATE ---
+
+router.get('/cases/edit/expected-submission-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.expectedSubmissionDate || {};
+  
+  res.render('cases/edit/expected-submission-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/expected-submission-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.expectedSubmissionDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the expected submission date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Expected submission date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Expected submission date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Expected submission date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Expected submission date month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Expected submission date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/expected-submission-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.expectedSubmissionDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+// --- 4. TARGET DECISION DATE ---
+
+router.get('/cases/edit/target-decision-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.targetDecisionDate || {};
+  
+  res.render('cases/edit/target-decision-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/target-decision-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.targetDecisionDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the target decision date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Target decision date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Target decision date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Target decision date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Target decision date month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Target decision date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/target-decision-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.targetDecisionDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 5. CASE OFFICER VERIFICATION DATE ---
+
+router.get('/cases/edit/co-verification-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.coVerificationDate || {};
+  
+  res.render('cases/edit/co-verification-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/co-verification-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.coVerificationDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the case officer verification date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Case officer verification date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Case officer verification date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Case officer verification date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Case officer verification date month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Case officer verification date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/co-verification-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.coVerificationDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 6. DATE PROPOSED MODIFICATIONS ADVERTISED ---
+
+router.get('/cases/edit/modifications-advertised-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.modificationsAdvertisedDate || {};
+  
+  res.render('cases/edit/modifications-advertised-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/modifications-advertised-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.modificationsAdvertisedDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the date proposed modifications advertised", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Date proposed modifications advertised must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Date proposed modifications advertised must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Date proposed modifications advertised day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Date proposed modifications advertised month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Date proposed modifications advertised year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/modifications-advertised-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.modificationsAdvertisedDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+// --- 7. OBJECTION PERIOD END DATE ---
+
+router.get('/cases/edit/objection-period-end-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.objectionPeriodEndDate || {};
+  
+  res.render('cases/edit/objection-period-end-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/objection-period-end-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.objectionPeriodEndDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the objection period end date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Objection period end date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Objection period end date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Objection period end date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Objection period end date month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Objection period end date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/objection-period-end-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.objectionPeriodEndDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+// --- 8. DEADLINE FOR CONSENT ---
+
+router.get('/cases/edit/consent-deadline-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.consentDeadlineDate || {};
+  
+  res.render('cases/edit/consent-deadline-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/consent-deadline-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.consentDeadlineDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the deadline for consent", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Deadline for consent must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Deadline for consent must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Deadline for consent day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Deadline for consent month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Deadline for consent year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/consent-deadline-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.consentDeadlineDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 9. OGD DUE DATE ---
+
+router.get('/cases/edit/ogd-due-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.ogdDueDate || {};
+  
+  res.render('cases/edit/ogd-due-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/ogd-due-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.ogdDueDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter Date due to Other Government Department (OGD)", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Date due to Other Government Department (OGD) date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Date due to Other Government Department (OGD) date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Date due to Other Government Department (OGD) date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Date due to Other Government Department (OGD) month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Date due to Other Government Department (OGD) must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/ogd-due-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.ogdDueDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 10. PROPOSAL LETTER DATE ---
+
+router.get('/cases/edit/proposal-letter-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.proposalLetterDate || {};
+  
+  res.render('cases/edit/proposal-letter-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/proposal-letter-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.proposalLetterDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the proposal letter date", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Proposal letter date must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Proposal letter date must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Proposal letter date day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Proposal letter date month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Proposal letter date year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/proposal-letter-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.proposalLetterDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 11. DECISION ISSUED BY DATE ---
+
+router.get('/cases/edit/decision-issued-by-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.decisionIssuedByDate || {};
+  
+  res.render('cases/edit/decision-issued-by-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/decision-issued-by-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.decisionIssuedByDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the date decision must be issued by", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Date decision must be issued by must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Date decision must be issued by must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Date decision must be issued by day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Date decision must be issued by month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Date decision must be issued by year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/decision-issued-by-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.decisionIssuedByDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+// --- 12. DECISION NOTIFICATION DATE ---
+
+router.get('/cases/edit/decision-notification-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.decisionNotificationDate || {};
+  
+  res.render('cases/edit/decision-notification-date', {
+    ref: c.reference,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/edit/decision-notification-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Get inputs
+  var day = req.body['date-day'];
+  var month = req.body['date-month'];
+  var year = req.body['date-year'];
+  var action = req.body.action;
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    delete c.decisionNotificationDate;
+    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  }
+
+  // 2. Validation Logic
+  var errorList = [];
+  var errorFields = [];
+
+  // Check if everything is empty
+  if (!day && !month && !year) {
+    errorList.push({ text: "Enter the date to notify parties of decision", href: "#date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } 
+  else {
+    // Check for missing parts
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
+  
+    if (missing.length > 0) {
+      var missingText = "";
+      if (missing.length === 2) {
+        missingText = "Date to notify parties of decision must include a " + missing[0] + " and " + missing[1];
+      } else {
+        missingText = "Date to notify parties of decision must include a " + missing[0];
+      }
+      errorList.push({ text: missingText, href: "#date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
+    }
+  }
+
+  // Validate Day (1-31)
+  if (day) {
+    var dayNum = Number(day);
+    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
+      errorList.push({ text: "Date to notify parties of decision day must be a real day", href: "#date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
+    }
+  }
+
+  // Validate Month (1-12)
+  if (month) {
+    var monthNum = Number(month);
+    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+      errorList.push({ text: "Date to notify parties of decision month must be a real month", href: "#date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
+    }
+  }
+
+  // Validate Year (4 digits)
+  if (year) {
+    var yearNum = Number(year);
+    if (year.length != 4 || isNaN(yearNum)) {
+      errorList.push({ text: "Date to notify parties of decision year must include four numbers", href: "#date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
+    }
+  }
+
+  // Check for real date (e.g. 31 Feb)
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
+        errorList.push({ text: "Enter a real date", href: "#date-day" });
+        errorFields = ['day', 'month', 'year'];
+     }
+  }
+
+  // If there are errors, reload page
+  if (errorList.length > 0) {
+    return res.render('cases/edit/decision-notification-date', {
+      ref: ref,
+      errorList: errorList,
+      errorFields: errorFields,
+      day: day, month: month, year: year
+    });
+  }
+
+  // 3. Save
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var monthName = month ? months[month - 1] : "";
+  var formatted = day + " " + monthName + " " + year;
+
+  c.decisionNotificationDate = {
+    day: day,
+    month: month,
+    year: year,
+    formatted: formatted
+  };
+
+  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+});
+
+
+
+// ------------------------------------------------ SMART EDIT ROUTES ---------------------------------------------
+// NOTE: For any generic routes, add below SMART EDIT ROUTES. For any specific routes e.g. /cases/edit/case-received-date add ABOVE this.
 
 // 1. GET request: Renders the page dynamically
 // Example: /cases/edit/act -> renders 'app/views/cases/edit/act.html'
@@ -1372,3 +2845,6 @@ router.get('/cases/case-details', function (req, res) {
     currentCase: c  // <--- Pass the whole object here
   });
 });
+
+
+

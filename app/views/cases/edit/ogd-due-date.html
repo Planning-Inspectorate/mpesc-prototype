@@ -1,0 +1,67 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errorList.length > 0 %}Error: {% endif %}What date is the decision due to Other Government Department (OGD)? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form action="/cases/edit/ogd-due-date?ref={{ ref }}" method="post" novalidate>
+
+      {{ govukDateInput({
+        id: "date",
+        namePrefix: "date",
+        fieldset: {
+          legend: {
+            text: "What date is the decision due to Other Government Department (OGD)?",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        hint: {
+          text: "For example, 27 3 2007"
+        },
+        
+        errorMessage: { text: errorList[0].text } if errorList.length > 0 else null,
+        
+        items: [
+          { 
+            name: "day", 
+            classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and "day" in errorFields else ""), 
+            value: day 
+          },
+          { 
+            name: "month", 
+            classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and "month" in errorFields else ""), 
+            value: month 
+          },
+          { 
+            name: "year", 
+            classes: "govuk-input--width-4" + (" govuk-input--error" if errorFields and "year" in errorFields else ""), 
+            value: year 
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save" }) }}
+        {{ govukButton({ text: "Remove and save", classes: "govuk-button--secondary", name: "action", value: "remove" }) }}
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

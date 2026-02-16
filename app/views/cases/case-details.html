@@ -328,23 +328,134 @@
         ]
       }) }}
 
+
       {# 4. TIMETABLE #}
+
+    {% set caseReceivedText %}
+  {% if currentCase.caseReceivedDate and currentCase.caseReceivedDate.formatted %}
+    {{ currentCase.caseReceivedDate.formatted }}
+  {% elseif currentCase.receivedDay %}
+    {# Fallback: Convert number to Month Name #}
+    {% set months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
+    {% set monthNum = currentCase.receivedMonth | int %}
+    {{ currentCase.receivedDay }} {{ months[monthNum - 1] }} {{ currentCase.receivedYear }}
+  {% else %}
+    -
+  {% endif %}
+{% endset %}
+
       {{ govukSummaryList({
         attributes: { id: "timetable" },
         card: { title: { text: "Timetable" } },
         rows: [
-          { key: { text: "Case received / submitted" }, value: { text: currentCase.receivedDay ~ "/" ~ currentCase.receivedMonth ~ "/" ~ currentCase.receivedYear if currentCase.receivedDay else "-" }, actions: { items: [{ href: "#", text: "Change" if currentCase.receivedDay else "Add", visuallyHiddenText: "received date" }] } },
-          { key: { text: "Start date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "start date" }] } },
-          { key: { text: "Expected submission date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "expected submission" }] } },
-          { key: { text: "Target decision date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "target decision" }] } },
-          { key: { text: "Case officer verification date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "verification date" }] } },
-          { key: { text: "Date proposed modifications advertised" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "modifications advertised" }] } },
-          { key: { text: "Objection period ends" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "objection ends" }] } },
-          { key: { text: "Deadline for consent" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "deadline consent" }] } },
-          { key: { text: "Date due to Other Government Department (OGD)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "ogd date" }] } },
-          { key: { text: "Proposal letter date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "proposal letter" }] } },
-          { key: { text: "Date decision must be issued by / expiry date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "expiry date" }] } },
-          { key: { text: "Date to notify parties of decision" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "notify parties" }] } }
+          {
+            key: { text: "Case received / submitted" },
+            value: { text: caseReceivedText },
+            actions: { items: [{ 
+              href: "/cases/edit/case-received-date?ref=" + currentCase.reference, 
+              text: "Change" if (caseReceivedText | trim != "-") else "Add", 
+              visuallyHiddenText: "case received date" 
+            }] }
+          },
+          {
+            key: { text: "Start date" },
+            value: { text: currentCase.startDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/start-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.startDate else "Add", 
+              visuallyHiddenText: "start date" 
+            }] }
+          },
+          {
+            key: { text: "Expected submission date" },
+            value: { text: currentCase.expectedSubmissionDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/expected-submission-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.expectedSubmissionDate else "Add", 
+              visuallyHiddenText: "expected submission date" 
+            }] }
+          },
+          {
+            key: { text: "Target decision date" },
+            value: { text: currentCase.targetDecisionDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/target-decision-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.targetDecisionDate else "Add", 
+              visuallyHiddenText: "target decision date" 
+            }] }
+          },
+          {
+            key: { text: "Case officer verification date" },
+            value: { text: currentCase.coVerificationDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/co-verification-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.coVerificationDate else "Add", 
+              visuallyHiddenText: "case officer verification date" 
+            }] }
+          },
+          {
+            key: { text: "Date proposed modifications advertised" },
+            value: { text: currentCase.modificationsAdvertisedDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/modifications-advertised-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.modificationsAdvertisedDate else "Add", 
+              visuallyHiddenText: "modifications advertised date" 
+            }] }
+          },
+          {
+            key: { text: "Objection period ends" },
+            value: { text: currentCase.objectionPeriodEndDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/objection-period-end-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.objectionPeriodEndDate else "Add", 
+              visuallyHiddenText: "objection period end date" 
+            }] }
+          },
+          {
+            key: { text: "Deadline for consent" },
+            value: { text: currentCase.consentDeadlineDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/consent-deadline-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.consentDeadlineDate else "Add", 
+              visuallyHiddenText: "consent deadline date" 
+            }] }
+          },
+          {
+            key: { text: "Date due to Other Government Department (OGD)" },
+            value: { text: currentCase.ogdDueDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/ogd-due-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.ogdDueDate else "Add", 
+              visuallyHiddenText: "OGD due date" 
+            }] }
+          },
+          {
+            key: { text: "Proposal letter date" },
+            value: { text: currentCase.proposalLetterDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/proposal-letter-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.proposalLetterDate else "Add", 
+              visuallyHiddenText: "proposal letter date" 
+            }] }
+          },
+          {
+            key: { text: "Date decision must be issued by / expiry date" },
+            value: { text: currentCase.decisionIssuedByDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/decision-issued-by-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.decisionIssuedByDate else "Add", 
+              visuallyHiddenText: "decision issued by date" 
+            }] }
+          },
+          {
+            key: { text: "Date to notify parties of decision" },
+            value: { text: currentCase.decisionNotificationDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/decision-notification-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.decisionNotificationDate else "Add", 
+              visuallyHiddenText: "decision notification date" 
+            }] }
+          }
         ]
       }) }}
 
