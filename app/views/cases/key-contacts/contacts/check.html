@@ -1,0 +1,73 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}Contact(s) - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check contact details</h1>
+
+    {% if contacts.length > 0 %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th class="govuk-table__header">Contact Type</th>
+            <th class="govuk-table__header">Name</th>
+            <th class="govuk-table__header">Address</th>
+            <th class="govuk-table__header">Contact</th>
+            <th class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in contacts %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ item.type }}</td>
+              <td class="govuk-table__cell">
+                {% if item.fname or item.lname %}
+                  <strong>{{ item.fname }} {{ item.lname }}</strong><br>
+                {% endif %}
+                {% if item.org %}<span class="govuk-body-s govuk-!-color-secondary">{{ item.org }}</span>{% endif %}
+                {% if not item.fname and not item.lname and not item.org %}-{% endif %}
+              </td>
+              <td class="govuk-table__cell">
+                {% if item.address1 %}{{ item.address1 }}<br>{% endif %}
+                {% if item.town %}{{ item.town }}<br>{% endif %}
+                {% if item.county %}{{ item.county }}<br>{% endif %}
+                {{ item.postcode }}
+                {% if not item.address1 and not item.town and not item.postcode %}-{% endif %}
+              </td>
+              <td class="govuk-table__cell">
+                {% if item.email %}{{ item.email }}<br>{% endif %}
+                {{ item.phone }}
+                {% if not item.email and not item.phone %}-{% endif %}
+              </td>
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="/cases/key-contacts/contacts/step-1?ref={{ ref }}&id={{ item.id }}">Change</a></li>
+                  <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="/cases/key-contacts/contacts/remove?ref={{ ref }}&id={{ item.id }}">Remove</a></li>
+                </ul>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">No contact details found</p>
+    {% endif %}
+
+    <form action="/cases/case-details" method="get">
+      <input type="hidden" name="ref" value="{{ ref }}">
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Add details", classes: "govuk-button--secondary", href: "/cases/key-contacts/contacts/step-1?ref=" + ref }) }}
+      </div>
+      {% if contacts.length > 0 %}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save and continue" }) }}
+          {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/cases/case-details?ref=" + ref }) }}
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}

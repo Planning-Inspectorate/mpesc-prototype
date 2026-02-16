@@ -2848,3 +2848,403 @@ router.get('/cases/case-details', function (req, res) {
 
 
 
+// --- KEY CONTACTS: OBJECTORS ---
+
+// 1. LIST VIEW
+router.get('/cases/key-contacts/objectors', function(req, res) {
+  var c = getCase(req);
+  c.objectors = c.objectors || [];
+  res.render('cases/key-contacts/objectors/check', {
+    ref: c.reference,
+    objectors: c.objectors
+  });
+});
+
+// --- ADD / EDIT FLOW ---
+
+// STEP 1: Who is the objector?
+router.get('/cases/key-contacts/objectors/step-1', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var objector = {};
+
+  // Find existing if editing
+  if (id && c.objectors) {
+    objector = c.objectors.find(x => x.id == id) || {};
+  }
+
+  res.render('cases/key-contacts/objectors/step-1', {
+    ref: c.reference,
+    id: id,
+    // Use session (if user hit back) OR existing DB value
+    fname: req.session.data['temp_obj_fname'] || objector.fname,
+    lname: req.session.data['temp_obj_lname'] || objector.lname,
+    org: req.session.data['temp_obj_org']     || objector.org
+  });
+});
+
+router.post('/cases/key-contacts/objectors/step-1', function(req, res) {
+  req.session.data['temp_obj_fname'] = req.body['obj-fname'];
+  req.session.data['temp_obj_lname'] = req.body['obj-lname'];
+  req.session.data['temp_obj_org']   = req.body['obj-org'];
+  
+  res.redirect(`/cases/key-contacts/objectors/step-2?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// STEP 2: Address
+router.get('/cases/key-contacts/objectors/step-2', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var objector = {};
+
+  if (id && c.objectors) {
+    objector = c.objectors.find(x => x.id == id) || {};
+  }
+
+  res.render('cases/key-contacts/objectors/step-2', {
+    ref: c.reference,
+    id: id,
+    // PRE-FILL LOGIC: Session -> DB -> Empty
+    address1: req.session.data['temp_obj_address1'] || objector.address1,
+    address2: req.session.data['temp_obj_address2'] || objector.address2,
+    town:     req.session.data['temp_obj_town']     || objector.town,
+    county:   req.session.data['temp_obj_county']   || objector.county, // NEW
+    postcode: req.session.data['temp_obj_postcode'] || objector.postcode
+  });
+});
+
+router.post('/cases/key-contacts/objectors/step-2', function(req, res) {
+  req.session.data['temp_obj_address1'] = req.body['obj-address1'];
+  req.session.data['temp_obj_address2'] = req.body['obj-address2'];
+  req.session.data['temp_obj_town']     = req.body['obj-town'];
+  req.session.data['temp_obj_county']   = req.body['obj-county']; // NEW
+  req.session.data['temp_obj_postcode'] = req.body['obj-postcode'];
+
+  res.redirect(`/cases/key-contacts/objectors/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// STEP 3: Contact Details
+router.get('/cases/key-contacts/objectors/step-3', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var objector = {};
+
+  if (id && c.objectors) {
+    objector = c.objectors.find(x => x.id == id) || {};
+  }
+
+  res.render('cases/key-contacts/objectors/step-3', {
+    ref: c.reference,
+    id: id,
+    // PRE-FILL LOGIC: Session -> DB -> Empty
+    email: req.session.data['temp_obj_email'] || objector.email,
+    phone: req.session.data['temp_obj_phone'] || objector.phone
+  });
+});
+
+router.post('/cases/key-contacts/objectors/step-3', function(req, res) {
+  req.session.data['temp_obj_email'] = req.body['obj-email'];
+  req.session.data['temp_obj_phone'] = req.body['obj-phone'];
+
+  res.redirect(`/cases/key-contacts/objectors/step-4?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// STEP 4: Status (Final Save)
+router.get('/cases/key-contacts/objectors/step-4', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var objector = {};
+
+  if (id && c.objectors) {
+    objector = c.objectors.find(x => x.id == id) || {};
+  }
+
+  res.render('cases/key-contacts/objectors/step-4', {
+    ref: c.reference,
+    id: id,
+    status: req.session.data['temp_obj_status'] || objector.status
+  });
+});
+
+router.post('/cases/key-contacts/objectors/step-4', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var c = getCase(req);
+  var status = req.body['obj-status'];
+
+  // 1. Validation
+  if (!status) {
+    return res.render('cases/key-contacts/objectors/step-4', {
+      ref: ref,
+      id: id,
+      errorList: [{ text: "Select the status of the objector", href: "#obj-status" }]
+    });
+  }
+
+  // 2. Find existing data (if editing) so we don't lose it
+  var existingObjector = {};
+  if (id && c.objectors) {
+    existingObjector = c.objectors.find(x => x.id == id) || {};
+  }
+
+  // 3. Helper function: Use New Data if it exists, otherwise keep Old Data
+  // This prevents overwriting data with 'undefined' if you skipped a step
+  function getVal(sessionName, dbName) {
+    if (req.session.data[sessionName] !== undefined) {
+      return req.session.data[sessionName];
+    }
+    return dbName;
+  }
+
+  // 4. Build the final object
+  var newObjector = {
+    id: id || Date.now().toString(),
+    
+    // Step 1 Fields
+    fname: getVal('temp_obj_fname', existingObjector.fname),
+    lname: getVal('temp_obj_lname', existingObjector.lname),
+    org:   getVal('temp_obj_org',   existingObjector.org),
+    
+    // Step 2 Fields
+    address1: getVal('temp_obj_address1', existingObjector.address1),
+    address2: getVal('temp_obj_address2', existingObjector.address2),
+    town:     getVal('temp_obj_town',     existingObjector.town),
+    county:   getVal('temp_obj_county',   existingObjector.county), // NEW
+    postcode: getVal('temp_obj_postcode', existingObjector.postcode),
+    
+    // Step 3 Fields
+    email: getVal('temp_obj_email', existingObjector.email),
+    phone: getVal('temp_obj_phone', existingObjector.phone),
+    
+    // Step 4 Field (We just got this from body)
+    status: status
+  };
+
+  // 5. Save to Array
+  c.objectors = c.objectors || [];
+  var existingIndex = c.objectors.findIndex(x => x.id == id);
+  
+  if (existingIndex >= 0) {
+    c.objectors[existingIndex] = newObjector; // Update
+  } else {
+    c.objectors.push(newObjector); // Add New
+  }
+
+  // 6. Clear temp session data
+  delete req.session.data['temp_obj_fname'];
+  delete req.session.data['temp_obj_lname'];
+  delete req.session.data['temp_obj_org'];
+  delete req.session.data['temp_obj_address1'];
+  delete req.session.data['temp_obj_address2'];
+  delete req.session.data['temp_obj_town'];
+  delete req.session.data['temp_obj_county'];
+  delete req.session.data['temp_obj_postcode'];
+  delete req.session.data['temp_obj_email'];
+  delete req.session.data['temp_obj_phone'];
+  delete req.session.data['temp_obj_status'];
+
+  res.redirect('/cases/key-contacts/objectors?ref=' + ref);
+});
+
+// REMOVE ROUTE
+router.get('/cases/key-contacts/objectors/remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var c = getCase(req);
+  
+  if (c.objectors) {
+    c.objectors = c.objectors.filter(x => x.id != id);
+  }
+  
+  res.redirect('/cases/key-contacts/objectors?ref=' + ref);
+});
+
+
+
+
+// --- KEY CONTACTS: CONTACTS ---
+
+// 1. LIST VIEW
+router.get('/cases/key-contacts/contacts', function(req, res) {
+  var c = getCase(req);
+  c.contacts = c.contacts || [];
+  res.render('cases/key-contacts/contacts/check', {
+    ref: c.reference,
+    contacts: c.contacts
+  });
+});
+
+// --- ADD / EDIT FLOW ---
+
+// STEP 1: Contact Type (New Step 1)
+router.get('/cases/key-contacts/contacts/step-1', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var contact = {};
+
+  if (id && c.contacts) {
+    contact = c.contacts.find(x => x.id == id) || {};
+  }
+
+  res.render('cases/key-contacts/contacts/step-1', {
+    ref: c.reference,
+    id: id,
+    // PRE-FILL: Session -> DB
+    type: req.session.data['temp_con_type'] || contact.type
+  });
+});
+
+router.post('/cases/key-contacts/contacts/step-1', function(req, res) {
+  var type = req.body['con-type'];
+  
+  // Validation
+  if (!type) {
+    return res.render('cases/key-contacts/contacts/step-1', {
+      ref: req.query.ref,
+      id: req.query.id,
+      errorList: [{ text: "Select contact type", href: "#con-type" }]
+    });
+  }
+
+  req.session.data['temp_con_type'] = type;
+  res.redirect(`/cases/key-contacts/contacts/step-2?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// STEP 2: Who is the contact? (Was Objector Step 1)
+router.get('/cases/key-contacts/contacts/step-2', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var contact = {};
+  if (id && c.contacts) contact = c.contacts.find(x => x.id == id) || {};
+
+  res.render('cases/key-contacts/contacts/step-2', {
+    ref: c.reference,
+    id: id,
+    fname: req.session.data['temp_con_fname'] || contact.fname,
+    lname: req.session.data['temp_con_lname'] || contact.lname,
+    org:   req.session.data['temp_con_org']   || contact.org,
+  });
+});
+
+router.post('/cases/key-contacts/contacts/step-2', function(req, res) {
+  req.session.data['temp_con_fname'] = req.body['con-fname'];
+  req.session.data['temp_con_lname'] = req.body['con-lname'];
+  req.session.data['temp_con_org']   = req.body['con-org'];
+
+  res.redirect(`/cases/key-contacts/contacts/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// STEP 3: Address (Was Objector Step 2)
+router.get('/cases/key-contacts/contacts/step-3', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var contact = {};
+  if (id && c.contacts) contact = c.contacts.find(x => x.id == id) || {};
+
+  res.render('cases/key-contacts/contacts/step-3', {
+    ref: c.reference,
+    id: id,
+    address1: req.session.data['temp_con_address1'] || contact.address1,
+    address2: req.session.data['temp_con_address2'] || contact.address2,
+    town:     req.session.data['temp_con_town']     || contact.town,
+    county:   req.session.data['temp_con_county']   || contact.county,
+    postcode: req.session.data['temp_con_postcode'] || contact.postcode
+  });
+});
+
+router.post('/cases/key-contacts/contacts/step-3', function(req, res) {
+  req.session.data['temp_con_address1'] = req.body['con-address1'];
+  req.session.data['temp_con_address2'] = req.body['con-address2'];
+  req.session.data['temp_con_town']     = req.body['con-town'];
+  req.session.data['temp_con_county']   = req.body['con-county'];
+  req.session.data['temp_con_postcode'] = req.body['con-postcode'];
+
+  res.redirect(`/cases/key-contacts/contacts/step-4?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// STEP 4: Contact Details + SAVE (Was Objector Step 3)
+router.get('/cases/key-contacts/contacts/step-4', function(req, res) {
+  var c = getCase(req);
+  var id = req.query.id;
+  var contact = {};
+  if (id && c.contacts) contact = c.contacts.find(x => x.id == id) || {};
+
+  res.render('cases/key-contacts/contacts/step-4', {
+    ref: c.reference,
+    id: id,
+    email: req.session.data['temp_con_email'] || contact.email,
+    phone: req.session.data['temp_con_phone'] || contact.phone
+  });
+});
+
+router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var c = getCase(req);
+
+  // 1. Get inputs from this step
+  var email = req.body['con-email'];
+  var phone = req.body['con-phone'];
+
+  // 2. Find existing data (if editing)
+  var existing = {};
+  if (id && c.contacts) {
+    existing = c.contacts.find(x => x.id == id) || {};
+  }
+
+  // 3. Helper to get New Session Data OR Old DB Data
+  function getVal(sess, db) { return (req.session.data[sess] !== undefined) ? req.session.data[sess] : db; }
+
+  // 4. Build Object
+  var newContact = {
+    id: id || Date.now().toString(),
+    
+    // Step 1: Type
+    type: getVal('temp_con_type', existing.type),
+
+    // Step 2: Name
+    fname: getVal('temp_con_fname', existing.fname),
+    lname: getVal('temp_con_lname', existing.lname),
+    org:   getVal('temp_con_org',   existing.org),
+
+    // Step 3: Address
+    address1: getVal('temp_con_address1', existing.address1),
+    address2: getVal('temp_con_address2', existing.address2),
+    town:     getVal('temp_con_town',     existing.town),
+    county:   getVal('temp_con_county',   existing.county),
+    postcode: getVal('temp_con_postcode', existing.postcode),
+
+    // Step 4: Contact
+    email: email,
+    phone: phone
+  };
+
+  // 5. Save
+  c.contacts = c.contacts || [];
+  var idx = c.contacts.findIndex(x => x.id == id);
+  if (idx >= 0) c.contacts[idx] = newContact;
+  else c.contacts.push(newContact);
+
+  // 6. Cleanup
+  delete req.session.data['temp_con_type'];
+  delete req.session.data['temp_con_fname'];
+  delete req.session.data['temp_con_lname'];
+  delete req.session.data['temp_con_org'];
+  delete req.session.data['temp_con_address1'];
+  delete req.session.data['temp_con_address2'];
+  delete req.session.data['temp_con_town'];
+  delete req.session.data['temp_con_county'];
+  delete req.session.data['temp_con_postcode'];
+  delete req.session.data['temp_con_email']; // Clean up specific keys
+
+  res.redirect('/cases/key-contacts/contacts?ref=' + ref);
+});
+
+// REMOVE ROUTE
+router.get('/cases/key-contacts/contacts/remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var c = getCase(req);
+  if (c.contacts) c.contacts = c.contacts.filter(x => x.id != id);
+  res.redirect('/cases/key-contacts/contacts?ref=' + ref);
+});

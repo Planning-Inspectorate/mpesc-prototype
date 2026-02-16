@@ -1,0 +1,25 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}Objector address details - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <form method="post" action="/cases/key-contacts/objectors/step-2?ref={{ ref }}&id={{ id }}">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+          <h1 class="govuk-fieldset__heading">Objector address details</h1>
+        </legend>
+        <div id="address-hint" class="govuk-hint">Optional</div>
+        {{ govukInput({ label: { text: "Address line 1 (optional)" }, id: "obj-address1", name: "obj-address1", value: address1 }) }}
+        {{ govukInput({ label: { text: "Address line 2 (optional)" }, id: "obj-address2", name: "obj-address2", value: address2 }) }}
+        {{ govukInput({ label: { text: "Town or city (optional)" }, classes: "govuk-!-width-two-thirds", id: "obj-town", name: "obj-town", value: town }) }}
+        {{ govukInput({ label: { text: "County (optional)" }, classes: "govuk-!-width-two-thirds", id: "obj-county", name: "obj-county", value: county }) }}
+        {{ govukInput({ label: { text: "Postcode (optional)" }, classes: "govuk-input--width-10", id: "obj-postcode", name: "obj-postcode", value: postcode }) }}
+      </fieldset>
+      {{ govukButton({ text: "Save and continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

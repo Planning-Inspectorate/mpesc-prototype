@@ -459,13 +459,28 @@
         ]
       }) }}
 
-      {# 5. KEY CONTACTS #}
+      {# --- 5. KEY CONTACTS --- #}
       {{ govukSummaryList({
-        attributes: { id: "key-contacts" },
-        card: { title: { text: "Key contacts" } },
+        card: { title: { text: "Key Contacts" } },
         rows: [
-          { key: { text: "Objector(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "objector" }] } },
-          { key: { text: "Contact(s)" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "contact" }] } }
+          {
+            key: { text: "Objector(s)" },
+            value: { text: (currentCase.objectors.length + " Objector(s)") if (currentCase.objectors and currentCase.objectors.length > 0) else "-" },
+            actions: { items: [{ 
+              href: "/cases/key-contacts/objectors?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.objectors and currentCase.objectors.length > 0) else "Add", 
+              visuallyHiddenText: "objectors" 
+            }] }
+          },
+          {
+            key: { text: "Contact(s)" },
+            value: { text: (currentCase.contacts.length + " Contact(s)") if (currentCase.contacts and currentCase.contacts.length > 0) else "-" },
+            actions: { items: [{ 
+              href: "/cases/key-contacts/contacts?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.contacts and currentCase.contacts.length > 0) else "Add", 
+              visuallyHiddenText: "contacts" 
+            }] }
+          }
         ]
       }) }}
 
