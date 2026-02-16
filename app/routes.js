@@ -1362,3 +1362,13 @@ router.get('/cases/linked-cases/remove', function (req, res) {
 
 
 
+// CASE DETAILS ROUTE
+router.get('/cases/case-details', function (req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req); // Use your existing helper function
+
+  res.render('cases/case-details', { 
+    ref: ref,
+    currentCase: c  // <--- Pass the whole object here
+  });
+});
