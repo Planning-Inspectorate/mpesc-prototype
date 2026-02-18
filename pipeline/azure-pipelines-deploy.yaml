@@ -1,0 +1,40 @@
+pr: none
+trigger:
+  branches:
+    include:
+      - main
+
+pool: pins-odt-agent-pool
+
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      endpoint: Planning-Inspectorate
+      name: Planning-Inspectorate/common-pipeline-templates
+      ref: refs/tags/release/3.24.2
+
+extends:
+  template: stages/wrapper_cd.yml@templates
+  parameters:
+    environments:
+      - name: Dev
+    deploymentStages:
+      - name: Build & Deploy
+        deploymentJobs:
+          - name: Build & Deploy
+            steps:
+              - checkout: self
+              - template: ../steps/azure_web_app_docker_build_push.yml@templates
+                parameters:
+                  azurecrName: pinscrsharedtoolinguks
+                  dockerfilePath: $(Build.SourcesDirectory)/Dockerfile
+                  repository: prototypes/mpesc
+              - template: ../steps/azure_web_app_deploy_slot.yml@templates
+                parameters:
+                  appName: pins-app-prototype-mpesc
+                  appResourceGroup: pins-rg-prototypes-dev
+                  azurecrName: pinscrsharedtoolinguks
+                  repository: prototypes/mpesc
+                  slot: default
+                  gitCommitHash: $(Build.SourceVersion)
