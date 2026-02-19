@@ -1,0 +1,41 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if error %}Error: {% endif %}What type of site visit is it? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: "Select the type of site visit", href: "#siteVisitType" }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/overview-procedures/step-2b?ref={{ ref }}&id={{ id }}" method="post">
+      {{ govukRadios({
+        name: "siteVisitType",
+        fieldset: {
+          legend: { text: "What type of site visit is it?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: "Select the type of site visit" } if error else null,
+        items: [
+          { value: "ARSV (Access required site visit)", text: "ARSV (Access required site visit)", checked: (value == "ARSV (Access required site visit)") },
+          { value: "ASV (Accompanied site visit)", text: "ASV (Accompanied site visit)", checked: (value == "ASV (Accompanied site visit)") },
+          { value: "USV (Unaccompanied site visit)", text: "USV (Unaccompanied site visit)", checked: (value == "USV (Unaccompanied site visit)") }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

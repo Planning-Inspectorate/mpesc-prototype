@@ -1,0 +1,81 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Procedure(s) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check procedure details</h1>
+
+    {% set procList = [] %}
+    {% for c in data['cases'] %}
+      {% if c.reference == ref %}
+        {% set procList = c.overviewProcedures or [] %}
+      {% endif %}
+    {% endfor %}
+
+    {% if procList.length > 0 %}
+   <div class="govuk-inset-text">
+        Changing the procedure type will delete the information you have already entered for an existing procedure.
+   </div>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Procedure type</th>
+            <th scope="col" class="govuk-table__header">Inspector</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in procList %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ item.type }}</td>
+              
+              {# Simplified Specific Details - ONLY shows inspector #}
+              <td class="govuk-table__cell">{{ item.inspector or "-" }}</td>
+              
+              <td class="govuk-table__cell">{{ item.status or "-" }}</td>
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/overview-procedures/step-1?ref={{ ref }}&id={{ item.id }}">
+                      Change<span class="govuk-visually-hidden"> row</span>
+                    </a>
+                  </li>
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/overview-procedures/remove-confirm?ref={{ ref }}&id={{ item.id }}">
+                      Remove<span class="govuk-visually-hidden"> row</span>
+                    </a>
+                  </li>
+                </ul>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">No procedure details found</p>
+    {% endif %}
+
+    <form action="/cases/case-details" method="get">
+      <input type="hidden" name="ref" value="{{ ref }}">
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Add details", classes: "govuk-button--secondary", href: "/cases/overview-procedures/step-1?ref=" + ref }) }}
+      </div>
+      {% if procList.length > 0 %}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save and continue" }) }}
+        </div>
+      {% endif %}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

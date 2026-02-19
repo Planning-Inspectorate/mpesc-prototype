@@ -1,0 +1,42 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}What is the status of the procedure? - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: "Select a procedure status", href: "#procStatus" }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/overview-procedures/step-3?ref={{ ref }}&id={{ id }}" method="post">
+      {{ govukRadios({
+        name: "procStatus",
+        fieldset: {
+          legend: { text: "What is the status of the procedure?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: "Select a procedure status" } if error else null,
+        items: [
+          { value: "Active", text: "Active", checked: (value == "Active") },
+          { value: "Cancelled", text: "Cancelled", checked: (value == "Cancelled") },
+          { value: "Changed procedure type", text: "Changed procedure type", checked: (value == "Changed procedure type") },
+          { value: "Completed", text: "Completed", checked: (value == "Completed") },
+          { value: "Fallen away", text: "Fallen away", checked: (value == "Fallen away") },
+          { value: "Withdrawn", text: "Withdrawn", checked: (value == "Withdrawn") }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

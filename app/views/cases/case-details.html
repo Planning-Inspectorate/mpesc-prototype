@@ -102,9 +102,50 @@
     <div class="govuk-grid-column-full">
       
       {# 1. OVERVIEW #}
+      {% set procedureListHtml %}
+  {% if currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0 %}
+    
+    {# Always show the first 3 items #}
+    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+      {% for proc in currentCase.overviewProcedures %}
+        {% if loop.index <= 3 %}
+          <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    {# If there are more than 3, hide the rest and add a toggle link #}
+    {% if currentCase.overviewProcedures.length > 3 %}
+      {% set hiddenCount = currentCase.overviewProcedures.length - 3 %}
+      
+      {# Hidden list #}
+      <div id="more-procs" style="display: none;">
+        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-0">
+          {% for proc in currentCase.overviewProcedures %}
+            {% if loop.index > 3 %}
+              <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+          <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='none'; document.getElementById('show-more-link').style.display='block'; return false;">Show less</a>
+        </p>
+      </div>
+
+      {# Show more link #}
+      <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0" id="show-more-link">
+        <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='block'; this.parentElement.style.display='none'; return false;">Show {{ hiddenCount }} more</a>
+      </p>
+    {% endif %}
+
+  {% else %}
+    -
+  {% endif %}
+{% endset %}
+
       {% set relatedCasesHtml %}
         {% if currentCase.relatedCases and currentCase.relatedCases.length > 0 %}
-         <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-4 govuk-!-margin-bottom-0">
+         <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
             {% for item in currentCase.relatedCases %}
               <li>{{ item.reference }}</li>
             {% endfor %}
@@ -116,7 +157,7 @@
 
       {% set linkedCasesHtml %}
         {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
-          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-4 govuk-!-margin-bottom-0">
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
             {% for item in currentCase.linkedCases %}
               <li>
                 {{ item.reference }} 
@@ -143,6 +184,14 @@
     visuallyHiddenText: "subtype" 
   }] } 
 },
+{ 
+    key: { text: "Procedure" }, 
+    value: { html: procedureListHtml }, 
+    actions: { items: [{ 
+      href: "/cases/overview-procedures/check?ref=" + currentCase.reference, 
+      text: "Change" if currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0 else "Add" 
+    }] }
+},
           { 
   key: { text: "Act" }, 
   value: { text: currentCase.act or "-" }, 
@@ -168,15 +217,6 @@
     href: "/cases/edit/inspector-band?ref=" + currentCase.reference, 
     text: "Change" if currentCase['inspector-band'] else "Add", 
     visuallyHiddenText: "inspector band" 
-  }] } 
-},
-          { 
-  key: { text: "Primary procedure" }, 
-  value: { text: currentCase['primary-procedure'] or "-" }, 
-  actions: { items: [{ 
-    href: "/cases/edit/primary-procedure?ref=" + currentCase.reference, 
-    text: "Change" if currentCase['primary-procedure'] else "Add", 
-    visuallyHiddenText: "primary procedure" 
   }] } 
 },
           { 
@@ -290,7 +330,7 @@
       {# --- 3. TEAM --- #}
       {% set inspectorsHtml %}
         {% if currentCase.inspectors and currentCase.inspectors.length > 0 %}
-          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-4 govuk-!-margin-bottom-0">
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
             {% for item in currentCase.inspectors %}
               <li>
                 {{ item.name }}<br>

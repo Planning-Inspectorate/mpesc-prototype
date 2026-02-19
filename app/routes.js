@@ -10087,6 +10087,174 @@ router.get('/cases/linked-cases/remove', function (req, res) {
 });
 
 
+// =============================================================================
+//  OVERVIEW PROCEDURES FLOW (Multi-step)
+// =============================================================================
+
+// Helper: Get or create the overviewProcedures array
+function getOverviewProcs(req) {
+  var c = getCase(req);
+  if (!c) return null;
+  if (!c.overviewProcedures) c.overviewProcedures = [];
+  return c;
+}
+
+// 0. CHECK PAGE (The Table)
+router.get('/cases/overview-procedures/check', (req, res) => {
+  res.render('cases/overview-procedures/check-procedures', { ref: req.query.ref });
+});
+
+// 1. STEP 1: Select Type
+router.get('/cases/overview-procedures/step-1', (req, res) => {
+  var c = getOverviewProcs(req);
+  var val = "";
+  if (req.query.id) {
+    var item = c.overviewProcedures.find(i => i.id === req.query.id);
+    if (item) val = item.type;
+  } else {
+    // Clear temp session for new entries
+    req.session.data['tempProc'] = {}; 
+  }
+  res.render('cases/overview-procedures/step-1-type', { ref: req.query.ref, id: req.query.id || "", value: val });
+});
+
+router.post('/cases/overview-procedures/step-1', (req, res) => {
+  var type = req.body.procType;
+  var ref = req.query.ref;
+  var id = req.query.id;
+  
+  if (!type) return res.render('cases/overview-procedures/step-1-type', { ref: ref, id: id, error: true });
+
+  // Store in temp session
+  if (!req.session.data['tempProc']) req.session.data['tempProc'] = {};
+  req.session.data['tempProc'].type = type;
+
+  // Branching Logic
+  if (type === "Admin (In house)") {
+    res.redirect(`/cases/overview-procedures/step-2a?ref=${ref}&id=${id}`);
+  } else if (type === "Site visit") {
+    res.redirect(`/cases/overview-procedures/step-2b?ref=${ref}&id=${id}`);
+  } else {
+    // Hearing, Inquiry, Proposal, Written reps
+    res.redirect(`/cases/overview-procedures/step-2c?ref=${ref}&id=${id}`);
+  }
+});
+
+// 2a. STEP 2: Admin Type
+router.get('/cases/overview-procedures/step-2a', (req, res) => {
+  var val = req.session.data['tempProc']?.adminType || "";
+  res.render('cases/overview-procedures/step-2a-admin', { ref: req.query.ref, id: req.query.id, value: val });
+});
+
+router.post('/cases/overview-procedures/step-2a', (req, res) => {
+  var adminType = req.body.adminType;
+  if (!adminType) {
+    return res.render('cases/overview-procedures/step-2a-admin', { ref: req.query.ref, id: req.query.id, error: true });
+  }
+  req.session.data['tempProc'].adminType = adminType;
+  // Redirect to Inspector allocation (Step 2c)
+  res.redirect(`/cases/overview-procedures/step-2c?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 2b. STEP 2: Site Visit Type
+router.get('/cases/overview-procedures/step-2b', (req, res) => {
+  var val = req.session.data['tempProc']?.siteVisitType || "";
+  res.render('cases/overview-procedures/step-2b-site-visit', { ref: req.query.ref, id: req.query.id, value: val });
+});
+
+router.post('/cases/overview-procedures/step-2b', (req, res) => {
+  var siteVisitType = req.body.siteVisitType;
+  if (!siteVisitType) {
+    return res.render('cases/overview-procedures/step-2b-site-visit', { ref: req.query.ref, id: req.query.id, error: true });
+  }
+  req.session.data['tempProc'].siteVisitType = siteVisitType;
+  // Redirect to Inspector allocation (Step 2c)
+  res.redirect(`/cases/overview-procedures/step-2c?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 2c. STEP 2: Inspector Allocation
+router.get('/cases/overview-procedures/step-2c', (req, res) => {
+  var c = getCase(req);
+  var val = req.session.data['tempProc']?.inspector || "";
+  res.render('cases/overview-procedures/step-2c-inspector', { 
+    ref: req.query.ref, 
+    id: req.query.id, 
+    value: val, 
+    inspectors: c.inspectors || [] 
+  });
+});
+
+router.post('/cases/overview-procedures/step-2c', (req, res) => {
+  var inspector = req.body.inspectorName;
+
+  // Save whatever they selected (or leave it blank if they selected nothing)
+  req.session.data['tempProc'].inspector = inspector || "";
+  
+  // Go straight to Status (Step 3)
+  res.redirect(`/cases/overview-procedures/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 3. STEP 3: Status & Save
+router.get('/cases/overview-procedures/step-3', (req, res) => {
+  var val = req.session.data['tempProc']?.status || "";
+  res.render('cases/overview-procedures/step-3-status', { ref: req.query.ref, id: req.query.id, value: val });
+});
+
+router.post('/cases/overview-procedures/step-3', (req, res) => {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var status = req.body.procStatus;
+
+  // Validation Check
+  if (!status) {
+    return res.render('cases/overview-procedures/step-3-status', { ref: ref, id: id, error: true });
+  }
+
+  var c = getOverviewProcs(req);
+  var temp = req.session.data['tempProc'];
+  temp.status = status;
+
+  if (id) {
+    // Update existing
+    var index = c.overviewProcedures.findIndex(i => i.id === id);
+    if (index > -1) {
+      c.overviewProcedures[index] = { ...c.overviewProcedures[index], ...temp };
+    }
+  } else {
+    // Add new
+    temp.id = 'proc-' + Date.now();
+    c.overviewProcedures.push(temp);
+  }
+
+  // Clear temp and redirect to table
+  req.session.data['tempProc'] = {};
+  res.redirect(`/cases/overview-procedures/check?ref=${ref}`);
+});
+
+// 4. REMOVE CONFIRMATION
+router.get('/cases/overview-procedures/remove-confirm', (req, res) => {
+  res.render('cases/overview-procedures/remove-confirm', { ref: req.query.ref, id: req.query.id });
+});
+
+router.post('/cases/overview-procedures/remove', (req, res) => {
+  var ref = req.query.ref;
+  var confirm = req.body.confirmRemove;
+
+  // Validation Check
+  if (!confirm) {
+    return res.render('cases/overview-procedures/remove-confirm', { ref: ref, id: req.query.id, error: true });
+  }
+
+  if (confirm === 'yes') {
+    var c = getCase(req);
+    if (c && c.overviewProcedures) {
+      c.overviewProcedures = c.overviewProcedures.filter(i => i.id !== req.query.id);
+    }
+  }
+  
+  res.redirect(`/cases/overview-procedures/check?ref=${ref}`);
+});
+
 
 // CASE DETAILS ROUTE
 router.get('/cases/case-details', function (req, res) {
