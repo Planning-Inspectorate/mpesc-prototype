@@ -5,15 +5,21 @@
 
 // Add extra styles here
 
-/* FORCE the background to be grey, overriding the 'rebranded' template styles */
 
-.govuk-template--rebranded  {
+/* FORCE the background to be grey, overriding the 'rebranded' template styles */
+.govuk-template--rebranded {
   background-color: #f3f2f1;
 }
 
-/* Ensure the main content container stays white (if you want that contrast) */
+/* 1. Make the standard width containers white (for main content) */
 .govuk-width-container {
   background-color: #ffffff !important;
+}
+
+/* 2. OVERRIDE: Prevent the header, nav, and footer containers from turning white */
+.pins-header-demo .govuk-width-container,
+.pins-service-nav__container {
+  background-color: #f3f2f1 !important;
 }
 
 
