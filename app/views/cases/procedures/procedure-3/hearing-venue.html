@@ -1,0 +1,92 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Where is the case management conference? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form action="/cases/procedures/procedure-3/hearing-venue?ref={{ ref }}" method="post" novalidate>
+      <input type="hidden" name="ref" value="{{ ref }}">
+
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+          <h1 class="govuk-fieldset__heading">
+            Where is the case management conference?
+          </h1>
+        </legend>
+
+        {# Address Line 1 (Optional) #}
+        {{ govukInput({
+          label: { text: "Address line 1 (optional)" },
+          id: "venue-line1",
+          name: "venue-line1",
+          value: line1,
+          autocomplete: "address-line1",
+          classes: "govuk-input--error" if 'line1' in errorFields else "",
+          errorMessage: { text: "Enter address line 1" } if 'line1' in errorFields else null
+        }) }}
+
+        {# Address Line 2 (Optional) #}
+        {{ govukInput({
+          label: { text: "Address line 2 (optional)" },
+          id: "venue-line2",
+          name: "venue-line2",
+          value: line2,
+          autocomplete: "address-line2"
+        }) }}
+
+        {# Town or City #}
+        {{ govukInput({
+          label: { text: "Town or city (optional)" },
+          classes: "govuk-!-width-two-thirds" + (" govuk-input--error" if 'town' in errorFields else ""),
+          id: "venue-town",
+          name: "venue-town",
+          value: town,
+          autocomplete: "address-level2",
+          errorMessage: { text: "Enter town or city" } if 'town' in errorFields else null
+        }) }}
+
+        {# County (Optional) #}
+        {{ govukInput({
+          label: { text: "County (optional)" },
+          classes: "govuk-!-width-two-thirds",
+          id: "venue-county",
+          name: "venue-county",
+          value: county
+        }) }}
+
+        {# Postcode (Required) - FIXED ERROR LOGIC #}
+        {{ govukInput({
+          label: { text: "Postcode (optional)" },
+          classes: "govuk-input--width-10" + (" govuk-input--error" if 'postcode' in errorFields else ""),
+          id: "venue-postcode",
+          name: "venue-postcode",
+          value: postcode,
+          autocomplete: "postal-code",
+          errorMessage: { text: (errorList | selectattr('href', 'equalto', '#venue-postcode') | first).text } if 'postcode' in errorFields else null
+        }) }}
+
+      </fieldset>
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save" }) }}
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

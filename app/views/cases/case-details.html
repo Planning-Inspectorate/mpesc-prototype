@@ -49,8 +49,8 @@
         <li><a href="#timetable" class="govuk-link govuk-link--no-visited-state">Timetable</a></li>
         <li><a href="#key-contacts" class="govuk-link govuk-link--no-visited-state">Key contacts</a></li>
         <li><a href="#procedure1" class="govuk-link govuk-link--no-visited-state">Procedure 1</a></li>
-        <li><a href="#procedure-2" class="govuk-link govuk-link--no-visited-state">Procedure 2</a></li>
-        <li><a href="#procedure-3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
+        <li><a href="#procedure2" class="govuk-link govuk-link--no-visited-state">Procedure 2</a></li>
+        <li><a href="#procedure3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
         <li><a href="#outcome" class="govuk-link govuk-link--no-visited-state">Outcome</a></li>
         <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
         <li><a href="#withdrawal" class="govuk-link govuk-link--no-visited-state">Withdrawal or abeyance</a></li>
@@ -852,7 +852,7 @@
   {{ govukSummaryList({
     card: {
       title: { text: "Procedure 1" },
-      id: "procedure1"
+      attributes: {id: "procedure1"}
     },
     rows: procedureRows
   }) }}
@@ -862,7 +862,8 @@
   {{ govukSummaryList({
     card: {
       title: { text: "Procedure 1" },
-      id: "procedure1"
+      attributes: {id: "procedure1"}
+      
     },
     rows: [
       {
@@ -874,23 +875,779 @@
   }) }}
 {% endif %}
 
-      {# 7. PROCEDURE 2 #}
-      {{ govukSummaryList({
-        attributes: { id: "procedure-2" },
-        card: { title: { text: "Procedure 2" } },
-        rows: [
-          { key: { text: "Procedure type" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "procedure type" }] } }
-        ]
-      }) }}
+      {# --- PROCEDURE 2 CARD --- #}
+{% set p2 = currentCase.procedure2 %}
 
-      {# 8. PROCEDURE 3 #}
-      {{ govukSummaryList({
-        attributes: { id: "procedure-3" },
-        card: { title: { text: "Procedure 3" } },
-        rows: [
-          { key: { text: "Procedure type" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "procedure type" }] } }
-        ]
-      }) }}
+{# 2. DEFINE ROWS BASED ON TYPE #}
+{% set procedure2Rows = [] %}
+
+{% if p2 and p2.active %}
+
+  {# --- OPTION A: ADMIN --- #}
+  {% if p2.type == "Admin" %}
+    {% set procedure2Rows = [
+      { key: { text: "Procedure type" }, value: { text: p2.type }, actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p2.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p2.siteVisit.formatted if p2.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/site-visit?ref=" + currentCase.reference, text: "Change" if p2.siteVisit else "Add" }] } },      
+      { key: { text: "In house date" }, value: { text: p2.inHouse.formatted if p2.inHouse else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/in-house-date?ref=" + currentCase.reference, text: "Change" if p2.inHouse else "Add" }] } },
+      { key: { text: "Admin procedure type" }, value: { text: p2.adminType or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/admin-type?ref=" + currentCase.reference, text: "Change" if p2.adminType else "Add" }] } }
+    ] %}
+
+  {# --- OPTION B: HEARING --- #}
+  {% elseif p2.type == "Hearing" %}
+    {% set procedure2Rows = [
+      { key: { text: "Procedure type" }, value: { text: p2.type }, actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p2.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p2.siteVisit.formatted if p2.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/site-visit?ref=" + currentCase.reference, text: "Change" if p2.siteVisit else "Add" }] } },
+      { key: { text: "Target hearing date" }, value: { text: p2.targetHearing.formatted if p2.targetHearing else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/target-hearing-date?ref=" + currentCase.reference, text: "Change" if p2.targetHearing else "Add" }] } },
+      { key: { text: "Date parties must be notified of hearing" }, value: { text: p2.notifiedHearingDate.formatted if p2.notifiedHearingDate else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/hearing-notified-date?ref=" + currentCase.reference, text: "Change" if p2.notifiedHearingDate else "Add" }] } },
+      { key: { text: "Proofs of evidence received" }, value: { text: p2.proofsReceived.formatted if p2.proofsReceived else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/proofs-received?ref=" + currentCase.reference, text: "Change" if p2.proofsReceived else "Add" }] } },
+      { key: { text: "Statements of case received" }, value: { text: p2.statementsReceived.formatted if p2.statementsReceived else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/statements-received?ref=" + currentCase.reference, text: "Change" if p2.statementsReceived else "Add" }] } },
+      { key: { text: "Case officer verification date" }, value: { text: p2.verification.formatted if p2.verification else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/verification-date?ref=" + currentCase.reference, text: "Change" if p2.verification else "Add" }] } },
+      { 
+        key: { text: "Case management conference date" }, 
+        value: { 
+          html: (p2.cmcDate.formattedDate + "<br>" + p2.cmcDate.formattedTime) if (p2.cmcDate and p2.cmcDate.formattedTime) else (p2.cmcDate.formattedDate if p2.cmcDate else "-") 
+        }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/cmc-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.cmcDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Case management conference type" }, 
+        value: { text: p2.cmcType or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/cmc-type?ref=" + currentCase.reference, 
+          text: "Change" if p2.cmcType else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Case management conference venue" }, 
+        value: { html: p2.cmcVenue.formatted if p2.cmcVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/cmc-venue?ref=" + currentCase.reference, 
+          text: "Change" if p2.cmcVenue else "Add" 
+        }] } 
+      },
+      { key: { text: "Case management conference note sent" }, value: { text: p2.cmcNoteSent.formatted if p2.cmcNoteSent else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/cmc-note-sent?ref=" + currentCase.reference, text: "Change" if p2.cmcNoteSent else "Add" }] } },
+      { 
+        key: { text: "Confirmed hearing date" }, 
+        value: { 
+          html: (p2.confirmedHearing.formattedDate + "<br>" + p2.confirmedHearing.formattedTime) if (p2.confirmedHearing and p2.confirmedHearing.formattedTime) else (p2.confirmedHearing.formattedDate if p2.confirmedHearing else "-") 
+        }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/confirmed-hearing-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.confirmedHearing else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Hearing type" }, 
+        value: { text: p2.hearingType or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/hearing-type?ref=" + currentCase.reference, 
+          text: "Change" if p2.hearingType else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Hearing venue" }, 
+        value: { html: p2.hearingVenue.formatted if p2.hearingVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/hearing-venue?ref=" + currentCase.reference, 
+          text: "Change" if p2.hearingVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of hearing date" }, 
+        value: { text: p2.notifiedHearingDate.formatted if p2.notifiedHearingDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/notified-hearing-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.notifiedHearingDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of hearing venue" }, 
+        value: { text: p2.notifiedHearingVenue.formatted if p2.notifiedHearingVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/notified-hearing-venue?ref=" + currentCase.reference, 
+          text: "Change" if p2.notifiedHearingVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Earliest potential hearing date" }, 
+        value: { text: p2.earliestHearingDate.formatted if p2.earliestHearingDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/earliest-hearing-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.earliestHearingDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Length of event / estimated length (days)" }, 
+        value: { text: p2.hearingLengthOfEvent or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/hearing-length-of-event?ref=" + currentCase.reference, text: "Change" if p2.hearingLengthOfEvent else "Add" }] } 
+      },
+      { 
+        key: { text: "Hearing in target?" }, 
+        value: { text: p2.hearingInTarget or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/hearing-in-target?ref=" + currentCase.reference, 
+          text: "Change" if p2.hearingInTarget else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date hearing closed" }, 
+        value: { text: p2.hearingClosed.formatted if p2.hearingClosed else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/hearing-closed-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.hearingClosed else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Preparation time (days)" }, 
+        value: { text: p2.hearingPrepTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/hearing-preparation-time?ref=" + currentCase.reference, text: "Change" if p2.hearingPrepTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Travel time (days)" }, 
+        value: { text: p2.hearingTravelTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/hearing-travel-time?ref=" + currentCase.reference, text: "Change" if p2.hearingTravelTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Sitting time (days)" }, 
+        value: { text: p2.hearingSittingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/hearing-sitting-time?ref=" + currentCase.reference, text: "Change" if p2.hearingSittingTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Reporting time (days)" }, 
+        value: { text: p2.hearingReportingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/hearing-reporting-time?ref=" + currentCase.reference, text: "Change" if p2.hearingReportingTime else "Add"}] } 
+      }
+    ] %}
+
+  {# --- OPTION C: INQUIRY --- #}
+  {% elseif p2.type == "Inquiry" %}
+    {% set procedure2Rows = [
+      { 
+        key: { text: "Procedure type" }, 
+        value: { text: p2.type }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] } 
+      },
+      { 
+        key: { text: "Procedure status" }, 
+        value: { text: p2.status or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/status?ref=" + currentCase.reference, text: "Change" }] } 
+      },
+      { 
+        key: { text: "Site visit date" }, 
+        value: { text: p2.siteVisit.formatted if p2.siteVisit else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/site-visit?ref=" + currentCase.reference, text: "Change" if p2.siteVisit else "Add" }] } 
+      },
+      { key: { text: "Inquiry target date" }, value: { text: p2.targetInquiry.formatted if p2.targetInquiry else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/target-inquiry-date?ref=" + currentCase.reference, text: "Change" if p2.targetInquiry else "Add" }] } },
+      { key: { text: "Date parties must be notified of inquiry" }, value: { text: p2.inquiryNotified.formatted if p2.inquiryNotified else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-notified-date?ref=" + currentCase.reference, text: "Change" if p2.inquiryNotified else "Add" }] } },
+      { 
+        key: { text: "Proofs of evidence received" }, 
+        value: { text: p2.proofsReceived.formatted if p2.proofsReceived else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/proofs-received?ref=" + currentCase.reference, text: "Change" if p2.proofsReceived else "Add" }] } 
+      },
+      { 
+        key: { text: "Statements of case received" }, 
+        value: { text: p2.statementsReceived.formatted if p2.statementsReceived else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/statements-received?ref=" + currentCase.reference, text: "Change" if p2.statementsReceived else "Add" }] } 
+      },
+      { key: { text: "Case officer verification date" }, value: { text: p2.verification.formatted if p2.verification else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/verification-date?ref=" + currentCase.reference, text: "Change" if p2.verification else "Add" }] } },
+      { 
+        key: { text: "Pre inquiry meeting or case management conference" }, 
+        value: { text: p2.preInquiryMeetingCmc or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/pre-inquiry-meeting-cmc?ref=" + currentCase.reference, 
+          text: "Change" if p2.preInquiryMeetingCmc else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Pre inquiry meeting date" }, 
+        value: { 
+          html: (p2.pimDate.formattedDate + "<br>" + p2.pimDate.formattedTime) if (p2.pimDate and p2.pimDate.formattedTime) else (p2.pimDate.formattedDate if p2.pimDate else "-") 
+        }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/pim-date?ref=" + currentCase.reference, text: "Change" if p2.pimDate else "Add" }] } 
+      },
+      { 
+        key: { text: "Pre inquiry meeting format" }, 
+        value: { text: p2.pimType or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/pim-type?ref=" + currentCase.reference, text: "Change" if p2.pimType else "Add" }] } 
+      },
+      { 
+        key: { text: "Pre inquiry meeting note sent" }, 
+        value: { text: p2.pimNoteSent.formatted if p2.pimNoteSent else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/pim-note-sent?ref=" + currentCase.reference, text: "Change" if p2.pimNoteSent else "Add" }] } 
+      },
+      { 
+        key: { text: "Case management conference date" }, 
+        value: { 
+          html: (p2.cmcDate.formattedDate + "<br>" + p2.cmcDate.formattedTime) if (p2.cmcDate and p2.cmcDate.formattedTime) else (p2.cmcDate.formattedDate if p2.cmcDate else "-") 
+        }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/cmc-date?ref=" + currentCase.reference, text: "Change" if p2.cmcDate else "Add" }] } 
+      },
+      { 
+        key: { text: "Case management conference type" }, 
+        value: { text: p2.cmcType or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/cmc-type?ref=" + currentCase.reference, text: "Change" if p2.cmcType else "Add" }] } 
+      },
+      { 
+        key: { text: "Case management conference venue" }, 
+        value: { html: p2.hearingVenue.formatted if p2.hearingVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/hearing-venue?ref=" + currentCase.reference, 
+          text: "Change" if p2.hearingVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Case management conference note sent" }, 
+        value: { text: p2.cmcNoteSent.formatted if p2.cmcNoteSent else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/cmc-note-sent?ref=" + currentCase.reference, text: "Change" if p2.cmcNoteSent else "Add" }] } 
+      },
+      { 
+        key: { text: "Confirmed inquiry date" }, 
+        value: { 
+          html: (p2.confirmedInquiry.formatted) if (p2.confirmedInquiry) else (p2.confirmedInquiry.formatted if p2.confirmedInquiry else "-") 
+        }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/confirmed-inquiry-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.confirmedInquiry else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Inquiry type" }, 
+        value: { text: p2.inquiryType or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-type?ref=" + currentCase.reference, text: "Change" if p2.inquiryType else "Add" }] } 
+      },
+      { 
+        key: { text: "Inquiry venue" }, 
+        value: { html: p2.inquiryVenue.formatted if p2.inquiryVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/inquiry-venue?ref=" + currentCase.reference, 
+          text: "Change" if p2.inquiryVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of inquiry date" }, 
+        value: { text: p2.notifiedInquiryDate.formatted if p2.notifiedInquiryDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/notified-inquiry-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.notifiedInquiryDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of inquiry venue" }, 
+        value: { text: p2.notifiedInquiryVenue.formatted if p2.notifiedInquiryVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/notified-inquiry-venue?ref=" + currentCase.reference, 
+          text: "Change" if p2.notifiedInquiryVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Earliest potential inquiry date" }, 
+        value: { text: p2.earliestInquiryDate.formatted if p2.earliestInquiryDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/earliest-inquiry-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.earliestInquiryDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Length of event (days)" }, 
+        value: { text: p2.inquiryLengthOfEvent or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-length-of-event?ref=" + currentCase.reference, text: "Change" if p2.inquiryLengthOfEvent else "Add"}] } 
+      },
+      { 
+        key: { text: "Date inquiry finished" }, 
+        value: { text: p2.inquiryFinished.formatted if p2.inquiryFinished else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/inquiry-finished-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.inquiryFinished else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Event in target?" }, 
+        value: { text: p2.eventInTarget or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/event-in-target?ref=" + currentCase.reference, 
+          text: "Change" if p2.eventInTarget else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date inquiry closed" }, 
+        value: { text: p2.inquiryClosed.formatted if p2.inquiryClosed else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/inquiry-closed-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.inquiryClosed else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Preparation time (days)" }, 
+        value: { text: p2.inquiryPrepTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-preparation-time?ref=" + currentCase.reference, text: "Change" if p2.inquiryPrepTime else "Add"}] } 
+      },
+      { 
+        key: { text: "Travel time (days)" }, 
+        value: { text: p2.inquiryTravelTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-travel-time?ref=" + currentCase.reference, text: "Change" if p2.TravelReportingTime else "Add"}] } 
+      },
+      { 
+        key: { text: "Sitting time (days)" }, 
+        value: { text: p2.inquirySittingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-sitting-time?ref=" + currentCase.reference, text: "Change" if p2.inquirySittingTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Reporting time (days)" }, 
+        value: { text: p2.inquiryReportingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-2/inquiry-reporting-time?ref=" + currentCase.reference, text: "Change" if p2.inquiryReportingTime else "Add"}] } 
+      }
+    ] %}
+
+  {# --- OPTION D: SITE VISIT --- #}
+  {% elseif p2.type == "Site visit" %}
+    {% set procedure2Rows = [
+      { key: { text: "Procedure type" }, value: { text: p2.type }, actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p2.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p2.siteVisit.formatted if p2.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/site-visit?ref=" + currentCase.reference, text: "Change" if p2.siteVisit else "Add" }] } },
+      { 
+        key: { text: "Type of site visit" }, 
+        value: { text: p2.siteVisitType or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/site-visit-type?ref=" + currentCase.reference, 
+          text: "Change" if p2.siteVisitType else "Add" 
+        }] } 
+      }
+    ] %}
+
+  {# --- OPTION E: WRITTEN REPS --- #}
+  {% else %}
+    {% set procedure2Rows = [
+      { key: { text: "Procedure type" }, value: { text: p2.type }, actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p2.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p2.siteVisit.formatted if p2.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-2/site-visit?ref=" + currentCase.reference, text: "Change" if p2.siteVisit else "Add" }] } },
+      { 
+        key: { text: "Date offer for written representations" }, 
+        value: { text: p2.writtenRepsDate.formatted if p2.writtenRepsDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-2/written-reps-date?ref=" + currentCase.reference, 
+          text: "Change" if p2.writtenRepsDate else "Add" 
+        }] } 
+      }
+    ] %}
+  {% endif %}
+
+  {# --- 3. RENDER THE EXPANDED CARD --- #}
+  {{ govukSummaryList({
+    card: {
+      title: { text: "Procedure 2" },
+      attributes: {id: "procedure2"}
+    },
+    rows: procedure2Rows
+  }) }}
+
+{% else %}
+  {# --- 4. RENDER THE MINIMIZED CARD (No type selected) --- #}
+  {{ govukSummaryList({
+    card: {
+      title: { text: "Procedure 2" },
+      attributes: {id: "procedure2"}
+    },
+    rows: [
+      {
+        key: { text: "Procedure type" },
+        value: { text: "-" },
+        actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] }
+      }
+    ]
+  }) }}
+{% endif %}
+
+     {# --- PROCEDURE 3 CARD --- #}
+{% set p3 = currentCase.procedure3 %}
+
+{# 2. DEFINE ROWS BASED ON TYPE #}
+{% set procedure3Rows = [] %}
+
+{% if p3 and p3.active %}
+
+  {# --- OPTION A: ADMIN --- #}
+  {% if p3.type == "Admin" %}
+    {% set procedure3Rows = [
+      { key: { text: "Procedure type" }, value: { text: p3.type }, actions: { items: [{ href: "/cases/procedures/procedure-3/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p3.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p3.siteVisit.formatted if p3.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/site-visit?ref=" + currentCase.reference, text: "Change" if p3.siteVisit else "Add" }] } },      
+      { key: { text: "In house date" }, value: { text: p3.inHouse.formatted if p3.inHouse else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/in-house-date?ref=" + currentCase.reference, text: "Change" if p3.inHouse else "Add" }] } },
+      { key: { text: "Admin procedure type" }, value: { text: p3.adminType or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/admin-type?ref=" + currentCase.reference, text: "Change" if p3.adminType else "Add" }] } }
+    ] %}
+
+  {# --- OPTION B: HEARING --- #}
+  {% elseif p3.type == "Hearing" %}
+    {% set procedure3Rows = [
+      { key: { text: "Procedure type" }, value: { text: p3.type }, actions: { items: [{ href: "/cases/procedures/procedure-3/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p3.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p3.siteVisit.formatted if p3.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/site-visit?ref=" + currentCase.reference, text: "Change" if p3.siteVisit else "Add" }] } },
+      { key: { text: "Target hearing date" }, value: { text: p3.targetHearing.formatted if p3.targetHearing else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/target-hearing-date?ref=" + currentCase.reference, text: "Change" if p3.targetHearing else "Add" }] } },
+      { key: { text: "Date parties must be notified of hearing" }, value: { text: p3.notifiedHearingDate.formatted if p3.notifiedHearingDate else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/hearing-notified-date?ref=" + currentCase.reference, text: "Change" if p3.notifiedHearingDate else "Add" }] } },
+      { key: { text: "Proofs of evidence received" }, value: { text: p3.proofsReceived.formatted if p3.proofsReceived else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/proofs-received?ref=" + currentCase.reference, text: "Change" if p3.proofsReceived else "Add" }] } },
+      { key: { text: "Statements of case received" }, value: { text: p3.statementsReceived.formatted if p3.statementsReceived else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/statements-received?ref=" + currentCase.reference, text: "Change" if p3.statementsReceived else "Add" }] } },
+      { key: { text: "Case officer verification date" }, value: { text: p3.verification.formatted if p3.verification else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/verification-date?ref=" + currentCase.reference, text: "Change" if p3.verification else "Add" }] } },
+      { 
+        key: { text: "Case management conference date" }, 
+        value: { 
+          html: (p3.cmcDate.formattedDate + "<br>" + p3.cmcDate.formattedTime) if (p3.cmcDate and p3.cmcDate.formattedTime) else (p3.cmcDate.formattedDate if p3.cmcDate else "-") 
+        }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/cmc-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.cmcDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Case management conference type" }, 
+        value: { text: p3.cmcType or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/cmc-type?ref=" + currentCase.reference, 
+          text: "Change" if p3.cmcType else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Case management conference venue" }, 
+        value: { html: p3.cmcVenue.formatted if p3.cmcVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/cmc-venue?ref=" + currentCase.reference, 
+          text: "Change" if p3.cmcVenue else "Add" 
+        }] } 
+      },
+      { key: { text: "Case management conference note sent" }, value: { text: p3.cmcNoteSent.formatted if p3.cmcNoteSent else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/cmc-note-sent?ref=" + currentCase.reference, text: "Change" if p3.cmcNoteSent else "Add" }] } },
+      { 
+        key: { text: "Confirmed hearing date" }, 
+        value: { 
+          html: (p3.confirmedHearing.formattedDate + "<br>" + p3.confirmedHearing.formattedTime) if (p3.confirmedHearing and p3.confirmedHearing.formattedTime) else (p3.confirmedHearing.formattedDate if p3.confirmedHearing else "-") 
+        }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/confirmed-hearing-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.confirmedHearing else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Hearing type" }, 
+        value: { text: p3.hearingType or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/hearing-type?ref=" + currentCase.reference, 
+          text: "Change" if p3.hearingType else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Hearing venue" }, 
+        value: { html: p3.hearingVenue.formatted if p3.hearingVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/hearing-venue?ref=" + currentCase.reference, 
+          text: "Change" if p3.hearingVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of hearing date" }, 
+        value: { text: p3.notifiedHearingDate.formatted if p3.notifiedHearingDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/notified-hearing-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.notifiedHearingDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of hearing venue" }, 
+        value: { text: p3.notifiedHearingVenue.formatted if p3.notifiedHearingVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/notified-hearing-venue?ref=" + currentCase.reference, 
+          text: "Change" if p3.notifiedHearingVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Earliest potential hearing date" }, 
+        value: { text: p3.earliestHearingDate.formatted if p3.earliestHearingDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/earliest-hearing-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.earliestHearingDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Length of event / estimated length (days)" }, 
+        value: { text: p3.hearingLengthOfEvent or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/hearing-length-of-event?ref=" + currentCase.reference, text: "Change" if p3.hearingLengthOfEvent else "Add" }] } 
+      },
+      { 
+        key: { text: "Hearing in target?" }, 
+        value: { text: p3.hearingInTarget or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/hearing-in-target?ref=" + currentCase.reference, 
+          text: "Change" if p3.hearingInTarget else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date hearing closed" }, 
+        value: { text: p3.hearingClosed.formatted if p3.hearingClosed else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/hearing-closed-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.hearingClosed else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Preparation time (days)" }, 
+        value: { text: p3.hearingPrepTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/hearing-preparation-time?ref=" + currentCase.reference, text: "Change" if p3.hearingPrepTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Travel time (days)" }, 
+        value: { text: p3.hearingTravelTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/hearing-travel-time?ref=" + currentCase.reference, text: "Change" if p3.hearingTravelTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Sitting time (days)" }, 
+        value: { text: p3.hearingSittingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/hearing-sitting-time?ref=" + currentCase.reference, text: "Change" if p3.hearingSittingTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Reporting time (days)" }, 
+        value: { text: p3.hearingReportingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/hearing-reporting-time?ref=" + currentCase.reference, text: "Change" if p3.hearingReportingTime else "Add"}] } 
+      }
+    ] %}
+
+  {# --- OPTION C: INQUIRY --- #}
+  {% elseif p3.type == "Inquiry" %}
+    {% set procedure3Rows = [
+      { 
+        key: { text: "Procedure type" }, 
+        value: { text: p3.type }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/type?ref=" + currentCase.reference, text: "Change" }] } 
+      },
+      { 
+        key: { text: "Procedure status" }, 
+        value: { text: p3.status or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/status?ref=" + currentCase.reference, text: "Change" }] } 
+      },
+      { 
+        key: { text: "Site visit date" }, 
+        value: { text: p3.siteVisit.formatted if p3.siteVisit else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/site-visit?ref=" + currentCase.reference, text: "Change" if p3.siteVisit else "Add" }] } 
+      },
+      { key: { text: "Inquiry target date" }, value: { text: p3.targetInquiry.formatted if p3.targetInquiry else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/target-inquiry-date?ref=" + currentCase.reference, text: "Change" if p3.targetInquiry else "Add" }] } },
+      { key: { text: "Date parties must be notified of inquiry" }, value: { text: p3.inquiryNotified.formatted if p3.inquiryNotified else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-notified-date?ref=" + currentCase.reference, text: "Change" if p3.inquiryNotified else "Add" }] } },
+      { 
+        key: { text: "Proofs of evidence received" }, 
+        value: { text: p3.proofsReceived.formatted if p3.proofsReceived else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/proofs-received?ref=" + currentCase.reference, text: "Change" if p3.proofsReceived else "Add" }] } 
+      },
+      { 
+        key: { text: "Statements of case received" }, 
+        value: { text: p3.statementsReceived.formatted if p3.statementsReceived else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/statements-received?ref=" + currentCase.reference, text: "Change" if p3.statementsReceived else "Add" }] } 
+      },
+      { key: { text: "Case officer verification date" }, value: { text: p3.verification.formatted if p3.verification else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/verification-date?ref=" + currentCase.reference, text: "Change" if p3.verification else "Add" }] } },
+      { 
+        key: { text: "Pre inquiry meeting or case management conference" }, 
+        value: { text: p3.preInquiryMeetingCmc or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/pre-inquiry-meeting-cmc?ref=" + currentCase.reference, 
+          text: "Change" if p3.preInquiryMeetingCmc else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Pre inquiry meeting date" }, 
+        value: { 
+          html: (p3.pimDate.formattedDate + "<br>" + p3.pimDate.formattedTime) if (p3.pimDate and p3.pimDate.formattedTime) else (p3.pimDate.formattedDate if p3.pimDate else "-") 
+        }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/pim-date?ref=" + currentCase.reference, text: "Change" if p3.pimDate else "Add" }] } 
+      },
+      { 
+        key: { text: "Pre inquiry meeting format" }, 
+        value: { text: p3.pimType or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/pim-type?ref=" + currentCase.reference, text: "Change" if p3.pimType else "Add" }] } 
+      },
+      { 
+        key: { text: "Pre inquiry meeting note sent" }, 
+        value: { text: p3.pimNoteSent.formatted if p3.pimNoteSent else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/pim-note-sent?ref=" + currentCase.reference, text: "Change" if p3.pimNoteSent else "Add" }] } 
+      },
+      { 
+        key: { text: "Case management conference date" }, 
+        value: { 
+          html: (p3.cmcDate.formattedDate + "<br>" + p3.cmcDate.formattedTime) if (p3.cmcDate and p3.cmcDate.formattedTime) else (p3.cmcDate.formattedDate if p3.cmcDate else "-") 
+        }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/cmc-date?ref=" + currentCase.reference, text: "Change" if p3.cmcDate else "Add" }] } 
+      },
+      { 
+        key: { text: "Case management conference type" }, 
+        value: { text: p3.cmcType or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/cmc-type?ref=" + currentCase.reference, text: "Change" if p3.cmcType else "Add" }] } 
+      },
+      { 
+        key: { text: "Case management conference venue" }, 
+        value: { html: p3.hearingVenue.formatted if p3.hearingVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/hearing-venue?ref=" + currentCase.reference, 
+          text: "Change" if p3.hearingVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Case management conference note sent" }, 
+        value: { text: p3.cmcNoteSent.formatted if p3.cmcNoteSent else "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/cmc-note-sent?ref=" + currentCase.reference, text: "Change" if p3.cmcNoteSent else "Add" }] } 
+      },
+      { 
+        key: { text: "Confirmed inquiry date" }, 
+        value: { 
+          html: (p3.confirmedInquiry.formatted) if (p3.confirmedInquiry) else (p3.confirmedInquiry.formatted if p3.confirmedInquiry else "-") 
+        }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/confirmed-inquiry-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.confirmedInquiry else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Inquiry type" }, 
+        value: { text: p3.inquiryType or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-type?ref=" + currentCase.reference, text: "Change" if p3.inquiryType else "Add" }] } 
+      },
+      { 
+        key: { text: "Inquiry venue" }, 
+        value: { html: p3.inquiryVenue.formatted if p3.inquiryVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/inquiry-venue?ref=" + currentCase.reference, 
+          text: "Change" if p3.inquiryVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of inquiry date" }, 
+        value: { text: p3.notifiedInquiryDate.formatted if p3.notifiedInquiryDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/notified-inquiry-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.notifiedInquiryDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date parties notified of inquiry venue" }, 
+        value: { text: p3.notifiedInquiryVenue.formatted if p3.notifiedInquiryVenue else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/notified-inquiry-venue?ref=" + currentCase.reference, 
+          text: "Change" if p3.notifiedInquiryVenue else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Earliest potential inquiry date" }, 
+        value: { text: p3.earliestInquiryDate.formatted if p3.earliestInquiryDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/earliest-inquiry-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.earliestInquiryDate else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Length of event (days)" }, 
+        value: { text: p3.inquiryLengthOfEvent or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-length-of-event?ref=" + currentCase.reference, text: "Change" if p3.inquiryLengthOfEvent else "Add"}] } 
+      },
+      { 
+        key: { text: "Date inquiry finished" }, 
+        value: { text: p3.inquiryFinished.formatted if p3.inquiryFinished else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/inquiry-finished-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.inquiryFinished else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Event in target?" }, 
+        value: { text: p3.eventInTarget or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/event-in-target?ref=" + currentCase.reference, 
+          text: "Change" if p3.eventInTarget else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Date inquiry closed" }, 
+        value: { text: p3.inquiryClosed.formatted if p3.inquiryClosed else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/inquiry-closed-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.inquiryClosed else "Add" 
+        }] } 
+      },
+      { 
+        key: { text: "Preparation time (days)" }, 
+        value: { text: p3.inquiryPrepTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-preparation-time?ref=" + currentCase.reference, text: "Change" if p3.inquiryPrepTime else "Add"}] } 
+      },
+      { 
+        key: { text: "Travel time (days)" }, 
+        value: { text: p3.inquiryTravelTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-travel-time?ref=" + currentCase.reference, text: "Change" if p3.TravelReportingTime else "Add"}] } 
+      },
+      { 
+        key: { text: "Sitting time (days)" }, 
+        value: { text: p3.inquirySittingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-sitting-time?ref=" + currentCase.reference, text: "Change" if p3.inquirySittingTime else "Add" }] } 
+      },
+      { 
+        key: { text: "Reporting time (days)" }, 
+        value: { text: p3.inquiryReportingTime or "-" }, 
+        actions: { items: [{ href: "/cases/procedures/procedure-3/inquiry-reporting-time?ref=" + currentCase.reference, text: "Change" if p3.inquiryReportingTime else "Add"}] } 
+      }
+    ] %}
+
+  {# --- OPTION D: SITE VISIT --- #}
+  {% elseif p3.type == "Site visit" %}
+    {% set procedure3Rows = [
+      { key: { text: "Procedure type" }, value: { text: p3.type }, actions: { items: [{ href: "/cases/procedures/procedure-3/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p3.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p3.siteVisit.formatted if p3.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/site-visit?ref=" + currentCase.reference, text: "Change" if p3.siteVisit else "Add" }] } },
+      { 
+        key: { text: "Type of site visit" }, 
+        value: { text: p3.siteVisitType or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/site-visit-type?ref=" + currentCase.reference, 
+          text: "Change" if p3.siteVisitType else "Add" 
+        }] } 
+      }
+    ] %}
+
+  {# --- OPTION E: WRITTEN REPS --- #}
+  {% else %}
+    {% set procedure3Rows = [
+      { key: { text: "Procedure type" }, value: { text: p3.type }, actions: { items: [{ href: "/cases/procedures/procedure-3/type?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Procedure status" }, value: { text: p3.status or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/status?ref=" + currentCase.reference, text: "Change" }] } },
+      { key: { text: "Site visit date" }, value: { text: p3.siteVisit.formatted if p3.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-3/site-visit?ref=" + currentCase.reference, text: "Change" if p3.siteVisit else "Add" }] } },
+      { 
+        key: { text: "Date offer for written representations" }, 
+        value: { text: p3.writtenRepsDate.formatted if p3.writtenRepsDate else "-" }, 
+        actions: { items: [{ 
+          href: "/cases/procedures/procedure-3/written-reps-date?ref=" + currentCase.reference, 
+          text: "Change" if p3.writtenRepsDate else "Add" 
+        }] } 
+      }
+    ] %}
+  {% endif %}
+
+  {# --- 3. RENDER THE EXPANDED CARD --- #}
+  {{ govukSummaryList({
+    card: {
+      title: { text: "Procedure 3" },
+      attributes: {id: "procedure3"}
+    },
+    rows: procedure3Rows
+  }) }}
+
+{% else %}
+  {# --- 4. RENDER THE MINIMIZED CARD (No type selected) --- #}
+  {{ govukSummaryList({
+    card: {
+      title: { text: "Procedure 3" },
+      attributes: {id: "procedure3"}
+    },
+    rows: [
+      {
+        key: { text: "Procedure type" },
+        value: { text: "-" },
+        actions: { items: [{ href: "/cases/procedures/procedure-3/type?ref=" + currentCase.reference, text: "Change" }] }
+      }
+    ]
+  }) }}
+{% endif %}
 
       {# 9. OUTCOME #}
       {{ govukSummaryList({

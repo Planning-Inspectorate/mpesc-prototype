@@ -5206,6 +5206,4606 @@ router.post('/cases/procedures/procedure-1/written-reps-date', function(req, res
 });
 
 
+// ==============================================
+// PROCEDURE 2 ROUTES
+// ==============================================
+
+// --- TYPE ---
+router.get('/cases/procedures/procedure-2/type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var existingType = "";
+  if (c.procedure2 && c.procedure2.type) {
+    existingType = c.procedure2.type;
+  }
+  
+  res.render('cases/procedures/procedure-2/type', {
+    ref: ref,
+    type: existingType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var type = req.body['procedure-type'];
+  var action = req.body.action;
+
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (!type) {
+    return res.render('cases/procedures/procedure-2/type', {
+      ref: ref,
+      errorList: [{ text: "Select a procedure type", href: "#procedure-type" }]
+    });
+  }
+
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.type = type;
+  c.procedure2.active = true;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- STATUS ---
+router.get('/cases/procedures/procedure-2/status', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  res.render('cases/procedures/procedure-2/status', {
+    ref: ref,
+    status: p1.status
+  });
+});
+
+router.post('/cases/procedures/procedure-2/status', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var status = req.body['procedure-status'];
+
+  if (!status) {
+    return res.render('cases/procedures/procedure-2/status', {
+      ref: ref,
+      errorList: [{ text: "Select a procedure status", href: "#procedure-status" }]
+    });
+  }
+
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.status = status;
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- ADMIN TYPE ---
+router.get('/cases/procedures/procedure-2/admin-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  res.render('cases/procedures/procedure-2/admin-type', {
+    ref: ref,
+    adminType: p1.adminType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var adminType = req.body['admin-type'];
+
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.adminType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (!adminType) {
+    return res.render('cases/procedures/procedure-2/admin-type', {
+      ref: ref,
+      errorList: [{ text: "Select the admin procedure type", href: "#admin-type" }]
+    });
+  }
+
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.adminType = adminType;
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// ==============================================
+// DATE ROUTES (Using Helper)
+// ==============================================
+
+// --- IN HOUSE DATE ---
+router.get('/cases/procedures/procedure-2/in-house-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.inHouse || {}; 
+
+  res.render('cases/procedures/procedure-2/in-house-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/in-house-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'in-house',          
+    'In house date',     
+    c.procedure2,        
+    'inHouse'           
+  );
+
+  // FIX: Route handles redirect now
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/in-house-date', {
+      ref: ref,
+      day: req.body['in-house-day'],
+      month: req.body['in-house-month'],
+      year: req.body['in-house-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- SITE VISIT DATE ---
+router.get('/cases/procedures/procedure-2/site-visit', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.siteVisit || {}; 
+
+  res.render('cases/procedures/procedure-2/site-visit', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/site-visit', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'site-visit',
+    'Site visit date',
+    c.procedure2,
+    'siteVisit'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/site-visit', {
+      ref: ref,
+      day: req.body['site-visit-day'],
+      month: req.body['site-visit-month'],
+      year: req.body['site-visit-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- TARGET HEARING DATE ---
+router.get('/cases/procedures/procedure-2/target-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.targetHearing || {}; 
+
+  res.render('cases/procedures/procedure-2/target-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/target-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'target-hearing',
+    'Target hearing date',
+    c.procedure2,
+    'targetHearing'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/target-hearing-date', {
+      ref: ref,
+      day: req.body['target-hearing-day'],
+      month: req.body['target-hearing-month'],
+      year: req.body['target-hearing-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- NOTIFIED DATE ---
+router.get('/cases/procedures/procedure-2/hearing-notified-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.hearingNotified || {}; 
+
+  res.render('cases/procedures/procedure-2/hearing-notified-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-notified-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'hearing-notified',
+    'Date parties must be notified of hearing',
+    c.procedure2,
+    'hearingNotified'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-notified-date', {
+      ref: ref,
+      day: req.body['hearing-notified-day'],
+      month: req.body['hearing-notified-month'],
+      year: req.body['hearing-notified-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- PROOFS RECEIVED (Hearing/Inquiry) ---
+router.get('/cases/procedures/procedure-2/proofs-received', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.proofsReceived || {}; 
+
+  res.render('cases/procedures/procedure-2/proofs-received', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/proofs-received', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var day = req.body['proofs-received-day'];
+  var month = req.body['proofs-received-month'];
+  var year = req.body['proofs-received-year'];
+  
+  var result = validateAndSaveDate(
+    req, res,
+    'proofs-received',
+    'Proofs of evidence received date',
+    c.procedure2,
+    'proofsReceived'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/proofs-received', {
+      ref: ref,
+      day: day,
+      month: month,
+      year: year,
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- STATEMENTS OF CASE RECEIVED ---
+router.get('/cases/procedures/procedure-2/statements-received', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.statementsReceived || {}; 
+
+  res.render('cases/procedures/procedure-2/statements-received', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/statements-received', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'statements-received',
+    'Statements of case received date',
+    c.procedure2,
+    'statementsReceived'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/statements-received', {
+      ref: ref,
+      day: req.body['statements-received-day'],
+      month: req.body['statements-received-month'],
+      year: req.body['statements-received-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- CASE OFFICER VERIFICATION DATE ---
+router.get('/cases/procedures/procedure-2/verification-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.verification || {}; 
+
+  res.render('cases/procedures/procedure-2/verification-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/verification-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'verification-date',
+    'Verification date',
+    c.procedure2,
+    'verification'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/verification-date', {
+      ref: ref,
+      day: req.body['verification-date-day'],
+      month: req.body['verification-date-month'],
+      year: req.body['verification-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CMC ROUTES (Place this with your other Procedure 1 routes) ---
+
+// GET
+router.get('/cases/procedures/procedure-2/cmc-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.cmcDate || {}; 
+
+  res.render('cases/procedures/procedure-2/cmc-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+
+    errorFields: []
+  });
+});
+
+// POST
+router.post('/cases/procedures/procedure-2/cmc-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDateTime(
+    req, res,
+    'cmc',
+    'Case management conference',
+    c.procedure2,
+    'cmcDate'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/cmc-date', {
+      ref: ref,
+      day: req.body['cmc-day'],
+      month: req.body['cmc-month'],
+      year: req.body['cmc-year'],
+      hour: req.body['cmc-hour'],
+      minute: req.body['cmc-minute'],
+      ampm: req.body['cmc-ampm'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CMC TYPE ---
+router.get('/cases/procedures/procedure-2/cmc-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/cmc-type', {
+    ref: ref,
+    cmcType: p1.cmcType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/cmc-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var cmcType = req.body['cmc-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.cmcType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!cmcType) {
+    return res.render('cases/procedures/procedure-2/cmc-type', {
+      ref: ref,
+      errorList: [{ text: "Select the case management conference type", href: "#cmc-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.cmcType = cmcType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+// --- CMC VENUE ---
+router.get('/cases/procedures/procedure-2/cmc-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.cmcVenue || {}; 
+
+  res.render('cases/procedures/procedure-2/cmc-venue', {
+    ref: ref,
+    line1: val.line1,
+    line2: val.line2,
+    town: val.town,
+    county: val.county,
+    postcode: val.postcode,
+    errorFields: []
+  });
+});
+
+router.post('/cases/procedures/procedure-2/cmc-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveAddress(
+    req, res,
+    'venue',          // Field prefix (e.g. venue-line1)
+    'Venue address',  // Display name
+    c.procedure2,     // Storage object
+    'cmcVenue'        // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/cmc-venue', {
+      ref: ref,
+      line1: req.body['venue-line1'],
+      line2: req.body['venue-line2'],
+      town: req.body['venue-town'],
+      county: req.body['venue-county'],
+      postcode: req.body['venue-postcode'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CMC NOTE SENT ---
+router.get('/cases/procedures/procedure-2/cmc-note-sent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.cmcNoteSent || {}; 
+
+  res.render('cases/procedures/procedure-2/cmc-note-sent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/cmc-note-sent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'cmc-note',
+    'Case management conference note sent date',
+    c.procedure2,
+    'cmcNoteSent'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/cmc-note-sent', {
+      ref: ref,
+      day: req.body['cmc-note-day'],
+      month: req.body['cmc-note-month'],
+      year: req.body['cmc-note-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CONFIRMED HEARING DATE ---
+router.get('/cases/procedures/procedure-2/confirmed-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.confirmedHearing || {}; 
+
+  res.render('cases/procedures/procedure-2/confirmed-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+    errorFields: [] // Important to prevent Nunjucks error on load
+  });
+});
+
+router.post('/cases/procedures/procedure-2/confirmed-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDateTime(
+    req, res,
+    'confirmed-hearing',       // HTML Field prefix
+    'Confirmed hearing date',  // Display name for errors
+    c.procedure2,              // Storage Object
+    'confirmedHearing'         // Storage Key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/confirmed-hearing-date', {
+      ref: ref,
+      day: req.body['confirmed-hearing-day'],
+      month: req.body['confirmed-hearing-month'],
+      year: req.body['confirmed-hearing-year'],
+      hour: req.body['confirmed-hearing-hour'],
+      minute: req.body['confirmed-hearing-minute'],
+      ampm: req.body['confirmed-hearing-ampm'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- HEARING TYPE ---
+router.get('/cases/procedures/procedure-2/hearing-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/hearing-type', {
+    ref: ref,
+    hearingType: p1.hearingType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var hearingType = req.body['hearing-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.hearingType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!hearingType) {
+    return res.render('cases/procedures/procedure-2/hearing-type', {
+      ref: ref,
+      errorList: [{ text: "Select type of hearing", href: "#hearing-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.hearingType = hearingType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+// --- HEARING VENUE ---
+router.get('/cases/procedures/procedure-2/hearing-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.hearingVenue || {}; 
+
+  res.render('cases/procedures/procedure-2/hearing-venue', {
+    ref: ref,
+    line1: val.line1,
+    line2: val.line2,
+    town: val.town,
+    county: val.county,
+    postcode: val.postcode,
+    errorFields: []
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveAddress(
+    req, res,
+    'venue',          // HTML field prefix
+    'Hearing venue',  // Error display name
+    c.procedure2,     // Storage object
+    'hearingVenue'    // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-venue', {
+      ref: ref,
+      line1: req.body['venue-line1'],
+      line2: req.body['venue-line2'],
+      town: req.body['venue-town'],
+      county: req.body['venue-county'],
+      postcode: req.body['venue-postcode'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- 1. DATE PARTIES NOTIFIED OF HEARING DATE ---
+router.get('/cases/procedures/procedure-2/notified-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.notifiedHearingDate || {}; 
+
+  res.render('cases/procedures/procedure-2/notified-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/notified-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-date',          // HTML prefix
+    'Date parties notified',  // Error name
+    c.procedure2,             // Storage object
+    'notifiedHearingDate'     // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/notified-hearing-date', {
+      ref: ref,
+      day: req.body['notified-date-day'],
+      month: req.body['notified-date-month'],
+      year: req.body['notified-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 2. DATE PARTIES NOTIFIED OF HEARING VENUE ---
+router.get('/cases/procedures/procedure-2/notified-hearing-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.notifiedHearingVenue || {}; 
+
+  res.render('cases/procedures/procedure-2/notified-hearing-venue', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/notified-hearing-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-venue',
+    'Date parties notified of venue',
+    c.procedure2,
+    'notifiedHearingVenue'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/notified-hearing-venue', {
+      ref: ref,
+      day: req.body['notified-venue-day'],
+      month: req.body['notified-venue-month'],
+      year: req.body['notified-venue-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 3. EARLIEST POTENTIAL HEARING DATE ---
+router.get('/cases/procedures/procedure-2/earliest-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.earliestHearingDate || {}; 
+
+  res.render('cases/procedures/procedure-2/earliest-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/earliest-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'earliest-date',
+    'Earliest potential hearing date',
+    c.procedure2,
+    'earliestHearingDate'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/earliest-hearing-date', {
+      ref: ref,
+      day: req.body['earliest-date-day'],
+      month: req.body['earliest-date-month'],
+      year: req.body['earliest-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- HEARING: LENGTH OF EVENT ---
+router.get('/cases/procedures/procedure-2/hearing-length-of-event', function(req, res) {
+  var ref = req.query.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  res.render('cases/procedures/procedure-2/hearing-length-of-event', {
+    ref: ref,
+    value: c.procedure2.hearingLengthOfEvent // NEW KEY
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-length-of-event', function(req, res) {
+  var ref = req.body.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  
+  // Reuse your existing helper
+  var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure2, 'hearingLengthOfEvent');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-length-of-event', {
+      ref: ref,
+      value: req.body['length-event'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- HEARING IN TARGET? ---
+router.get('/cases/procedures/procedure-2/hearing-in-target', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/hearing-in-target', {
+    ref: ref,
+    hearingInTarget: p1.hearingInTarget
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-in-target', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var val = req.body['hearing-in-target'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.hearingInTarget;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!val) {
+    return res.render('cases/procedures/procedure-2/hearing-in-target', {
+      ref: ref,
+      errorList: [{ text: "Select yes if the hearing was completed in the target timeframe", href: "#hearing-in-target" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.hearingInTarget = val;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+// --- HEARING CLOSED DATE ---
+router.get('/cases/procedures/procedure-2/hearing-closed-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.hearingClosed || {}; 
+
+  res.render('cases/procedures/procedure-2/hearing-closed-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-closed-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'hearing-closed',
+    'Date hearing closed',
+    c.procedure2,
+    'hearingClosed'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-closed-date', {
+      ref: ref,
+      day: req.body['hearing-closed-day'],
+      month: req.body['hearing-closed-month'],
+      year: req.body['hearing-closed-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- HEARING PREPARATION TIME ---
+router.get('/cases/procedures/procedure-2/hearing-preparation-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/hearing-preparation-time', {
+    ref: ref,
+    value: c.procedure2.hearingPrepTime // Specific Key
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-preparation-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(
+    req, res, 
+    'prep-time', 
+    'Preparation time', 
+    c.procedure2, 
+    'hearingPrepTime' // Specific Key
+  );
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-preparation-time', {
+      ref: ref,
+      value: req.body['prep-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- HEARING TRAVEL TIME ---
+router.get('/cases/procedures/procedure-2/hearing-travel-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/hearing-travel-time', {
+    ref: ref,
+    value: c.procedure2.hearingTravelTime
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-travel-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(req, res, 'travel-time', 'Travel time', c.procedure2, 'hearingTravelTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-travel-time', {
+      ref: ref,
+      value: req.body['travel-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- HEARING SITTING TIME ---
+router.get('/cases/procedures/procedure-2/hearing-sitting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/hearing-sitting-time', {
+    ref: ref,
+    value: c.procedure2.hearingSittingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-sitting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(req, res, 'sitting-time', 'Sitting time', c.procedure2, 'hearingSittingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-sitting-time', {
+      ref: ref,
+      value: req.body['sitting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- HEARING REPORTING TIME---
+router.get('/cases/procedures/procedure-2/hearing-reporting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/hearing-reporting-time', {
+    ref: ref,
+    value: c.procedure2.hearingReportingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-2/hearing-reporting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(req, res, 'reporting-time', 'Reporting time', c.procedure2, 'hearingReportingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/hearing-reporting-time', {
+      ref: ref,
+      value: req.body['reporting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+
+
+
+
+
+
+
+// --- TARGET INQUIRY DATE ---
+router.get('/cases/procedures/procedure-2/target-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.targetInquiry || {}; 
+
+  res.render('cases/procedures/procedure-2/target-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/target-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'target-inquiry',
+    'Target inquiry date',
+    c.procedure2,
+    'targetInquiry'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/target-inquiry-date', {
+      ref: ref,
+      day: req.body['target-inquiry-day'],
+      month: req.body['target-inquiry-month'],
+      year: req.body['target-inquiry-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY NOTIFIED DATE ---
+router.get('/cases/procedures/procedure-2/inquiry-notified-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.inquiryNotified || {}; 
+
+  res.render('cases/procedures/procedure-2/inquiry-notified-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-notified-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'inquiry-notified',
+    'Date parties must be notified of inquiry',
+    c.procedure2,
+    'inquiryNotified'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-notified-date', {
+      ref: ref,
+      day: req.body['inquiry-notified-day'],
+      month: req.body['inquiry-notified-month'],
+      year: req.body['inquiry-notified-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- PRE-INQUIRY MEETING OR CMC ---
+router.get('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/pre-inquiry-meeting-cmc', {
+    ref: ref,
+    meetingType: p1.preInquiryMeetingCmc
+  });
+});
+
+router.post('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var meetingType = req.body['meeting-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.preInquiryMeetingCmc;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!meetingType) {
+    return res.render('cases/procedures/procedure-2/pre-inquiry-meeting-cmc', {
+      ref: ref,
+      errorList: [{ text: "Select whether there will be a pre inquiry meeting or case management conference", href: "#meeting-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.preInquiryMeetingCmc = meetingType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- PIM ROUTES ---
+
+// GET
+router.get('/cases/procedures/procedure-2/pim-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.pimDate || {}; 
+
+  res.render('cases/procedures/procedure-2/pim-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+
+    errorFields: []
+  });
+});
+
+// POST
+router.post('/cases/procedures/procedure-2/pim-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDateTime(
+    req, res,
+    'pim',
+    'Pre inquiry meeting date',
+    c.procedure2,
+    'pimDate'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/pim-date', {
+      ref: ref,
+      day: req.body['pim-day'],
+      month: req.body['pim-month'],
+      year: req.body['pim-year'],
+      hour: req.body['pim-hour'],
+      minute: req.body['pim-minute'],
+      ampm: req.body['pim-ampm'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- PIM TYPE ---
+router.get('/cases/procedures/procedure-2/pim-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/pim-type', {
+    ref: ref,
+    pimType: p1.pimType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/pim-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var pimType = req.body['pim-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.pimType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!pimType) {
+    return res.render('cases/procedures/procedure-2/pim-type', {
+      ref: ref,
+      errorList: [{ text: "Select the format of the pre inquiry meeting", href: "#pim-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.pimType = pimType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+
+// --- PIM NOTE SENT ---
+router.get('/cases/procedures/procedure-2/pim-note-sent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.pimNoteSent || {}; 
+
+  res.render('cases/procedures/procedure-2/pim-note-sent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/pim-note-sent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'pim-note',
+    'Pre inquiry meeting note sent',
+    c.procedure2,
+    'pimNoteSent'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/pim-note-sent', {
+      ref: ref,
+      day: req.body['pim-note-day'],
+      month: req.body['pim-note-month'],
+      year: req.body['pim-note-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- CONFIRMED INQUIRY DATE ---
+router.get('/cases/procedures/procedure-2/confirmed-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.confirmedInquiry || {}; 
+
+  res.render('cases/procedures/procedure-2/confirmed-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+    errorFields: [] // Important to prevent Nunjucks error on load
+  });
+});
+
+router.post('/cases/procedures/procedure-2/confirmed-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'confirmed-inquiry',       // HTML Field prefix
+    'Confirmed inquiry date',  // Display name for errors
+    c.procedure2,              // Storage Object
+    'confirmedInquiry'         // Storage Key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/confirmed-inquiry-date', {
+      ref: ref,
+      day: req.body['confirmed-inquiry-day'],
+      month: req.body['confirmed-inquiry-month'],
+      year: req.body['confirmed-inquiry-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY TYPE ---
+router.get('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/inquiry-type', {
+    ref: ref,
+    inquiryType: p1.inquiryType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var inquiryType = req.body['inquiry-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.inquiryType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!inquiryType) {
+    return res.render('cases/procedures/procedure-2/inquiry-type', {
+      ref: ref,
+      errorList: [{ text: "Select the inquiry type", href: "#inquiry-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.inquiryType = inquiryType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- INQUIRY VENUE ---
+router.get('/cases/procedures/procedure-2/inquiry-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.inquiryVenue || {}; 
+
+  res.render('cases/procedures/procedure-2/inquiry-venue', {
+    ref: ref,
+    line1: val.line1,
+    line2: val.line2,
+    town: val.town,
+    county: val.county,
+    postcode: val.postcode,
+    errorFields: []
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveAddress(
+    req, res,
+    'venue',          // HTML field prefix
+    'Inquiry venue',  // Error display name
+    c.procedure2,     // Storage object
+    'inquiryVenue'    // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-venue', {
+      ref: ref,
+      line1: req.body['venue-line1'],
+      line2: req.body['venue-line2'],
+      town: req.body['venue-town'],
+      county: req.body['venue-county'],
+      postcode: req.body['venue-postcode'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 1. DATE PARTIES NOTIFIED OF INQUIRY DATE ---
+router.get('/cases/procedures/procedure-2/notified-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.notifiedInquiryDate || {}; 
+
+  res.render('cases/procedures/procedure-2/notified-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/notified-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-inquiry-date',  // HTML prefix
+    'Date parties notified of inquiry date',
+    c.procedure2,
+    'notifiedInquiryDate'     // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/notified-inquiry-date', {
+      ref: ref,
+      day: req.body['notified-inquiry-date-day'],
+      month: req.body['notified-inquiry-date-month'],
+      year: req.body['notified-inquiry-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 2. DATE PARTIES NOTIFIED OF INQUIRY VENUE ---
+router.get('/cases/procedures/procedure-2/notified-inquiry-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.notifiedInquiryVenue || {}; 
+
+  res.render('cases/procedures/procedure-2/notified-inquiry-venue', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/notified-inquiry-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-inquiry-venue', // HTML prefix
+    'Date parties notified of inquiry venue',
+    c.procedure2,
+    'notifiedInquiryVenue'    // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/notified-inquiry-venue', {
+      ref: ref,
+      day: req.body['notified-inquiry-venue-day'],
+      month: req.body['notified-inquiry-venue-month'],
+      year: req.body['notified-inquiry-venue-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- EARLIEST POTENTIAL INQUIRY DATE ---
+router.get('/cases/procedures/procedure-2/earliest-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.earliestInquiryDate || {}; 
+
+  res.render('cases/procedures/procedure-2/earliest-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/earliest-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'earliest-inquiry-date',           // HTML prefix
+    'Earliest potential inquiry date', // Error display name
+    c.procedure2,                      // Storage object
+    'earliestInquiryDate'              // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/earliest-inquiry-date', {
+      ref: ref,
+      day: req.body['earliest-inquiry-date-day'],
+      month: req.body['earliest-inquiry-date-month'],
+      year: req.body['earliest-inquiry-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY: LENGTH OF EVENT ---
+router.get('/cases/procedures/procedure-2/inquiry-length-of-event', function(req, res) {
+  var ref = req.query.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  res.render('cases/procedures/procedure-2/inquiry-length-of-event', {
+    ref: ref,
+    value: c.procedure2.inquiryLengthOfEvent // NEW KEY
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-length-of-event', function(req, res) {
+  var ref = req.body.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  
+  var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure2, 'inquiryLengthOfEvent');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-length-of-event', {
+      ref: ref,
+      value: req.body['length-event'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- 1. DATE INQUIRY FINISHED ---
+router.get('/cases/procedures/procedure-2/inquiry-finished-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.inquiryFinished || {}; 
+
+  res.render('cases/procedures/procedure-2/inquiry-finished-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-finished-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'inquiry-finished',      // HTML prefix
+    'Date inquiry finished', // Error name
+    c.procedure2,
+    'inquiryFinished'        // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-finished-date', {
+      ref: ref,
+      day: req.body['inquiry-finished-day'],
+      month: req.body['inquiry-finished-month'],
+      year: req.body['inquiry-finished-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 2. EVENT IN TARGET? ---
+router.get('/cases/procedures/procedure-2/event-in-target', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/event-in-target', {
+    ref: ref,
+    eventInTarget: p1.eventInTarget
+  });
+});
+
+router.post('/cases/procedures/procedure-2/event-in-target', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var val = req.body['event-in-target'];
+
+  // Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.eventInTarget;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // Validation
+  if (!val) {
+    return res.render('cases/procedures/procedure-2/event-in-target', {
+      ref: ref,
+      errorList: [{ text: "Select if the event is in target", href: "#event-in-target" }]
+    });
+  }
+
+  // Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.eventInTarget = val;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- 3. DATE INQUIRY CLOSED ---
+router.get('/cases/procedures/procedure-2/inquiry-closed-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.inquiryClosed || {}; 
+
+  res.render('cases/procedures/procedure-2/inquiry-closed-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-closed-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'inquiry-closed',      // HTML prefix
+    'Date inquiry closed', // Error name
+    c.procedure2,
+    'inquiryClosed'        // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-closed-date', {
+      ref: ref,
+      day: req.body['inquiry-closed-day'],
+      month: req.body['inquiry-closed-month'],
+      year: req.body['inquiry-closed-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY: PREPARATION TIME ---
+router.get('/cases/procedures/procedure-2/inquiry-preparation-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/inquiry-preparation-time', {
+    ref: ref,
+    value: c.procedure2.inquiryPrepTime // Specific Key
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-preparation-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(
+    req, res, 
+    'prep-time', 
+    'Preparation time', 
+    c.procedure2, 
+    'inquiryPrepTime' // Specific Key
+  );
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-preparation-time', {
+      ref: ref,
+      value: req.body['prep-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- INQUIRY: TRAVEL TIME ---
+router.get('/cases/procedures/procedure-2/inquiry-travel-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/inquiry-travel-time', {
+    ref: ref,
+    value: c.procedure2.inquiryTravelTime
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-travel-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(req, res, 'travel-time', 'Travel time', c.procedure2, 'inquiryTravelTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-travel-time', {
+      ref: ref,
+      value: req.body['travel-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- INQUIRY: SITTING TIME ---
+router.get('/cases/procedures/procedure-2/inquiry-sitting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/inquiry-sitting-time', {
+    ref: ref,
+    value: c.procedure2.inquirySittingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-sitting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(req, res, 'sitting-time', 'Sitting time', c.procedure2, 'inquirySittingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-sitting-time', {
+      ref: ref,
+      value: req.body['sitting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+// --- INQUIRY: REPORTING TIME ---
+router.get('/cases/procedures/procedure-2/inquiry-reporting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-2/inquiry-reporting-time', {
+    ref: ref,
+    value: c.procedure2.inquiryReportingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-2/inquiry-reporting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveNumber(req, res, 'reporting-time', 'Reporting time', c.procedure2, 'inquiryReportingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/inquiry-reporting-time', {
+      ref: ref,
+      value: req.body['reporting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+
+// --- SITE VISIT TYPE ---
+router.get('/cases/procedures/procedure-2/site-visit-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+
+  res.render('cases/procedures/procedure-2/site-visit-type', {
+    ref: ref,
+    siteVisitType: p1.siteVisitType
+  });
+});
+
+router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var val = req.body['site-visit-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure2) delete c.procedure2.siteVisitType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  // 2. Validation
+  if (!val) {
+    return res.render('cases/procedures/procedure-2/site-visit-type', {
+      ref: ref,
+      errorList: [{ text: "Select the type of site visit", href: "#site-visit-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure2 = c.procedure2 || {};
+  c.procedure2.siteVisitType = val;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+});
+
+
+
+// --- WRITTEN REPS: DATE OFFER ---
+router.get('/cases/procedures/procedure-2/written-reps-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure2 || {};
+  var val = p1.writtenRepsDate || {}; 
+
+  res.render('cases/procedures/procedure-2/written-reps-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/written-reps-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'written-reps-date',                  // HTML prefix
+    'Date offer for written representations', // Error display name
+    c.procedure2,                         // Storage object
+    'writtenRepsDate'                     // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/written-reps-date', {
+      ref: ref,
+      day: req.body['written-reps-date-day'],
+      month: req.body['written-reps-date-month'],
+      year: req.body['written-reps-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// ==============================================
+// PROCEDURE 3 ROUTES
+// ==============================================
+
+// --- TYPE ---
+router.get('/cases/procedures/procedure-3/type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var existingType = "";
+  if (c.procedure3 && c.procedure3.type) {
+    existingType = c.procedure3.type;
+  }
+  
+  res.render('cases/procedures/procedure-3/type', {
+    ref: ref,
+    type: existingType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var type = req.body['procedure-type'];
+  var action = req.body.action;
+
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (!type) {
+    return res.render('cases/procedures/procedure-3/type', {
+      ref: ref,
+      errorList: [{ text: "Select a procedure type", href: "#procedure-type" }]
+    });
+  }
+
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.type = type;
+  c.procedure3.active = true;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- STATUS ---
+router.get('/cases/procedures/procedure-3/status', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  res.render('cases/procedures/procedure-3/status', {
+    ref: ref,
+    status: p1.status
+  });
+});
+
+router.post('/cases/procedures/procedure-3/status', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var status = req.body['procedure-status'];
+
+  if (!status) {
+    return res.render('cases/procedures/procedure-3/status', {
+      ref: ref,
+      errorList: [{ text: "Select a procedure status", href: "#procedure-status" }]
+    });
+  }
+
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.status = status;
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- ADMIN TYPE ---
+router.get('/cases/procedures/procedure-3/admin-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  res.render('cases/procedures/procedure-3/admin-type', {
+    ref: ref,
+    adminType: p1.adminType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var adminType = req.body['admin-type'];
+
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.adminType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (!adminType) {
+    return res.render('cases/procedures/procedure-3/admin-type', {
+      ref: ref,
+      errorList: [{ text: "Select the admin procedure type", href: "#admin-type" }]
+    });
+  }
+
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.adminType = adminType;
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// ==============================================
+// DATE ROUTES (Using Helper)
+// ==============================================
+
+// --- IN HOUSE DATE ---
+router.get('/cases/procedures/procedure-3/in-house-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.inHouse || {}; 
+
+  res.render('cases/procedures/procedure-3/in-house-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/in-house-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'in-house',          
+    'In house date',     
+    c.procedure3,        
+    'inHouse'           
+  );
+
+  // FIX: Route handles redirect now
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/in-house-date', {
+      ref: ref,
+      day: req.body['in-house-day'],
+      month: req.body['in-house-month'],
+      year: req.body['in-house-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- SITE VISIT DATE ---
+router.get('/cases/procedures/procedure-3/site-visit', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.siteVisit || {}; 
+
+  res.render('cases/procedures/procedure-3/site-visit', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/site-visit', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'site-visit',
+    'Site visit date',
+    c.procedure3,
+    'siteVisit'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/site-visit', {
+      ref: ref,
+      day: req.body['site-visit-day'],
+      month: req.body['site-visit-month'],
+      year: req.body['site-visit-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- TARGET HEARING DATE ---
+router.get('/cases/procedures/procedure-3/target-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.targetHearing || {}; 
+
+  res.render('cases/procedures/procedure-3/target-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/target-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'target-hearing',
+    'Target hearing date',
+    c.procedure3,
+    'targetHearing'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/target-hearing-date', {
+      ref: ref,
+      day: req.body['target-hearing-day'],
+      month: req.body['target-hearing-month'],
+      year: req.body['target-hearing-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- NOTIFIED DATE ---
+router.get('/cases/procedures/procedure-3/hearing-notified-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.hearingNotified || {}; 
+
+  res.render('cases/procedures/procedure-3/hearing-notified-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-notified-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'hearing-notified',
+    'Date parties must be notified of hearing',
+    c.procedure3,
+    'hearingNotified'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-notified-date', {
+      ref: ref,
+      day: req.body['hearing-notified-day'],
+      month: req.body['hearing-notified-month'],
+      year: req.body['hearing-notified-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- PROOFS RECEIVED (Hearing/Inquiry) ---
+router.get('/cases/procedures/procedure-3/proofs-received', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.proofsReceived || {}; 
+
+  res.render('cases/procedures/procedure-3/proofs-received', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/proofs-received', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var day = req.body['proofs-received-day'];
+  var month = req.body['proofs-received-month'];
+  var year = req.body['proofs-received-year'];
+  
+  var result = validateAndSaveDate(
+    req, res,
+    'proofs-received',
+    'Proofs of evidence received date',
+    c.procedure3,
+    'proofsReceived'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/proofs-received', {
+      ref: ref,
+      day: day,
+      month: month,
+      year: year,
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- STATEMENTS OF CASE RECEIVED ---
+router.get('/cases/procedures/procedure-3/statements-received', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.statementsReceived || {}; 
+
+  res.render('cases/procedures/procedure-3/statements-received', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/statements-received', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'statements-received',
+    'Statements of case received date',
+    c.procedure3,
+    'statementsReceived'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/statements-received', {
+      ref: ref,
+      day: req.body['statements-received-day'],
+      month: req.body['statements-received-month'],
+      year: req.body['statements-received-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- CASE OFFICER VERIFICATION DATE ---
+router.get('/cases/procedures/procedure-3/verification-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.verification || {}; 
+
+  res.render('cases/procedures/procedure-3/verification-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/verification-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'verification-date',
+    'Verification date',
+    c.procedure3,
+    'verification'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/verification-date', {
+      ref: ref,
+      day: req.body['verification-date-day'],
+      month: req.body['verification-date-month'],
+      year: req.body['verification-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CMC ROUTES (Place this with your other Procedure 1 routes) ---
+
+// GET
+router.get('/cases/procedures/procedure-3/cmc-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.cmcDate || {}; 
+
+  res.render('cases/procedures/procedure-3/cmc-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+
+    errorFields: []
+  });
+});
+
+// POST
+router.post('/cases/procedures/procedure-3/cmc-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDateTime(
+    req, res,
+    'cmc',
+    'Case management conference',
+    c.procedure3,
+    'cmcDate'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/cmc-date', {
+      ref: ref,
+      day: req.body['cmc-day'],
+      month: req.body['cmc-month'],
+      year: req.body['cmc-year'],
+      hour: req.body['cmc-hour'],
+      minute: req.body['cmc-minute'],
+      ampm: req.body['cmc-ampm'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CMC TYPE ---
+router.get('/cases/procedures/procedure-3/cmc-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/cmc-type', {
+    ref: ref,
+    cmcType: p1.cmcType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/cmc-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var cmcType = req.body['cmc-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.cmcType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!cmcType) {
+    return res.render('cases/procedures/procedure-3/cmc-type', {
+      ref: ref,
+      errorList: [{ text: "Select the case management conference type", href: "#cmc-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.cmcType = cmcType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+// --- CMC VENUE ---
+router.get('/cases/procedures/procedure-3/cmc-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.cmcVenue || {}; 
+
+  res.render('cases/procedures/procedure-3/cmc-venue', {
+    ref: ref,
+    line1: val.line1,
+    line2: val.line2,
+    town: val.town,
+    county: val.county,
+    postcode: val.postcode,
+    errorFields: []
+  });
+});
+
+router.post('/cases/procedures/procedure-3/cmc-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveAddress(
+    req, res,
+    'venue',          // Field prefix (e.g. venue-line1)
+    'Venue address',  // Display name
+    c.procedure3,     // Storage object
+    'cmcVenue'        // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/cmc-venue', {
+      ref: ref,
+      line1: req.body['venue-line1'],
+      line2: req.body['venue-line2'],
+      town: req.body['venue-town'],
+      county: req.body['venue-county'],
+      postcode: req.body['venue-postcode'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CMC NOTE SENT ---
+router.get('/cases/procedures/procedure-3/cmc-note-sent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.cmcNoteSent || {}; 
+
+  res.render('cases/procedures/procedure-3/cmc-note-sent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/cmc-note-sent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'cmc-note',
+    'Case management conference note sent date',
+    c.procedure3,
+    'cmcNoteSent'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/cmc-note-sent', {
+      ref: ref,
+      day: req.body['cmc-note-day'],
+      month: req.body['cmc-note-month'],
+      year: req.body['cmc-note-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- CONFIRMED HEARING DATE ---
+router.get('/cases/procedures/procedure-3/confirmed-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.confirmedHearing || {}; 
+
+  res.render('cases/procedures/procedure-3/confirmed-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+    errorFields: [] // Important to prevent Nunjucks error on load
+  });
+});
+
+router.post('/cases/procedures/procedure-3/confirmed-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDateTime(
+    req, res,
+    'confirmed-hearing',       // HTML Field prefix
+    'Confirmed hearing date',  // Display name for errors
+    c.procedure3,              // Storage Object
+    'confirmedHearing'         // Storage Key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/confirmed-hearing-date', {
+      ref: ref,
+      day: req.body['confirmed-hearing-day'],
+      month: req.body['confirmed-hearing-month'],
+      year: req.body['confirmed-hearing-year'],
+      hour: req.body['confirmed-hearing-hour'],
+      minute: req.body['confirmed-hearing-minute'],
+      ampm: req.body['confirmed-hearing-ampm'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- HEARING TYPE ---
+router.get('/cases/procedures/procedure-3/hearing-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/hearing-type', {
+    ref: ref,
+    hearingType: p1.hearingType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var hearingType = req.body['hearing-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.hearingType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!hearingType) {
+    return res.render('cases/procedures/procedure-3/hearing-type', {
+      ref: ref,
+      errorList: [{ text: "Select type of hearing", href: "#hearing-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.hearingType = hearingType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+// --- HEARING VENUE ---
+router.get('/cases/procedures/procedure-3/hearing-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.hearingVenue || {}; 
+
+  res.render('cases/procedures/procedure-3/hearing-venue', {
+    ref: ref,
+    line1: val.line1,
+    line2: val.line2,
+    town: val.town,
+    county: val.county,
+    postcode: val.postcode,
+    errorFields: []
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveAddress(
+    req, res,
+    'venue',          // HTML field prefix
+    'Hearing venue',  // Error display name
+    c.procedure3,     // Storage object
+    'hearingVenue'    // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-venue', {
+      ref: ref,
+      line1: req.body['venue-line1'],
+      line2: req.body['venue-line2'],
+      town: req.body['venue-town'],
+      county: req.body['venue-county'],
+      postcode: req.body['venue-postcode'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- 1. DATE PARTIES NOTIFIED OF HEARING DATE ---
+router.get('/cases/procedures/procedure-3/notified-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.notifiedHearingDate || {}; 
+
+  res.render('cases/procedures/procedure-3/notified-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/notified-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-date',          // HTML prefix
+    'Date parties notified',  // Error name
+    c.procedure3,             // Storage object
+    'notifiedHearingDate'     // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/notified-hearing-date', {
+      ref: ref,
+      day: req.body['notified-date-day'],
+      month: req.body['notified-date-month'],
+      year: req.body['notified-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 2. DATE PARTIES NOTIFIED OF HEARING VENUE ---
+router.get('/cases/procedures/procedure-3/notified-hearing-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.notifiedHearingVenue || {}; 
+
+  res.render('cases/procedures/procedure-3/notified-hearing-venue', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/notified-hearing-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-venue',
+    'Date parties notified of venue',
+    c.procedure3,
+    'notifiedHearingVenue'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/notified-hearing-venue', {
+      ref: ref,
+      day: req.body['notified-venue-day'],
+      month: req.body['notified-venue-month'],
+      year: req.body['notified-venue-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 3. EARLIEST POTENTIAL HEARING DATE ---
+router.get('/cases/procedures/procedure-3/earliest-hearing-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.earliestHearingDate || {}; 
+
+  res.render('cases/procedures/procedure-3/earliest-hearing-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/earliest-hearing-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'earliest-date',
+    'Earliest potential hearing date',
+    c.procedure3,
+    'earliestHearingDate'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/earliest-hearing-date', {
+      ref: ref,
+      day: req.body['earliest-date-day'],
+      month: req.body['earliest-date-month'],
+      year: req.body['earliest-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- HEARING: LENGTH OF EVENT ---
+router.get('/cases/procedures/procedure-3/hearing-length-of-event', function(req, res) {
+  var ref = req.query.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  res.render('cases/procedures/procedure-3/hearing-length-of-event', {
+    ref: ref,
+    value: c.procedure3.hearingLengthOfEvent // NEW KEY
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-length-of-event', function(req, res) {
+  var ref = req.body.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  
+  // Reuse your existing helper
+  var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure3, 'hearingLengthOfEvent');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-length-of-event', {
+      ref: ref,
+      value: req.body['length-event'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- HEARING IN TARGET? ---
+router.get('/cases/procedures/procedure-3/hearing-in-target', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/hearing-in-target', {
+    ref: ref,
+    hearingInTarget: p1.hearingInTarget
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-in-target', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var val = req.body['hearing-in-target'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.hearingInTarget;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!val) {
+    return res.render('cases/procedures/procedure-3/hearing-in-target', {
+      ref: ref,
+      errorList: [{ text: "Select yes if the hearing was completed in the target timeframe", href: "#hearing-in-target" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.hearingInTarget = val;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+// --- HEARING CLOSED DATE ---
+router.get('/cases/procedures/procedure-3/hearing-closed-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.hearingClosed || {}; 
+
+  res.render('cases/procedures/procedure-3/hearing-closed-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-closed-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'hearing-closed',
+    'Date hearing closed',
+    c.procedure3,
+    'hearingClosed'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-closed-date', {
+      ref: ref,
+      day: req.body['hearing-closed-day'],
+      month: req.body['hearing-closed-month'],
+      year: req.body['hearing-closed-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- HEARING PREPARATION TIME ---
+router.get('/cases/procedures/procedure-3/hearing-preparation-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/hearing-preparation-time', {
+    ref: ref,
+    value: c.procedure3.hearingPrepTime // Specific Key
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-preparation-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(
+    req, res, 
+    'prep-time', 
+    'Preparation time', 
+    c.procedure3, 
+    'hearingPrepTime' // Specific Key
+  );
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-preparation-time', {
+      ref: ref,
+      value: req.body['prep-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- HEARING TRAVEL TIME ---
+router.get('/cases/procedures/procedure-3/hearing-travel-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/hearing-travel-time', {
+    ref: ref,
+    value: c.procedure3.hearingTravelTime
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-travel-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(req, res, 'travel-time', 'Travel time', c.procedure3, 'hearingTravelTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-travel-time', {
+      ref: ref,
+      value: req.body['travel-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- HEARING SITTING TIME ---
+router.get('/cases/procedures/procedure-3/hearing-sitting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/hearing-sitting-time', {
+    ref: ref,
+    value: c.procedure3.hearingSittingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-sitting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(req, res, 'sitting-time', 'Sitting time', c.procedure3, 'hearingSittingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-sitting-time', {
+      ref: ref,
+      value: req.body['sitting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- HEARING REPORTING TIME---
+router.get('/cases/procedures/procedure-3/hearing-reporting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/hearing-reporting-time', {
+    ref: ref,
+    value: c.procedure3.hearingReportingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-3/hearing-reporting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(req, res, 'reporting-time', 'Reporting time', c.procedure3, 'hearingReportingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/hearing-reporting-time', {
+      ref: ref,
+      value: req.body['reporting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+
+
+
+
+
+
+
+// --- TARGET INQUIRY DATE ---
+router.get('/cases/procedures/procedure-3/target-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.targetInquiry || {}; 
+
+  res.render('cases/procedures/procedure-3/target-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/target-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'target-inquiry',
+    'Target inquiry date',
+    c.procedure3,
+    'targetInquiry'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/target-inquiry-date', {
+      ref: ref,
+      day: req.body['target-inquiry-day'],
+      month: req.body['target-inquiry-month'],
+      year: req.body['target-inquiry-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY NOTIFIED DATE ---
+router.get('/cases/procedures/procedure-3/inquiry-notified-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.inquiryNotified || {}; 
+
+  res.render('cases/procedures/procedure-3/inquiry-notified-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-notified-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'inquiry-notified',
+    'Date parties must be notified of inquiry',
+    c.procedure3,
+    'inquiryNotified'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-notified-date', {
+      ref: ref,
+      day: req.body['inquiry-notified-day'],
+      month: req.body['inquiry-notified-month'],
+      year: req.body['inquiry-notified-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- PRE-INQUIRY MEETING OR CMC ---
+router.get('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/pre-inquiry-meeting-cmc', {
+    ref: ref,
+    meetingType: p1.preInquiryMeetingCmc
+  });
+});
+
+router.post('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var meetingType = req.body['meeting-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.preInquiryMeetingCmc;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!meetingType) {
+    return res.render('cases/procedures/procedure-3/pre-inquiry-meeting-cmc', {
+      ref: ref,
+      errorList: [{ text: "Select whether there will be a pre inquiry meeting or case management conference", href: "#meeting-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.preInquiryMeetingCmc = meetingType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- PIM ROUTES ---
+
+// GET
+router.get('/cases/procedures/procedure-3/pim-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.pimDate || {}; 
+
+  res.render('cases/procedures/procedure-3/pim-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+
+    errorFields: []
+  });
+});
+
+// POST
+router.post('/cases/procedures/procedure-3/pim-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDateTime(
+    req, res,
+    'pim',
+    'Pre inquiry meeting date',
+    c.procedure3,
+    'pimDate'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/pim-date', {
+      ref: ref,
+      day: req.body['pim-day'],
+      month: req.body['pim-month'],
+      year: req.body['pim-year'],
+      hour: req.body['pim-hour'],
+      minute: req.body['pim-minute'],
+      ampm: req.body['pim-ampm'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- PIM TYPE ---
+router.get('/cases/procedures/procedure-3/pim-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/pim-type', {
+    ref: ref,
+    pimType: p1.pimType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/pim-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var pimType = req.body['pim-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.pimType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!pimType) {
+    return res.render('cases/procedures/procedure-3/pim-type', {
+      ref: ref,
+      errorList: [{ text: "Select the format of the pre inquiry meeting", href: "#pim-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.pimType = pimType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+
+// --- PIM NOTE SENT ---
+router.get('/cases/procedures/procedure-3/pim-note-sent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.pimNoteSent || {}; 
+
+  res.render('cases/procedures/procedure-3/pim-note-sent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/pim-note-sent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'pim-note',
+    'Pre inquiry meeting note sent',
+    c.procedure3,
+    'pimNoteSent'
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/pim-note-sent', {
+      ref: ref,
+      day: req.body['pim-note-day'],
+      month: req.body['pim-note-month'],
+      year: req.body['pim-note-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- CONFIRMED INQUIRY DATE ---
+router.get('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.confirmedInquiry || {}; 
+
+  res.render('cases/procedures/procedure-3/confirmed-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year,
+    hour: val.hour,
+    minute: val.minute,
+    ampm: val.ampm,
+    errorFields: [] // Important to prevent Nunjucks error on load
+  });
+});
+
+router.post('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'confirmed-inquiry',       // HTML Field prefix
+    'Confirmed inquiry date',  // Display name for errors
+    c.procedure3,              // Storage Object
+    'confirmedInquiry'         // Storage Key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/confirmed-inquiry-date', {
+      ref: ref,
+      day: req.body['confirmed-inquiry-day'],
+      month: req.body['confirmed-inquiry-month'],
+      year: req.body['confirmed-inquiry-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY TYPE ---
+router.get('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/inquiry-type', {
+    ref: ref,
+    inquiryType: p1.inquiryType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var inquiryType = req.body['inquiry-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.inquiryType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!inquiryType) {
+    return res.render('cases/procedures/procedure-3/inquiry-type', {
+      ref: ref,
+      errorList: [{ text: "Select the inquiry type", href: "#inquiry-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.inquiryType = inquiryType;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- INQUIRY VENUE ---
+router.get('/cases/procedures/procedure-3/inquiry-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.inquiryVenue || {}; 
+
+  res.render('cases/procedures/procedure-3/inquiry-venue', {
+    ref: ref,
+    line1: val.line1,
+    line2: val.line2,
+    town: val.town,
+    county: val.county,
+    postcode: val.postcode,
+    errorFields: []
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveAddress(
+    req, res,
+    'venue',          // HTML field prefix
+    'Inquiry venue',  // Error display name
+    c.procedure3,     // Storage object
+    'inquiryVenue'    // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-venue', {
+      ref: ref,
+      line1: req.body['venue-line1'],
+      line2: req.body['venue-line2'],
+      town: req.body['venue-town'],
+      county: req.body['venue-county'],
+      postcode: req.body['venue-postcode'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 1. DATE PARTIES NOTIFIED OF INQUIRY DATE ---
+router.get('/cases/procedures/procedure-3/notified-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.notifiedInquiryDate || {}; 
+
+  res.render('cases/procedures/procedure-3/notified-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/notified-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-inquiry-date',  // HTML prefix
+    'Date parties notified of inquiry date',
+    c.procedure3,
+    'notifiedInquiryDate'     // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/notified-inquiry-date', {
+      ref: ref,
+      day: req.body['notified-inquiry-date-day'],
+      month: req.body['notified-inquiry-date-month'],
+      year: req.body['notified-inquiry-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 2. DATE PARTIES NOTIFIED OF INQUIRY VENUE ---
+router.get('/cases/procedures/procedure-3/notified-inquiry-venue', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.notifiedInquiryVenue || {}; 
+
+  res.render('cases/procedures/procedure-3/notified-inquiry-venue', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/notified-inquiry-venue', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'notified-inquiry-venue', // HTML prefix
+    'Date parties notified of inquiry venue',
+    c.procedure3,
+    'notifiedInquiryVenue'    // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/notified-inquiry-venue', {
+      ref: ref,
+      day: req.body['notified-inquiry-venue-day'],
+      month: req.body['notified-inquiry-venue-month'],
+      year: req.body['notified-inquiry-venue-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- EARLIEST POTENTIAL INQUIRY DATE ---
+router.get('/cases/procedures/procedure-3/earliest-inquiry-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.earliestInquiryDate || {}; 
+
+  res.render('cases/procedures/procedure-3/earliest-inquiry-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/earliest-inquiry-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'earliest-inquiry-date',           // HTML prefix
+    'Earliest potential inquiry date', // Error display name
+    c.procedure3,                      // Storage object
+    'earliestInquiryDate'              // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/earliest-inquiry-date', {
+      ref: ref,
+      day: req.body['earliest-inquiry-date-day'],
+      month: req.body['earliest-inquiry-date-month'],
+      year: req.body['earliest-inquiry-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY: LENGTH OF EVENT ---
+router.get('/cases/procedures/procedure-3/inquiry-length-of-event', function(req, res) {
+  var ref = req.query.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  res.render('cases/procedures/procedure-3/inquiry-length-of-event', {
+    ref: ref,
+    value: c.procedure3.inquiryLengthOfEvent // NEW KEY
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-length-of-event', function(req, res) {
+  var ref = req.body.ref;
+  var c = req.session.data['cases'].find(x => x.reference === ref);
+  
+  var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure3, 'inquiryLengthOfEvent');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-length-of-event', {
+      ref: ref,
+      value: req.body['length-event'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- 1. DATE INQUIRY FINISHED ---
+router.get('/cases/procedures/procedure-3/inquiry-finished-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.inquiryFinished || {}; 
+
+  res.render('cases/procedures/procedure-3/inquiry-finished-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-finished-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'inquiry-finished',      // HTML prefix
+    'Date inquiry finished', // Error name
+    c.procedure3,
+    'inquiryFinished'        // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-finished-date', {
+      ref: ref,
+      day: req.body['inquiry-finished-day'],
+      month: req.body['inquiry-finished-month'],
+      year: req.body['inquiry-finished-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- 2. EVENT IN TARGET? ---
+router.get('/cases/procedures/procedure-3/event-in-target', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/event-in-target', {
+    ref: ref,
+    eventInTarget: p1.eventInTarget
+  });
+});
+
+router.post('/cases/procedures/procedure-3/event-in-target', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var val = req.body['event-in-target'];
+
+  // Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.eventInTarget;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // Validation
+  if (!val) {
+    return res.render('cases/procedures/procedure-3/event-in-target', {
+      ref: ref,
+      errorList: [{ text: "Select if the event is in target", href: "#event-in-target" }]
+    });
+  }
+
+  // Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.eventInTarget = val;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- 3. DATE INQUIRY CLOSED ---
+router.get('/cases/procedures/procedure-3/inquiry-closed-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.inquiryClosed || {}; 
+
+  res.render('cases/procedures/procedure-3/inquiry-closed-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-closed-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'inquiry-closed',      // HTML prefix
+    'Date inquiry closed', // Error name
+    c.procedure3,
+    'inquiryClosed'        // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-closed-date', {
+      ref: ref,
+      day: req.body['inquiry-closed-day'],
+      month: req.body['inquiry-closed-month'],
+      year: req.body['inquiry-closed-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+
+// --- INQUIRY: PREPARATION TIME ---
+router.get('/cases/procedures/procedure-3/inquiry-preparation-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/inquiry-preparation-time', {
+    ref: ref,
+    value: c.procedure3.inquiryPrepTime // Specific Key
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-preparation-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(
+    req, res, 
+    'prep-time', 
+    'Preparation time', 
+    c.procedure3, 
+    'inquiryPrepTime' // Specific Key
+  );
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-preparation-time', {
+      ref: ref,
+      value: req.body['prep-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- INQUIRY: TRAVEL TIME ---
+router.get('/cases/procedures/procedure-3/inquiry-travel-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/inquiry-travel-time', {
+    ref: ref,
+    value: c.procedure3.inquiryTravelTime
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-travel-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(req, res, 'travel-time', 'Travel time', c.procedure3, 'inquiryTravelTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-travel-time', {
+      ref: ref,
+      value: req.body['travel-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- INQUIRY: SITTING TIME ---
+router.get('/cases/procedures/procedure-3/inquiry-sitting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/inquiry-sitting-time', {
+    ref: ref,
+    value: c.procedure3.inquirySittingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-sitting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(req, res, 'sitting-time', 'Sitting time', c.procedure3, 'inquirySittingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-sitting-time', {
+      ref: ref,
+      value: req.body['sitting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- INQUIRY: REPORTING TIME ---
+router.get('/cases/procedures/procedure-3/inquiry-reporting-time', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  res.render('cases/procedures/procedure-3/inquiry-reporting-time', {
+    ref: ref,
+    value: c.procedure3.inquiryReportingTime
+  });
+});
+
+router.post('/cases/procedures/procedure-3/inquiry-reporting-time', function(req, res) {
+  var ref = req.body.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveNumber(req, res, 'reporting-time', 'Reporting time', c.procedure3, 'inquiryReportingTime');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/inquiry-reporting-time', {
+      ref: ref,
+      value: req.body['reporting-time'],
+      errorList: result.errorList
+    });
+  }
+  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+
+// --- SITE VISIT TYPE ---
+router.get('/cases/procedures/procedure-3/site-visit-type', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+
+  res.render('cases/procedures/procedure-3/site-visit-type', {
+    ref: ref,
+    siteVisitType: p1.siteVisitType
+  });
+});
+
+router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var action = req.body.action;
+  var val = req.body['site-visit-type'];
+
+  // 1. Handle Remove
+  if (action === 'remove') {
+    if (c.procedure3) delete c.procedure3.siteVisitType;
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  // 2. Validation
+  if (!val) {
+    return res.render('cases/procedures/procedure-3/site-visit-type', {
+      ref: ref,
+      errorList: [{ text: "Select the type of site visit", href: "#site-visit-type" }]
+    });
+  }
+
+  // 3. Save Data
+  c.procedure3 = c.procedure3 || {};
+  c.procedure3.siteVisitType = val;
+
+  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+
+// --- WRITTEN REPS: DATE OFFER ---
+router.get('/cases/procedures/procedure-3/written-reps-date', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure3 || {};
+  var val = p1.writtenRepsDate || {}; 
+
+  res.render('cases/procedures/procedure-3/written-reps-date', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/written-reps-date', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'written-reps-date',                  // HTML prefix
+    'Date offer for written representations', // Error display name
+    c.procedure3,                         // Storage object
+    'writtenRepsDate'                     // Storage key
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/written-reps-date', {
+      ref: ref,
+      day: req.body['written-reps-date-day'],
+      month: req.body['written-reps-date-month'],
+      year: req.body['written-reps-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
 
 // ------------------------------------------------ SMART EDIT ROUTES ---------------------------------------------
 // NOTE: For any generic routes, add below SMART EDIT ROUTES. For any specific routes e.g. /cases/edit/case-received-date add ABOVE this.

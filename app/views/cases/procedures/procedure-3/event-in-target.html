@@ -1,0 +1,27 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %} Was the inquiry completed in the target timeframe? - Planning Inspectorate Portal {% endblock %}
+{% block beforeContent %} {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }} {% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errorList.length > 0 %} {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }} {% endif %}
+    <form action="/cases/procedures/procedure-3/event-in-target?ref={{ ref }}" method="post" novalidate>
+      <input type="hidden" name="ref" value="{{ ref }}">
+      {{ govukRadios({
+        name: "event-in-target",
+        fieldset: { legend: { text: "Was the inquiry completed in the target timeframe?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
+        errorMessage: { text: errorList[0].text } if errorList.length > 0 else null,
+        items: [
+          { value: "Yes", text: "Yes", checked: (eventInTarget == "Yes") },
+          { value: "No", text: "No", checked: (eventInTarget == "No") }
+        ]
+      }) }}
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save" }) }}
+        {{ govukButton({ text: "Remove and save", classes: "govuk-button--secondary", name: "action", value: "remove" }) }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
