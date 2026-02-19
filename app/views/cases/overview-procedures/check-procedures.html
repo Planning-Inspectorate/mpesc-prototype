@@ -21,9 +21,14 @@ Procedure(s) - Planning Inspectorate Portal
     {% endfor %}
 
     {% if procList.length > 0 %}
-   <div class="govuk-inset-text">
-        Changing the procedure type will delete the information you have already entered for an existing procedure.
-   </div>
+    <div class="govuk-warning-text">
+  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+  <strong class="govuk-warning-text__text">
+    <span class="govuk-visually-hidden">Warning</span>
+    Changing the procedure type will delete the information you <br> have already entered for an existing procedure.
+  </strong>
+</div>
+
       <table class="govuk-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">

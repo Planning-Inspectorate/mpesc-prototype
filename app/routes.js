@@ -2938,6 +2938,10 @@ router.post('/cases/procedures/procedure-1/type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1;
+
+    // --- TRIGGER REVERSE SYNC ---
+    syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
   }
 
@@ -2951,6 +2955,9 @@ router.post('/cases/procedures/procedure-1/type', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.type = type;
   c.procedure1.active = true;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
 
   res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
 });
@@ -2987,6 +2994,10 @@ router.post('/cases/procedures/procedure-1/status', function(req, res) {
 
   c.procedure1 = c.procedure1 || {};
   c.procedure1.status = status;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
   res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
 });
 
@@ -3028,6 +3039,10 @@ router.post('/cases/procedures/procedure-1/admin-type', function(req, res) {
 
   c.procedure1 = c.procedure1 || {};
   c.procedure1.adminType = adminType;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
   res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
 });
 
@@ -5135,6 +5150,10 @@ router.post('/cases/procedures/procedure-1/site-visit-type', function(req, res) 
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.siteVisitType;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
   }
 
@@ -5149,6 +5168,9 @@ router.post('/cases/procedures/procedure-1/site-visit-type', function(req, res) 
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.siteVisitType = val;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
 
   res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
 });
@@ -5239,6 +5261,10 @@ router.post('/cases/procedures/procedure-2/type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
   }
 
@@ -5252,6 +5278,9 @@ router.post('/cases/procedures/procedure-2/type', function(req, res) {
   c.procedure2 = c.procedure2 || {};
   c.procedure2.type = type;
   c.procedure2.active = true;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
 
   res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
 });
@@ -5288,6 +5317,10 @@ router.post('/cases/procedures/procedure-2/status', function(req, res) {
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.status = status;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
   res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
 });
 
@@ -5317,6 +5350,10 @@ router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.adminType;
+
+    // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
   }
 
@@ -5329,6 +5366,10 @@ router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.adminType = adminType;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
   res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
 });
 
@@ -7436,6 +7477,10 @@ router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) 
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.siteVisitType;
+
+    // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
   }
 
@@ -7450,6 +7495,9 @@ router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) 
   // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.siteVisitType = val;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
 
   res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
 });
@@ -7540,6 +7588,10 @@ router.post('/cases/procedures/procedure-3/type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
   }
 
@@ -7553,6 +7605,9 @@ router.post('/cases/procedures/procedure-3/type', function(req, res) {
   c.procedure3 = c.procedure3 || {};
   c.procedure3.type = type;
   c.procedure3.active = true;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
 
   res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
 });
@@ -7589,6 +7644,10 @@ router.post('/cases/procedures/procedure-3/status', function(req, res) {
 
   c.procedure3 = c.procedure3 || {};
   c.procedure3.status = status;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
   res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
 });
 
@@ -7618,6 +7677,10 @@ router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.adminType;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
   }
 
@@ -7630,6 +7693,10 @@ router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
 
   c.procedure3 = c.procedure3 || {};
   c.procedure3.adminType = adminType;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
   res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
 });
 
@@ -9737,6 +9804,10 @@ router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) 
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.siteVisitType;
+
+// --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
+
     return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
   }
 
@@ -9751,6 +9822,9 @@ router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) 
   // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.siteVisitType = val;
+
+  // --- TRIGGER REVERSE SYNC ---
+  syncDetailedToOverview(c);
 
   res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
 });
@@ -10099,6 +10173,65 @@ function getOverviewProcs(req) {
   return c;
 }
 
+// Helper: Sync the overview list to the detailed Procedure 1, 2, and 3 cards
+function syncOverviewToDetailed(c) {
+  if (!c.overviewProcedures) c.overviewProcedures = [];
+  
+  // Loop through slots 1 to 3
+  for (let i = 0; i < 3; i++) {
+    let procKey = 'procedure' + (i + 1); // Creates 'procedure1', 'procedure2', 'procedure3'
+    let overviewItem = c.overviewProcedures[i];
+    
+    if (overviewItem) {
+      // If an overview procedure exists at this spot, merge its top-level data into the detailed card
+      if (!c[procKey]) c[procKey] = {};
+      c[procKey].type = overviewItem.type;
+      c[procKey].status = overviewItem.status;
+      c[procKey].adminType = overviewItem.adminType || c[procKey].adminType;
+      c[procKey].siteVisitType = overviewItem.siteVisitType || c[procKey].siteVisitType;
+      c[procKey].inspector = overviewItem.inspector || c[procKey].inspector;
+      c[procKey].active = true; 
+    } else {
+      // If there is no procedure for this slot (e.g. they only added 2 procedures), clear the card completely
+      c[procKey] = null;
+    }
+  }
+}
+
+// Helper: Sync detailed Procedure 1, 2, 3 cards BACK to the Overview list
+function syncDetailedToOverview(c) {
+  if (!c) return;
+  
+  let newOverview = [];
+
+  // Loop through slots 1, 2, and 3
+  for (let i = 1; i <= 3; i++) {
+    let procKey = 'procedure' + i;
+    let detailedProc = c[procKey];
+
+    // If the detailed card has data, push it into the overview list
+    if (detailedProc && detailedProc.type) {
+      
+      // Keep existing ID so "Change/Remove" links don't break, or create a new one
+      let existingId = (c.overviewProcedures && c.overviewProcedures[i - 1]) 
+                       ? c.overviewProcedures[i - 1].id 
+                       : 'proc-' + Date.now() + i;
+
+      newOverview.push({
+        id: existingId,
+        type: detailedProc.type,
+        status: detailedProc.status,
+        adminType: detailedProc.adminType,
+        siteVisitType: detailedProc.siteVisitType,
+        inspector: detailedProc.inspector
+      });
+    }
+  }
+
+  // Replace the old overview array with the newly synced one
+  c.overviewProcedures = newOverview;
+}
+
 // 0. CHECK PAGE (The Table)
 router.get('/cases/overview-procedures/check', (req, res) => {
   res.render('cases/overview-procedures/check-procedures', { ref: req.query.ref });
@@ -10226,6 +10359,9 @@ router.post('/cases/overview-procedures/step-3', (req, res) => {
     c.overviewProcedures.push(temp);
   }
 
+  // --- TRIGGER THE SYNC HERE ---
+  syncOverviewToDetailed(c);
+
   // Clear temp and redirect to table
   req.session.data['tempProc'] = {};
   res.redirect(`/cases/overview-procedures/check?ref=${ref}`);
@@ -10249,6 +10385,8 @@ router.post('/cases/overview-procedures/remove', (req, res) => {
     var c = getCase(req);
     if (c && c.overviewProcedures) {
       c.overviewProcedures = c.overviewProcedures.filter(i => i.id !== req.query.id);
+
+      syncOverviewToDetailed(c);
     }
   }
   
