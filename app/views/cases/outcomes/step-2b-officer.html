@@ -1,0 +1,87 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errors %}Error: {% endif %}Who is the officer? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {# --- Error Summary --- #}
+    {% if errors %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          {
+            text: errors.officerName.text,
+            href: "#officerName"
+          }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/step-2b?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+
+      {# --- Form Group with Conditional Error Class --- #}
+      <div class="govuk-form-group {% if errors.officerName %}govuk-form-group--error{% endif %}">
+        
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--l" for="officerName">
+            Who is the officer?
+          </label>
+        </h1>
+        
+        {# --- Inline Error Message --- #}
+        {% if errors.officerName %}
+          <p id="officerName-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ errors.officerName.text }}
+          </p>
+        {% endif %}
+
+        {# --- Autocomplete Container --- #}
+        <div id="officerName-container"></div>
+
+      </div>
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  const officers = [
+    "Kieran De La Cruz",
+    "Edward Mitchell",
+    "Sarah Tudor",
+    "Steve Waterfield",
+    "Alex Hudd",
+    "Harry Wood",
+    "Rob Davis",
+    "Deborah Board",
+    "(Service Account) Automated Tester",
+    "Owen Woodwards"
+  ];
+
+  accessibleAutocomplete({
+    element: document.querySelector('#officerName-container'),
+    id: 'officerName',         // Must match the 'for' attribute in the label
+    name: 'officerName',       // This is what req.body will look for in your route
+    source: officers,
+    // Pull the previously saved value from the session if it exists
+    defaultValue: "{{ data['tempOutcome'].officerName | default('') }}", 
+    showAllValues: true,       // Setting this to true lets users click an arrow to see the full list
+    confirmOnBlur: false, 
+    autoselect: true
+  });
+</script>
+{% endblock %}

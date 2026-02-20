@@ -1,0 +1,71 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}What is the outcome?{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    
+    {% if errors %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: "Select the outcome", href: "#decisionOutcome" }] }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/step-3?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      
+      {% set conditionsHtml %}
+        {{ govukInput({
+          id: "decisionGrantedConditions",
+          name: "decisionGrantedConditions",
+          label: { text: "Condition details" },
+          value: details if value == "Granted with conditions" else ""
+        }) }}
+      {% endset -%}
+
+      {% set otherHtml %}
+        {{ govukInput({
+          id: "decisionOtherDetails",
+          name: "decisionOtherDetails",
+          label: { text: "Other" },
+          value: details if value == "Other" else ""
+        }) }}
+      {% endset -%}
+
+      {{ govukRadios({
+        name: "decisionOutcome",
+        fieldset: {
+          legend: { text: "What is the outcome?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: errors.decisionOutcome if errors else null,
+        items: [
+          { value: "Allow", text: "Allow", checked: (value == "Allow") },
+          { value: "Not allowed", text: "Not allowed", checked: (value == "Not allowed") },
+          { value: "Partially allow", text: "Partially allow", checked: (value == "Partially allow") },
+          { value: "Confirmed", text: "Confirmed", checked: (value == "Confirmed") },
+          { value: "Not confirmed", text: "Not confirmed", checked: (value == "Not confirmed") },
+          { value: "Confirmed with modifications", text: "Confirmed with modifications", checked: (value == "Confirmed with modifications") },
+          { value: "Directed", text: "Directed", checked: (value == "Directed") },
+          { value: "Not directed", text: "Not directed", checked: (value == "Not directed") },
+          { value: "Granted", text: "Granted", checked: (value == "Granted") },
+          { value: "Granted with conditions", text: "Granted with conditions", checked: (value == "Granted with conditions"), conditional: { html: conditionsHtml } },
+          { value: "Partially granted", text: "Partially granted", checked: (value == "Partially granted") },
+          { value: "Not granted", text: "Not granted", checked: (value == "Not granted") },
+          { value: "Modified (Adv)", text: "Modified (Adv)", checked: (value == "Modified (Adv)") },
+          { value: "Modified (Not adv)", text: "Modified (Not adv)", checked: (value == "Modified (Not adv)") },
+          { value: "Order made", text: "Order made", checked: (value == "Order made") },
+          { value: "Order not made", text: "Order not made", checked: (value == "Order not made") },
+          { value: "Order made with modifications", text: "Order made with modifications", checked: (value == "Order made with modifications") },
+          { value: "Propose to confirm", text: "Propose to confirm", checked: (value == "Propose to confirm") },
+          { value: "Propose not to confirm", text: "Propose not to confirm", checked: (value == "Propose not to confirm") },
+          { value: "Other", text: "Other", checked: (value == "Other"), conditional: { html: otherHtml } }
+        ]
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

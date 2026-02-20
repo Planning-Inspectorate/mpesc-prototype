@@ -10809,4 +10809,535 @@ router.get('/cases/key-contacts/contacts/remove', function(req, res) {
 });
 
 
+// =============================================================================
+//  OUTCOMES FLOW (Multi-step)
+// =============================================================================
 
+function getOutcomes(req) {
+  var c = getCase(req); // Assuming you have your standard getCase helper
+  if (!c) return null;
+  if (!c.outcomes) c.outcomes = [];
+  return c;
+}
+
+// 0. CHECK PAGE (The Table)
+router.get('/cases/outcomes/check', (req, res) => {
+  res.render('cases/outcomes/check-outcomes', { ref: req.query.ref });
+});
+
+// 1. STEP 1: Type of decision
+router.get('/cases/outcomes/step-1', (req, res) => {
+  var c = getCase(req);
+  var id = req.query.id;
+
+  // HYDRATION LOGIC: Load existing data if editing
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  } else if (!id) {
+    req.session.data['tempOutcome'] = {}; // Clear temp if creating a brand new one
+  }
+
+  var val = req.session.data['tempOutcome']?.type || "";
+  res.render('cases/outcomes/step-1-type', { ref: req.query.ref, id: req.query.id, value: val });
+});
+
+router.post('/cases/outcomes/step-1', (req, res) => {
+  var type = req.body.outcomeType;
+  if (!type) return res.render('cases/outcomes/step-1-type', { ref: req.query.ref, id: req.query.id, error: true });
+  
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
+  req.session.data['tempOutcome'].type = type;
+  res.redirect(`/cases/outcomes/step-2?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 2. STEP 2: Originator (Decision Maker)
+router.get('/cases/outcomes/step-2', (req, res) => {
+  var c = getCase(req);
+  var id = req.query.id;
+
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  }
+
+  var val = req.session.data['tempOutcome']?.originator || "";
+  res.render('cases/outcomes/step-2-originator', { ref: req.query.ref, id: req.query.id, value: val });
+});
+
+router.post('/cases/outcomes/step-2', (req, res) => {
+  var originator = req.body.originator;
+  if (!originator) return res.render('cases/outcomes/step-2-originator', { ref: req.query.ref, id: req.query.id, error: true });
+  
+  req.session.data['tempOutcome'].originator = originator;
+
+  // BRANCHING
+  if (originator === "Inspector") {
+    res.redirect(`/cases/outcomes/step-2a?ref=${req.query.ref}&id=${req.query.id}`);
+  } else if (originator === "Officer") {
+    res.redirect(`/cases/outcomes/step-2b?ref=${req.query.ref}&id=${req.query.id}`);
+  } else {
+    // Secretary of State
+    req.session.data['tempOutcome'].inspectorName = null; 
+    req.session.data['tempOutcome'].officerName = null;
+    res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+  }
+});
+
+// 2a. STEP 2a: Inspector Name
+router.get('/cases/outcomes/step-2a', (req, res) => {
+  var c = getCase(req); 
+  var id = req.query.id;
+
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  }
+
+  res.render('cases/outcomes/step-2a-inspector', { 
+    ref: req.query.ref, 
+    id: req.query.id,
+    inspectors: c.inspectors || [] 
+  });
+});
+
+router.post('/cases/outcomes/step-2a', (req, res) => {
+  var inspector = req.body.inspectorName;
+  var c = getCase(req); 
+  
+  if (!inspector) {
+    return res.render('cases/outcomes/step-2a-inspector', { 
+      ref: req.query.ref, 
+      id: req.query.id, 
+      inspectors: c.inspectors || [], 
+      errors: {
+        inspectorName: {
+          text: "Select the inspector maker"
+        }
+      }
+    });
+  }
+
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
+  
+  req.session.data['tempOutcome'].inspectorName = inspector;
+  req.session.data['tempOutcome'].officerName = null; 
+  
+  res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 2b. STEP 2b: Officer Name
+router.get('/cases/outcomes/step-2b', (req, res) => {
+  var c = getCase(req); 
+  var id = req.query.id;
+
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  }
+
+  res.render('cases/outcomes/step-2b-officer', { 
+    ref: req.query.ref, 
+    id: req.query.id 
+  }); 
+});
+
+router.post('/cases/outcomes/step-2b', (req, res) => {
+  var officer = req.body.officerName; 
+  
+  if (!officer) {
+    return res.render('cases/outcomes/step-2b-officer', { 
+      ref: req.query.ref, 
+      id: req.query.id, 
+      errors: {
+        officerName: {
+          text: "Select the officer"
+        }
+      } 
+    });
+  }
+
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
+  
+  req.session.data['tempOutcome'].officerName = officer;
+  req.session.data['tempOutcome'].inspectorName = null; 
+  
+  res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 3. STEP 3: Outcome
+router.get('/cases/outcomes/step-3', (req, res) => {
+  var c = getCase(req); 
+  var id = req.query.id;
+
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  }
+
+  var val = req.session.data['tempOutcome']?.decisionOutcome || "";
+  var grantedDetails = req.session.data['tempOutcome']?.decisionGrantedConditions || "";
+  var otherDetails = req.session.data['tempOutcome']?.decisionOtherDetails || "";
+
+  res.render('cases/outcomes/step-3-outcome', { 
+    ref: req.query.ref, 
+    id: req.query.id, 
+    value: val,
+    grantedDetails: grantedDetails,
+    otherDetails: otherDetails
+  });
+});
+
+router.post('/cases/outcomes/step-3', (req, res) => {
+  var decisionOutcome = req.body.decisionOutcome;
+
+  if (!decisionOutcome) {
+    return res.render('cases/outcomes/step-3-outcome', { 
+      ref: req.query.ref, id: req.query.id, 
+      errors: { decisionOutcome: { text: "Select the outcome" } }
+    });
+  }
+
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
+
+  req.session.data['tempOutcome'].decisionOutcome = decisionOutcome;
+  
+  // Save the conditional text inputs
+  req.session.data['tempOutcome'].decisionGrantedConditions = req.body.decisionGrantedConditions;
+  req.session.data['tempOutcome'].decisionOtherDetails = req.body.decisionOtherDetails;
+
+  // Move on to the dates
+  res.redirect(`/cases/outcomes/step-4?ref=${req.query.ref}&id=${req.query.id}`);
+});
+
+// 4. STEP 4: Outcome Date (REQUIRED)
+router.get('/cases/outcomes/step-4', (req, res) => {
+  var c = getCase(req); 
+  var id = req.query.id;
+
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  }
+
+  var tempOutcome = req.session.data['tempOutcome'] || {};
+  var outcomeDate = tempOutcome.outcomeDate || {};
+
+  res.render('cases/outcomes/step-4-date', { 
+    ref: req.query.ref, 
+    id: req.query.id, 
+    day: outcomeDate.day,
+    month: outcomeDate.month,
+    year: outcomeDate.year
+  });
+});
+
+router.post('/cases/outcomes/step-4', (req, res) => {
+  if (!req.session.data['tempOutcome']) {
+    req.session.data['tempOutcome'] = {};
+  }
+
+  var day = req.body['outcome-day']; 
+  var month = req.body['outcome-month']; 
+  var year = req.body['outcome-year'];
+
+  var result = validateAndSaveDate(
+    req, 
+    res, 
+    'outcome',                        
+    'Outcome date',                   
+    req.session.data['tempOutcome'],  
+    'outcomeDate'                     
+  );
+
+  if (result.status === "SUCCESS" || result.status === "REMOVED") {
+    return res.redirect(`/cases/outcomes/step-5?ref=${req.query.ref}&id=${req.query.id}`);
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/outcomes/step-4-date', { 
+      ref: req.query.ref, 
+      id: req.query.id, 
+      day: day,
+      month: month,
+      year: year,
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// 5. STEP 5: Received Date (OPTIONAL) & SAVE
+router.get('/cases/outcomes/step-5', (req, res) => {
+  var c = getCase(req); 
+  var id = req.query.id;
+
+  if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
+    if (c && c.outcomes) {
+      var existingOutcome = c.outcomes.find(o => o.id === id);
+      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
+    }
+  }
+
+  var tempOutcome = req.session.data['tempOutcome'] || {};
+  var receivedDate = tempOutcome.receivedDate || {}; 
+
+  res.render('cases/outcomes/step-5-received', { 
+    ref: req.query.ref, 
+    id: req.query.id, 
+    day: receivedDate.day,
+    month: receivedDate.month,
+    year: receivedDate.year
+  });
+});
+
+router.post('/cases/outcomes/step-5', (req, res) => {
+  if (!req.session.data['tempOutcome']) {
+    req.session.data['tempOutcome'] = {};
+  }
+
+  var day = req.body['received-day']; 
+  var month = req.body['received-month']; 
+  var year = req.body['received-year'];
+
+  if (!day && !month && !year) {
+    req.session.data['tempOutcome'].receivedDate = null; 
+  } else {
+    var result = validateAndSaveDate(
+      req, 
+      res, 
+      'received',                       
+      'Received date',                  
+      req.session.data['tempOutcome'],  
+      'receivedDate'                    
+    );
+
+    if (result.status === "ERROR") {
+      return res.render('cases/outcomes/step-5-received', { 
+        ref: req.query.ref, 
+        id: req.query.id, 
+        day: day,
+        month: month,
+        year: year,
+        errorList: result.errorList,
+        errorFields: result.errorFields
+      });
+    }
+  }
+
+  // --- 3. SAVE TO ARRAY ---
+  var c = getCase(req); 
+
+  if (!c) {
+    console.log("Error: Case not found for reference: ", req.query.ref);
+    return res.redirect('/'); 
+  }
+
+  if (!c.outcomes) {
+    c.outcomes = [];
+  }
+
+  var temp = req.session.data['tempOutcome'] || {};
+  var id = req.query.id;
+
+  if (id) {
+    var index = c.outcomes.findIndex(i => i.id === id);
+    if (index > -1) {
+      c.outcomes[index] = { ...c.outcomes[index], ...temp };
+    }
+  } else {
+    temp.id = 'out-' + Date.now();
+    c.outcomes.push(temp);
+  }
+
+  req.session.data['tempOutcome'] = {}; 
+  res.redirect(`/cases/outcomes/check?ref=${req.query.ref}`);
+});
+
+// 6. REMOVE OUTCOME
+router.get('/cases/outcomes/remove-confirm', (req, res) => {
+  res.render('cases/outcomes/remove-confirm', { ref: req.query.ref, id: req.query.id });
+});
+router.post('/cases/outcomes/remove', (req, res) => {
+  var confirm = req.body.confirmRemove;
+  if (!confirm) return res.render('cases/outcomes/remove-confirm', { ref: req.query.ref, id: req.query.id, error: true });
+
+  if (confirm === 'yes') {
+    var c = getCase(req);
+    if (c && c.outcomes) c.outcomes = c.outcomes.filter(i => i.id !== req.query.id);
+  }
+  res.redirect(`/cases/outcomes/check?ref=${req.query.ref}`);
+});
+
+
+// =========================================================
+// OVERVIEW OUTCOME: Parties notified of outcome (Optional)
+// =========================================================
+
+router.get('/cases/overview-outcome/parties-notified', (req, res) => {
+  var c = getCase(req); 
+  var overview = c.outcomeOverview || {};
+  var dateObj = overview.partiesNotifiedDate || {};
+
+  res.render('cases/overview-outcome/parties-notified', { 
+    ref: req.query.ref,
+    day: dateObj.day,
+    month: dateObj.month,
+    year: dateObj.year
+  });
+});
+
+router.post('/cases/overview-outcome/parties-notified', (req, res) => {
+  var c = getCase(req);
+  if (!c) return res.redirect('/'); 
+
+  if (!c.outcomeOverview) {
+    c.outcomeOverview = {};
+  }
+
+  var day = req.body['parties-notified-day']; 
+  var month = req.body['parties-notified-month']; 
+  var year = req.body['parties-notified-year'];
+
+  // 1. Check if completely blank
+  if (!day && !month && !year) {
+    c.outcomeOverview.partiesNotifiedDate = null; 
+    return res.redirect('/cases/case-details?ref=' + req.query.ref); 
+  }
+
+  // 2. Not blank, run helper
+  var result = validateAndSaveDate(
+    req, 
+    res, 
+    'parties-notified',           
+    'Parties notified of outcome date',
+    c.outcomeOverview,            
+    'partiesNotifiedDate'         
+  );
+
+  // If validation fails
+  if (result.status === "ERROR") {
+    return res.render('cases/overview-outcome/parties-notified', { 
+      ref: req.query.ref, 
+      day: day,
+      month: month,
+      year: year,
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+
+  // 3. Success
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// =========================================================
+// OVERVIEW OUTCOME: Order decision dispatch (Optional)
+// =========================================================
+router.get('/cases/overview-outcome/order-dispatch', (req, res) => {
+  var c = getCase(req); 
+  var dateObj = (c.outcomeOverview && c.outcomeOverview.orderDispatchDate) || {};
+  res.render('cases/overview-outcome/order-dispatch', { 
+    ref: req.query.ref, day: dateObj.day, month: dateObj.month, year: dateObj.year 
+  });
+});
+
+router.post('/cases/overview-outcome/order-dispatch', (req, res) => {
+  var c = getCase(req);
+  if (!c) return res.redirect('/'); 
+  if (!c.outcomeOverview) c.outcomeOverview = {};
+
+  var day = req.body['order-dispatch-day'], month = req.body['order-dispatch-month'], year = req.body['order-dispatch-year'];
+
+  if (!day && !month && !year) {
+    c.outcomeOverview.orderDispatchDate = null; 
+    return res.redirect('/cases/case-details?ref=' + req.query.ref); 
+  }
+
+  var result = validateAndSaveDate(req, res, 'order-dispatch', 'Order decision dispatch date', c.outcomeOverview, 'orderDispatchDate');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/overview-outcome/order-dispatch', { 
+      ref: req.query.ref, day, month, year, errorList: result.errorList, errorFields: result.errorFields 
+    });
+  }
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// =========================================================
+// OVERVIEW OUTCOME: Sealed order returned (Optional)
+// =========================================================
+router.get('/cases/overview-outcome/sealed-order', (req, res) => {
+  var c = getCase(req); 
+  var dateObj = (c.outcomeOverview && c.outcomeOverview.sealedOrderReturnedDate) || {};
+  res.render('cases/overview-outcome/sealed-order', { 
+    ref: req.query.ref, day: dateObj.day, month: dateObj.month, year: dateObj.year 
+  });
+});
+
+router.post('/cases/overview-outcome/sealed-order', (req, res) => {
+  var c = getCase(req);
+  if (!c) return res.redirect('/'); 
+  if (!c.outcomeOverview) c.outcomeOverview = {};
+
+  var day = req.body['sealed-order-day'], month = req.body['sealed-order-month'], year = req.body['sealed-order-year'];
+
+  if (!day && !month && !year) {
+    c.outcomeOverview.sealedOrderReturnedDate = null; 
+    return res.redirect('/cases/case-details?ref=' + req.query.ref); 
+  }
+
+  var result = validateAndSaveDate(req, res, 'sealed-order', 'Sealed order returned date', c.outcomeOverview, 'sealedOrderReturnedDate');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/overview-outcome/sealed-order', { 
+      ref: req.query.ref, day, month, year, errorList: result.errorList, errorFields: result.errorFields 
+    });
+  }
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// =========================================================
+// OVERVIEW OUTCOME: Decision published (Optional)
+// =========================================================
+router.get('/cases/overview-outcome/decision-published', (req, res) => {
+  var c = getCase(req); 
+  var dateObj = (c.outcomeOverview && c.outcomeOverview.decisionPublishedDate) || {};
+  res.render('cases/overview-outcome/decision-published', { 
+    ref: req.query.ref, day: dateObj.day, month: dateObj.month, year: dateObj.year 
+  });
+});
+
+router.post('/cases/overview-outcome/decision-published', (req, res) => {
+  var c = getCase(req);
+  if (!c) return res.redirect('/'); 
+  if (!c.outcomeOverview) c.outcomeOverview = {};
+
+  var day = req.body['decision-published-day'], month = req.body['decision-published-month'], year = req.body['decision-published-year'];
+
+  if (!day && !month && !year) {
+    c.outcomeOverview.decisionPublishedDate = null; 
+    return res.redirect('/cases/case-details?ref=' + req.query.ref); 
+  }
+
+  var result = validateAndSaveDate(req, res, 'decision-published', 'Decision published date', c.outcomeOverview, 'decisionPublishedDate');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/overview-outcome/decision-published', { 
+      ref: req.query.ref, day, month, year, errorList: result.errorList, errorFields: result.errorFields 
+    });
+  }
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});

@@ -1,0 +1,117 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check outcome details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check outcome details</h1>
+
+    {# --- GET DATA --- #}
+    {% set outcomeList = [] %}
+    {% for c in data['cases'] %}
+      {% if c.reference == ref %}
+        {% set outcomeList = c.outcomes or [] %}
+      {% endif %}
+    {% endfor %}
+
+    {# --- DATA TABLE --- #}
+    {% if outcomeList.length > 0 %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Type</th>
+            <th scope="col" class="govuk-table__header">Originator</th>
+            <th scope="col" class="govuk-table__header">Outcome</th>
+            <th scope="col" class="govuk-table__header">Outcome date</th>
+            <th scope="col" class="govuk-table__header">Received date</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in outcomeList %}
+            <tr class="govuk-table__row">
+              
+              {# 1. Type of decision #}
+              <td class="govuk-table__cell">{{ item.type }}</td>
+              
+              {# 2. Originator (with name stacked underneath) #}
+              <td class="govuk-table__cell">
+                {% if item.originator == "Inspector" %}
+                  Inspector<br>
+                  <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ item.inspectorName }}</span>
+                {% elseif item.originator == "Officer" %}
+                  Case officer<br>
+                  <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ item.officerName }}</span>
+                {% else %}
+                  Secretary of State
+                {% endif %}
+              </td>
+              
+              {# 3. Outcome (Now unified for everyone!) #}
+              <td class="govuk-table__cell">
+                {{ item.decisionOutcome if item.decisionOutcome else "-" }}
+              </td>
+              
+              {# 4. Outcome Date (Using the helper's object structure) #}
+              <td class="govuk-table__cell">
+                {{ item.outcomeDate.formatted if item.outcomeDate else "-" }}
+              </td>
+              
+              {# 5. Received Date (Using the helper's object structure) #}
+              <td class="govuk-table__cell">
+                {{ item.receivedDate.formatted if item.receivedDate else "-" }}
+              </td>
+              
+              {# 6. Actions #}
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/outcomes/step-1?ref={{ ref }}&id={{ item.id }}">
+                      Change<span class="govuk-visually-hidden"> outcome</span>
+                    </a>
+                  </li>
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/outcomes/remove-confirm?ref={{ ref }}&id={{ item.id }}">
+                      Remove<span class="govuk-visually-hidden"> outcome</span>
+                    </a>
+                  </li>
+                </ul>
+              </td>
+
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">No outcome details found.</p>
+    {% endif %}
+
+    {# --- BUTTONS --- #}
+    <form action="/cases/case-details" method="get">
+      <input type="hidden" name="ref" value="{{ ref }}">
+      
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Add details",
+          classes: "govuk-button--secondary",
+          href: "/cases/outcomes/step-1?ref=" + ref
+        }) }}
+      </div>
+
+      {% if outcomeList.length > 0 %}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save and continue" }) }}
+        </div>
+      {% endif %}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

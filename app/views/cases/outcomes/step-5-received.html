@@ -1,0 +1,61 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}When was the outcome received? (Optional) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/step-5?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      
+      {{ govukDateInput({
+        id: "received",
+        namePrefix: "received",
+        fieldset: {
+          legend: {
+            text: "When was the outcome received? (optional)",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        hint: {
+          text: "For example, 27 3 2024"
+        },
+        errorMessage: { text: errorList[0].text } if errorList else null,
+        items: [
+          {
+            name: "day",
+            classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and 'day' in errorFields else ""),
+            value: day
+          },
+          {
+            name: "month",
+            classes: "govuk-input--width-2" + (" govuk-input--error" if errorFields and 'month' in errorFields else ""),
+            value: month
+          },
+          {
+            name: "year",
+            classes: "govuk-input--width-4" + (" govuk-input--error" if errorFields and 'year' in errorFields else ""),
+            value: year
+          }
+        ]
+      }) }}
+
+      {{ govukButton({ text: "Save and return to overview" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

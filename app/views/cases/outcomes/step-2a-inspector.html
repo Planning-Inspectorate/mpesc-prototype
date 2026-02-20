@@ -1,0 +1,64 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errors %}Error: {% endif %}Who is the inspector? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {# --- Error Summary --- #}
+    {% if errors %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          {
+            text: errors.inspectorName.text,
+            href: "#inspectorName"
+          }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/step-2a?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      
+      {# --- Build list of inspectors from the array --- #}
+      {% set radioItems = [] %}
+      {% if inspectors and inspectors.length > 0 %}
+        {% for insp in inspectors %}
+          {% set radioItems = (radioItems.push({ 
+            value: insp.name, 
+            text: insp.name, 
+            checked: (data['tempOutcome'].inspectorName == insp.name or value == insp.name) 
+          }), radioItems) %}
+        {% endfor %}
+      {% endif %}
+
+      {# --- Render Radios --- #}
+      {{ govukRadios({
+        name: "inspectorName",
+        idPrefix: "inspectorName",
+        fieldset: {
+          legend: { 
+            text: "Who is the inspector?", 
+            isPageHeading: true, 
+            classes: "govuk-fieldset__legend--l" 
+          }
+        },
+        hint: { 
+          text: "If no inspectors are available, add them on the inspectors page"
+        },
+        errorMessage: errors.inspectorName if errors.inspectorName else null,
+        items: radioItems
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

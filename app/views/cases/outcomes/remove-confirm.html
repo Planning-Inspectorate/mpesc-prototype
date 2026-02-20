@@ -1,0 +1,40 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if error %}Error: {% endif %}Remove outcome?
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/outcomes/check?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: "Select yes if you want to remove this outcome", href: "#confirmRemove" }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/remove?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      {{ govukRadios({
+        name: "confirmRemove",
+        fieldset: {
+          legend: { text: "Are you sure you want to remove this outcome?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: "Select yes if you want to remove this outcome" } if error else null,
+        items: [
+          { value: "yes", text: "Yes" },
+          { value: "no", text: "No" }
+        ]
+      }) }}
+      {{ govukButton({ text: "Confirm" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

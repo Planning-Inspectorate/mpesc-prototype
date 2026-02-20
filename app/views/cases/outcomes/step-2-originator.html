@@ -1,0 +1,41 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if error %}Error: {% endif %}Who is the decision maker or report writer?
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: "Select the decision maker", href: "#originator" }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/step-2?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      {{ govukRadios({
+        name: "originator",
+        fieldset: {
+          legend: { text: "Who is the decision maker or report writer?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: "Select the decision maker" } if error else null,
+        items: [
+          { value: "Inspector", text: "Inspector", checked: (value == "Inspector") },
+          { value: "Officer", text: "Officer", checked: (value == "Officer") },
+          { value: "Secretary of State", text: "Secretary of State", checked: (value == "Secretary of State") }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if error %}Error: {% endif %}What is the type of decision or report?
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/outcomes/check?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: "Select a type of decision or report", href: "#outcomeType" }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/outcomes/step-1?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      {{ govukRadios({
+        name: "outcomeType",
+        fieldset: {
+          legend: { text: "What is the type of decision or report?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: "Select a type of decision or report" } if error else null,
+        items: [
+          { value: "Decision", text: "Decision", checked: (value == "Decision") },
+          { value: "Interim decision", text: "Interim decision", checked: (value == "Interim decision") },
+          { value: "Proposal", text: "Proposal", checked: (value == "Proposal") },
+          { value: "Recommendation", text: "Recommendation", checked: (value == "Recommendation") },
+          { value: "Report", text: "Report", checked: (value == "Report") }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

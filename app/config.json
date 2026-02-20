@@ -1,5 +1,5 @@
 {
-  "serviceName": "Service name goes here",
+  "serviceName": "Manage planning, environmental and specialist casework",
   "plugins": {
     "govuk-frontend": {
       "rebrand": true

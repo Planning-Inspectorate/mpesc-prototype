@@ -51,7 +51,7 @@
         <li><a href="#procedure1" class="govuk-link govuk-link--no-visited-state">Procedure 1</a></li>
         <li><a href="#procedure2" class="govuk-link govuk-link--no-visited-state">Procedure 2</a></li>
         <li><a href="#procedure3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
-        <li><a href="#outcome" class="govuk-link govuk-link--no-visited-state">Outcome</a></li>
+        <li><a href="#outcomeOverview" class="govuk-link govuk-link--no-visited-state">Outcome</a></li>
         <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
         <li><a href="#withdrawal" class="govuk-link govuk-link--no-visited-state">Withdrawal or abeyance</a></li>
         <li><a href="#costs" class="govuk-link govuk-link--no-visited-state">Costs</a></li>
@@ -1689,24 +1689,166 @@
   }) }}
 {% endif %}
 
-      {# 9. OUTCOME #}
-      {{ govukSummaryList({
-        attributes: { id: "outcome" },
-        card: { title: { text: "Outcome" } },
-        rows: [
-          { key: { text: "Type of decision or report" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision type" }] } },
-          { key: { text: "Decision maker" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision maker" }] } },
-          { key: { text: "Outcome" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "outcome" }] } },
-          { key: { text: "In target?" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "in target" }] } },
-          { key: { text: "Outcome date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "outcome date" }] } },
-          { key: { text: "Decision received" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision received" }] } },
-          { key: { text: "Parties notified of outcome" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "parties notified" }] } },
-          { key: { text: "Order decision dispatch" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision dispatch" }] } },
-          { key: { text: "Sealed order returned" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "sealed order" }] } },
-          { key: { text: "Decision published" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "decision published" }] } },
-          { key: { text: "Is fencing permanent" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "fencing permanent" }] } }
-        ]
-      }) }}
+      {# ========================================================== #}
+      {# OUTCOME OVERVIEW                                           #}
+      {# ========================================================== #}
+      <div class="govuk-summary-card" id="outcomeOverview">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">Outcome overview</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          
+          {% set outcomeRows = [] %}
+          
+          {% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
+            
+            {# 1. Build the HTML for the bulleted list #}
+            {% set outcomeListHtml %}
+              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+                {% for out in currentCase.outcomes %}
+                  <li>{{ out.type }}</li>
+                {% endfor %}
+              </ul>
+            {% endset %}
+
+            {% set outcomeRows = [
+              { 
+                key: { text: "Type of decision or report" }, 
+                value: { html: outcomeListHtml }, 
+                actions: { items: [{ href: "/cases/outcomes/check?ref=" + currentCase.reference, text: "Add" }, { href: "/cases/outcomes/check?ref=" + currentCase.reference, text: "Change" }] } 
+              },
+              {
+              key: { text: "Parties notified of outcome" },
+              value: { text: currentCase.outcomeOverview.partiesNotifiedDate.formatted if currentCase.outcomeOverview.partiesNotifiedDate else "-" },
+              actions: { 
+                items: [{ 
+                  href: "/cases/overview-outcome/parties-notified?ref=" + currentCase.reference, 
+                  text: "Change" if currentCase.outcomeOverview.partiesNotifiedDate else "Add" 
+                }] 
+              }
+            },
+            {
+              key: { text: "Order decision dispatch" },
+              value: { text: currentCase.outcomeOverview.orderDispatchDate.formatted if currentCase.outcomeOverview.orderDispatchDate else "-" },
+              actions: { 
+                items: [{ 
+                  href: "/cases/overview-outcome/order-dispatch?ref=" + currentCase.reference, 
+                  text: "Change" if currentCase.outcomeOverview.orderDispatchDate else "Add" 
+                }] 
+              }
+            },
+            {
+              key: { text: "Sealed order returned" },
+              value: { text: currentCase.outcomeOverview.sealedOrderReturnedDate.formatted if currentCase.outcomeOverview.sealedOrderReturnedDate else "-" },
+              actions: { 
+                items: [{ 
+                  href: "/cases/overview-outcome/sealed-order?ref=" + currentCase.reference, 
+                  text: "Change" if currentCase.outcomeOverview.sealedOrderReturnedDate else "Add" 
+                }] 
+              }
+            },
+            {
+              key: { text: "Decision published" },
+              value: { text: currentCase.outcomeOverview.decisionPublishedDate.formatted if currentCase.outcomeOverview.decisionPublishedDate else "-" },
+              actions: { 
+                items: [{ 
+                  href: "/cases/overview-outcome/decision-published?ref=" + currentCase.reference, 
+                  text: "Change" if currentCase.outcomeOverview.decisionPublishedDate else "Add" 
+                }] 
+              }
+            }
+            ] %}
+            
+          {% else %}
+            {# Empty State #}
+            {% set outcomeRows = [
+              {
+                key: { text: "Type of decision or report" },
+                value: { text: "-" },
+                actions: { items: [{ href: "/cases/outcomes/check?ref=" + currentCase.reference, text: "Add" }] }
+              }
+            ] %}
+          {% endif %}
+
+          {{ govukSummaryList({ rows: outcomeRows }) }}
+
+        </div>
+      </div>
+
+      {# --- DYNAMIC OUTCOME CARDS (Decisions / Reports) --- #}
+{% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
+  {% for outcome in currentCase.outcomes %}
+    
+    <div class="govuk-summary-card" id="outcome-{{ outcome.id }}">
+      <div class="govuk-summary-card__title-wrapper">
+        
+        {# Card title automatically becomes the type of decision #}
+        <h2 class="govuk-summary-card__title">{{ outcome.type }}</h2>
+        
+        {# Card action linking back to the manage/check page #}
+        <ul class="govuk-summary-card__actions">
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link" href="/cases/outcomes/check?ref={{ currentCase.reference }}">
+              {#add Manage if you want the button #}
+              <span class="govuk-visually-hidden"> {{ outcome.type | lower }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+          
+          {# 1. Originator #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Originator</dt>
+            <dd class="govuk-summary-list__value">
+              {% if outcome.originator == "Inspector" %}
+                Inspector<br>
+                <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.inspectorName }}</span>
+              {% elseif outcome.originator == "Officer" %}
+                Case officer<br>
+                <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.officerName }}</span>
+              {% else %}
+                Secretary of State
+              {% endif %}
+            </dd>
+          </div>
+
+          {# 2. Outcome #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Outcome</dt>
+            <dd class="govuk-summary-list__value">
+              {{ outcome.decisionOutcome }}
+              {% if outcome.decisionOutcomeDetails %}
+                <br><span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">({{ outcome.decisionOutcomeDetails }})</span>
+              {% endif %}
+            </dd>
+          </div>
+
+          {# 3. Outcome Date #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Outcome date</dt>
+            <dd class="govuk-summary-list__value">
+              {{ outcome.outcomeDate.formatted if outcome.outcomeDate else "-" }}
+            </dd>
+          </div>
+
+          {# 4. Received Date #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Received date</dt>
+            <dd class="govuk-summary-list__value">
+              {{ outcome.receivedDate.formatted if outcome.receivedDate else "-" }}
+            </dd>
+          </div>
+
+        </dl>
+      </div>
+    </div>
+
+  {% endfor %}
+{% endif %}
+
 
       {# 10. DOCUMENTS #}
       {{ govukSummaryList({
