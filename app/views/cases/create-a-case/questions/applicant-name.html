@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if errorList %}Error: {% endif %}Who is the Applicant or appellant? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Who is the applicant or appellant?</h1>
+    <p class="govuk-hint">Enter the name of the main party. This could be an applicant,<br> appellant or server. Enter the name of the individual, the<br> company or both.</p>
+
+<form action="{% if editMode %}/cases/edit/applicant-name?ref={{ ref }}&id={{ id }}{% else %}/cases/create-a-case/questions/applicant-name{% if id %}?id={{ id }}{% endif %}{% endif %}" method="post" novalidate>
+      
+      {# Render general error inline if they left everything blank #}
+      {% if errors.general %}
+        <p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errors.general.text }}</p>
+      {% endif %}
+
+      {{ govukInput({
+        label: { text: "First name" },
+        id: "firstName",
+        name: "firstName",
+        value: val.firstName,
+        errorMessage: errors.firstName if errors.firstName else null
+      }) }}
+
+      {{ govukInput({
+        label: { text: "Last name" },
+        id: "lastName",
+        name: "lastName",
+        value: val.lastName,
+        errorMessage: errors.lastName if errors.lastName else null
+      }) }}
+
+      {{ govukInput({
+        label: { text: "Company or organisation name" },
+        id: "companyName",
+        name: "companyName",
+        value: val.companyName,
+        errorMessage: errors.companyName if errors.companyName else null
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

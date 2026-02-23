@@ -160,22 +160,12 @@ router.post('/case-received-date-answer', function (req, res) {
       year: year
     })
   } else {
-    res.redirect('/cases/create-a-case/questions/applicant')
+    res.redirect('/cases/create-a-case/questions/applicant-check')
   }
 
 })
 
-router.post('/applicant-name-answer', function (req, res) {
-  var applicantName = req.session.data['applicantName']
-  if (applicantName == "") {
-    res.render('/cases/create-a-case/questions/applicant', {
-      errorApplicantName: "Enter the applicant name"
-    })
-  } else {
-    res.redirect('/cases/create-a-case/questions/site-address')
-  }
 
-})
 
 router.post('/case-officer-answer', function (req, res) {
 
@@ -437,8 +427,7 @@ router.post('/create-case-submit', function (req, res) {
     "addressCounty": req.session.data['addressCounty'],
     "addressPostcode": req.session.data['addressPostcode'],
 
-    // Fix the typo (applicantName) and map the data
-    "applicantName": req.session.data['applicantName'] || req.session.data['applicant-name'],
+    applicants: req.session.data['applicants'] || [],
     
     // Map the authority/LPA
     "authorityName": req.session.data['authorityName'] || req.session.data['authority'] || req.session.data['lpa'],
@@ -513,19 +502,6 @@ router.post('/cases/edit/case-name', function(req, res) {
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-router.post('/cases/edit/applicant-name', function(req, res) {
-  var ref = req.query.ref;
-  var val = req.body['applicantName'];
-
-  if (!val) {
-    return res.render('cases/edit/applicant-name', { ref: ref, error: true, errorMessage: { text: "Enter the applicant name" } });
-  }
-
-  var c = getCase(req);
-  c['applicantName'] = val;
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
 // --- 2. EXTERNAL REFERENCE (No validation, migrate to externalReference) ---
 router.get('/cases/edit/external-reference', function(req, res) {
   var c = getCase(req);
@@ -543,31 +519,130 @@ router.post('/cases/edit/external-reference', function(req, res) {
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-// --- 3. APPLICANT / SERVER (Validation required, migrate to applicantName) ---
-router.get('/cases/edit/applicant-name', function(req, res) {
-  var c = getCase(req);
-  var val = c.applicantName || c['applicant-name'];
-  res.render('cases/edit/applicant-name', { ref: c.reference, value: val });
+// --- 3. EDIT/CHECK APPLICANTS HUB (Post-Creation) ---
+// 0. Hub Page: Check Applicants
+router.get('/cases/edit/check-applicants', (req, res) => {
+  let c = getCase(req);
+  if (!c) return res.redirect('/cases/all-cases');
+  
+  res.render('cases/edit/check-applicants', { 
+    ref: req.query.ref, 
+    applicants: c.applicants || [] 
+  });
 });
 
-router.post('/cases/edit/applicant-name', function(req, res) {
-  var ref = req.query.ref;
-  var val = req.body.applicantName;
+// 1. Applicant Name (Edit Mode)
+router.get('/cases/edit/applicant-name', (req, res) => {
+  let c = getCase(req);
+  let id = req.query.id;
 
-  if (!val || val.trim() === "") {
-    return res.render('cases/edit/applicant-name', { 
-      ref: ref, 
-      value: val, 
-      error: true, 
-      errorMessage: { text: "Enter the applicant name" } 
-    });
+  if (id && (!req.session.data['tempApplicant'] || req.session.data['tempApplicant'].id !== id)) {
+    if (c && c.applicants) {
+      let existingApp = c.applicants.find(a => a.id === id);
+      if (existingApp) {
+        req.session.data['tempApplicant'] = JSON.parse(JSON.stringify(existingApp));
+      }
+    }
+  } else if (!id) {
+    req.session.data['tempApplicant'] = {};
   }
 
-  var c = getCase(req);
-  c.applicantName = val;
-  delete c['applicant-name']; 
+  res.render('cases/create-a-case/questions/applicant-name', { 
+    ref: req.query.ref, 
+    id: id, 
+    val: req.session.data['tempApplicant'] || {}, 
+    editMode: true 
+  });
+});
+
+router.post('/cases/edit/applicant-name', (req, res) => {
+  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
+  req.session.data['tempApplicant'].firstName = req.body.firstName;
+  req.session.data['tempApplicant'].lastName = req.body.lastName;
+  req.session.data['tempApplicant'].companyName = req.body.companyName;
+
+  res.redirect(`/cases/edit/applicant-address?ref=${req.query.ref}&id=${req.query.id || ''}`);
+});
+
+// 2. Applicant Address (Edit Mode)
+router.get('/cases/edit/applicant-address', (req, res) => {
+  let temp = req.session.data['tempApplicant'] || {};
+  res.render('cases/create-a-case/questions/applicant-address', { 
+    ref: req.query.ref, 
+    id: req.query.id, 
+    val: temp,
+    address: temp.address || {}, 
+    editMode: true 
+  });
+});
+
+router.post('/cases/edit/applicant-address', (req, res) => {
+  var result = validateAndSaveAddress(req, res, 'applicant', 'Applicant address', req.session.data['tempApplicant'], 'address');
+
+  if (result.status === "ERROR") {
+    return res.render('cases/create-a-case/questions/applicant-address', { 
+      ref: req.query.ref, 
+      id: req.query.id,
+      val: req.session.data['tempApplicant'],
+      address: {
+        line1: req.body['applicant-line1'],
+        line2: req.body['applicant-line2'],
+        town: req.body['applicant-town'],
+        county: req.body['applicant-county'],
+        postcode: req.body['applicant-postcode']
+      },
+      errorList: result.errorList,
+      errorFields: result.errorFields,
+      editMode: true
+    });
+  }
+  res.redirect(`/cases/edit/applicant-contact?ref=${req.query.ref}&id=${req.query.id || ''}`);
+});
+
+// 3. Applicant Contact & Final Save (Edit Mode)
+router.get('/cases/edit/applicant-contact', (req, res) => {
+  res.render('cases/create-a-case/questions/applicant-contact', { 
+    ref: req.query.ref, 
+    id: req.query.id, 
+    val: req.session.data['tempApplicant'] || {}, 
+    editMode: true 
+  });
+});
+
+router.post('/cases/edit/applicant-contact', (req, res) => {
+  let c = getCase(req);
+  let id = req.query.id;
   
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
+  req.session.data['tempApplicant'].email = req.body.email;
+  req.session.data['tempApplicant'].phone = req.body.phone;
+
+  if (!c.applicants) c.applicants = [];
+  let completedApplicant = req.session.data['tempApplicant'];
+
+  if (id) {
+    let index = c.applicants.findIndex(a => a.id === id);
+    if (index > -1) c.applicants[index] = { ...completedApplicant };
+  } else {
+    completedApplicant.id = 'app-' + Date.now();
+    c.applicants.push(completedApplicant);
+  }
+
+  req.session.data['tempApplicant'] = {}; 
+  res.redirect(`/cases/edit/check-applicants?ref=${req.query.ref}`);
+});
+
+// 4. Instant Remove (Fixed Redirect)
+router.get('/cases/edit/applicant-remove', (req, res) => {
+  let c = getCase(req);
+  let id = req.query.id;
+  
+  if (c && c.applicants) {
+    c.applicants = c.applicants.filter(a => a.id !== id);
+  }
+  
+  // Pointed back to check-applicants
+  res.redirect(`/cases/edit/check-applicants?ref=${req.query.ref}`);
 });
 
 // --- 4. EDIT SITE ADDRESS (With Strict Postcode Validation) ---
@@ -10068,6 +10143,229 @@ router.post('/cases/edit/invoicing-fee-received', (req, res) => {
 
 
 
+// =========================================================
+// CREATE CASE: Applicant or Appellant Flow
+// =========================================================
+
+// 1. Applicant Name
+router.get('/cases/create-a-case/questions/applicant-name', (req, res) => {
+  let id = req.query.id;
+  let applicants = req.session.data['applicants'] || [];
+
+  // HYDRATION: If there is an ID, load that applicant from the array into temp storage
+  if (id && (!req.session.data['tempApplicant'] || req.session.data['tempApplicant'].id !== id)) {
+    let existingApp = applicants.find(a => a.id === id);
+    if (existingApp) req.session.data['tempApplicant'] = { ...existingApp };
+  } else if (!id && req.session.data['tempApplicant']?.id) {
+    // If clicking "Add applicant" (no ID in URL), clear out any previously edited applicant
+    req.session.data['tempApplicant'] = {};
+  }
+
+  let temp = req.session.data['tempApplicant'] || {};
+  res.render('cases/create-a-case/questions/applicant-name', { val: temp, id: id });
+});
+
+router.post('/cases/create-a-case/questions/applicant-name', (req, res) => {
+  let first = req.body.firstName || "";
+  let last = req.body.lastName || "";
+  let company = req.body.companyName || "";
+  
+  let errors = {};
+  let errorList = [];
+
+  if (!first && !last && !company) {
+    let err = { text: "Enter at least one of first name, last name or company name", href: "#firstName" };
+    errors.general = err;
+    errorList.push(err);
+  }
+  if (first.length > 250) {
+    let err = { text: "First name must be less than 250 characters", href: "#firstName" };
+    errors.firstName = err;
+    errorList.push(err);
+  }
+  if (last.length > 250) {
+    let err = { text: "Last name must be less than 250 characters", href: "#lastName" };
+    errors.lastName = err;
+    errorList.push(err);
+  }
+  if (company.length > 250) {
+    let err = { text: "Company name must be less than 250 characters", href: "#companyName" };
+    errors.companyName = err;
+    errorList.push(err);
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/create-a-case/questions/applicant-name', { 
+      val: { firstName: first, lastName: last, companyName: company }, 
+      errors, 
+      errorList,
+      id: req.query.id // Ensure ID is passed back on validation error
+    });
+  }
+
+  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
+  req.session.data['tempApplicant'].firstName = first;
+  req.session.data['tempApplicant'].lastName = last;
+  req.session.data['tempApplicant'].companyName = company;
+
+  // Pass the ID along to the next step
+  res.redirect(`/cases/create-a-case/questions/applicant-address${req.query.id ? '?id=' + req.query.id : ''}`);
+});
+
+// 2. Applicant Address (Using the Address Helper)
+router.get('/cases/create-a-case/questions/applicant-address', (req, res) => {
+  let temp = req.session.data['tempApplicant'] || {};
+  let address = temp.address || {}; // The helper creates this nested object
+  
+  res.render('cases/create-a-case/questions/applicant-address', { 
+    val: temp,
+    address: address, // Pass the nested address object for easy access
+    id: req.query.id
+  });
+});
+
+router.post('/cases/create-a-case/questions/applicant-address', (req, res) => {
+  if (!req.session.data['tempApplicant']) {
+    req.session.data['tempApplicant'] = {};
+  }
+
+  // Run the helper
+  var result = validateAndSaveAddress(
+    req, 
+    res, 
+    'applicant', 
+    'Applicant address', 
+    req.session.data['tempApplicant'], 
+    'address'
+  );
+
+  // If validation fails (e.g., they entered an invalid postcode)
+  if (result.status === "ERROR") {
+    return res.render('cases/create-a-case/questions/applicant-address', { 
+      val: req.session.data['tempApplicant'],
+      // Pass back the raw input so they don't lose what they typed
+      address: {
+        line1: req.body['applicant-line1'],
+        line2: req.body['applicant-line2'],
+        town: req.body['applicant-town'],
+        county: req.body['applicant-county'],
+        postcode: req.body['applicant-postcode']
+      },
+      errorList: result.errorList,
+      errorFields: result.errorFields,
+      id: req.query.id
+    });
+  }
+
+  // Success! Move to the next step, carrying the ID forward
+  res.redirect(`/cases/create-a-case/questions/applicant-contact${req.query.id ? '?id=' + req.query.id : ''}`);
+});
+
+// 3. Applicant Contact Details
+router.get('/cases/create-a-case/questions/applicant-contact', (req, res) => {
+  let temp = req.session.data['tempApplicant'] || {};
+  
+  // THE FIX: We must pass 'id: req.query.id' to the template so the form action can use it!
+  res.render('cases/create-a-case/questions/applicant-contact', { 
+    val: temp, 
+    id: req.query.id 
+  });
+});
+
+router.post('/cases/create-a-case/questions/applicant-contact', (req, res) => {
+  let email = req.body.email || "";
+  let phone = req.body.phone || "";
+  
+  let errors = {};
+  let errorList = [];
+
+  // Validation
+  if (email.length > 250) {
+    let err = { text: "Email must be less than 250 characters", href: "#email" };
+    errors.email = err;
+    errorList.push(err);
+  }
+  if (phone.length > 15) {
+    let err = { text: "Phone number must be less than 15 characters", href: "#phone" };
+    errors.phone = err;
+    errorList.push(err);
+  }
+
+  // If there are errors, stop and show them
+  if (errorList.length > 0) {
+    return res.render('cases/create-a-case/questions/applicant-contact', { val: { email, phone }, errors, errorList });
+  }
+
+  // 1. Save contact details to the temporary applicant object
+  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
+  req.session.data['tempApplicant'].email = email;
+  req.session.data['tempApplicant'].phone = phone;
+
+  // 2. Save the fully built tempApplicant to the main applicants array
+  if (!req.session.data['applicants']) req.session.data['applicants'] = [];
+  
+  let completedApplicant = req.session.data['tempApplicant'];
+  
+  // If editing an existing one, update it. If new, assign an ID and push it.
+  if (req.query.id) {
+    let index = req.session.data['applicants'].findIndex(a => a.id === req.query.id);
+    if (index > -1) {
+      req.session.data['applicants'][index] = { ...completedApplicant };
+    }
+  } else {
+    completedApplicant.id = 'app-' + Date.now();
+    req.session.data['applicants'].push(completedApplicant);
+  }
+
+  // 3. Clear temp storage so it's clean for the next applicant
+  req.session.data['tempApplicant'] = {};
+
+  // 4. Finally, redirect to the check/table page
+  res.redirect('/cases/create-a-case/questions/applicant-check');
+});
+
+// 4. Check Applicant Details
+router.post('/cases/create-a-case/questions/applicant-check', (req, res) => {
+  
+  // 1. Check if the main applicants array exists in the session yet, if not, create it
+  if (!req.session.data['applicants']) {
+    req.session.data['applicants'] = [];
+  }
+
+  // 2. Grab the completed applicant data from this flow
+  let completedApplicant = req.session.data['tempApplicant'];
+
+  if (completedApplicant) {
+    // Give them a unique ID just in case you need to edit/delete them later
+    completedApplicant.id = 'app-' + Date.now();
+    
+    // Push them into the array
+    req.session.data['applicants'].push(completedApplicant);
+  }
+
+  // 3. Clear the temporary holding pen so it's blank for the next person
+  req.session.data['tempApplicant'] = {};
+
+  // 4. Move to the next step in your creation flow
+  res.redirect('/cases/create-a-case/questions/site-address');
+});
+
+// 5. Remove Applicant (Create Flow) - Instant Delete
+router.get('/cases/create-a-case/questions/applicant-remove', (req, res) => {
+  let id = req.query.id;
+  
+  if (req.session.data['applicants']) {
+    // Filter out the applicant with the matching ID instantly
+    req.session.data['applicants'] = req.session.data['applicants'].filter(a => a.id !== id);
+  }
+  
+  // Bounce them right back to the check table
+  res.redirect('/cases/create-a-case/questions/applicant-check');
+});
+
+
+
+
 
 // ------------------------------------------------ SMART EDIT ROUTES ---------------------------------------------
 // NOTE: For any generic routes, add below SMART EDIT ROUTES. For any specific routes e.g. /cases/edit/case-received-date add ABOVE this.
@@ -10592,7 +10890,6 @@ router.get('/cases/case-details', function (req, res) {
     currentCase: c  // <--- Pass the whole object here
   });
 });
-
 
 
 // --- KEY CONTACTS: OBJECTORS ---

@@ -248,6 +248,86 @@
             {% endif %}
           {% endset %}
 
+
+{% set applicantsHtml %}
+  {% if currentCase.applicants and currentCase.applicants.length > 0 %}
+    
+    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+      
+      {# --- LOOP THROUGH THE FIRST TWO ENTRIES (Index 0 and 1) --- #}
+      {% for i in range(0, 2) %}
+        {% set app = currentCase.applicants[i] %}
+        {% if app %}
+          <li class="{% if i > 0 %}govuk-!-margin-top-4{% endif %}">
+            {% if app.firstName or app.lastName %}
+              <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
+            {% endif %}
+            {% if app.companyName %}<div>{{ app.companyName }}</div>{% endif %}
+            
+            {# Address #}
+            {% if app.address.line1 %}<div>{{ app.address.line1 }}</div>{% endif %}
+            {% if app.address.line2 %}<div>{{ app.address.line2 }}</div>{% endif %}
+            {% if app.address.town %}<div>{{ app.address.town }}</div>{% endif %}
+            {% if app.address.county %}<div>{{ app.address.county }}</div>{% endif %}
+            {% if app.address.postcode %}<div>{{ app.address.postcode }}</div>{% endif %}
+            
+            {# Contact #}
+            {% if app.email %}<div>{{ app.email }}</div>{% endif %}
+            {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {# --- SHOW/HIDE LOGIC ONLY IF MORE THAN 2 APPLICANTS --- #}
+      {% if currentCase.applicants.length > 2 %}
+        
+        {# Hidden container starts from the 3rd applicant (Index 2) #}
+        <div id="extra-applicants" style="display: none;">
+          {% for i in range(2, currentCase.applicants.length) %}
+            {% set app = currentCase.applicants[i] %}
+            <li class="govuk-!-margin-top-4">
+              {% if app.firstName or app.lastName %}
+                <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
+              {% endif %}
+              {% if app.companyName %}<div>{{ app.companyName }}</div>{% endif %}
+              
+              {# Address #}
+              {% if app.address.line1 %}<div>{{ app.address.line1 }}</div>{% endif %}
+              {% if app.address.line2 %}<div>{{ app.address.line2 }}</div>{% endif %}
+              {% if app.address.town %}<div>{{ app.address.town }}</div>{% endif %}
+              {% if app.address.county %}<div>{{ app.address.county }}</div>{% endif %}
+              {% if app.address.postcode %}<div>{{ app.address.postcode }}</div>{% endif %}
+              
+              {# Contact #}
+              {% if app.email %}<div>{{ app.email }}</div>{% endif %}
+              {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
+            </li>
+          {% endfor %}
+        </div>
+
+        {# The Toggle Link - now calculates length minus 2 #}
+        <p class="govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+          <a href="javascript:void(0);" id="toggle-applicants" class="govuk-link" onclick="
+            var extra = document.getElementById('extra-applicants');
+            var link = document.getElementById('toggle-applicants');
+            if(extra.style.display === 'none') {
+              extra.style.display = 'block';
+              link.innerText = 'Hide';
+            } else {
+              extra.style.display = 'none';
+              link.innerText = 'Show {{ currentCase.applicants.length - 2 }} more';
+            }
+          ">Show {{ currentCase.applicants.length - 2 }} more</a>
+        </p>
+        
+      {% endif %}
+
+    </ul>
+  {% else %}
+-
+  {% endif %}
+{% endset %}
+
       {{ govukSummaryList({
         attributes: { id: "case-details" },
         card: { title: { text: "Case details" } },
@@ -302,14 +382,18 @@
             value: { text: currentCase['modificationStatus'] or "-" }, 
             actions: { items: [{ href: "/cases/edit/modification-status?ref=" + currentCase.reference, text: "Change" if currentCase['modificationStatus'] else "Add", visuallyHiddenText: "modification status" }] } 
           },
-          { 
-            key: { text: "Applicant / Server" }, 
-            value: { text: currentCase.applicantName or currentCase['applicant-name'] or "-" }, 
-            actions: { items: [{ 
-              href: "/cases/edit/applicant-name?ref=" + currentCase.reference, 
-              text: "Change" if (currentCase.applicantName or currentCase['applicant-name']) else "Add", 
-              visuallyHiddenText: "applicant name" 
-            }] } 
+          {
+            key: { text: "Applicant or Appellant" },
+            value: { 
+              html: applicantsHtml
+          },
+            actions: { 
+              items: [{ 
+                href: "/cases/edit/check-applicants?ref=" + currentCase.reference if currentCase.applicants.length > 0 else "/cases/edit/applicant-name?ref=" + currentCase.reference,
+                text: "Change" if currentCase.applicants.length > 0 else "Add",
+                visuallyHiddenText: "applicant or appellant details" 
+              }] 
+            }
           },
           { 
             key: { text: "Site address" }, 

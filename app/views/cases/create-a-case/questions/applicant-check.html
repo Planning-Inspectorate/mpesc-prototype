@@ -1,0 +1,110 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check applicant or appellant - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "When was the case received?", href: "/cases/create-a-case/questions/case-received-date" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check applicant or appellant</h1>
+
+    {# --- GET DATA --- #}
+    {# Pull the array directly from the session data #}
+    {% set applicantList = data['applicants'] or [] %}
+
+    {# --- DATA TABLE --- #}
+    {% if applicantList.length > 0 %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Address</th>
+            <th scope="col" class="govuk-table__header">Contact details</th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in applicantList %}
+            <tr class="govuk-table__row">
+              
+              {# 1. Name & Company #}
+              <td class="govuk-table__cell">
+                {% if item.firstName or item.lastName %}
+                  <div>{{ (item.firstName + " " + item.lastName) | trim }}</div>
+                {% endif %}
+                {% if item.companyName %}
+                  <div>{{ item.companyName }}</div>
+                {% endif %}
+                {% if not item.firstName and not item.lastName and not item.companyName %}
+                  -
+                {% endif %}
+              </td>
+              
+              {# 2. Address #}
+              <td class="govuk-table__cell">
+                {% if item.address.line1 %}<div>{{ item.address.line1 }}</div>{% endif %}
+                {% if item.address.line2 %}<div>{{ item.address.line2 }}</div>{% endif %}
+                {% if item.address.town %}<div>{{ item.address.town }}</div>{% endif %}
+                {% if item.address.county %}<div>{{ item.address.county }}</div>{% endif %}
+                {% if item.address.postcode %}<div>{{ item.address.postcode }}</div>{% endif %}
+                {% if not item.address.formatted %}-{% endif %}
+              </td>
+              
+              {# 3. Contact #}
+              <td class="govuk-table__cell">
+                {% if item.email %}<div>{{ item.email }}</div>{% endif %}
+                {% if item.phone %}<div>{{ item.phone }}</div>{% endif %}
+                {% if not item.email and not item.phone %}-{% endif %}
+              </td>
+              
+              {# 4. Actions #}
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/create-a-case/questions/applicant-name?id={{ item.id }}">
+                      Change<span class="govuk-visually-hidden"> applicant details</span>
+                    </a>
+                  </li>
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/create-a-case/questions/applicant-remove?id={{ item.id }}">
+                      Remove<span class="govuk-visually-hidden"> applicant</span>
+                    </a>
+                  </li>
+                </ul>
+              </td>
+
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">You will be able to add multiple main parties e.g. applicant, <br> appellant, server, utility company.</p>
+    {% endif %}
+
+    {# --- BUTTONS --- #}
+    {# Note: Because this is just navigating to the next stage, we use a GET form #}
+    <form action="/cases/create-a-case/questions/site-address" method="get">
+      
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Add applicant",
+          classes: "govuk-button--secondary",
+          href: "/cases/create-a-case/questions/applicant-name"
+        }) }}
+      </div>
+
+      {% if applicantList.length > 0 %}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save and continue to site address" }) }}
+        </div>
+      {% endif %}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

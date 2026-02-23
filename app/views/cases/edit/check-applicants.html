@@ -1,0 +1,106 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check applicant or appellant details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    {% set applicants = applicants or data['applicants'] or [] %}
+    
+    <h1 class="govuk-heading-l">Check applicant or appellant</h1>
+
+    {# --- DATA TABLE --- #}
+    {% if applicants and applicants.length > 0 %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Address</th>
+            <th scope="col" class="govuk-table__header">Contact details</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in applicants %}
+            <tr class="govuk-table__row">
+              
+              {# 1. Name & Company (Stacked) #}
+              <td class="govuk-table__cell">
+                {% if item.firstName or item.lastName %}
+                  <div>{{ (item.firstName + " " + item.lastName) | trim }}</div>
+                {% endif %}
+                {% if item.companyName %}
+                  <div>{{ item.companyName }}</div>
+                {% endif %}
+                {% if not item.firstName and not item.lastName and not item.companyName %}
+                  -
+                {% endif %}
+              </td>
+              
+              {# 2. Address (Using the nested helper object) #}
+              <td class="govuk-table__cell">
+                {% if item.address.line1 %}<div>{{ item.address.line1 }}</div>{% endif %}
+                {% if item.address.line2 %}<div>{{ item.address.line2 }}</div>{% endif %}
+                {% if item.address.town %}<div>{{ item.address.town }}</div>{% endif %}
+                {% if item.address.county %}<div>{{ item.address.county }}</div>{% endif %}
+                {% if item.address.postcode %}<div>{{ item.address.postcode }}</div>{% endif %}
+                {% if not item.address.formatted %}-{% endif %}
+              </td>
+              
+              {# 3. Contact Details #}
+              <td class="govuk-table__cell">
+                {% if item.email %}<div>{{ item.email }}</div>{% endif %}
+                {% if item.phone %}<div>{{ item.phone }}</div>{% endif %}
+                {% if not item.email and not item.phone %}-{% endif %}
+              </td>
+              
+              {# 4. Actions #}
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/edit/applicant-name?ref={{ ref }}&id={{ item.id }}">
+                      Change<span class="govuk-visually-hidden"> applicant details</span>
+                    </a>
+                  </li>
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/edit/applicant-remove?ref={{ ref }}&id={{ item.id }}">
+                      Remove<span class="govuk-visually-hidden"> applicant</span>
+                    </a>
+                  </li>
+                </ul>
+              </td>
+
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">No applicant or appellant details added yet.</p>
+    {% endif %}
+
+    {# --- BUTTONS --- #}
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Add details",
+        classes: "govuk-button--secondary",
+        href: "/cases/edit/applicant-name?ref=" + ref
+      }) }}
+      
+      {% if applicants and applicants.length > 0 %}
+        {{ govukButton({
+          text: "Continue",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
