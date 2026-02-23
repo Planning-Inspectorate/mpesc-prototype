@@ -443,6 +443,22 @@ router.post('/create-case-submit', function (req, res) {
   req.session.data['cases'].push(newCase);
 
 
+// --- 6.5 CLEAR DATA FOR NEXT JOURNEY ---
+
+  // 1. Capture the "database" (the cases you've already saved)
+  const savedCases = req.session.data['cases'] || [];
+
+  // 2. Clear the entire session data object
+  // This effectively wipes caseType, subtype, and every other form input
+  req.session.data = {};
+
+  // 3. Restore only the essential global data
+  req.session.data['cases'] = savedCases;
+
+  // 4. (Optional) If you have a logged-in user or global settings, restore them here:
+  // req.session.data['user'] = 'Internal Admin';
+
+
   // --- 7. REDIRECT WITH URL PARAM (Crucial for Success Page) ---
   console.log("SUCCESS: Case Saved with Ref:", finalRef);
   
