@@ -10364,6 +10364,30 @@ router.get('/cases/create-a-case/questions/applicant-remove', (req, res) => {
 });
 
 
+// GET: Independent edit for file location
+router.get('/cases/edit/file-location', function(req, res) {
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases');
+
+  res.render('cases/edit/file-location', { 
+    ref: c.reference, 
+    value: c.fileLocation || "",
+    editMode: true 
+  });
+});
+
+// POST: Save and return directly to case details
+router.post('/cases/edit/file-location', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Save directly to the case
+  c.fileLocation = req.body.fileLocation;
+  
+  // Redirect back to the main case view with a success flag
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=file-location');
+});
+
 
 
 

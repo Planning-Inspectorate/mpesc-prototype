@@ -1955,12 +1955,26 @@
 
       {# 10. DOCUMENTS #}
       {{ govukSummaryList({
-        attributes: { id: "documents" },
-        card: { title: { text: "Documents" } },
-        rows: [
-          { key: { text: "Physical file location" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "file location" }] } }
-        ]
-      }) }}
+  attributes: { id: "documents" },
+  card: { 
+    title: { text: "Documents" } 
+  },
+  rows: [
+    { 
+      key: { text: "Files location" }, 
+      value: { 
+        html: currentCase.fileLocation | nl2br if currentCase.fileLocation else "-" 
+      }, 
+      actions: { 
+        items: [{ 
+          href: "/cases/edit/file-location?ref=" + currentCase.reference, 
+          text: ("Change" if currentCase.fileLocation else "Add"), 
+          visuallyHiddenText: "physical file location" 
+        }] 
+      } 
+    }
+  ]
+}) }}
 
       {# 11. INVOICING #}
 {{ govukSummaryList({

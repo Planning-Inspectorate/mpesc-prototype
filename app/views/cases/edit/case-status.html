@@ -15,17 +15,21 @@
           fieldset: { legend: { text: "What is the case status?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
           items: [
             { value: "New case", text: "New case" },
-            { value: "Initial checks / validation", text: "Initial checks / validation" },
+            { value: "Initial checks or validation", text: "Initial checks or validation" },
             { value: "Rejected", text: "Rejected" },
-            { value: "Send letter", text: "Send letter" },
+            { value: "Inform parties", text: "Inform parties" },
             { value: "Allocate inspector", text: "Allocate inspector" },
             { value: "Arrange event", text: "Arrange event" },
             { value: "Exchange correspondence", text: "Exchange correspondence" },
             { value: "Ready for inspector", text: "Ready for inspector" },
-            { value: "Check decision", text: "Check decision" },
+            { value: "Decision/recommendation issued", text: "Decision/recommendation issued" },
             { value: "Despatch", text: "Despatch" },
             { value: "Final check", text: "Final check" },
-            { value: "Closed", text: "Closed" }
+            { value: "Closed", text: "Closed" },
+            { value: "Cancelled", text: "Cancelled" },
+            { value: "Paused/on hold", text: "Paused/on hold" },
+            { value: "Withdrawn", text: "Withdrawn" },
+            { value: "In abeyance", text: "In abeyance" }
           ],
           value: value,
           errorMessage: errorMessage if error else null

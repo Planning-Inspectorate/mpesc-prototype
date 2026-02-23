@@ -1,0 +1,40 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Where are files physically located? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {# Back to case details instead of the previous question #}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <form action="/cases/edit/file-location?ref={{ ref }}" method="post" novalidate>
+
+      {{ govukCharacterCount({
+        name: "fileLocation",
+        id: "file-location",
+        maxlength: 500,
+        label: {
+          text: "Where are files physically located?",
+          classes: "govuk-label--l",
+          isPageHeading: true
+        },
+        hint: {
+          text: "For example, 'Stored in Room 302, Temple Quay House' or a specific archive reference."
+        },
+        value: value
+      }) }}
+
+      {{ govukButton({
+        text: "Save and return"
+      }) }}
+
+    </form>
+  </div>
+</div>
+{% endblock %}
