@@ -1,21 +1,124 @@
-
 {% extends "layouts/main.html" %}
 
-{% set pageName="Home" %}
+{% block pageTitle %}
+  Prototype Index - Manage planning, environmental and specialist casework
+{% endblock %}
 
 {% block content %}
-
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-full">
 
-    {% include "govuk-prototype-kit/includes/homepage-top.njk" %}
+    <h1 class="govuk-heading-xl">MPESC prototype</h1>
 
-    <h1 class="govuk-heading-xl">
-      {{ serviceName }}
-    </h1> 
+    <div class="govuk-tabs" data-module="govuk-tabs">
+      <h2 class="govuk-tabs__title">
+        Prototypes
+      </h2>
+      
+      {# --- TAB NAVIGATION --- #}
+      <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+          <a class="govuk-tabs__tab" href="#current-service">Current service</a>
+        </li>
+        <li class="govuk-tabs__list-item">
+          <a class="govuk-tabs__tab" href="#features">Upcoming features</a>
+        </li>
+        <li class="govuk-tabs__list-item">
+          <a class="govuk-tabs__tab" href="#user-testing">User testing</a>
+        </li>
+      </ul>
 
-    {% include "govuk-prototype-kit/includes/homepage-bottom.njk" %}
+      {# --- TAB 1: CURRENT SERVICE --- #}
+      <div class="govuk-tabs__panel" id="current-service">
+        <h2 class="govuk-heading-l">Current service</h2>
+        <p class="govuk-body">This is the manage planning, environmental and specialist casework (MPSEC) prototype. <br><br> Session data is stored temporarily and some features may not work.</p>
+
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-half">
+            <h3 class="govuk-heading-m">Front office</h3>
+            <ul class="govuk-list govuk-list--spaced">
+              <li><a href="/current-service/front-office/applications" class="govuk-link">All applications homepage</a></li>
+              <li><a href="/current-service/front-office/have-your-say/01-start" class="govuk-link">Have your say (Representation)</a></li>
+              <li><a href="/current-service/front-office/application-information/documents" class="govuk-link">Document library</a></li>
+            </ul>
+          </div>
+          <div class="govuk-grid-column-one-half">
+            <h3 class="govuk-heading-m">Back office</h3>
+            <ul class="govuk-list govuk-list--spaced">
+              <li><a href="/cases" class="govuk-link">Cases dashboard</a></li>
+              <li><a href="/cases/create-a-case/questions/casework-area" class="govuk-link">Create a new case</a></li>
+              <li><a href="" class="govuk-link">Manage an existing application</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {# --- TAB 2: UPCOMING FEATURES --- #}
+      <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="features">
+        <h2 class="govuk-heading-l">Upcoming features</h2>
+        
+        {{ govukDetails({
+          summaryText: "In development",
+          html: '
+            <ul class="govuk-task-list">
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="/features/multiple-entities/index">Multiple entities</a>
+                  <div class="govuk-task-list__hint">Multiple LPAs, applicants and agents.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <strong class="govuk-tag govuk-tag--blue">In progress</strong>
+                </div>
+              </li>
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="/features/document-filters/index">Document filters</a>
+                  <div class="govuk-task-list__hint">Adding front office document filtering options.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <strong class="govuk-tag govuk-tag--blue">In progress</strong>
+                </div>
+              </li>
+            </ul>
+          '
+        }) }}
+
+        {{ govukDetails({
+          summaryText: "Deployed / Ready",
+          html: '
+            <ul class="govuk-task-list">
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="/features/application-updates/index">Application updates</a>
+                  <div class="govuk-task-list__hint">Back office tool to update front office users.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <strong class="govuk-tag govuk-tag--green">Live</strong>
+                </div>
+              </li>
+            </ul>
+          '
+        }) }}
+      </div>
+
+      {# --- TAB 3: USER TESTING --- #}
+      <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="user-testing">
+        <h2 class="govuk-heading-l">User testing</h2>
+        <ul class="govuk-task-list">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/user-testing/a-b-edit-published-update">A/B testing: Editing published update</a>
+              <div class="govuk-task-list__hint">Testing how users feel about editing without changes.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">Complete</strong>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
   </div>
 </div>
-
 {% endblock %}
