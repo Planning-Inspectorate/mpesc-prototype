@@ -48,6 +48,87 @@
   {% endset %}
 
 
+{# --- BUILD THE APPLICANTS HTML FOR CREATION FLOW --- #}
+{% set applicantsHtml %}
+  {% if data['applicants'] and data['applicants'].length > 0 %}
+    
+    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+      
+      {# --- LOOP THROUGH THE FIRST TWO ENTRIES --- #}
+      {% for i in range(0, 2) %}
+        {% set app = data['applicants'][i] %}
+        {% if app %}
+          <li class="{% if i > 0 %}govuk-!-margin-top-4{% endif %}">
+            {% if app.firstName or app.lastName %}
+              <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
+            {% endif %}
+            {% if app.companyName %}<div>{{ app.companyName }}</div>{% endif %}
+            
+            {# Address - Accessing nested address object #}
+            {% if app.address.line1 %}<div>{{ app.address.line1 }}</div>{% endif %}
+            {% if app.address.line2 %}<div>{{ app.address.line2 }}</div>{% endif %}
+            {% if app.address.town %}<div>{{ app.address.town }}</div>{% endif %}
+            {% if app.address.county %}<div>{{ app.address.county }}</div>{% endif %}
+            {% if app.address.postcode %}<div>{{ app.address.postcode }}</div>{% endif %}
+            
+            {# Contact #}
+            {% if app.email %}<div>{{ app.email }}</div>{% endif %}
+            {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {# --- SHOW/HIDE LOGIC FOR MORE THAN 2 APPLICANTS --- #}
+      {% if data['applicants'].length > 2 %}
+        
+        <div id="extra-applicants-create" style="display: none;">
+          {% for i in range(2, data['applicants'].length) %}
+            {% set app = data['applicants'][i] %}
+            <li class="govuk-!-margin-top-4">
+              {% if app.firstName or app.lastName %}
+                <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
+              {% endif %}
+              {% if app.companyName %}<div>{{ app.companyName }}</div>{% endif %}
+              
+              {% if app.address.line1 %}<div>{{ app.address.line1 }}</div>{% endif %}
+              {% if app.address.line2 %}<div>{{ app.address.line2 }}</div>{% endif %}
+              {% if app.address.town %}<div>{{ app.address.town }}</div>{% endif %}
+              {% if app.address.county %}<div>{{ app.address.county }}</div>{% endif %}
+              {% if app.address.postcode %}<div>{{ app.address.postcode }}</div>{% endif %}
+              
+              {% if app.email %}<div>{{ app.email }}</div>{% endif %}
+              {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
+            </li>
+          {% endfor %}
+        </div>
+
+       {% set extraCount = data['applicants'].length - 2 %}
+
+<a href="javascript:void(0);" 
+   id="toggle-applicants-create" 
+   class="govuk-link" 
+   onclick="
+     var extra = document.getElementById('extra-applicants-create');
+     var link = document.getElementById('toggle-applicants-create');
+     if(extra.style.display === 'none') {
+       extra.style.display = 'block';
+       link.innerText = 'Hide';
+     } else {
+       extra.style.display = 'none';
+       link.innerText = 'Show {{ extraCount }} more';
+     }
+   ">Show {{ extraCount }} more</a>
+        </p>
+      {% endif %}
+
+    </ul>
+  {% else %}
+    —
+  {% endif %}
+{% endset %}
+
+
+
 
                                                 {# 1. LIST CREATION #}
 {% set rows = [
@@ -160,9 +241,15 @@
 }) %}
 
 {% set _ = rows.push({
-  key: { text: "Who is the applicant?" },
-  value: { text: data['applicantName'] },
-  actions: { items: [{ href: "/cases/create-a-case/questions/applicant", text: "Change", visuallyHiddenText: "Who is the applicant?" }] }
+  key: { text: "Who is the applicant or appellant?" },
+  value: { html: applicantsHtml },
+  actions: { 
+    items: [{ 
+      href: "/cases/create-a-case/questions/applicant-check", 
+      text: "Change", 
+      visuallyHiddenText: "Who is the applicant or appellant?" 
+    }] 
+  }
 }) %}
 
 {% set _ = rows.push({
