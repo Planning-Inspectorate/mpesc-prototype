@@ -5,6 +5,41 @@
 
 // Add extra styles here
 
+/* GLOBAL FONT OVERRIDE */
+html, body, 
+.govuk-heading-xl, .govuk-heading-l, .govuk-heading-m, .govuk-heading-s,
+.govuk-caption-xl, .govuk-caption-l, .govuk-caption-m,
+.govuk-body, .govuk-body-l, .govuk-body-m, .govuk-body-s,
+.govuk-label, .govuk-hint, .govuk-fieldset__legend,
+.govuk-input, .govuk-textarea, .govuk-select,
+.govuk-radios__label, .govuk-checkboxes__label, .govuk-tabs__tab,
+.govuk-button, .govuk-link, .govuk-back-link,
+.govuk-summary-list__key, .govuk-summary-list__value, .govuk-summary-list__actions,
+.govuk-table__header, .govuk-table__cell,
+.govuk-task-list__name-and-hint, .govuk-task-list__status,
+.govuk-accordion__section-button, .govuk-details__summary-text,
+.govuk-header__service-name, .govuk-footer__link,
+.govuk-phase-banner__text, .govuk-notification-banner__heading,
+.govuk-error-message, .govuk-error-summary__title,
+.govuk-list.govuk-error-summary__list,
+.pins-header-demo, 
+.pins-service-nav__link,
+.pins-service-nav__title,
+.govuk-width-container.pins-service-nav__container, .pins-service-nav .pins-footer {
+  font-family: "Helvetica", "Arial", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* YOUR CUSTOM PINS STYLING REMAINS BELOW */
+.pins-header-demo {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  background: #f3f2f1;
+  border-bottom: 10px solid #13A19B;
+}
+
+/* ... the rest of your custom PINS styles ... */
+
 
 /* FORCE the background to be grey, overriding the 'rebranded' template styles */
 .govuk-template--rebranded {
@@ -22,13 +57,12 @@
   background-color: #f3f2f1 !important;
 }
 
-
 /* Override Autocomplete Font to match GDS */
 .autocomplete__menu,
 .autocomplete__input,
 .autocomplete__hint,
 .autocomplete__option {
-  font-family: "GDS Transport", arial, sans-serif !important;
+  font-family: Helvetica, sans-serif !important;
   font-size: 19px !important; /* Matches standard body text */
   line-height: 1.5 !important;
 }
