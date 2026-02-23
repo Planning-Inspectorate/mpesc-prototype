@@ -1,0 +1,27 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if errors %}Error: {% endif %}Is this a rechargeable case? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errors %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errors.rechargeable.text, href: "#rechargeable" }] }) }}
+    {% endif %}
+
+    <form action="/cases/edit/invoicing-rechargeable?ref={{ ref }}" method="post" novalidate>
+      {{ govukRadios({
+        name: "rechargeable",
+        idPrefix: "rechargeable",
+        fieldset: { legend: { text: "Is this a rechargeable case?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
+        errorMessage: errors.rechargeable if errors else null,
+        items: [
+          { value: "Yes", text: "Yes", checked: value == "Yes" },
+          { value: "No", text: "No", checked: value == "No" }
+        ]
+      }) }}
+      {{ govukButton({ text: "Save" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

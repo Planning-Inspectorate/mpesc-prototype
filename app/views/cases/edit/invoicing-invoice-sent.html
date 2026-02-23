@@ -1,0 +1,28 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if errors %}Error: {% endif %}Has the invoice been sent? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errors %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errors.invoiceSent.text, href: "#invoiceSent" }] }) }}
+    {% endif %}
+
+    <form action="/cases/edit/invoicing-invoice-sent?ref={{ ref }}" method="post" novalidate>
+      {{ govukRadios({
+        name: "invoiceSent",
+        idPrefix: "invoiceSent",
+        fieldset: { legend: { text: "Has the invoice been sent?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
+        errorMessage: errors.invoiceSent if errors else null,
+        items: [
+          { value: "Yes", text: "Yes", checked: value == "Yes" },
+          { value: "No", text: "No", checked: value == "No" },
+          { value: "Interim invoice sent", text: "Interim invoice sent", checked: value == "Interim invoice sent" }
+        ]
+      }) }}
+      {{ govukButton({ text: "Save" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

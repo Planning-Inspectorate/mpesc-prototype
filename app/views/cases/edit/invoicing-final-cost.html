@@ -1,0 +1,26 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}{% if errors %}Error: {% endif %}What was the final cost? - Planning Inspectorate Portal{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errors %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ text: errors.finalCost.text, href: "#finalCost" }] }) }}
+    {% endif %}
+
+    <form action="/cases/edit/invoicing-final-cost?ref={{ ref }}" method="post" novalidate>
+      {{ govukInput({
+        id: "finalCost",
+        name: "finalCost",
+        label: { text: "What was the final cost?", isPageHeading: true, classes: "govuk-label--l" },
+        prefix: { text: "£" },
+        classes: "govuk-input--width-full",
+        value: value,
+        errorMessage: errors.finalCost if errors else null
+      }) }}
+      {{ govukButton({ text: "Save" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -53,8 +53,7 @@
         <li><a href="#procedure3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
         <li><a href="#outcomeOverview" class="govuk-link govuk-link--no-visited-state">Outcome</a></li>
         <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
-        <li><a href="#withdrawal" class="govuk-link govuk-link--no-visited-state">Withdrawal or abeyance</a></li>
-        <li><a href="#costs" class="govuk-link govuk-link--no-visited-state">Costs</a></li>
+        <li><a href="#invoicing" class="govuk-link govuk-link--no-visited-state">Invoicing</a></li>
       </ul>
 
       {# Case Notes Component #}
@@ -241,6 +240,14 @@
       }) }}
 
 {# --- 2. CASE DETAILS --- #}
+
+          {% set abeyanceHtml %}
+            {% if currentCase.abeyancePeriod %}
+              Start: {{ currentCase.abeyancePeriod.startDate.formatted }}<br>
+              End: {{ currentCase.abeyancePeriod.endDate.formatted if currentCase.abeyancePeriod.endDate else "Not provided" }}
+            {% endif %}
+          {% endset %}
+
       {{ govukSummaryList({
         attributes: { id: "case-details" },
         card: { title: { text: "Case details" } },
@@ -277,6 +284,18 @@
             key: { text: "Case status" }, 
             value: { text: currentCase['caseStatus'] or "-" }, 
             actions: { items: [{ href: "/cases/edit/case-status?ref=" + currentCase.reference, text: "Change" if currentCase['caseStatus'] else "Add", visuallyHiddenText: "case status" }] } 
+          },
+          {
+            key: { text: "Abeyance period" },
+            value: { 
+              html: abeyanceHtml if currentCase.abeyancePeriod else "-" 
+            },
+            actions: { 
+              items: [{ 
+                href: "/cases/edit/abeyance-period?ref=" + currentCase.reference, 
+                text: "Change" if currentCase.abeyancePeriod else "Add" 
+              }] 
+            }
           },
           { 
             key: { text: "Advertised modification status" }, 
@@ -1859,28 +1878,35 @@
         ]
       }) }}
 
-      {# 11. WITHDRAWAL #}
-      {{ govukSummaryList({
-        attributes: { id: "withdrawal" },
-        card: { title: { text: "Withdrawal or abeyance" } },
-        rows: [
-          { key: { text: "Withdrawal date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "withdrawal date" }] } },
-          { key: { text: "Abeyance start date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "abeyance start" }] } },
-          { key: { text: "Abeyance end date" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "abeyance end" }] } }
-        ]
-      }) }}
-
-      {# 12. COSTS #}
-      {{ govukSummaryList({
-        attributes: { id: "costs" },
-        card: { title: { text: "Costs" } },
-        rows: [
-          { key: { text: "Rechargeable" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "rechargeable" }] } },
-          { key: { text: "Final cost" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "final cost" }] } },
-          { key: { text: "Fee received" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "fee received" }] } },
-          { key: { text: "Invoice sent" }, value: { text: "-" }, actions: { items: [{ href: "#", text: "Add", visuallyHiddenText: "invoice sent" }] } }
-        ]
-      }) }}
+      {# 11. INVOICING #}
+{{ govukSummaryList({
+  attributes: { id: "invoicing" },
+  card: { 
+    title: { text: "Invoicing" } 
+  },
+  rows: [
+    { 
+      key: { text: "Rechargeable" }, 
+      value: { text: currentCase.invoicing.rechargeable if currentCase.invoicing.rechargeable else "-" }, 
+      actions: { items: [{ href: "/cases/edit/invoicing-rechargeable?ref=" + currentCase.reference, text: "Change" if currentCase.invoicing.rechargeable else "Add", visuallyHiddenText: "rechargeable" }] } 
+    },
+    { 
+      key: { text: "Final cost" }, 
+      value: { text: ("£" + currentCase.invoicing.finalCost) if currentCase.invoicing.finalCost else "-" }, 
+      actions: { items: [{ href: "/cases/edit/invoicing-final-cost?ref=" + currentCase.reference, text: "Change" if currentCase.invoicing.finalCost else "Add", visuallyHiddenText: "final cost" }] } 
+    },
+    { 
+      key: { text: "Invoice sent" }, 
+      value: { text: currentCase.invoicing.invoiceSent if currentCase.invoicing.invoiceSent else "-" }, 
+      actions: { items: [{ href: "/cases/edit/invoicing-invoice-sent?ref=" + currentCase.reference, text: "Change" if currentCase.invoicing.invoiceSent else "Add", visuallyHiddenText: "invoice sent" }] } 
+    },
+    { 
+      key: { text: "Fee received" }, 
+      value: { text: currentCase.invoicing.feeReceived if currentCase.invoicing.feeReceived else "-" }, 
+      actions: { items: [{ href: "/cases/edit/invoicing-fee-received?ref=" + currentCase.reference, text: "Change" if currentCase.invoicing.feeReceived else "Add", visuallyHiddenText: "fee received" }] } 
+    }
+  ]
+}) }}
 
     </div>
   </div>

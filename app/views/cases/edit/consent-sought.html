@@ -18,19 +18,19 @@ Which consent has been sought for this case? - Planning Inspectorate Portal
 
       <form action="/cases/edit/consent-sought?ref={{ ref }}" method="post" novalidate>
 
-        {{ govukInput({
-          label: {
-            text: "Which consent has been sought for this case?",
-            classes: "govuk-label--l",
-            isPageHeading: true
-          },
-          hint: {
-            text: "For example, Listed Building Consent"
-          },
-          id: "consent-sought",
-          name: "consent-sought",
-          value: data['consent-sought']
-        }) }}
+        {# --- Standard GOV.UK Form Group --- #}
+        <div class="govuk-form-group">
+          
+          <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--l" for="consent-sought">
+              Which consent has been sought for this case?
+            </label>
+          </h1>
+          
+          {# --- Autocomplete Container --- #}
+          <div id="consent-sought-container"></div>
+
+        </div>
 
         {{ govukButton({
           text: "Save"
@@ -41,4 +41,63 @@ Which consent has been sought for this case? - Planning Inspectorate Portal
     </div>
   </div>
 
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  // Update this array with your actual list of consents
+const consents = [
+  "Acquisition of Land",
+  "Acquisition of Land Act 1981, 32",
+  "Acquisition of Land Act 1981, 19 and Schedule 3, para 6",
+  "Commons Act 2",
+  "Commons Act 2006, 16",
+  "Commons Act 2006, 38",
+  "Commons Act 2006, Part 1 Schedule 6",
+  "Greater London Parks & Open Spaces Or",
+  "Greater London Parks & Open Spaces Order 1967, Article 12",
+  "Greater London Parks & Open Spaces Order 1967, Article 17",
+  "Highways Ac",
+  "Highways Act 1980",
+  "Highways Act 1980, 26",
+  "Highways Act 1980, 118",
+  "Highways Act 1980, 119",
+  "Highways Act 1980, 118A",
+  "Highways Act 1980, 118B",
+  "Highways Act 1980, 119A",
+  "Highways Act 1980, 119B",
+  "Highways Act 1980, 119D",
+  "Inclosure Ac",
+  "Inclosure Act 1845, 149",
+  "Law of Property Ac",
+  "Law of Property Act 1925, 193",
+  "National Trust Ac",
+  "National Trust Act 1971, 23",
+  "Town and Country Planning Ac",
+  "Town and Country Planning Act 1990, 78",
+  "Town and Country Planning Act 1990, 247",
+  "Town and Country Planning Act 1990, 251",
+  "Town and Country Planning Act 1990, 257",
+  "Town and Country Planning Act 1990, 61",
+  "Wildlife and Countryside Act",
+  "Wildlife and Countryside Act 1981, 53",
+  "Wildlife and Countryside Act 1981, 54",
+  "Wildlife and Countryside Act 1981, Schedule 14 A",
+  "Wildlife and Countryside Act 1981, Schedule 14 D"
+];
+
+  accessibleAutocomplete({
+    element: document.querySelector('#consent-sought-container'),
+    id: 'consent-sought',         // Must match the 'for' attribute in the label
+    name: 'consent-sought',       // This is what req.body['consent-sought'] will look for
+    source: consents,
+    // Pull the previously saved value from session data if it exists
+    defaultValue: "{{ data['consent-sought'] | default('') }}", 
+    showAllValues: true,          // Shows the dropdown arrow so users can browse the list
+    confirmOnBlur: false, 
+    autoselect: true
+  });
+</script>
 {% endblock %}

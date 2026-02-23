@@ -1,0 +1,69 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Abeyance period - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {# --- Error Summary --- #}
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Abeyance period</h1>
+
+    <form action="/cases/edit/abeyance-period?ref={{ ref }}" method="post" novalidate>
+      
+      {# Extract specific inline errors for start and end dates #}
+      {% set startError = null %}
+      {% set endError = null %}
+      {% for err in errorList %}
+        {% if "start" in err.href and not startError %}{% set startError = err %}{% endif %}
+        {% if "end" in err.href and not endError %}{% set endError = err %}{% endif %}
+      {% endfor %}
+
+      {# --- START DATE --- #}
+      {{ govukDateInput({
+        id: "start",
+        namePrefix: "start",
+        fieldset: {
+          legend: { text: "Start date", classes: "govuk-fieldset__legend--m" }
+        },
+        errorMessage: { text: startError.text } if startError else null,
+        items: [
+          { name: "day", classes: "govuk-input--width-2" + (" govuk-input--error" if startErrorFields and 'day' in startErrorFields else ""), value: startDay },
+          { name: "month", classes: "govuk-input--width-2" + (" govuk-input--error" if startErrorFields and 'month' in startErrorFields else ""), value: startMonth },
+          { name: "year", classes: "govuk-input--width-4" + (" govuk-input--error" if startErrorFields and 'year' in startErrorFields else ""), value: startYear }
+        ]
+      }) }}
+
+      {# --- END DATE --- #}
+      {{ govukDateInput({
+        id: "end",
+        namePrefix: "end",
+        fieldset: {
+          legend: { text: "End date (optional)", classes: "govuk-fieldset__legend--m" }
+        },
+        errorMessage: { text: endError.text } if endError else null,
+        items: [
+          { name: "day", classes: "govuk-input--width-2" + (" govuk-input--error" if endErrorFields and 'day' in endErrorFields else ""), value: endDay },
+          { name: "month", classes: "govuk-input--width-2" + (" govuk-input--error" if endErrorFields and 'month' in endErrorFields else ""), value: endMonth },
+          { name: "year", classes: "govuk-input--width-4" + (" govuk-input--error" if endErrorFields and 'year' in endErrorFields else ""), value: endYear }
+        ]
+      }) }}
+
+      {{ govukButton({ text: "Save" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

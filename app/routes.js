@@ -9881,6 +9881,194 @@ router.post('/cases/procedures/procedure-3/written-reps-date', function(req, res
   }
 });
 
+
+// =========================================================
+// EDIT: Abeyance Period (Double Date Input)
+// =========================================================
+
+router.get('/cases/edit/abeyance-period', (req, res) => {
+  var c = getCase(req); 
+  var abeyance = c.abeyancePeriod || {};
+  var start = abeyance.startDate || {};
+  var end = abeyance.endDate || {};
+
+  res.render('cases/edit/abeyance-period', { 
+    ref: req.query.ref,
+    startDay: start.day, startMonth: start.month, startYear: start.year,
+    endDay: end.day, endMonth: end.month, endYear: end.year
+  });
+});
+
+router.post('/cases/edit/abeyance-period', (req, res) => {
+  var c = getCase(req);
+  if (!c) return res.redirect('/');
+  
+  if (!c.abeyancePeriod) c.abeyancePeriod = {};
+
+  let sD = req.body['start-day'], sM = req.body['start-month'], sY = req.body['start-year'];
+  let eD = req.body['end-day'], eM = req.body['end-month'], eY = req.body['end-year'];
+
+  // 1. Check if they cleared everything to remove the abeyance period
+  if (!sD && !sM && !sY && !eD && !eM && !eY) {
+    c.abeyancePeriod = null;
+    return res.redirect('/cases/case-details?ref=' + req.query.ref);
+  }
+
+  let allErrors = [];
+  let startErrorFields = [];
+  let endErrorFields = [];
+
+  // 2. Validate Start Date (Required if they entered anything on this page)
+  let startResult = validateAndSaveDate(req, res, 'start', 'Abeyance start date', c.abeyancePeriod, 'startDate');
+  if (startResult.status === "ERROR") {
+    allErrors = allErrors.concat(startResult.errorList);
+    startErrorFields = startResult.errorFields;
+  }
+
+  // 3. Validate End Date (Optional - skip if completely blank)
+  if (!eD && !eM && !eY) {
+    c.abeyancePeriod.endDate = null;
+  } else {
+    let endResult = validateAndSaveDate(req, res, 'end', 'Abeyance end date', c.abeyancePeriod, 'endDate');
+    if (endResult.status === "ERROR") {
+      allErrors = allErrors.concat(endResult.errorList);
+      endErrorFields = endResult.errorFields;
+    }
+  }
+
+ // 4. Custom Check: Start date must be before end date (Only run if both dates are valid so far)
+  if (allErrors.length === 0 && c.abeyancePeriod.startDate && c.abeyancePeriod.endDate) {
+    let startDateObj = new Date(c.abeyancePeriod.startDate.year, c.abeyancePeriod.startDate.month - 1, c.abeyancePeriod.startDate.day);
+    let endDateObj = new Date(c.abeyancePeriod.endDate.year, c.abeyancePeriod.endDate.month - 1, c.abeyancePeriod.endDate.day);
+    
+    // If the start date is after OR exactly the same as the end date, throw the error
+    if (startDateObj >= endDateObj) {
+      allErrors.push({ 
+        text: "Abeyance start date must be before the abeyance end date", 
+        href: "#start-day" // Jumps the user to the start date input when clicked
+      });
+      
+      // Highlight both date inputs in red so the user knows they conflict
+      startErrorFields = ['day', 'month', 'year'];
+      endErrorFields = ['day', 'month', 'year'];
+    }
+  }
+
+  // 5. If there are any errors, re-render the page
+  if (allErrors.length > 0) {
+    return res.render('cases/edit/abeyance-period', { 
+      ref: req.query.ref,
+      startDay: sD, startMonth: sM, startYear: sY,
+      endDay: eD, endMonth: eM, endYear: eY,
+      errorList: allErrors,
+      startErrorFields: startErrorFields,
+      endErrorFields: endErrorFields
+    });
+  }
+
+  // Success!
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// =========================================================
+// INVOICING 
+// =========================================================
+
+// 1. Rechargeable
+router.get('/cases/edit/invoicing-rechargeable', (req, res) => {
+  var c = getCase(req);
+  res.render('cases/edit/invoicing-rechargeable', { ref: req.query.ref, value: c.invoicing?.rechargeable });
+});
+
+router.post('/cases/edit/invoicing-rechargeable', (req, res) => {
+  var c = getCase(req);
+  var val = req.body.rechargeable;
+
+  if (!val) {
+    return res.render('cases/edit/invoicing-rechargeable', { ref: req.query.ref, errors: { rechargeable: { text: "Select yes if the case is rechargeable" } } });
+  }
+
+  if (!c.invoicing) c.invoicing = {};
+  c.invoicing.rechargeable = val;
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// 2. Final Cost
+router.get('/cases/edit/invoicing-final-cost', (req, res) => {
+  var c = getCase(req);
+  res.render('cases/edit/invoicing-final-cost', { ref: req.query.ref, value: c.invoicing?.finalCost });
+});
+
+router.post('/cases/edit/invoicing-final-cost', (req, res) => {
+  var c = getCase(req);
+  var cost = req.body.finalCost;
+
+  // Validate: not empty, and must be a valid number up to 2 decimal places
+  var currencyRegex = /^\d+(\.\d{1,2})?$/;
+
+  if (!cost) {
+    return res.render('cases/edit/invoicing-final-cost', { 
+      ref: req.query.ref, 
+      errors: { finalCost: { text: "Enter the final cost" } } 
+    });
+  } else if (!currencyRegex.test(cost)) {
+    return res.render('cases/edit/invoicing-final-cost', { 
+      ref: req.query.ref, 
+      value: cost, 
+      errors: { finalCost: { text: "Final cost must be an amount of money, like 150 or 150.50" } } 
+    });
+  }
+
+  if (!c.invoicing) c.invoicing = {};
+  
+  // GOV.UK Formatting: Drop .00 if it's a whole number, keep .xx if there are pence
+  let num = parseFloat(cost);
+  c.invoicing.finalCost = Number.isInteger(num) ? num.toString() : num.toFixed(2);
+  
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// 3. Invoice Sent
+router.get('/cases/edit/invoicing-invoice-sent', (req, res) => {
+  var c = getCase(req);
+  res.render('cases/edit/invoicing-invoice-sent', { ref: req.query.ref, value: c.invoicing?.invoiceSent });
+});
+
+router.post('/cases/edit/invoicing-invoice-sent', (req, res) => {
+  var c = getCase(req);
+  var val = req.body.invoiceSent;
+
+  if (!val) {
+    return res.render('cases/edit/invoicing-invoice-sent', { ref: req.query.ref, errors: { invoiceSent: { text: "Select yes if the invoice has been sent" } } });
+  }
+
+  if (!c.invoicing) c.invoicing = {};
+  c.invoicing.invoiceSent = val;
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+// 4. Fee Received
+router.get('/cases/edit/invoicing-fee-received', (req, res) => {
+  var c = getCase(req);
+  res.render('cases/edit/invoicing-fee-received', { ref: req.query.ref, value: c.invoicing?.feeReceived });
+});
+
+router.post('/cases/edit/invoicing-fee-received', (req, res) => {
+  var c = getCase(req);
+  var val = req.body.feeReceived;
+
+  if (!val) {
+    return res.render('cases/edit/invoicing-fee-received', { ref: req.query.ref, errors: { feeReceived: { text: "Select yes if the fee has been received" } } });
+  }
+
+  if (!c.invoicing) c.invoicing = {};
+  c.invoicing.feeReceived = val;
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
+
+
+
 // ------------------------------------------------ SMART EDIT ROUTES ---------------------------------------------
 // NOTE: For any generic routes, add below SMART EDIT ROUTES. For any specific routes e.g. /cases/edit/case-received-date add ABOVE this.
 
