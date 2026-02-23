@@ -389,7 +389,7 @@
           },
             actions: { 
               items: [{ 
-                href: "/cases/edit/check-applicants?ref=" + currentCase.reference if currentCase.applicants.length > 0 else "/cases/edit/applicant-name?ref=" + currentCase.reference,
+                href: "/cases/edit/check-applicants?ref=" + currentCase.reference if currentCase.applicants.length > 0 else "/cases/edit/check-applicants?ref=" + currentCase.reference,
                 text: "Change" if currentCase.applicants.length > 0 else "Add",
                 visuallyHiddenText: "applicant or appellant details" 
               }] 
