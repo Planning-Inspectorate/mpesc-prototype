@@ -93,7 +93,7 @@ Check applicant or appellant - Planning Inspectorate Portal
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Add applicant",
-          classes: "govuk-button--secondary",
+          classes: "govuk-button" if applicantList.length == 0 else "govuk-button--secondary",
           href: "/cases/create-a-case/questions/applicant-name"
         }) }}
       </div>

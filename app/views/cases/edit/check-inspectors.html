@@ -57,7 +57,7 @@ Check inspector details - Planning Inspectorate Portal
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Add details",
-          classes: "govuk-button--secondary",
+          classes: "govuk-button" if not inspectors or inspectors.length == 0 else "govuk-button--secondary",
           href: "/cases/edit/inspector-name?ref=" + ref
         }) }}
       </div>

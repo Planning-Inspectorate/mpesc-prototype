@@ -1,11 +1,10 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-What is the relevant legislation/act for this case? - Planning Inspectorate Portal
+  {% if error %}Error: {% endif %}What is the relevant legislation/act for this case? - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
-  {# Simple back link to the case details page #}
   {{ govukBackLink({
     text: "Back",
     href: "/cases/case-details?ref=" + ref
@@ -17,30 +16,93 @@ What is the relevant legislation/act for this case? - Planning Inspectorate Port
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      {# The form posts to the smart route, keeping the reference in the URL #}
+      {# ERROR SUMMARY #}
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [{ text: errorMessage.text, href: "#act" }]
+        }) }}
+      {% endif %}
+
       <form action="/cases/edit/act?ref={{ ref }}" method="post" novalidate>
 
-        {{ govukInput({
-          label: {
-            text: "What is the relevant legislation/act for this case?",
-            classes: "govuk-label--l",
-            isPageHeading: true
-          },
-          hint: {
-            text: "For example, Town and Country Planning Act 1990"
-          },
-          id: "act",
-          name: "act",
-          value: data['act'] 
-        }) }}
+        <div class="govuk-form-group {% if error %}govuk-form-group--error{% endif %}">
+          
+          <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--l" for="act">
+              What is the relevant legislation/act for this case?
+            </label>
+          </h1>
+          
+          {% if error %}
+            <p id="act-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ errorMessage.text }}
+            </p>
+          {% endif %}
 
-        {{ govukButton({
-          text: "Save"
-        }) }}
+          {# AUTOCOMPLETE CONTAINER #}
+          <div id="act-container"></div>
+
+        </div>
+
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save" }) }}
+        </div>
 
       </form>
 
     </div>
   </div>
 
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  // Data from your image
+  const legislation = [
+    "Acquisition of Land Act 1981, 32",
+    "Acquisition of Land Act 1981, 19 and Schedule 3, para 6",
+    "Commons Act 2006, 16",
+    "Commons Act 2006, 38",
+    "Commons Act 2006, Part 1 Schedule 6",
+    "Greater London Parks & Open Spaces Order 1967, Article 12",
+    "Greater London Parks & Open Spaces Order 1967, Article 17",
+    "Highways Act 1980, 26",
+    "Highways Act 1980, 118",
+    "Highways Act 1980, 119",
+    "Highways Act 1980, 118A",
+    "Highways Act 1980, 118B",
+    "Highways Act 1980, 119A",
+    "Highways Act 1980, 119B",
+    "Highways Act 1980, 119D",
+    "Inclosure Act 1845, 149",
+    "Law of Property Act 1925, 193",
+    "National Trust Act 1971, 23",
+    "Town and Country Planning Act 1990, 78",
+    "Town and Country Planning Act 1990, 247",
+    "Town and Country Planning Act 1990, 251",
+    "Town and Country Planning Act 1990, 257",
+    "Town and Country Planning Act 1990, 61",
+    "Wildlife and Countryside Act 1981, 53",
+    "Wildlife and Countryside Act 1981, 54",
+    "Wildlife and Countryside Act 1981, Schedule 14 A",
+    "Wildlife and Countryside Act 1981, Schedule 14 D"
+  ];
+
+  accessibleAutocomplete({
+    element: document.querySelector('#act-container'),
+    id: 'act', 
+    name: 'act', // This is the key that will be sent to req.body
+    source: legislation,
+    
+    // Uses existing data if available, otherwise empty
+    defaultValue: "{{ data['act'] if data['act'] else '' }}",
+    
+    showAllValues: false,
+    confirmOnBlur: false, 
+    autoselect: true
+  })
+</script>
 {% endblock %}

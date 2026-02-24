@@ -90,7 +90,7 @@ Check outcome details - Planning Inspectorate Portal
         </tbody>
       </table>
     {% else %}
-      <p class="govuk-body">No outcome details found.</p>
+      <p class="govuk-body">You will be able to add multiple outcome details.</p>
     {% endif %}
 
     {# --- BUTTONS --- #}
@@ -100,7 +100,7 @@ Check outcome details - Planning Inspectorate Portal
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Add details",
-          classes: "govuk-button--secondary",
+          classes: "govuk-button" if outcomeList.length == 0 else "govuk-button--secondary",
           href: "/cases/outcomes/step-1?ref=" + ref
         }) }}
       </div>
@@ -108,6 +108,7 @@ Check outcome details - Planning Inspectorate Portal
       {% if outcomeList.length > 0 %}
         <div class="govuk-button-group">
           {{ govukButton({ text: "Save and continue" }) }}
+            {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/cases/case-details?ref=" + ref }) }}
         </div>
       {% endif %}
     </form>

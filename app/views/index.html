@@ -1,5 +1,133 @@
 {% extends "layouts/main.html" %}
 
+{% block header %}
+
+<style>
+  /* 0. Apply Official GOV.UK Font to Custom Elements */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* 1. The Green PINS Header */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+  /* 2. The Grey Navigation Bar */
+  .pins-service-nav {
+    background: #f3f2f1;
+    font-size: 16px;
+    color: #0b0c0c;
+  }
+
+  .pins-service-nav__container {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    background: #f3f2f1;
+    min-height: 50px;
+  }
+
+  /* Title Style */
+  .pins-service-nav__title {
+    background: #f3f2f1;
+    font-weight: bold;
+    margin-right: 30px;
+    color: #0b0c0c;
+    text-decoration: none;
+    padding-left: 0;
+  }
+
+  /* List Container */
+  .pins-service-nav__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+  }
+
+  .pins-service-nav__item {
+    display: inline;
+  }
+
+  /* Links */
+  .pins-service-nav__link,
+  .pins-service-nav__link:link,
+  .pins-service-nav__link:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 12px;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  .pins-service-nav__link:hover {
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom-color: #000000;
+  }
+
+  /* for MPESC title */
+  .pins-service-nav__title,
+  .pins-service-nav__title:link,
+  .pins-service-nav__title:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 0px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  .pins-service-nav__title:hover {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom-color: #0b0c0c;
+  }
+
+  /* Active State */
+  .pins-service-nav__item--active .pins-service-nav__link {
+    font-weight: bold;
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #000000;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 600px) {
+    .pins-service-nav__container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    
+    .pins-service-nav__list {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+{% endblock %}
+
 {% block pageTitle %}
   Prototype Index - Manage planning, environmental and specialist casework
 {% endblock %}
@@ -34,15 +162,7 @@
         <p class="govuk-body">This is the manage planning, environmental and specialist casework (MPSEC) prototype. <br><br> Session data is stored temporarily and some features may not work.</p>
 
         <div class="govuk-grid-row">
-          <div class="govuk-grid-column-one-half">
-            <h3 class="govuk-heading-m">Front office</h3>
-            <ul class="govuk-list govuk-list--spaced">
-              <li><a href="/current-service/front-office/applications" class="govuk-link">All applications homepage</a></li>
-              <li><a href="/current-service/front-office/have-your-say/01-start" class="govuk-link">Have your say (Representation)</a></li>
-              <li><a href="/current-service/front-office/application-information/documents" class="govuk-link">Document library</a></li>
-            </ul>
-          </div>
-          <div class="govuk-grid-column-one-half">
+          <div class="govuk-grid-column-full">
             <h3 class="govuk-heading-m">Back office</h3>
             <ul class="govuk-list govuk-list--spaced">
               <li><a href="/cases" class="govuk-link">Cases dashboard</a></li>

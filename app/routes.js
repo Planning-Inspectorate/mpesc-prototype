@@ -882,6 +882,83 @@ router.post('/cases/edit/priority', function(req, res) {
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
+// --- LEGISLATION / ACT LOGIC ---
+
+router.get('/cases/edit/act', function(req, res) {
+  var c = getCase(req);
+  // Get existing value from the case object
+  var val = c.act || "";
+  
+  res.render('cases/edit/act', { 
+    ref: c.reference, 
+    value: val 
+  });
+});
+
+router.post('/cases/edit/act', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.act; // matches the 'name' attribute in your autocomplete
+  var c = getCase(req);
+
+  // 1. The Allowed List (from your image)
+  const legislationList = [
+    "Acquisition of Land Act 1981, 32",
+    "Acquisition of Land Act 1981, 19 and Schedule 3, para 6",
+    "Commons Act 2006, 16",
+    "Commons Act 2006, 38",
+    "Commons Act 2006, Part 1 Schedule 6",
+    "Greater London Parks & Open Spaces Order 1967, Article 12",
+    "Greater London Parks & Open Spaces Order 1967, Article 17",
+    "Highways Act 1980, 26",
+    "Highways Act 1980, 118",
+    "Highways Act 1980, 119",
+    "Highways Act 1980, 118A",
+    "Highways Act 1980, 118B",
+    "Highways Act 1980, 119A",
+    "Highways Act 1980, 119B",
+    "Highways Act 1980, 119D",
+    "Inclosure Act 1845, 149",
+    "Law of Property Act 1925, 193",
+    "National Trust Act 1971, 23",
+    "Town and Country Planning Act 1990, 78",
+    "Town and Country Planning Act 1990, 247",
+    "Town and Country Planning Act 1990, 251",
+    "Town and Country Planning Act 1990, 257",
+    "Town and Country Planning Act 1990, 61",
+    "Wildlife and Countryside Act 1981, 53",
+    "Wildlife and Countryside Act 1981, 54",
+    "Wildlife and Countryside Act 1981, Schedule 14 A",
+    "Wildlife and Countryside Act 1981, Schedule 14 D"
+  ];
+
+  // 2. Validation: Check if empty
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/act', {
+      ref: ref,
+      error: true,
+      errorMessage: { text: "Enter the relevant legislation or act" }
+    });
+  }
+
+  // 3. Validation: Check if the typed value exists in the list
+  // This prevents users from typing "Fake Act 2024" and saving it
+  if (!legislationList.includes(val)) {
+     return res.render('cases/edit/act', {
+      ref: ref,
+      value: val, // persists the invalid entry so they can fix it
+      error: true,
+      errorMessage: { text: "Select an act from the list" }
+    });   
+  }
+
+  // 4. Save to the case object
+  c.act = val;
+  
+  // Redirect back to case details with a success parameter
+  // 'updated=legislation' can be used to trigger a success banner
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=legislation');
+});
+
 
 // --- TEAM / CASE OFFICER LOGIC ---
 
