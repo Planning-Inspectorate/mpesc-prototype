@@ -92,7 +92,7 @@ Check applicant or appellant - Planning Inspectorate Portal
       
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Add applicant",
+          text: "Add details",
           classes: "govuk-button" if applicantList.length == 0 else "govuk-button--secondary",
           href: "/cases/create-a-case/questions/applicant-name"
         }) }}
@@ -100,7 +100,8 @@ Check applicant or appellant - Planning Inspectorate Portal
 
       {% if applicantList.length > 0 %}
         <div class="govuk-button-group">
-          {{ govukButton({ text: "Save and continue" }) }}
+          {{ govukButton({ text: "Continue" }) }}
+          {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/cases/create-a-case/questions/case-received-date" }) }}
         </div>
       {% endif %}
     </form>

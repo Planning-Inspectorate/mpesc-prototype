@@ -3881,6 +3881,57 @@ router.post('/cases/procedures/procedure-1/confirmed-hearing-date', function(req
   }
 });
 
+// --- DEADLINE FOR CONSENT ---
+router.get('/cases/procedures/procedure-1/deadline-for-consent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p1 = c.procedure1 || {};
+  var val = p1.deadlineForConsent || {}; 
+
+  res.render('cases/procedures/procedure-1/deadline-for-consent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-1/deadline-for-consent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure1 = c.procedure1 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'deadline-for-consent',          
+    'Deadline for consent',     
+    c.procedure1,        
+    'deadlineForConsent'           
+  );
+
+  // FIX: Route handles redirect now
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-1/deadline-for-consent', {
+      ref: ref,
+      day: req.body['deadline-for-consent-day'],
+      month: req.body['deadline-for-consent-month'],
+      year: req.body['deadline-for-consent-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
 // --- HEARING TYPE ---
 router.get('/cases/procedures/procedure-1/hearing-type', function(req, res) {
   var ref = req.query.ref;
@@ -5496,10 +5547,10 @@ router.get('/cases/procedures/procedure-2/status', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
   res.render('cases/procedures/procedure-2/status', {
     ref: ref,
-    status: p1.status
+    status: p2.status
   });
 });
 
@@ -5934,6 +5985,57 @@ router.post('/cases/procedures/procedure-2/verification-date', function(req, res
       day: req.body['verification-date-day'],
       month: req.body['verification-date-month'],
       year: req.body['verification-date-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
+// --- DEADLINE FOR CONSENT ---
+router.get('/cases/procedures/procedure-2/deadline-for-consent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p2 = c.procedure2 || {};
+  var val = p2.deadlineForConsent || {}; 
+
+  res.render('cases/procedures/procedure-2/deadline-for-consent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/deadline-for-consent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'deadline-for-consent',          
+    'Deadline for consent',     
+    c.procedure2,        
+    'deadlineForConsent'           
+  );
+
+  // FIX: Route handles redirect now
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/deadline-for-consent', {
+      ref: ref,
+      day: req.body['deadline-for-consent-day'],
+      month: req.body['deadline-for-consent-month'],
+      year: req.body['deadline-for-consent-year'],
       errorList: result.errorList,
       errorFields: result.errorFields
     });
@@ -7823,10 +7925,10 @@ router.get('/cases/procedures/procedure-3/status', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
   res.render('cases/procedures/procedure-3/status', {
     ref: ref,
-    status: p1.status
+    status: p3.status
   });
 });
 
@@ -9042,6 +9144,58 @@ router.post('/cases/procedures/procedure-3/hearing-reporting-time', function(req
     });
   }
   return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+});
+
+
+// --- DEADLINE FOR CONSENT ---
+router.get('/cases/procedures/procedure-3/deadline-for-consent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p3 = c.procedure3 || {};
+  var val = p3.deadlineForConsent || {}; 
+
+  res.render('cases/procedures/procedure-3/deadline-for-consent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/deadline-for-consent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'deadline-for-consent',          
+    'Deadline for consent',     
+    c.procedure3,        
+    'deadlineForConsent'           
+  );
+
+  // FIX: Route handles redirect now
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/deadline-for-consent', {
+      ref: ref,
+      day: req.body['deadline-for-consent-day'],
+      month: req.body['deadline-for-consent-month'],
+      year: req.body['deadline-for-consent-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
 });
 
 
