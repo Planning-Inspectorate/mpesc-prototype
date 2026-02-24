@@ -11033,14 +11033,31 @@ router.get('/cases/overview-procedures/check', (req, res) => {
 router.get('/cases/overview-procedures/step-1', (req, res) => {
   var c = getOverviewProcs(req);
   var val = "";
+  
   if (req.query.id) {
     var item = c.overviewProcedures.find(i => i.id === req.query.id);
-    if (item) val = item.type;
+    if (item) {
+      val = item.type;
+
+      // HYDRATION: Copy existing data into tempProc so steps 2 and 3 are pre-filled
+      req.session.data['tempProc'] = {
+        type: item.type,
+        status: item.status,
+        adminType: item.adminType,
+        siteVisitType: item.siteVisitType,
+        inspector: item.inspector
+      };
+    }
   } else {
-    // Clear temp session for new entries
+    // Clear temp session for new entries to ensure a blank form
     req.session.data['tempProc'] = {}; 
   }
-  res.render('cases/overview-procedures/step-1-type', { ref: req.query.ref, id: req.query.id || "", value: val });
+  
+  res.render('cases/overview-procedures/step-1-type', { 
+    ref: req.query.ref, 
+    id: req.query.id || "", 
+    value: val 
+  });
 });
 
 router.post('/cases/overview-procedures/step-1', (req, res) => {
@@ -11048,9 +11065,15 @@ router.post('/cases/overview-procedures/step-1', (req, res) => {
   var ref = req.query.ref;
   var id = req.query.id;
   
-  if (!type) return res.render('cases/overview-procedures/step-1-type', { ref: ref, id: id, error: true });
+  if (!type) {
+    return res.render('cases/overview-procedures/step-1-type', { 
+      ref: ref, 
+      id: id, 
+      error: true 
+    });
+  }
 
-  // Store in temp session
+  // Ensure tempProc exists and update the type
   if (!req.session.data['tempProc']) req.session.data['tempProc'] = {};
   req.session.data['tempProc'].type = type;
 
