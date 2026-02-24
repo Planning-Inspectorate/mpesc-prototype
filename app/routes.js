@@ -9,6 +9,25 @@ const router = govukPrototypeKit.requests.setupRouter()
 
 // Page routes
 
+// --- COMBINED RESET AND START ROUTE ---
+router.get('/create-case-start', function (req, res) {
+  
+  // 1. "Nuclear" capture: Save the database (the cases already created)
+  const savedCases = req.session.data['cases'] || [];
+
+  // 2. Wipe EVERYTHING: This kills ghost data from 'Edit' and 'Create' flows alike
+  req.session.data = {};
+
+  // 3. Restore only the database
+  req.session.data['cases'] = savedCases;
+
+  // 4. (Optional) Restore global settings if you have any
+  // req.session.data['userRole'] = 'Admin';
+
+  // 5. Redirect to the first page of the creation journey
+  res.redirect('/cases/create-a-case/questions/casework-area');
+});
+
 router.post('/casework-area-answer', function (req, res) {
 
 
@@ -429,8 +448,8 @@ router.post('/create-case-submit', function (req, res) {
 
     applicants: req.session.data['applicants'] || [],
     
-    // Map the authority/LPA
-    "authorityName": req.session.data['authorityName'] || req.session.data['authority'] || req.session.data['lpa'],
+    // Map the authority
+    "authorityName": req.session.data['authorityName'] || req.session.data['authority-name'],
 
     // Map the external reference
     "externalReference": req.session.data['externalReference'] || req.session.data['external-reference'],
@@ -443,26 +462,20 @@ router.post('/create-case-submit', function (req, res) {
   req.session.data['cases'].push(newCase);
 
 
-// --- 6.5 CLEAR DATA FOR NEXT JOURNEY ---
+// --- 6.5 SAVE, CLEANUP & REDIRECT ---
 
   // 1. Capture the "database" (the cases you've already saved)
   const savedCases = req.session.data['cases'] || [];
 
-  // 2. Clear the entire session data object
-  // This effectively wipes caseType, subtype, and every other form input
-  req.session.data = {};
+  // 2. Clear the session but restore the database
+  // This wipes all the form data used during creation
+  req.session.data = { 'cases': savedCases };
 
-  // 3. Restore only the essential global data
-  req.session.data['cases'] = savedCases;
-
-  // 4. (Optional) If you have a logged-in user or global settings, restore them here:
-  // req.session.data['user'] = 'Internal Admin';
-
-
-  // --- 7. REDIRECT WITH URL PARAM (Crucial for Success Page) ---
+  // 3. Log the success for your own terminal debugging
   console.log("SUCCESS: Case Saved with Ref:", finalRef);
   
-  // Pass the ref in the URL so the Success Page sees it immediately
+  // 4. Perform the SINGLE redirect to the success page
+  // We pass the caseRef in the URL so the success page can display "Case [Ref] created"
   res.redirect('/cases/create-a-case/success?caseRef=' + encodeURIComponent(finalRef));
 
 });
@@ -662,6 +675,28 @@ router.get('/cases/edit/applicant-remove', (req, res) => {
 });
 
 // --- 4. EDIT SITE ADDRESS (With Strict Postcode Validation) ---
+router.get('/cases/edit/site-address', function(req, res) {
+  var c = getCase(req);
+  var ref = req.query.ref;
+
+  // 1. Still re-hydrate for subsequent form logic
+  req.session.data['addressLine1'] = c.addressLine1;
+  req.session.data['addressLine2'] = c.addressLine2;
+  req.session.data['addressTown'] = c.addressTown;
+  req.session.data['addressCounty'] = c.addressCounty;
+  req.session.data['addressPostcode'] = c.addressPostcode;
+
+  // 2. Pass values DIRECTLY to the template to fix the "refresh bug"
+  res.render('cases/edit/site-address', { 
+    ref: ref,
+    addressLine1: c.addressLine1,
+    addressLine2: c.addressLine2,
+    addressTown: c.addressTown,
+    addressCounty: c.addressCounty,
+    addressPostcode: c.addressPostcode
+  });
+});
+
 router.post('/cases/edit/site-address', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);

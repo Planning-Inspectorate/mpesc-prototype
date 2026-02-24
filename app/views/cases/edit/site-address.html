@@ -41,7 +41,7 @@
     },
     id: "address-line-1",
     name: "addressLine1",
-    value: data['addressLine1']
+    value: addressLine1 or data['addressLine1']
 
   }) }}
 
@@ -51,7 +51,7 @@
     },
     id: "address-line-2",
     name: "addressLine2",
-    value: data['addressLine2']
+    value: addressLine2 or data['addressLine2']
 
   }) }}
 
@@ -62,7 +62,7 @@
     classes: "govuk-!-width-two-thirds",
     id: "address-town",
     name: "addressTown",
-    value: data['addressTown']
+    value: addressTown or data['addressTown']
  
   }) }}
 
@@ -73,7 +73,7 @@
     classes: "govuk-!-width-two-thirds",
     id: "address-county",
     name: "addressCounty",
-    value: data['addressCounty']
+    value: addressCounty or data['addressCounty']
   }) }}
 
   {{ govukInput({
@@ -83,7 +83,7 @@
     classes: "govuk-input--width-10",
     id: "address-postcode",
     name: "addressPostcode",
-    value: data['addressPostcode'],
+    value: addressPostcode or data['addressPostcode'],
     errorMessage: errorMessage if error else null
   }) }}
 
