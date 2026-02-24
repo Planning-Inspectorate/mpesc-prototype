@@ -631,7 +631,7 @@
 {# ------------------------------------------------------------------- PROCEDURE 1 CARD ------------------------------------------------------------------------  #}
 {% set p1 = currentCase.procedure1 %}
 {% set procedureRows = [] %}
-{% if p1.active %}
+{% if p1 and p1.active %}
 
 {# --- OPTION A: ADMIN --- #}
   {% if p1.type == "Admin" %}
@@ -737,7 +737,7 @@
   card: {
     title: { 
       text: (currentCase.procedure1.type if currentCase.procedure1.type else "Procedure 1") + 
-            " (" + (currentCase.procedure1.status if currentCase.procedure1.status else "-") + ")" 
+            " (" + (currentCase.procedure1.status if currentCase.procedure1.status else "No status selected") + ")" 
     },
     attributes: { id: "procedure1" }
   },
@@ -750,7 +750,7 @@
   {{ govukSummaryList({
     card: {
       title: { 
-        text: "Procedure 1 (" + (currentCase.procedure1.status if currentCase.procedure1.status else "-") + ")" 
+        text: "Procedure 1"
       },
       attributes: { id: "procedure1" }
     },
@@ -758,7 +758,7 @@
       {
         key: { text: "Procedure type" },
         value: { text: "-" },
-        actions: { items: [{ href: "/cases/procedures/procedure-1/type?ref=" + currentCase.reference, text: "Change" }] }
+        actions: { items: [{}] }
       }
     ]
   }) }}
@@ -869,12 +869,11 @@
   {% endif %}
 
   {# --- EXPANDED CARD VIEW --- #}
-{% if currentCase.procedure2.active %}
 {{ govukSummaryList({
   card: {
     title: { 
       text: (currentCase.procedure2.type if currentCase.procedure2.type else "Procedure 2") + 
-            " (" + (currentCase.procedure2.status if currentCase.procedure2.status else "-") + ")" 
+            " (" + (currentCase.procedure2.status if currentCase.procedure2.status else "No status selected") + ")" 
     },
     attributes: { id: "procedure2" }
   },
@@ -887,7 +886,7 @@
   {{ govukSummaryList({
     card: {
       title: { 
-        text: "Procedure 2 (" + (currentCase.procedure2.status if currentCase.procedure2.status else "-") + ")" 
+        text: "Procedure 2"
       },
       attributes: { id: "procedure2" }
     },
@@ -895,11 +894,10 @@
       {
         key: { text: "Procedure type" },
         value: { text: "-" },
-        actions: { items: [{ href: "/cases/procedures/procedure-2/type?ref=" + currentCase.reference, text: "Change" }] }
+        actions: { items: [{}] }
       }
     ]
   }) }}
-{% endif %}
 {% endif %}
 
 {# ------------------------------------------------------------------- PROCEDURE 3 CARD ------------------------------------------------------------------------  #}
@@ -1007,12 +1005,11 @@
   {% endif %}
 
 {# --- EXPANDED CARD VIEW --- #}
-{% if currentCase.procedure3.active %}
   {{ govukSummaryList({
     card: {
       title: { 
         text: (currentCase.procedure3.type if currentCase.procedure3.type else "Procedure 3") + 
-              " (" + (currentCase.procedure3.status if currentCase.procedure3.status else "-") + ")" 
+              " (" + (currentCase.procedure3.status if currentCase.procedure3.status else "No status selected") + ")" 
       },
       attributes: { id: "procedure3" }
     },
@@ -1025,7 +1022,7 @@
   {{ govukSummaryList({
     card: {
       title: { 
-        text: "Procedure 3 (" + (currentCase.procedure3.status if currentCase.procedure3.status else "-") + ")" 
+        text: "Procedure 3"
       },
       attributes: { id: "procedure3" }
     },
@@ -1037,7 +1034,7 @@
     ]
   }) }}
 {% endif %}
-{% endif %}
+
 
       {# ========================================================== #}
       {# OUTCOME OVERVIEW                                           #}
