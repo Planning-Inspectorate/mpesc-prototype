@@ -160,18 +160,119 @@
       <div class="govuk-tabs__panel" id="current-service">
         <h2 class="govuk-heading-l">Current service</h2>
         <p class="govuk-body">This is the manage planning, environmental and specialist casework (MPSEC) prototype. <br><br> Session data is stored temporarily and some features may not work.</p>
-
+<br>
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Back office</h3>
-            <ul class="govuk-list govuk-list--spaced">
-              <li><a href="/cases" class="govuk-link">Cases dashboard</a></li>
-              <li><a href="/cases/create-a-case/questions/casework-area" class="govuk-link">Create a new case</a></li>
-              <li><a href="" class="govuk-link">Manage an existing application</a></li>
-            </ul>
+
+            <h3 class="govuk-heading-m">Managing cases</h3>
+
+            <ul class="govuk-list">
+          <li class="govuk-body">
+            <a href="/cases" class="govuk-link">Cases</a>
+          </li>
+          <li>
+            <details class="govuk-details govuk-!-margin-0">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  Create a new case
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                <ol class="govuk-list govuk-list--number">
+                  <li>
+                    <a href="/cases/create-a-case/questions/casework-area">What area does this new case relate to?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/peas-type-of-case">Which case type is it?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/case-name">What is the case name?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/external-reference">What is the external reference?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/case-received-date">When was the case received?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/applicant-check">Check applicant or appellant</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/site-address">What is the site address?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/location">What is the site location if no address was added?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/questions/authority">Who is the authority?</a>
+                  </li>
+                   <li>
+                    <a href="/cases/create-a-case/questions/case-officer">Who is the assigned case officer?</a>
+                  </li>
+                  <li>
+                    <a href="/cases/create-a-case/check-your-answers">Check your answers</a>
+                  </li>
+                </ol>
+              </div>
+            </details>
+          </li>
+          <li class="govuk-body">
+            <a href="/assigned-to-me" class="govuk-link">Assigned to me</a>
+          </li>
+          <li>
+            <details class="govuk-details govuk-!-margin-0" open="">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  Manage case files
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                <ol class="govuk-list">
+                  <li>
+                    <a href="">Work in progress</a>
+                  </li>
+                </ol>
+              </div>
+            </details>
+          </li>
+
+            <li class="govuk-body">
+            <details class="govuk-details govuk-!-margin-0">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">
+                Feature in development
+              </span>
+            </summary>
+            <div class="govuk-details__text">
+              <ol class="govuk-list">
+                <li class="govuk-body">
+                  <a href="" class="govuk-link">List 2</a>
+                </li>
+            </ol>
           </div>
-        </div>
-      </div>
+        </details>
+      </li>
+
+     
+          <details class="govuk-details govuk-!-margin-0">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">
+                Feature in development
+              </span>
+            </summary>
+            <div class="govuk-details__text">
+              <ol class="govuk-list">
+                <li class="govuk-body">
+                  <a href="" class="govuk-link">List 2</a>
+                </li>
+            </ol>
+          </div>
+        </details>
+      </li>
+      
+      
+
+        
 
       {# --- TAB 2: UPCOMING FEATURES --- #}
       <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="features">
