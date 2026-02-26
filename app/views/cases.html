@@ -283,11 +283,19 @@
         {% set areaItems = [] %}
         {% set areaList = data['area'] if data['area'] | is_array else [data['area']] %}
         {% for item in areaList %}
-          {% if item == "planning-environment-applications" %}{% set label = "Planning, Environmental and Applications" %}
-          {% elif item == "rights-of-way-common-land" %}{% set label = "Rights of Way and Common Land" %}
-          {% else %}{% set label = item %}{% endif %}
-          {# Updated href to remove only this specific item #}
-          {% set areaItems = (areaItems.push({ text: label, href: "/cases/remove-filter/area/" + item }), areaItems) %}
+          {# MATCH THE SLUG TO THE PRETTY TEXT #}
+          {% if item == "planning-environmental-and-applications" %}
+            {% set label = "Planning, Environmental and Applications" %}
+          {% elif item == "rights-of-way-and-common-land" %}
+            {% set label = "Rights of Way and Common Land" %}
+          {% else %}
+            {% set label = item %}
+          {% endif %}
+          
+          {% set areaItems = (areaItems.push({ 
+            text: label, 
+            href: "/cases/remove-filter/area/" + item 
+          }), areaItems) %}
         {% endfor %}
         {% set filterCategories = (filterCategories.push({ heading: { text: "Case work area" }, items: areaItems }), filterCategories) %}
       {% endif %}
@@ -375,7 +383,7 @@
           heading: { text: "Selected filters" },
           clearLink: {
             text: "Clear filters",
-            href: "/cases",
+            href: "/cases/clear-filters",
             classes: "govuk-!-font-size-16"
           },
           categories: filterCategories

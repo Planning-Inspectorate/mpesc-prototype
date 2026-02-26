@@ -12259,3 +12259,14 @@ router.get('/cases/remove-filter/:category/:value', function (req, res) {
   }
   res.redirect('/cases');
 });
+
+router.get('/cases/clear-filters', function (req, res) {
+  // Delete the specific filter keys from the session
+  delete req.session.data['area'];
+  delete req.session.data['type'];
+  delete req.session.data['subtype'];
+  // delete req.session.data['searchCriteria']; // Optional: clear search too
+
+  // Redirect back to the case list
+  res.redirect('/cases');
+});
