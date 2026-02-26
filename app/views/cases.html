@@ -63,6 +63,25 @@
     border-bottom: 1px solid #b1b4b6;
 }
 
+/* 1. Standard state (Dark icon) */
+.moj-filter__tag::after {
+  content: "" !important;
+  background-image: url("/public/images/icon-tag-remove-cross.svg") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 10px !important;
+  display: inline-block !important;
+  width: 20px !important;
+  height: 20px !important;
+  vertical-align: middle !important;
+  margin-left: 5px !important;
+}
+
+/* 2. Hover state (Swap to White icon) */
+.moj-filter__tag:hover::after {
+  background-image: url("/public/images/icon-tag-remove-cross-white.svg") !important;
+}
+
 </style>
 
 <div class="moj-filter-layout custom-filter-layout">
@@ -81,13 +100,12 @@
           legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "planning-environment-applications", text: "Planning, Environmental and Applications", checked: data['area'] == "planning-environment-applications" },
-          { value: "rights-of-way-common-land", text: "Rights of Way and Common Land", checked: data['area'] == "rights-of-way-common-land" }
+          { value: "planning-environment-applications", text: "Planning, Environmental and Applications", checked: true if data['area'] and ("planning-environment-applications" in data['area']) },
+          { value: "rights-of-way-common-land", text: "Rights of Way and Common Land", checked: true if data['area'] and ("rights-of-way-common-land" in data['area']) }
         ]
       }) }}
 
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
       <br>
 
       {# 2. PLANNING CASE TYPE #}
@@ -99,11 +117,11 @@
           legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "drought", text: "Drought", checked: data['type'] == "drought" },
-          { value: "housing-planning-cpos", text: "Housing and Planning CPOs", checked: data['type'] == "housing-planning-cpos" },
-          { value: "other-sos-casework", text: "Other Secretary of State casework", checked: data['type'] == "other-sos-casework" },
-          { value: "purchase-notices", text: "Purchase Notices", checked: data['type'] == "purchase-notices" },
-          { value: "wayleaves", text: "Wayleaves", checked: data['type'] == "wayleaves" }
+          { value: "drought", text: "Drought", checked: true if data['type'] and ("drought" in data['type']) },
+          { value: "housing-planning-cpos", text: "Housing and Planning CPOs", checked: true if data['type'] and ("housing-planning-cpos" in data['type']) },
+          { value: "other-sos-casework", text: "Other Secretary of State casework", checked: true if data['type'] and ("other-sos-casework" in data['type']) },
+          { value: "purchase-notices", text: "Purchase Notices", checked: true if data['type'] and ("purchase-notices" in data['type']) },
+          { value: "wayleaves", text: "Wayleaves", checked: true if data['type'] and ("wayleaves" in data['type']) }
         ]
       }) }}
 
@@ -116,8 +134,8 @@
           legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "drought-permits", text: "Drought Permits", checked: data['subtype'] == "drought-permits" },
-          { value: "drought-orders", text: "Drought Orders", checked: data['subtype'] == "drought-orders" }
+          { value: "drought-permits", text: "Drought Permits", checked: true if data['subtype'] and ("drought-permits" in data['subtype']) },
+          { value: "drought-orders", text: "Drought Orders", checked: true if data['subtype'] and ("drought-orders" in data['subtype']) }
         ]
       }) }}
 
@@ -130,9 +148,9 @@
           legend: { text: "Select Housing and Planning CPOs subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "housing", text: "Housing", checked: data['subtype'] == "housing" },
-          { value: "planning-sub", text: "Planning", checked: data['subtype'] == "planning-sub" },
-          { value: "adhoc", text: "Ad hoc", checked: data['subtype'] == "adhoc" }
+          { value: "housing", text: "Housing", checked: true if data['subtype'] and ("housing" in data['subtype']) },
+          { value: "planning-sub", text: "Planning", checked: true if data['subtype'] and ("planning-sub" in data['subtype']) },
+          { value: "adhoc", text: "Ad hoc", checked: true if data['subtype'] and ("adhoc" in data['subtype']) }
         ]
       }) }}
 
@@ -145,16 +163,16 @@
           legend: { text: "Select Other Secretary of State casework subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "defra-cpo", text: "DEFRA CPO", checked: data['subtype'] == "defra-cpo" },
-          { value: "desnz-cpo", text: "DESNZ CPO", checked: data['subtype'] == "desnz-cpo" },
-          { value: "dft-cpo", text: "DfT CPO", checked: data['subtype'] == "dft-cpo" },
-          { value: "ad-hoc-cpo", text: "Ad hoc CPO", checked: data['subtype'] == "ad-hoc-cpo" },
-          { value: "advert", text: "Advert", checked: data['subtype'] == "advert" },
-          { value: "completion-notice", text: "Completion notice", checked: data['subtype'] == "completion-notice" },
-          { value: "discontinuance-notice", text: "Discontinuance notice", checked: data['subtype'] == "discontinuance-notice" },
-          { value: "modification-to-pp", text: "Modification to planning permission", checked: data['subtype'] == "modification-to-pp" },
-          { value: "review-mineral-permission", text: "Review of mineral permission", checked: data['subtype'] == "review-mineral-permission" },
-          { value: "revocation", text: "Revocation", checked: data['subtype'] == "revocation" }
+          { value: "defra-cpo", text: "DEFRA CPO", checked: true if data['subtype'] and ("defra-cpo" in data['subtype']) },
+          { value: "desnz-cpo", text: "DESNZ CPO", checked: true if data['subtype'] and ("desnz-cpo" in data['subtype']) },
+          { value: "dft-cpo", text: "DfT CPO", checked: true if data['subtype'] and ("dft-cpo" in data['subtype']) },
+          { value: "ad-hoc-cpo", text: "Ad hoc CPO", checked: true if data['subtype'] and ("ad-hoc-cpo" in data['subtype']) },
+          { value: "advert", text: "Advert", checked: true if data['subtype'] and ("advert" in data['subtype']) },
+          { value: "completion-notice", text: "Completion notice", checked: true if data['subtype'] and ("completion-notice" in data['subtype']) },
+          { value: "discontinuance-notice", text: "Discontinuance notice", checked: true if data['subtype'] and ("discontinuance-notice" in data['subtype']) },
+          { value: "modification-to-pp", text: "Modification to planning permission", checked: true if data['subtype'] and ("modification-to-pp" in data['subtype']) },
+          { value: "review-mineral-permission", text: "Review of mineral permission", checked: true if data['subtype'] and ("review-mineral-permission" in data['subtype']) },
+          { value: "revocation", text: "Revocation", checked: true if data['subtype'] and ("revocation" in data['subtype']) }
         ]
       }) }}
 
@@ -167,14 +185,13 @@
           legend: { text: "Select Wayleaves subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "new-lines", text: "New lines", checked: data['subtype'] == "new-lines" },
-          { value: "tree-lopping", text: "Tree lopping", checked: data['subtype'] == "tree-lopping" },
-          { value: "wayleaves-generic", text: "Wayleaves", checked: data['subtype'] == "wayleaves-generic" }
+          { value: "new-lines", text: "New lines", checked: true if data['subtype'] and ("new-lines" in data['subtype']) },
+          { value: "tree-lopping", text: "Tree lopping", checked: true if data['subtype'] and ("tree-lopping" in data['subtype']) },
+          { value: "wayleaves-generic", text: "Wayleaves", checked: true if data['subtype'] and ("wayleaves-generic" in data['subtype']) }
         ]
       }) }}
 
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
       <br>
 
       {# 7. RIGHTS OF WAY CASE TYPE #}
@@ -186,9 +203,9 @@
           legend: { text: "Select Rights of Way and Common Land case type", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "coastal-access", text: "Coastal Access", checked: data['type'] == "coastal-access" },
-          { value: "common-land", text: "Common Land", checked: data['type'] == "common-land" },
-          { value: "rights-of-way", text: "Rights of Way", checked: data['type'] == "rights-of-way" }
+          { value: "coastal-access", text: "Coastal Access", checked: true if data['type'] and ("coastal-access" in data['type']) },
+          { value: "common-land", text: "Common Land", checked: true if data['type'] and ("common-land" in data['type']) },
+          { value: "rights-of-way", text: "Rights of Way", checked: true if data['type'] and ("rights-of-way" in data['type']) }
         ]
       }) }}
 
@@ -201,14 +218,14 @@
           legend: { text: "Select Coastal Access subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "coastal-access-appeal", text: "Coastal access appeal", checked: data['subtype'] == "coastal-access-appeal" },
-          { value: "notice-appeal", text: "Notice appeal", checked: data['subtype'] == "notice-appeal" },
-          { value: "objection", text: "Objection", checked: data['subtype'] == "objection" },
-          { value: "restriction-appeal", text: "Restriction appeal (access land)", checked: data['subtype'] == "restriction-appeal" }
+          { value: "coastal-access-appeal", text: "Coastal access appeal", checked: true if data['subtype'] and ("coastal-access-appeal" in data['subtype']) },
+          { value: "notice-appeal", text: "Notice appeal", checked: true if data['subtype'] and ("notice-appeal" in data['subtype']) },
+          { value: "objection", text: "Objection", checked: true if data['subtype'] and ("objection" in data['subtype']) },
+          { value: "restriction-appeal", text: "Restriction appeal (access land)", checked: true if data['subtype'] == "restriction-appeal" }
         ]
       }) }}
 
-     {# 9. COMMON LAND SUBTYPES - UPDATED LIST #}
+     {# 9. COMMON LAND SUBTYPES #}
       {{ govukCheckboxes({
         idPrefix: "subtype-common",
         name: "subtype",
@@ -217,20 +234,20 @@
           legend: { text: "Select Common Land subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "commons-ecclesiastical", text: "Commons for Ecclesiastical Purposes", checked: data['subtype'] == "commons-ecclesiastical" },
-          { value: "greater-london", text: "Commons in Greater London", checked: data['subtype'] == "greater-london" },
-          { value: "compulsory-purchase", text: "Compulsory Purchase of Common Land", checked: data['subtype'] == "compulsory-purchase" },
-          { value: "correction-cl-register", text: "Correction of the Common Land or Village Green Registers", checked: data['subtype'] == "correction-cl-register" },
-          { value: "deregistration-exchange", text: "Deregistration & Exchange", checked: data['subtype'] == "deregistration-exchange" },
-          { value: "inclosure", text: "Inclosure", checked: data['subtype'] == "inclosure" },
-          { value: "inclosure-obsolescent", text: "Inclosure : obsolescent functions", checked: data['subtype'] == "inclosure-obsolescent" },
-          { value: "land-exchange", text: "Land Exchange", checked: data['subtype'] == "land-exchange" },
-          { value: "local-acts", text: "Local Acts and Provisional Order Confirmation Acts", checked: data['subtype'] == "local-acts" },
-          { value: "public-access-limitations", text: "Public Access to Commons - limitations and restrictions", checked: data['subtype'] == "public-access-limitations" },
-          { value: "scheme-management", text: "Scheme of Management", checked: data['subtype'] == "scheme-management" },
-          { value: "stint-rates", text: "Stint Rates", checked: data['subtype'] == "stint-rates" },
-          { value: "works-common-land", text: "Works on Common Land", checked: data['subtype'] == "works-common-land" },
-          { value: "works-national-trust", text: "Works on Common Land (National Trust)", checked: data['subtype'] == "works-national-trust" }
+          { value: "commons-ecclesiastical", text: "Commons for Ecclesiastical Purposes", checked: true if data['subtype'] and ("commons-ecclesiastical" in data['subtype']) },
+          { value: "greater-london", text: "Commons in Greater London", checked: true if data['subtype'] and ("greater-london" in data['subtype']) },
+          { value: "compulsory-purchase", text: "Compulsory Purchase of Common Land", checked: true if data['subtype'] and ("compulsory-purchase" in data['subtype']) },
+          { value: "correction-cl-register", text: "Correction of the Common Land or Village Green Registers", checked: true if data['subtype'] and ("correction-cl-register" in data['subtype']) },
+          { value: "deregistration-exchange", text: "Deregistration & Exchange", checked: true if data['subtype'] and ("deregistration-exchange" in data['subtype']) },
+          { value: "inclosure", text: "Inclosure", checked: true if data['subtype'] and ("inclosure" in data['subtype']) },
+          { value: "inclosure-obsolescent", text: "Inclosure : obsolescent functions", checked: true if data['subtype'] and ("inclosure-obsolescent" in data['subtype']) },
+          { value: "land-exchange", text: "Land Exchange", checked: true if data['subtype'] and ("land-exchange" in data['subtype']) },
+          { value: "local-acts", text: "Local Acts and Provisional Order Confirmation Acts", checked: true if data['subtype'] and ("local-acts" in data['subtype']) },
+          { value: "public-access-limitations", text: "Public Access to Commons - limitations and restrictions", checked: true if data['subtype'] and ("public-access-limitations" in data['subtype']) },
+          { value: "scheme-management", text: "Scheme of Management", checked: true if data['subtype'] and ("scheme-management" in data['subtype']) },
+          { value: "stint-rates", text: "Stint Rates", checked: true if data['subtype'] and ("stint-rates" in data['subtype']) },
+          { value: "works-common-land", text: "Works on Common Land", checked: true if data['subtype'] and ("works-common-land" in data['subtype']) },
+          { value: "works-national-trust", text: "Works on Common Land (National Trust)", checked: true if data['subtype'] and ("works-national-trust" in data['subtype']) }
         ]
       }) }}
 
@@ -243,34 +260,125 @@
           legend: { text: "Select Rights of Way subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "dispensation-ha80", text: "Dispensation for Serving Notice HA80", checked: data['subtype'] == "dispensation-ha80" },
-          { value: "dispensation-tcpa90", text: "Dispensation for Serving Notice TCPA90", checked: data['subtype'] == "dispensation-tcpa90" },
-          { value: "dispensation-wca81", text: "Dispensation for Serving Notice WCA81", checked: data['subtype'] == "dispensation-wca81" },
-          { value: "opposed-dmmo", text: "Opposed Definitive Map Modification Order (DMMO)", checked: data['subtype'] == "opposed-dmmo" },
-          { value: "opposed-ppo-ha80", text: "Opposed Public Path Order (PPO) HA80", checked: data['subtype'] == "opposed-ppo-ha80" },
-          { value: "opposed-ppo-tcpa90", text: "Opposed Public Path Order (PPO) TCPA90", checked: data['subtype'] == "opposed-ppo-tcpa90" },
-          { value: "schedule-14-appeal", text: "Schedule 14 Appeal", checked: data['subtype'] == "schedule-14-appeal" },
-          { value: "schedule-14-direction", text: "Schedule 14 Direction", checked: data['subtype'] == "schedule-14-direction" },
-          { value: "schedule-13a-appeal", text: "Schedule 13A Appeal", checked: data['subtype'] == "schedule-13a-appeal" }
+          { value: "dispensation-ha80", text: "Dispensation for Serving Notice HA80", checked: true if data['subtype'] and ("dispensation-ha80" in data['subtype']) },
+          { value: "dispensation-tcpa90", text: "Dispensation for Serving Notice TCPA90", checked: true if data['subtype'] and ("dispensation-tcpa90" in data['subtype']) },
+          { value: "dispensation-wca81", text: "Dispensation for Serving Notice WCA81", checked: true if data['subtype'] and ("dispensation-wca81" in data['subtype']) },
+          { value: "opposed-dmmo", text: "Opposed Definitive Map Modification Order (DMMO)", checked: true if data['subtype'] and ("opposed-dmmo" in data['subtype']) },
+          { value: "opposed-ppo-ha80", text: "Opposed Public Path Order (PPO) HA80", checked: true if data['subtype'] and ("opposed-ppo-ha80" in data['subtype']) },
+          { value: "opposed-ppo-tcpa90", text: "Opposed Public Path Order (PPO) TCPA90", checked: true if data['subtype'] and ("opposed-ppo-tcpa90" in data['subtype']) },
+          { value: "schedule-14-appeal", text: "Schedule 14 Appeal", checked: true if data['subtype'] and ("schedule-14-appeal" in data['subtype']) },
+          { value: "schedule-14-direction", text: "Schedule 14 Direction", checked: true if data['subtype'] and ("schedule-14-direction" in data['subtype']) },
+          { value: "schedule-13a-appeal", text: "Schedule 13A Appeal", checked: true if data['subtype'] and ("schedule-13a-appeal" in data['subtype']) }
         ]
       }) }}
 
     {% endset -%}
 
-    <form method="get" action="/cases">
+  <form method="get" action="/cases">
+      {# PRE-BUILD CATEGORIES FOR SELECTED FILTERS #}
+      {% set filterCategories = [] %}
+
+      {# Area Tags #}
+      {% if data['area'] %}
+        {% set areaItems = [] %}
+        {% set areaList = data['area'] if data['area'] | is_array else [data['area']] %}
+        {% for item in areaList %}
+          {% if item == "planning-environment-applications" %}{% set label = "Planning, Environmental and Applications" %}
+          {% elif item == "rights-of-way-common-land" %}{% set label = "Rights of Way and Common Land" %}
+          {% else %}{% set label = item %}{% endif %}
+          {# Updated href to remove only this specific item #}
+          {% set areaItems = (areaItems.push({ text: label, href: "/cases/remove-filter/area/" + item }), areaItems) %}
+        {% endfor %}
+        {% set filterCategories = (filterCategories.push({ heading: { text: "Case work area" }, items: areaItems }), filterCategories) %}
+      {% endif %}
+
+      {# Type Tags #}
+      {% if data['type'] %}
+        {% set typeItems = [] %}
+        {% set typeList = data['type'] if data['type'] | is_array else [data['type']] %}
+        {% for item in typeList %}
+          {% if item == "drought" %}{% set label = "Drought" %}
+          {% elif item == "housing-planning-cpos" %}{% set label = "Housing and Planning CPOs" %}
+          {% elif item == "other-sos-casework" %}{% set label = "Other Secretary of State casework" %}
+          {% elif item == "purchase-notices" %}{% set label = "Purchase Notices" %}
+          {% elif item == "wayleaves" %}{% set label = "Wayleaves" %}
+          {% elif item == "coastal-access" %}{% set label = "Coastal Access" %}
+          {% elif item == "common-land" %}{% set label = "Common Land" %}
+          {% elif item == "rights-of-way" %}{% set label = "Rights of Way" %}
+          {% else %}{% set label = item %}{% endif %}
+          {# Updated href to remove only this specific item #}
+          {% set typeItems = (typeItems.push({ text: label, href: "/cases/remove-filter/type/" + item }), typeItems) %}
+        {% endfor %}
+        {% set filterCategories = (filterCategories.push({ heading: { text: "Case type" }, items: typeItems }), filterCategories) %}
+      {% endif %}
+
+      {# Subtype Tags #}
+      {% if data['subtype'] %}
+        {% set subtypeItems = [] %}
+        {% set subtypeList = data['subtype'] if data['subtype'] | is_array else [data['subtype']] %}
+        {% for item in subtypeList %}
+          {% if item == "drought-permits" %}{% set label = "Drought Permits" %}
+          {% elif item == "drought-orders" %}{% set label = "Drought Orders" %}
+          {% elif item == "housing" %}{% set label = "Housing" %}
+          {% elif item == "planning-sub" %}{% set label = "Planning" %}
+          {% elif item == "adhoc" %}{% set label = "Ad hoc" %}
+          {% elif item == "defra-cpo" %}{% set label = "DEFRA CPO" %}
+          {% elif item == "desnz-cpo" %}{% set label = "DESNZ CPO" %}
+          {% elif item == "dft-cpo" %}{% set label = "DfT CPO" %}
+          {% elif item == "ad-hoc-cpo" %}{% set label = "Ad hoc CPO" %}
+          {% elif item == "advert" %}{% set label = "Advert" %}
+          {% elif item == "completion-notice" %}{% set label = "Completion notice" %}
+          {% elif item == "discontinuance-notice" %}{% set label = "Discontinuance notice" %}
+          {% elif item == "modification-to-pp" %}{% set label = "Modification to planning permission" %}
+          {% elif item == "review-mineral-permission" %}{% set label = "Review of mineral permission" %}
+          {% elif item == "revocation" %}{% set label = "Revocation" %}
+          {% elif item == "new-lines" %}{% set label = "New lines" %}
+          {% elif item == "tree-lopping" %}{% set label = "Tree lopping" %}
+          {% elif item == "wayleaves-generic" %}{% set label = "Wayleaves" %}
+          {% elif item == "coastal-access-appeal" %}{% set label = "Coastal access appeal" %}
+          {% elif item == "notice-appeal" %}{% set label = "Notice appeal" %}
+          {% elif item == "objection" %}{% set label = "Objection" %}
+          {% elif item == "restriction-appeal" %}{% set label = "Restriction appeal (access land)" %}
+          {% elif item == "commons-ecclesiastical" %}{% set label = "Commons for Ecclesiastical Purposes" %}
+          {% elif item == "greater-london" %}{% set label = "Commons in Greater London" %}
+          {% elif item == "compulsory-purchase" %}{% set label = "Compulsory Purchase of Common Land" %}
+          {% elif item == "correction-cl-register" %}{% set label = "Correction of the Common Land or Village Green Registers" %}
+          {% elif item == "deregistration-exchange" %}{% set label = "Deregistration & Exchange" %}
+          {% elif item == "inclosure" %}{% set label = "Inclosure" %}
+          {% elif item == "inclosure-obsolescent" %}{% set label = "Inclosure : obsolescent functions" %}
+          {% elif item == "land-exchange" %}{% set label = "Land Exchange" %}
+          {% elif item == "local-acts" %}{% set label = "Local Acts and Provisional Order Confirmation Acts" %}
+          {% elif item == "public-access-limitations" %}{% set label = "Public Access to Commons - limitations and restrictions" %}
+          {% elif item == "scheme-management" %}{% set label = "Scheme of Management" %}
+          {% elif item == "stint-rates" %}{% set label = "Stint Rates" %}
+          {% elif item == "works-common-land" %}{% set label = "Works on Common Land" %}
+          {% elif item == "works-national-trust" %}{% set label = "Works on Common Land (National Trust)" %}
+          {% elif item == "dispensation-ha80" %}{% set label = "Dispensation for Serving Notice HA80" %}
+          {% elif item == "dispensation-tcpa90" %}{% set label = "Dispensation for Serving Notice TCPA90" %}
+          {% elif item == "dispensation-wca81" %}{% set label = "Dispensation for Serving Notice WCA81" %}
+          {% elif item == "opposed-dmmo" %}{% set label = "Opposed Definitive Map Modification Order (DMMO)" %}
+          {% elif item == "opposed-ppo-ha80" %}{% set label = "Opposed Public Path Order (PPO) HA80" %}
+          {% elif item == "opposed-ppo-tcpa90" %}{% set label = "Opposed Public Path Order (PPO) TCPA90" %}
+          {% elif item == "schedule-14-appeal" %}{% set label = "Schedule 14 Appeal" %}
+          {% elif item == "schedule-14-direction" %}{% set label = "Schedule 14 Direction" %}
+          {% elif item == "schedule-13a-appeal" %}{% set label = "Schedule 13A Appeal" %}
+          {% else %}{% set label = item %}{% endif %}
+          {# Updated href to remove only this specific item #}
+          {% set subtypeItems = (subtypeItems.push({ text: label, href: "/cases/remove-filter/subtype/" + item }), subtypeItems) %}
+        {% endfor %}
+        {% set filterCategories = (filterCategories.push({ heading: { text: "Subtype" }, items: subtypeItems }), filterCategories) %}
+      {% endif %}
+
       {{ mojFilter({
-        heading: {
-          text: "Filter"
-        },
+        heading: { text: "Filter" },
         selectedFilters: {
-          heading: {
-            text: "Selected filters"
-          },
+          heading: { text: "Selected filters" },
           clearLink: {
             text: "Clear filters",
             href: "/cases",
             classes: "govuk-!-font-size-16"
-          }
+          },
+          categories: filterCategories
         },
         optionsHtml: filterOptionsHtml
       }) }}

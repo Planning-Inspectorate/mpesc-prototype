@@ -12185,3 +12185,56 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
   }
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
+
+
+
+// ============================================================================= ALL CASES PAGE ==============================================================================
+
+// This is a simplified example of how you might implement the filtering logic on the /cases page.
+router.get('/cases', function (req, res) {
+  // 1. Get all cases (from a JSON file or local array)
+  let cases = req.session.data['all-cases'] || []; 
+  
+  // 2. Get active filters from the session/query
+  const selectedAreas = req.session.data['area'];
+  const selectedTypes = req.session.data['type'];
+  const selectedSubtypes = req.session.data['subtype'];
+
+  // 3. Apply Filtering Logic
+  if (selectedAreas || selectedTypes || selectedSubtypes) {
+    cases = cases.filter(c => {
+      // Check Area (matches if no area selected OR if case area is in the selected list)
+      const matchesArea = !selectedAreas || 
+        (Array.isArray(selectedAreas) ? selectedAreas.includes(c.areaValue) : selectedAreas === c.areaValue);
+
+      // Check Type
+      const matchesType = !selectedTypes || 
+        (Array.isArray(selectedTypes) ? selectedTypes.includes(c.typeValue) : selectedTypes === c.typeValue);
+
+      // Check Subtype
+      const matchesSubtype = !selectedSubtypes || 
+        (Array.isArray(selectedSubtypes) ? selectedSubtypes.includes(c.subtypeValue) : selectedSubtypes === c.subtypeValue);
+
+      return matchesArea && matchesType && matchesSubtype;
+    });
+  }
+
+  res.render('cases', {
+    cases: cases
+  });
+});
+
+// 4. The Route to remove individual tags (as discussed previously)
+router.get('/cases/remove-filter/:category/:value', function (req, res) {
+  const { category, value } = req.params;
+
+  if (req.session.data[category]) {
+    if (Array.isArray(req.session.data[category])) {
+      req.session.data[category] = req.session.data[category].filter(item => item !== value);
+      if (req.session.data[category].length === 0) delete req.session.data[category];
+    } else {
+      if (req.session.data[category] === value) delete req.session.data[category];
+    }
+  }
+  res.redirect('/cases');
+});

@@ -1,6 +1,11 @@
 {% extends "govuk-prototype-kit/layouts/govuk-branded.njk" %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
+{% block head %}
+  {{ super() }}
+  <link href="/plugin-assets/@ministryofjustice/frontend/moj/all.css" rel="stylesheet" />
+{% endblock %}
+
 {% block header %}
 
 <style>
@@ -237,4 +242,12 @@
   </div>
 </footer>
   
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  <script src="/plugin-assets/@ministryofjustice/frontend/moj/all.js"></script>
+  <script>
+    window.MOJFrontend.initAll();
+  </script>
 {% endblock %}
