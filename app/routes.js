@@ -414,7 +414,18 @@ router.post('/create-case-submit', function (req, res) {
 
 // --- 6. SAVE THE CASE ---
 
-  // 1. Construct the address string first
+// Define case work area slug for both display and filtering (This is crucial for your checkboxes to work on the All Cases page)
+
+var areaSelection = req.session.data['casework-area'];
+  var areaSlug = "";
+
+  if (areaSelection === "Planning, Environmental and Applications") {
+    areaSlug = "planning-environment-applications";
+  } else if (areaSelection === "Rights of Way and Common Land") {
+    areaSlug = "rights-of-way-common-land";
+  }
+
+  // 1. Construct the address string
   var fullAddress = [
     req.session.data['addressLine1'],
     req.session.data['addressLine2'],
@@ -423,23 +434,37 @@ router.post('/create-case-submit', function (req, res) {
     req.session.data['addressPostcode']
   ].filter(Boolean).join(',\n');
 
+  // 2. Create the case object with Filter-Ready Slugs
   var newCase = {
     "reference": finalRef,
-    "status": "",
+    
+    // Status: Take from the radio selection, fallback to "New case" if empty
+    "caseStatus": "",
+    
+    // Display Labels (for the table)
     "type": caseType,
     "subtype": subtype,
+    // In routes.js - Updated to create cleaner, predictable slugs
+    "areaValue": (areaSelection || "").toLowerCase()
+                  .replace(/\band\b/g, '')  // Removes "and"
+                  .replace(/\bof\b/g, '')   // Removes "of"
+                  .replace(/,?\s+/g, '-')   // Replaces spaces with dashes
+                  .replace(/-+/g, '-'),     // Fixes double dashes
+
+    // Filter Slugs (Crucial for your checkboxes to work)
+    // We convert "Rights of Way" to "rights-of-way" automatically
+    "areaValue": (req.session.data['casework-area'] || "").toLowerCase().replace(/,?\s+/g, '-'),
+    "typeValue": (caseType || "").toLowerCase().replace(/,?\s+/g, '-'),
+    "subtypeValue": (subtype || "").toLowerCase().replace(/,?\s+/g, '-'),
+
     "receivedDay": req.session.data['case-received-date-day'],
     "receivedMonth": req.session.data['case-received-date-month'],
     "receivedYear": req.session.data['case-received-date-year'],
     "caseOfficer": req.session.data['caseOfficer'],
     
-    // Mapped Fields:
     "caseName": req.session.data['caseName'] || req.session.data['case-name'],
-    
-    // Use the variable we created above
     "siteAddress": fullAddress, 
     
-    // Save the individual address parts too (so you can edit them later)
     "addressLine1": req.session.data['addressLine1'],
     "addressLine2": req.session.data['addressLine2'],
     "addressTown": req.session.data['addressTown'],
@@ -447,19 +472,15 @@ router.post('/create-case-submit', function (req, res) {
     "addressPostcode": req.session.data['addressPostcode'],
 
     applicants: req.session.data['applicants'] || [],
-    
-    // Map the authority
     "authorityName": req.session.data['authorityName'] || req.session.data['authority-name'],
-
-    // Map the external reference
     "externalReference": req.session.data['externalReference'] || req.session.data['external-reference'],
-
-    // Map the site location (grid ref)
     "siteLocation": req.session.data['siteLocation'] || req.session.data['site-location']
   };
 
+  // 3. Push to database
   if (!req.session.data['cases']) { req.session.data['cases'] = []; }
   req.session.data['cases'].push(newCase);
+
 
 
 // --- 6.5 SAVE, CLEANUP & REDIRECT ---

@@ -14,6 +14,20 @@
 {%- from "govuk/components/tag/macro.njk" import govukTag -%}
 {%- from "govuk/components/pagination/macro.njk" import govukPagination -%}
 
+{# Get the master list of all cases (unfiltered) #}
+{% set allCases = data['cases'] or [] %}
+
+{# Helper to count cases matching a specific key/value #}
+{% macro getCount(cases, key, value) %}
+  {% set count = 0 %}
+  {% for c in cases %}
+    {% if c[key] == value %}
+      {% set count = count + 1 %}
+    {% endif %}
+  {% endfor %}
+  ({{ count }})
+{% endmacro %}
+
 <h1 class="govuk-heading-l">Case list</h1>
 
 <style>
@@ -96,32 +110,35 @@
         idPrefix: "area",
         name: "area",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "planning-environment-applications", text: "Planning, Environmental and Applications", checked: true if data['area'] and ("planning-environment-applications" in data['area']) },
-          { value: "rights-of-way-common-land", text: "Rights of Way and Common Land", checked: true if data['area'] and ("rights-of-way-common-land" in data['area']) }
+          { 
+            value: "planning-environmental-and-applications", 
+            text: "Planning, Environmental and Applications " + getCount(allCases, 'areaValue', 'planning-environmental-and-applications'), 
+            checked: true if data['area'] and ("planning-environmental-and-applications" in data['area']) 
+          },
+          { 
+            value: "rights-of-way-and-common-land", 
+            text: "Rights of Way and Common Land " + getCount(allCases, 'areaValue', 'rights-of-way-and-common-land'), 
+            checked: true if data['area'] and ("rights-of-way-and-common-land" in data['area']) 
+          }
         ]
       }) }}
 
-      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-      <br>
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"><br>
 
       {# 2. PLANNING CASE TYPE #}
       {{ govukCheckboxes({
         idPrefix: "type",
         name: "type",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "drought", text: "Drought", checked: true if data['type'] and ("drought" in data['type']) },
-          { value: "housing-planning-cpos", text: "Housing and Planning CPOs", checked: true if data['type'] and ("housing-planning-cpos" in data['type']) },
-          { value: "other-sos-casework", text: "Other Secretary of State casework", checked: true if data['type'] and ("other-sos-casework" in data['type']) },
-          { value: "purchase-notices", text: "Purchase Notices", checked: true if data['type'] and ("purchase-notices" in data['type']) },
-          { value: "wayleaves", text: "Wayleaves", checked: true if data['type'] and ("wayleaves" in data['type']) }
+          { value: "drought", text: "Drought " + getCount(allCases, 'type', 'Drought'), checked: true if data['type'] and ("drought" in data['type']) },
+          { value: "housing-planning-cpos", text: "Housing and Planning CPOs " + getCount(allCases, 'type', 'Housing and Planning CPOs'), checked: true if data['type'] and ("housing-planning-cpos" in data['type']) },
+          { value: "other-sos-casework", text: "Other Secretary of State casework " + getCount(allCases, 'type', 'Other Secretary of State casework'), checked: true if data['type'] and ("other-sos-casework" in data['type']) },
+          { value: "purchase-notices", text: "Purchase Notices " + getCount(allCases, 'type', 'Purchase Notices'), checked: true if data['type'] and ("purchase-notices" in data['type']) },
+          { value: "wayleaves", text: "Wayleaves " + getCount(allCases, 'type', 'Wayleaves'), checked: true if data['type'] and ("wayleaves" in data['type']) }
         ]
       }) }}
 
@@ -130,12 +147,10 @@
         idPrefix: "subtype-drought",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "drought-permits", text: "Drought Permits", checked: true if data['subtype'] and ("drought-permits" in data['subtype']) },
-          { value: "drought-orders", text: "Drought Orders", checked: true if data['subtype'] and ("drought-orders" in data['subtype']) }
+          { value: "drought-permits", text: "Drought Permits " + getCount(allCases, 'subtype', 'Drought Permits'), checked: true if data['subtype'] and ("drought-permits" in data['subtype']) },
+          { value: "drought-orders", text: "Drought Orders " + getCount(allCases, 'subtype', 'Drought Orders'), checked: true if data['subtype'] and ("drought-orders" in data['subtype']) }
         ]
       }) }}
 
@@ -144,13 +159,11 @@
         idPrefix: "subtype-housing",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Housing and Planning CPOs subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Housing and Planning CPOs subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "housing", text: "Housing", checked: true if data['subtype'] and ("housing" in data['subtype']) },
-          { value: "planning-sub", text: "Planning", checked: true if data['subtype'] and ("planning-sub" in data['subtype']) },
-          { value: "adhoc", text: "Ad hoc", checked: true if data['subtype'] and ("adhoc" in data['subtype']) }
+          { value: "housing", text: "Housing " + getCount(allCases, 'subtype', 'Housing'), checked: true if data['subtype'] and ("housing" in data['subtype']) },
+          { value: "planning-sub", text: "Planning " + getCount(allCases, 'subtype', 'Planning'), checked: true if data['subtype'] and ("planning-sub" in data['subtype']) },
+          { value: "adhoc", text: "Ad hoc " + getCount(allCases, 'subtype', 'Ad hoc'), checked: true if data['subtype'] and ("adhoc" in data['subtype']) }
         ]
       }) }}
 
@@ -159,20 +172,18 @@
         idPrefix: "subtype-other-sos",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Other Secretary of State casework subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Other Secretary of State casework subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "defra-cpo", text: "DEFRA CPO", checked: true if data['subtype'] and ("defra-cpo" in data['subtype']) },
-          { value: "desnz-cpo", text: "DESNZ CPO", checked: true if data['subtype'] and ("desnz-cpo" in data['subtype']) },
-          { value: "dft-cpo", text: "DfT CPO", checked: true if data['subtype'] and ("dft-cpo" in data['subtype']) },
-          { value: "ad-hoc-cpo", text: "Ad hoc CPO", checked: true if data['subtype'] and ("ad-hoc-cpo" in data['subtype']) },
-          { value: "advert", text: "Advert", checked: true if data['subtype'] and ("advert" in data['subtype']) },
-          { value: "completion-notice", text: "Completion notice", checked: true if data['subtype'] and ("completion-notice" in data['subtype']) },
-          { value: "discontinuance-notice", text: "Discontinuance notice", checked: true if data['subtype'] and ("discontinuance-notice" in data['subtype']) },
-          { value: "modification-to-pp", text: "Modification to planning permission", checked: true if data['subtype'] and ("modification-to-pp" in data['subtype']) },
-          { value: "review-mineral-permission", text: "Review of mineral permission", checked: true if data['subtype'] and ("review-mineral-permission" in data['subtype']) },
-          { value: "revocation", text: "Revocation", checked: true if data['subtype'] and ("revocation" in data['subtype']) }
+          { value: "defra-cpo", text: "DEFRA CPO " + getCount(allCases, 'subtype', 'DEFRA CPO'), checked: true if data['subtype'] and ("defra-cpo" in data['subtype']) },
+          { value: "desnz-cpo", text: "DESNZ CPO " + getCount(allCases, 'subtype', 'DESNZ CPO'), checked: true if data['subtype'] and ("desnz-cpo" in data['subtype']) },
+          { value: "dft-cpo", text: "DfT CPO " + getCount(allCases, 'subtype', 'DfT CPO'), checked: true if data['subtype'] and ("dft-cpo" in data['subtype']) },
+          { value: "ad-hoc-cpo", text: "Ad hoc CPO " + getCount(allCases, 'subtype', 'Ad hoc CPO'), checked: true if data['subtype'] and ("ad-hoc-cpo" in data['subtype']) },
+          { value: "advert", text: "Advert " + getCount(allCases, 'subtype', 'Advert'), checked: true if data['subtype'] and ("advert" in data['subtype']) },
+          { value: "completion-notice", text: "Completion notice " + getCount(allCases, 'subtype', 'Completion notice'), checked: true if data['subtype'] and ("completion-notice" in data['subtype']) },
+          { value: "discontinuance-notice", text: "Discontinuance notice " + getCount(allCases, 'subtype', 'Discontinuance notice'), checked: true if data['subtype'] and ("discontinuance-notice" in data['subtype']) },
+          { value: "modification-to-pp", text: "Modification to planning permission " + getCount(allCases, 'subtype', 'Modification to planning permission'), checked: true if data['subtype'] and ("modification-to-pp" in data['subtype']) },
+          { value: "review-mineral-permission", text: "Review of mineral permission " + getCount(allCases, 'subtype', 'Review of mineral permission'), checked: true if data['subtype'] and ("review-mineral-permission" in data['subtype']) },
+          { value: "revocation", text: "Revocation of planning permission " + getCount(allCases, 'subtype', 'Revocation of planning permission'), checked: true if data['subtype'] and ("revocation" in data['subtype']) }
         ]
       }) }}
 
@@ -181,31 +192,26 @@
         idPrefix: "subtype-wayleaves",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Wayleaves subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Wayleaves subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "new-lines", text: "New lines", checked: true if data['subtype'] and ("new-lines" in data['subtype']) },
-          { value: "tree-lopping", text: "Tree lopping", checked: true if data['subtype'] and ("tree-lopping" in data['subtype']) },
-          { value: "wayleaves-generic", text: "Wayleaves", checked: true if data['subtype'] and ("wayleaves-generic" in data['subtype']) }
+          { value: "new-lines", text: "New lines " + getCount(allCases, 'subtype', 'New lines'), checked: true if data['subtype'] and ("new-lines" in data['subtype']) },
+          { value: "tree-lopping", text: "Tree lopping " + getCount(allCases, 'subtype', 'Tree lopping'), checked: true if data['subtype'] and ("tree-lopping" in data['subtype']) },
+          { value: "wayleaves-generic", text: "Wayleaves " + getCount(allCases, 'subtype', 'Wayleaves'), checked: true if data['subtype'] and ("wayleaves-generic" in data['subtype']) }
         ]
       }) }}
 
-      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-      <br>
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible"><br>
 
       {# 7. RIGHTS OF WAY CASE TYPE #}
       {{ govukCheckboxes({
         idPrefix: "type-rights",
         name: "type",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Rights of Way and Common Land case type", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Rights of Way and Common Land case type", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "coastal-access", text: "Coastal Access", checked: true if data['type'] and ("coastal-access" in data['type']) },
-          { value: "common-land", text: "Common Land", checked: true if data['type'] and ("common-land" in data['type']) },
-          { value: "rights-of-way", text: "Rights of Way", checked: true if data['type'] and ("rights-of-way" in data['type']) }
+          { value: "coastal-access", text: "Coastal Access " + getCount(allCases, 'type', 'Coastal Access'), checked: true if data['type'] and ("coastal-access" in data['type']) },
+          { value: "common-land", text: "Common Land " + getCount(allCases, 'type', 'Common Land'), checked: true if data['type'] and ("common-land" in data['type']) },
+          { value: "rights-of-way", text: "Rights of Way " + getCount(allCases, 'type', 'Rights of Way'), checked: true if data['type'] and ("rights-of-way" in data['type']) }
         ]
       }) }}
 
@@ -214,14 +220,12 @@
         idPrefix: "subtype-coastal",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Coastal Access subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Coastal Access subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "coastal-access-appeal", text: "Coastal access appeal", checked: true if data['subtype'] and ("coastal-access-appeal" in data['subtype']) },
-          { value: "notice-appeal", text: "Notice appeal", checked: true if data['subtype'] and ("notice-appeal" in data['subtype']) },
-          { value: "objection", text: "Objection", checked: true if data['subtype'] and ("objection" in data['subtype']) },
-          { value: "restriction-appeal", text: "Restriction appeal (access land)", checked: true if data['subtype'] == "restriction-appeal" }
+          { value: "coastal-access-appeal", text: "Coastal access appeal " + getCount(allCases, 'subtype', 'Coastal access appeal'), checked: true if data['subtype'] and ("coastal-access-appeal" in data['subtype']) },
+          { value: "notice-appeal", text: "Notice appeal " + getCount(allCases, 'subtype', 'Notice appeal'), checked: true if data['subtype'] and ("notice-appeal" in data['subtype']) },
+          { value: "objection", text: "Objection " + getCount(allCases, 'subtype', 'Objection'), checked: true if data['subtype'] and ("objection" in data['subtype']) },
+          { value: "restriction-appeal", text: "Restriction appeal (access land) " + getCount(allCases, 'subtype', 'Restriction appeal (access land)'), checked: true if data['subtype'] == "restriction-appeal" }
         ]
       }) }}
 
@@ -230,24 +234,22 @@
         idPrefix: "subtype-common",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Common Land subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Common Land subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "commons-ecclesiastical", text: "Commons for Ecclesiastical Purposes", checked: true if data['subtype'] and ("commons-ecclesiastical" in data['subtype']) },
-          { value: "greater-london", text: "Commons in Greater London", checked: true if data['subtype'] and ("greater-london" in data['subtype']) },
-          { value: "compulsory-purchase", text: "Compulsory Purchase of Common Land", checked: true if data['subtype'] and ("compulsory-purchase" in data['subtype']) },
-          { value: "correction-cl-register", text: "Correction of the Common Land or Village Green Registers", checked: true if data['subtype'] and ("correction-cl-register" in data['subtype']) },
-          { value: "deregistration-exchange", text: "Deregistration & Exchange", checked: true if data['subtype'] and ("deregistration-exchange" in data['subtype']) },
-          { value: "inclosure", text: "Inclosure", checked: true if data['subtype'] and ("inclosure" in data['subtype']) },
-          { value: "inclosure-obsolescent", text: "Inclosure : obsolescent functions", checked: true if data['subtype'] and ("inclosure-obsolescent" in data['subtype']) },
-          { value: "land-exchange", text: "Land Exchange", checked: true if data['subtype'] and ("land-exchange" in data['subtype']) },
-          { value: "local-acts", text: "Local Acts and Provisional Order Confirmation Acts", checked: true if data['subtype'] and ("local-acts" in data['subtype']) },
-          { value: "public-access-limitations", text: "Public Access to Commons - limitations and restrictions", checked: true if data['subtype'] and ("public-access-limitations" in data['subtype']) },
-          { value: "scheme-management", text: "Scheme of Management", checked: true if data['subtype'] and ("scheme-management" in data['subtype']) },
-          { value: "stint-rates", text: "Stint Rates", checked: true if data['subtype'] and ("stint-rates" in data['subtype']) },
-          { value: "works-common-land", text: "Works on Common Land", checked: true if data['subtype'] and ("works-common-land" in data['subtype']) },
-          { value: "works-national-trust", text: "Works on Common Land (National Trust)", checked: true if data['subtype'] and ("works-national-trust" in data['subtype']) }
+          { value: "commons-ecclesiastical", text: "Commons for Ecclesiastical Purposes " + getCount(allCases, 'subtype', 'Commons for Ecclesiastical Purposes'), checked: true if data['subtype'] and ("commons-ecclesiastical" in data['subtype']) },
+          { value: "greater-london", text: "Commons in Greater London " + getCount(allCases, 'subtype', 'Commons in Greater London'), checked: true if data['subtype'] and ("greater-london" in data['subtype']) },
+          { value: "compulsory-purchase", text: "Compulsory Purchase of Common Land " + getCount(allCases, 'subtype', 'Compulsory Purchase of Common Land'), checked: true if data['subtype'] and ("compulsory-purchase" in data['subtype']) },
+          { value: "correction-cl-register", text: "Correction of the Common Land or Village Green Registers " + getCount(allCases, 'subtype', 'Correction of the Common Land or Village Green Registers'), checked: true if data['subtype'] and ("correction-cl-register" in data['subtype']) },
+          { value: "deregistration-exchange", text: "Deregistration & Exchange " + getCount(allCases, 'subtype', 'Deregistration & Exchange'), checked: true if data['subtype'] and ("deregistration-exchange" in data['subtype']) },
+          { value: "inclosure", text: "Inclosure " + getCount(allCases, 'subtype', 'Inclosure'), checked: true if data['subtype'] and ("inclosure" in data['subtype']) },
+          { value: "inclosure-obsolescent", text: "Inclosure : obsolescent functions " + getCount(allCases, 'subtype', 'Inclosure : obsolescent functions'), checked: true if data['subtype'] and ("inclosure-obsolescent" in data['subtype']) },
+          { value: "land-exchange", text: "Land Exchange " + getCount(allCases, 'subtype', 'Land Exchange'), checked: true if data['subtype'] and ("land-exchange" in data['subtype']) },
+          { value: "local-acts", text: "Local Acts and Provisional Order Confirmation Acts " + getCount(allCases, 'subtype', 'Local Acts and Provisional Order Confirmation Acts'), checked: true if data['subtype'] and ("local-acts" in data['subtype']) },
+          { value: "public-access-limitations", text: "Public Access to Commons - limitations and restrictions " + getCount(allCases, 'subtype', 'Public Access to Commons - limitations and restrictions'), checked: true if data['subtype'] and ("public-access-limitations" in data['subtype']) },
+          { value: "scheme-management", text: "Scheme of Management " + getCount(allCases, 'subtype', 'Scheme of Management'), checked: true if data['subtype'] and ("scheme-management" in data['subtype']) },
+          { value: "stint-rates", text: "Stint Rates " + getCount(allCases, 'subtype', 'Stint Rates'), checked: true if data['subtype'] and ("stint-rates" in data['subtype']) },
+          { value: "works-common-land", text: "Works on Common Land " + getCount(allCases, 'subtype', 'Works on Common Land'), checked: true if data['subtype'] and ("works-common-land" in data['subtype']) },
+          { value: "works-national-trust", text: "Works on Common Land (National Trust) " + getCount(allCases, 'subtype', 'Works on Common Land (National Trust)'), checked: true if data['subtype'] and ("works-national-trust" in data['subtype']) }
         ]
       }) }}
 
@@ -256,19 +258,17 @@
         idPrefix: "subtype-rights-of-way",
         name: "subtype",
         classes: "govuk-checkboxes--small",
-        fieldset: {
-          legend: { text: "Select Rights of Way subtype", classes: "govuk-fieldset__legend--s" }
-        },
+        fieldset: { legend: { text: "Select Rights of Way subtype", classes: "govuk-fieldset__legend--s" } },
         items: [
-          { value: "dispensation-ha80", text: "Dispensation for Serving Notice HA80", checked: true if data['subtype'] and ("dispensation-ha80" in data['subtype']) },
-          { value: "dispensation-tcpa90", text: "Dispensation for Serving Notice TCPA90", checked: true if data['subtype'] and ("dispensation-tcpa90" in data['subtype']) },
-          { value: "dispensation-wca81", text: "Dispensation for Serving Notice WCA81", checked: true if data['subtype'] and ("dispensation-wca81" in data['subtype']) },
-          { value: "opposed-dmmo", text: "Opposed Definitive Map Modification Order (DMMO)", checked: true if data['subtype'] and ("opposed-dmmo" in data['subtype']) },
-          { value: "opposed-ppo-ha80", text: "Opposed Public Path Order (PPO) HA80", checked: true if data['subtype'] and ("opposed-ppo-ha80" in data['subtype']) },
-          { value: "opposed-ppo-tcpa90", text: "Opposed Public Path Order (PPO) TCPA90", checked: true if data['subtype'] and ("opposed-ppo-tcpa90" in data['subtype']) },
-          { value: "schedule-14-appeal", text: "Schedule 14 Appeal", checked: true if data['subtype'] and ("schedule-14-appeal" in data['subtype']) },
-          { value: "schedule-14-direction", text: "Schedule 14 Direction", checked: true if data['subtype'] and ("schedule-14-direction" in data['subtype']) },
-          { value: "schedule-13a-appeal", text: "Schedule 13A Appeal", checked: true if data['subtype'] and ("schedule-13a-appeal" in data['subtype']) }
+          { value: "dispensation-ha80", text: "Dispensation for Serving Notice HA80 " + getCount(allCases, 'subtype', 'Dispensation for Serving Notice HA80'), checked: true if data['subtype'] and ("dispensation-ha80" in data['subtype']) },
+          { value: "dispensation-tcpa90", text: "Dispensation for Serving Notice TCPA90 " + getCount(allCases, 'subtype', 'Dispensation for Serving Notice TCPA90'), checked: true if data['subtype'] and ("dispensation-tcpa90" in data['subtype']) },
+          { value: "dispensation-wca81", text: "Dispensation for Serving Notice WCA81 " + getCount(allCases, 'subtype', 'Dispensation for Serving Notice WCA81'), checked: true if data['subtype'] and ("dispensation-wca81" in data['subtype']) },
+          { value: "opposed-dmmo", text: "Opposed Definitive Map Modification Order (DMMO) " + getCount(allCases, 'subtype', 'Opposed Definitive Map Modification Order (DMMO)'), checked: true if data['subtype'] and ("opposed-dmmo" in data['subtype']) },
+          { value: "opposed-ppo-ha80", text: "Opposed Public Path Order (PPO) HA80 " + getCount(allCases, 'subtype', 'Opposed Public Path Order (PPO) HA80'), checked: true if data['subtype'] and ("opposed-ppo-ha80" in data['subtype']) },
+          { value: "opposed-ppo-tcpa90", text: "Opposed Public Path Order (PPO) TCPA90 " + getCount(allCases, 'subtype', 'Opposed Public Path Order (PPO) TCPA90'), checked: true if data['subtype'] and ("opposed-ppo-tcpa90" in data['subtype']) },
+          { value: "schedule-14-appeal", text: "Schedule 14 Appeal " + getCount(allCases, 'subtype', 'Schedule 14 Appeal'), checked: true if data['subtype'] and ("schedule-14-appeal" in data['subtype']) },
+          { value: "schedule-14-direction", text: "Schedule 14 Direction " + getCount(allCases, 'subtype', 'Schedule 14 Direction'), checked: true if data['subtype'] and ("schedule-14-direction" in data['subtype']) },
+          { value: "schedule-13a-appeal", text: "Schedule 13A Appeal " + getCount(allCases, 'subtype', 'Schedule 13A Appeal'), checked: true if data['subtype'] and ("schedule-13a-appeal" in data['subtype']) }
         ]
       }) }}
 
@@ -428,46 +428,44 @@
     </div>
 
     {# The Data Table #}
-    <table class="govuk-table" data-module="moj-sortable-table">
-      <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header" aria-sort="none">Reference</th>
-          <th scope="col" class="govuk-table__header" aria-sort="none">Subtype</th>
-          <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
-          <th scope="col" class="govuk-table__header" aria-sort="none">Status</th>
-        </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-        {% for c in cases %}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
-                {{ c.reference }}
-              </a>
-            </td>
-            <td class="govuk-table__cell">{{ c.type | default("-") }}</td>
-            <td class="govuk-table__cell">{{ c.name | default("-") }}</td>
-            <td class="govuk-table__cell">
-              {{ c.status | default("New case") }}
-            </td>
-          </tr>
-        {% else %}
-          {# Placeholder rows if no session data #}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell"><a class="govuk-link" href="#">DRO/PER/00001</a></td>
-            <td class="govuk-table__cell">Drought Permits</td>
-            <td class="govuk-table__cell">Edward - Test Drought</td>
-            <td class="govuk-table__cell">New case</td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell"><a class="govuk-link" href="#">SOS/REV/00001</a></td>
-            <td class="govuk-table__cell">Revocation</td>
-            <td class="govuk-table__cell">Revocation Test</td>
-            <td class="govuk-table__cell">New case</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<table class="govuk-table" data-module="moj-sortable-table" style="table-layout: fixed; width: 100%;">
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Reference</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Subtype</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Case name</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Status</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    {% for c in cases %}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+          <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
+            {{ c.reference }}
+          </a>
+        </td>
+        <td class="govuk-table__cell">{{ c.subtype or c.type }}</td>
+        <td class="govuk-table__cell">{{ c.caseName }}</td>
+        <td class="govuk-table__cell">{{ c.caseStatus if c.caseStatus else "" }}</td>
+      </tr>
+    {% else %}
+      {# Placeholder rows if no session data #}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"><a class="govuk-link" href="#">DRO/PER/00001</a></td>
+        <td class="govuk-table__cell">Drought Permits</td>
+        <td class="govuk-table__cell">Edward - Test Drought</td>
+        <td class="govuk-table__cell">New case</td>
+      </tr>
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell"><a class="govuk-link" href="#">SOS/REV/00001</a></td>
+        <td class="govuk-table__cell">Revocation</td>
+        <td class="govuk-table__cell">Revocation Test</td>
+        <td class="govuk-table__cell">New case</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
     {# Footer Pagination #}
     {{ govukPagination({
