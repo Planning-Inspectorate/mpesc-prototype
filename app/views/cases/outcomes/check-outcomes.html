@@ -5,7 +5,6 @@ Check outcome details - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
 {% endblock %}
 
 {% block content %}
@@ -103,6 +102,14 @@ Check outcome details - Planning Inspectorate Portal
           classes: "govuk-button" if outcomeList.length == 0 else "govuk-button--secondary",
           href: "/cases/outcomes/step-1?ref=" + ref
         }) }}
+
+        {% if outcomeList.length == 0 %}
+            {{ govukButton({
+              text: "Cancel",
+              classes: "govuk-button--secondary",
+              href: "/cases/case-details?ref=" + ref
+            }) }}
+          {% endif %}
       </div>
 
       {% if outcomeList.length > 0 %}

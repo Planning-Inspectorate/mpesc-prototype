@@ -10672,6 +10672,36 @@ router.post('/cases/edit/file-location', function(req, res) {
 
 
 
+// ========================================================= ALL CASES ==========================================================
+router.get('/cases', function (req, res) {
+  let cases = req.session.data['cases'] || [];
+  const searchTerm = req.query.search;
+
+  // Simple search logic: filter cases by reference or name
+  if (searchTerm) {
+    cases = cases.filter(c => 
+      c.reference.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      c.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  res.render('cases', { // This assumes your file is app/views/cases/index.html
+    cases: cases,
+    totalCases: cases.length,
+    searchTerm: searchTerm
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
 
 // ------------------------------------------------ SMART EDIT ROUTES ---------------------------------------------
 // NOTE: For any generic routes, add below SMART EDIT ROUTES. For any specific routes e.g. /cases/edit/case-received-date add ABOVE this.

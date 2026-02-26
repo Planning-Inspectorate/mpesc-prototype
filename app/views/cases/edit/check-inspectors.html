@@ -5,10 +5,6 @@ Check inspector details - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({
-    text: "Back",
-    href: "/cases/case-details?ref=" + ref
-  }) }}
 {% endblock %}
 
 {% block content %}
@@ -60,6 +56,14 @@ Check inspector details - Planning Inspectorate Portal
           classes: "govuk-button" if not inspectors or inspectors.length == 0 else "govuk-button--secondary",
           href: "/cases/edit/inspector-name?ref=" + ref
         }) }}
+
+        {%if inspectors and inspectors.length == 0 %}
+        {{ govukButton({
+          text: "Cancel",
+          classes: "govuk-button--secondary",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+        {% endif %}
       </div>
 
       <div class="govuk-button-group">

@@ -5,10 +5,6 @@
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({
-    text: "Back",
-    href: "/cases/case-details?ref=" + ref
-  }) }}
 {% endblock %}
 
 {% block content %}
@@ -108,6 +104,14 @@
             classes: "govuk-button" if objectors.length == 0 else "govuk-button--secondary",
             href: "/cases/key-contacts/objectors/step-1?ref=" + ref
           }) }}
+
+          {% if objectors.length == 0 %}
+            {{ govukButton({
+              text: "Cancel",
+              classes: "govuk-button--secondary",
+              href: "/cases/case-details?ref=" + ref
+            }) }}
+          {% endif %}
         </div>
 
 

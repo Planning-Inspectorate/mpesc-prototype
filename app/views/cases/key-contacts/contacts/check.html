@@ -1,7 +1,6 @@
 {% extends "layouts/main.html" %}
 {% block pageTitle %}Contact(s) - Planning Inspectorate Portal{% endblock %}
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
 {% endblock %}
 {% block content %}
 <div class="govuk-grid-row">
@@ -64,6 +63,14 @@
             classes: "govuk-button" if contacts.length == 0 else "govuk-button--secondary",
             href: "/cases/key-contacts/contacts/step-1?ref=" + ref
           }) }}
+
+          {% if contacts.length == 0 %}
+            {{ govukButton({
+              text: "Cancel",
+              classes: "govuk-button--secondary",
+              href: "/cases/case-details?ref=" + ref
+            }) }}
+          {% endif %}
         </div>
 
       {% if contacts.length > 0 %}

@@ -5,10 +5,6 @@ Linked case(s) - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({
-    text: "Back",
-    href: "/cases/case-details?ref=" + ref
-  }) }}
 {% endblock %}
 
 {% block content %}
@@ -79,6 +75,14 @@ Linked case(s) - Planning Inspectorate Portal
             classes: "govuk-button" if linkedList.length == 0 else "govuk-button--secondary",
             href: "/cases/linked-cases/step-1?ref=" + ref
           }) }}
+
+          {% if linkedList.length == 0 %}
+            {{ govukButton({
+              text: "Cancel",
+              classes: "govuk-button--secondary",
+              href: "/cases/case-details?ref=" + ref
+            }) }}
+          {% endif %}
         </div>
 
         {% if linkedList.length > 0 %}

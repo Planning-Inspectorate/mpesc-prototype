@@ -10,59 +10,177 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Case list</h1>
+  </div>
+</div>
 
-<h1 class="govuk-heading-l">All cases</h1>
+<div class="govuk-grid-"
+<div class="moj-filter-layout">
+  
+  {# --- FILTER SECTION --- #}
+  <div class="moj-filter-layout__filter">
+    <div class="moj-filter" data-module="moj-filter">
+      <div class="moj-filter__header">
+        <div class="moj-filter__header-title">
+          <h2 class="govuk-heading-m">Filter</h2>
+        </div>
+      </div>
 
-<table class="govuk-table">
-  <thead class="govuk-table__head">
-    <tr class="govuk-table__row">
-      <th scope="col" class="govuk-table__header">Reference</th>
-      <th scope="col" class="govuk-table__header">Type</th>
-      <th scope="col" class="govuk-table__header">Status</th>
-    </tr>
-  </thead>
-  <tbody class="govuk-table__body">
+      <div class="moj-filter__content">
+        <div class="moj-filter__selected">
+          <div class="moj-filter__selected-heading">
+            <div class="moj-filter__heading-title">
+              <h2 class="govuk-heading-m">Selected filters</h2>
+            </div>
+            <div class="moj-filter__heading-action">
+              <p><a class="govuk-link govuk-link--no-visited-state" href="/cases">Clear filters</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="moj-filter__options">
+          <form method="get" action="/cases">
+            {{ govukButton({
+              text: "Apply filters"
+            }) }}
+
+            {# Case Work Area #}
+            {{ govukCheckboxes({
+              idPrefix: "area",
+              name: "area",
+              classes: "govuk-checkboxes--small",
+              fieldset: {
+                legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" }
+              },
+              items: [
+                { value: "planning", text: "Planning, Environmental and Applications (83)" },
+                { value: "rights", text: "Rights of Way and Common Land (40)" }
+              ]
+            }) }}
+
+            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+            {# Case Type #}
+            {{ govukCheckboxes({
+              idPrefix: "type",
+              name: "type",
+              classes: "govuk-checkboxes--small",
+              fieldset: {
+                legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" }
+              },
+              items: [
+                { value: "drought", text: "Drought (36)" },
+                { value: "housing", text: "Housing and Planning CPOs (39)" },
+                { value: "other", text: "Other Secretary of State casework (5)" },
+                { value: "purchase", text: "Purchase Notices (2)" },
+                { value: "wayleaves", text: "Wayleaves (1)" }
+              ]
+            }) }}
+
+            {# Subtypes - Repeat as needed #}
+            {{ govukCheckboxes({
+              idPrefix: "subtype-drought",
+              name: "subtype",
+              classes: "govuk-checkboxes--small",
+              fieldset: {
+                legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" }
+              },
+              items: [
+                { value: "permits", text: "Drought Permits (1)" },
+                { value: "orders", text: "Drought Orders (35)" }
+              ]
+            }) }}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# --- RESULTS SECTION --- #}
+  <div class="moj-filter-layout__content">
     
-    {# 1. LOOP THROUGH SAVED CASES #}
-    {% for case in data['cases'] %}
-      <tr class="govuk-table__row">
-        
-        {# Reference Number (Link to details) #}
-        <td class="govuk-table__cell">
-          <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">
-            {{ case.reference }}
-          </a>
-        </td>
+    {# Search Form #}
+    <form method="get" action="/cases">
+      <div class="govuk-form-group">
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--m" for="search-input">
+            Search cases
+          </label>
+        </h1>
+        <div id="search-hint" class="govuk-hint">
+          To find a specific case, search by reference, case name, applicant, status or local authority.
+        </div>
+        <div class="row-inline">
+          <input class="govuk-input govuk-input--width-30" id="search-input" name="searchCriteria" type="text" value="{{ searchTerm }}">
+          {{ govukButton({
+            text: "Search",
+            classes: "govuk-!-margin-bottom-0"
+          }) }}
+        </div>
+      </div>
+    </form>
 
-        {# Case Type #}
-        <td class="govuk-table__cell">
-          {{ case.type }}<br>
-          <span class="govuk-hint" style="margin-bottom: 0">
-            {{ case.subtype }}
-          </span>
-        </td>
+    <div id="pagination-info" class="govuk-body">
+      <p class="govuk-body">
+        Showing <strong>1</strong> to <strong>25</strong> of <strong>123</strong> results
+      </p>
+      <p class="pins-pagination-options">
+        <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="govuk-body">25</span>&nbsp;&nbsp;|&nbsp;&nbsp;
+        <a class="govuk-link--no-visited-state" href="?itemsPerPage=50">50</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+        <a class="govuk-link--no-visited-state" href="?itemsPerPage=100">100</a>
+      </p>
+    </div>
 
-        {# Status #}
-        <td class="govuk-table__cell">
-          <strong class="govuk-tag govuk-tag--blue">
-            {{ case.status }}
-          </strong>
-        </td>
+    {# Table with Sorting #}
+    <table class="govuk-table" data-module="moj-sortable-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header" aria-sort="none">Reference</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Subtype</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Status</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for c in cases %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">{{ c.reference }}</a></td>
+            <td class="govuk-table__cell">{{ c.type }}</td>
+            <td class="govuk-table__cell">{{ c.name }}</td>
+            <td class="govuk-table__cell">{{ c.status }}</td>
+          </tr>
+        {% else %}
+          {# Fallback if session is empty #}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><a class="govuk-link" href="#">DRO/PER/00001</a></td>
+            <td class="govuk-table__cell">Drought Permits</td>
+            <td class="govuk-table__cell">Edward - Test Drought</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><a class="govuk-link" href="#">SOS/REV/00001</a></td>
+            <td class="govuk-table__cell">Revocation</td>
+            <td class="govuk-table__cell">Revocation Test</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-      </tr>
-    {% else %}
-      
-      {# Empty State (If no cases exist yet) #}
-      <tr class="govuk-table__row">
-        <td class="govuk-table__cell" colspan="3">
-          No cases found. <a href="/cases/create-a-case/questions/casework-area">Create a new case</a>
-        </td>
-      </tr>
+    {# Pagination Footer #}
+    {{ govukPagination({
+      next: { href: "#" },
+      items: [
+        { number: 1, current: true, href: "#" },
+        { number: 2, href: "#" },
+        { ellipsis: true },
+        { number: 5, href: "#" }
+      ]
+    }) }}
 
-    {% endfor %}
-
-  </tbody>
-</table>
-
+  </div>
+</div>
 {% endblock %}
-
