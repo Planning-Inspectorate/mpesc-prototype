@@ -3,21 +3,72 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  All cases - Planning Inspectorate Portal
-{% endblock %}
-
-{% block beforeContent %}
+  Case list - Planning Inspectorate Portal
 {% endblock %}
 
 {% block content %}
 {%- from "moj/components/filter/macro.njk" import mojFilter -%}
 {%- from "govuk/components/checkboxes/macro.njk" import govukCheckboxes -%}
 {%- from "govuk/components/button/macro.njk" import govukButton -%}
+{%- from "govuk/components/input/macro.njk" import govukInput -%}
+{%- from "govuk/components/tag/macro.njk" import govukTag -%}
+{%- from "govuk/components/pagination/macro.njk" import govukPagination -%}
 
-<div class="moj-filter-layout">
+<h1 class="govuk-heading-l">Case list</h1>
 
-  {# --- LEFT COLUMN: THE FILTER (one-third width) --- #}
-  <div class="moj-filter-layout__filter">
+<style>
+  /* Custom background colors */
+  .moj-filter__header {
+    background-color: #b1b4b6;
+  }
+  .moj-filter__selected {
+    background-color: #f3f2f1;
+  }
+
+  /* Force the clear link to stay small regardless of container */
+  .moj-filter__heading-action a {
+    font-size: 16px !important;
+    font-weight: normal;
+  }
+
+  /* Layout Widths: 32% / 68% Split */
+  .custom-filter-layout {
+    display: flex;
+    gap: 0;
+  }
+  .custom-filter-column {
+    flex: 0 0 31%;
+    max-width: 31%;
+    padding-right: 0;
+  }
+  .custom-content-column {
+    flex: 0 0 69%;
+    max-width: 69%;
+    padding-left: 30px;
+  }
+  .moj-filter {
+    width: 100%;
+  }
+  .moj-filter-layout__filter {
+    border: none !important;
+  }
+
+  .moj-filter__options {
+    margin-top: -1px;
+    padding: 20px;
+    box-shadow: inset 0 0 0 1px #b1b4b6
+  }
+
+  .govuk-section-break--visible {
+    border-bottom: 1px solid #b1b4b6;
+}
+
+</style>
+
+<div class="moj-filter-layout custom-filter-layout">
+
+  {# --- LEFT COLUMN: THE FILTER (32% width) --- #}
+  <div class="custom-filter-column">
 
     {%- set filterOptionsHtml %}
 
@@ -30,14 +81,16 @@
           legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "planning-environment-applications", text: "Planning, Environmental and Applications (83)", checked: data['area'] == "planning-environment-applications" },
-          { value: "rights-of-way-common-land", text: "Rights of Way and Common Land (40)", checked: data['area'] == "rights-of-way-common-land" }
+          { value: "planning-environment-applications", text: "Planning, Environmental and Applications", checked: data['area'] == "planning-environment-applications" },
+          { value: "rights-of-way-common-land", text: "Rights of Way and Common Land", checked: data['area'] == "rights-of-way-common-land" }
         ]
       }) }}
 
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-      {# 2. CASE TYPE #}
+      <br>
+
+      {# 2. PLANNING CASE TYPE #}
       {{ govukCheckboxes({
         idPrefix: "type",
         name: "type",
@@ -46,17 +99,15 @@
           legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "drought", text: "Drought (36)", checked: data['type'] == "drought" },
-          { value: "housing-planning-cpos", text: "Housing and Planning CPOs (39)", checked: data['type'] == "housing-planning-cpos" },
-          { value: "other", text: "Other Secretary of State casework (5)" },
-          { value: "purchase", text: "Purchase Notices (2)" },
-          { value: "wayleaves", text: "Wayleaves (1)" }
+          { value: "drought", text: "Drought", checked: data['type'] == "drought" },
+          { value: "housing-planning-cpos", text: "Housing and Planning CPOs", checked: data['type'] == "housing-planning-cpos" },
+          { value: "other-sos-casework", text: "Other Secretary of State casework", checked: data['type'] == "other-sos-casework" },
+          { value: "purchase-notices", text: "Purchase Notices", checked: data['type'] == "purchase-notices" },
+          { value: "wayleaves", text: "Wayleaves", checked: data['type'] == "wayleaves" }
         ]
       }) }}
 
-      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
-      {# 3. SUBTYPE (DROUGHT) #}
+      {# 3. DROUGHT SUBTYPES #}
       {{ govukCheckboxes({
         idPrefix: "subtype-drought",
         name: "subtype",
@@ -65,8 +116,142 @@
           legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" }
         },
         items: [
-          { value: "drought-permits", text: "Drought Permits (1)" },
-          { value: "drought-orders", text: "Drought Orders (35)" }
+          { value: "drought-permits", text: "Drought Permits", checked: data['subtype'] == "drought-permits" },
+          { value: "drought-orders", text: "Drought Orders", checked: data['subtype'] == "drought-orders" }
+        ]
+      }) }}
+
+      {# 4. HOUSING SUBTYPES #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-housing",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Housing and Planning CPOs subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "housing", text: "Housing", checked: data['subtype'] == "housing" },
+          { value: "planning-sub", text: "Planning", checked: data['subtype'] == "planning-sub" },
+          { value: "adhoc", text: "Ad hoc", checked: data['subtype'] == "adhoc" }
+        ]
+      }) }}
+
+      {# 5. OTHER SOS SUBTYPES #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-other-sos",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Other Secretary of State casework subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "defra-cpo", text: "DEFRA CPO", checked: data['subtype'] == "defra-cpo" },
+          { value: "desnz-cpo", text: "DESNZ CPO", checked: data['subtype'] == "desnz-cpo" },
+          { value: "dft-cpo", text: "DfT CPO", checked: data['subtype'] == "dft-cpo" },
+          { value: "ad-hoc-cpo", text: "Ad hoc CPO", checked: data['subtype'] == "ad-hoc-cpo" },
+          { value: "advert", text: "Advert", checked: data['subtype'] == "advert" },
+          { value: "completion-notice", text: "Completion notice", checked: data['subtype'] == "completion-notice" },
+          { value: "discontinuance-notice", text: "Discontinuance notice", checked: data['subtype'] == "discontinuance-notice" },
+          { value: "modification-to-pp", text: "Modification to planning permission", checked: data['subtype'] == "modification-to-pp" },
+          { value: "review-mineral-permission", text: "Review of mineral permission", checked: data['subtype'] == "review-mineral-permission" },
+          { value: "revocation", text: "Revocation", checked: data['subtype'] == "revocation" }
+        ]
+      }) }}
+
+      {# 6. WAYLEAVES SUBTYPES #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-wayleaves",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Wayleaves subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "new-lines", text: "New lines", checked: data['subtype'] == "new-lines" },
+          { value: "tree-lopping", text: "Tree lopping", checked: data['subtype'] == "tree-lopping" },
+          { value: "wayleaves-generic", text: "Wayleaves", checked: data['subtype'] == "wayleaves-generic" }
+        ]
+      }) }}
+
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+      <br>
+
+      {# 7. RIGHTS OF WAY CASE TYPE #}
+      {{ govukCheckboxes({
+        idPrefix: "type-rights",
+        name: "type",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Rights of Way and Common Land case type", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "coastal-access", text: "Coastal Access", checked: data['type'] == "coastal-access" },
+          { value: "common-land", text: "Common Land", checked: data['type'] == "common-land" },
+          { value: "rights-of-way", text: "Rights of Way", checked: data['type'] == "rights-of-way" }
+        ]
+      }) }}
+
+      {# 8. COASTAL ACCESS SUBTYPES #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-coastal",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Coastal Access subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "coastal-access-appeal", text: "Coastal access appeal", checked: data['subtype'] == "coastal-access-appeal" },
+          { value: "notice-appeal", text: "Notice appeal", checked: data['subtype'] == "notice-appeal" },
+          { value: "objection", text: "Objection", checked: data['subtype'] == "objection" },
+          { value: "restriction-appeal", text: "Restriction appeal (access land)", checked: data['subtype'] == "restriction-appeal" }
+        ]
+      }) }}
+
+     {# 9. COMMON LAND SUBTYPES - UPDATED LIST #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-common",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Common Land subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "commons-ecclesiastical", text: "Commons for Ecclesiastical Purposes", checked: data['subtype'] == "commons-ecclesiastical" },
+          { value: "greater-london", text: "Commons in Greater London", checked: data['subtype'] == "greater-london" },
+          { value: "compulsory-purchase", text: "Compulsory Purchase of Common Land", checked: data['subtype'] == "compulsory-purchase" },
+          { value: "correction-cl-register", text: "Correction of the Common Land or Village Green Registers", checked: data['subtype'] == "correction-cl-register" },
+          { value: "deregistration-exchange", text: "Deregistration & Exchange", checked: data['subtype'] == "deregistration-exchange" },
+          { value: "inclosure", text: "Inclosure", checked: data['subtype'] == "inclosure" },
+          { value: "inclosure-obsolescent", text: "Inclosure : obsolescent functions", checked: data['subtype'] == "inclosure-obsolescent" },
+          { value: "land-exchange", text: "Land Exchange", checked: data['subtype'] == "land-exchange" },
+          { value: "local-acts", text: "Local Acts and Provisional Order Confirmation Acts", checked: data['subtype'] == "local-acts" },
+          { value: "public-access-limitations", text: "Public Access to Commons - limitations and restrictions", checked: data['subtype'] == "public-access-limitations" },
+          { value: "scheme-management", text: "Scheme of Management", checked: data['subtype'] == "scheme-management" },
+          { value: "stint-rates", text: "Stint Rates", checked: data['subtype'] == "stint-rates" },
+          { value: "works-common-land", text: "Works on Common Land", checked: data['subtype'] == "works-common-land" },
+          { value: "works-national-trust", text: "Works on Common Land (National Trust)", checked: data['subtype'] == "works-national-trust" }
+        ]
+      }) }}
+
+      {# 10. RIGHTS OF WAY SUBTYPES #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-rights-of-way",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Rights of Way subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "dispensation-ha80", text: "Dispensation for Serving Notice HA80", checked: data['subtype'] == "dispensation-ha80" },
+          { value: "dispensation-tcpa90", text: "Dispensation for Serving Notice TCPA90", checked: data['subtype'] == "dispensation-tcpa90" },
+          { value: "dispensation-wca81", text: "Dispensation for Serving Notice WCA81", checked: data['subtype'] == "dispensation-wca81" },
+          { value: "opposed-dmmo", text: "Opposed Definitive Map Modification Order (DMMO)", checked: data['subtype'] == "opposed-dmmo" },
+          { value: "opposed-ppo-ha80", text: "Opposed Public Path Order (PPO) HA80", checked: data['subtype'] == "opposed-ppo-ha80" },
+          { value: "opposed-ppo-tcpa90", text: "Opposed Public Path Order (PPO) TCPA90", checked: data['subtype'] == "opposed-ppo-tcpa90" },
+          { value: "schedule-14-appeal", text: "Schedule 14 Appeal", checked: data['subtype'] == "schedule-14-appeal" },
+          { value: "schedule-14-direction", text: "Schedule 14 Direction", checked: data['subtype'] == "schedule-14-direction" },
+          { value: "schedule-13a-appeal", text: "Schedule 13A Appeal", checked: data['subtype'] == "schedule-13a-appeal" }
         ]
       }) }}
 
@@ -74,32 +259,119 @@
 
     <form method="get" action="/cases">
       {{ mojFilter({
-        heading: { text: "Filter" },
+        heading: {
+          text: "Filter"
+        },
         selectedFilters: {
-          heading: { text: "Selected filters" },
-          clearLink: { text: "Clear filters", href: "/cases" },
-          categories: [
-            {
-              heading: { text: "Case work area" },
-              items: [{ text: "Planning...", href: "#" }] if data['area'] else []
-            }
-          ]
+          heading: {
+            text: "Selected filters"
+          },
+          clearLink: {
+            text: "Clear filters",
+            href: "/cases",
+            classes: "govuk-!-font-size-16"
+          }
         },
         optionsHtml: filterOptionsHtml
       }) }}
     </form>
   </div>
 
-  {# --- RIGHT COLUMN: RESULTS (two-thirds width) --- #}
-  <div class="moj-filter-layout__content">
-    
-    <div class="govuk-!-margin-left-4">
-       {# ADD YOUR SEARCH BOX AND TABLE HERE #}
-       <h2 class="govuk-heading-m">Results (123)</h2>
-       <p class="govuk-body">Table and results go in this column.</p>
+  {# --- RIGHT COLUMN: RESULTS (68% width) --- #}
+  <div class="custom-content-column">
+      
+    {# Extended Search Bar #}
+    <form id="search-bar-form" method="GET" action="/cases">
+      <div class="govuk-form-group">
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--m" id="search-label" for="search-input">
+            Search cases
+          </label>
+        </h1>
+        <div id="search-hint" class="govuk-hint">
+          To find a specific case, search by reference, case name, applicant, status <br> or local authority.
+        </div>
+        
+        <div style="display: flex; gap: 10px; align-items: flex-start; width: 100%;">
+          <div style="flex-grow: 1;">
+            <input class="govuk-input govuk-!-width-full" id="search-input" value="{{ searchTerm }}" name="searchCriteria" type="text">
+          </div>
+          {{ govukButton({
+            text: "Search",
+            classes: "govuk-!-margin-bottom-0"
+          }) }}
+        </div>
+      </div>
+    </form>
+
+    <br>
+
+    {# Results Header - Stacked Layout #}
+    <div id="pagination-header" class="govuk-!-margin-bottom-6">
+      <p class="govuk-body govuk-!-margin-bottom-2">
+        Showing <strong>1</strong> to <strong>{{ cases.length if cases.length < 25 else 25 }}</strong> of <strong>{{ cases.length | default(123) }}</strong> results
+      </p>
+
+    <br>
+      
+      <p class="govuk-body">
+        <strong>Results per page</strong> &nbsp;&nbsp; 25 &nbsp;|&nbsp; <a class="govuk-link" href="?limit=50">50</a> &nbsp;|&nbsp; <a class="govuk-link" href="?limit=100">100</a>
+      </p>
     </div>
 
-  </div>
+    {# The Data Table #}
+    <table class="govuk-table" data-module="moj-sortable-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header" aria-sort="none">Reference</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Subtype</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
+          <th scope="col" class="govuk-table__header" aria-sort="none">Status</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for c in cases %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
+                {{ c.reference }}
+              </a>
+            </td>
+            <td class="govuk-table__cell">{{ c.type | default("-") }}</td>
+            <td class="govuk-table__cell">{{ c.name | default("-") }}</td>
+            <td class="govuk-table__cell">
+              {{ c.status | default("New case") }}
+            </td>
+          </tr>
+        {% else %}
+          {# Placeholder rows if no session data #}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><a class="govuk-link" href="#">DRO/PER/00001</a></td>
+            <td class="govuk-table__cell">Drought Permits</td>
+            <td class="govuk-table__cell">Edward - Test Drought</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell"><a class="govuk-link" href="#">SOS/REV/00001</a></td>
+            <td class="govuk-table__cell">Revocation</td>
+            <td class="govuk-table__cell">Revocation Test</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
+    {# Footer Pagination #}
+    {{ govukPagination({
+      next: { href: "#" },
+      items: [
+        { number: 1, current: true, href: "#" },
+        { number: 2, href: "#" },
+        { ellipsis: true },
+        { number: 5, href: "#" }
+      ]
+    }) }}
+
+  </div>
 </div>
 {% endblock %}
