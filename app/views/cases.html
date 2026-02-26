@@ -10,177 +10,96 @@
 {% endblock %}
 
 {% block content %}
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-l">Case list</h1>
-  </div>
-</div>
+{%- from "moj/components/filter/macro.njk" import mojFilter -%}
+{%- from "govuk/components/checkboxes/macro.njk" import govukCheckboxes -%}
+{%- from "govuk/components/button/macro.njk" import govukButton -%}
 
-<div class="govuk-grid-"
 <div class="moj-filter-layout">
-  
-  {# --- FILTER SECTION --- #}
+
+  {# --- LEFT COLUMN: THE FILTER (one-third width) --- #}
   <div class="moj-filter-layout__filter">
-    <div class="moj-filter" data-module="moj-filter">
-      <div class="moj-filter__header">
-        <div class="moj-filter__header-title">
-          <h2 class="govuk-heading-m">Filter</h2>
-        </div>
-      </div>
 
-      <div class="moj-filter__content">
-        <div class="moj-filter__selected">
-          <div class="moj-filter__selected-heading">
-            <div class="moj-filter__heading-title">
-              <h2 class="govuk-heading-m">Selected filters</h2>
-            </div>
-            <div class="moj-filter__heading-action">
-              <p><a class="govuk-link govuk-link--no-visited-state" href="/cases">Clear filters</a></p>
-            </div>
-          </div>
-        </div>
+    {%- set filterOptionsHtml %}
 
-        <div class="moj-filter__options">
-          <form method="get" action="/cases">
-            {{ govukButton({
-              text: "Apply filters"
-            }) }}
+      {# 1. CASE WORK AREA #}
+      {{ govukCheckboxes({
+        idPrefix: "area",
+        name: "area",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "planning-environment-applications", text: "Planning, Environmental and Applications (83)", checked: data['area'] == "planning-environment-applications" },
+          { value: "rights-of-way-common-land", text: "Rights of Way and Common Land (40)", checked: data['area'] == "rights-of-way-common-land" }
+        ]
+      }) }}
 
-            {# Case Work Area #}
-            {{ govukCheckboxes({
-              idPrefix: "area",
-              name: "area",
-              classes: "govuk-checkboxes--small",
-              fieldset: {
-                legend: { text: "Select case work area", classes: "govuk-fieldset__legend--s" }
-              },
-              items: [
-                { value: "planning", text: "Planning, Environmental and Applications (83)" },
-                { value: "rights", text: "Rights of Way and Common Land (40)" }
-              ]
-            }) }}
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+      {# 2. CASE TYPE #}
+      {{ govukCheckboxes({
+        idPrefix: "type",
+        name: "type",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "drought", text: "Drought (36)", checked: data['type'] == "drought" },
+          { value: "housing-planning-cpos", text: "Housing and Planning CPOs (39)", checked: data['type'] == "housing-planning-cpos" },
+          { value: "other", text: "Other Secretary of State casework (5)" },
+          { value: "purchase", text: "Purchase Notices (2)" },
+          { value: "wayleaves", text: "Wayleaves (1)" }
+        ]
+      }) }}
 
-            {# Case Type #}
-            {{ govukCheckboxes({
-              idPrefix: "type",
-              name: "type",
-              classes: "govuk-checkboxes--small",
-              fieldset: {
-                legend: { text: "Select Planning, Environmental and Applications case type", classes: "govuk-fieldset__legend--s" }
-              },
-              items: [
-                { value: "drought", text: "Drought (36)" },
-                { value: "housing", text: "Housing and Planning CPOs (39)" },
-                { value: "other", text: "Other Secretary of State casework (5)" },
-                { value: "purchase", text: "Purchase Notices (2)" },
-                { value: "wayleaves", text: "Wayleaves (1)" }
-              ]
-            }) }}
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-            {# Subtypes - Repeat as needed #}
-            {{ govukCheckboxes({
-              idPrefix: "subtype-drought",
-              name: "subtype",
-              classes: "govuk-checkboxes--small",
-              fieldset: {
-                legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" }
-              },
-              items: [
-                { value: "permits", text: "Drought Permits (1)" },
-                { value: "orders", text: "Drought Orders (35)" }
-              ]
-            }) }}
-          </form>
-        </div>
-      </div>
-    </div>
+      {# 3. SUBTYPE (DROUGHT) #}
+      {{ govukCheckboxes({
+        idPrefix: "subtype-drought",
+        name: "subtype",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+          legend: { text: "Select Drought subtype", classes: "govuk-fieldset__legend--s" }
+        },
+        items: [
+          { value: "drought-permits", text: "Drought Permits (1)" },
+          { value: "drought-orders", text: "Drought Orders (35)" }
+        ]
+      }) }}
+
+    {% endset -%}
+
+    <form method="get" action="/cases">
+      {{ mojFilter({
+        heading: { text: "Filter" },
+        selectedFilters: {
+          heading: { text: "Selected filters" },
+          clearLink: { text: "Clear filters", href: "/cases" },
+          categories: [
+            {
+              heading: { text: "Case work area" },
+              items: [{ text: "Planning...", href: "#" }] if data['area'] else []
+            }
+          ]
+        },
+        optionsHtml: filterOptionsHtml
+      }) }}
+    </form>
   </div>
 
-  {# --- RESULTS SECTION --- #}
+  {# --- RIGHT COLUMN: RESULTS (two-thirds width) --- #}
   <div class="moj-filter-layout__content">
     
-    {# Search Form #}
-    <form method="get" action="/cases">
-      <div class="govuk-form-group">
-        <h1 class="govuk-label-wrapper">
-          <label class="govuk-label govuk-label--m" for="search-input">
-            Search cases
-          </label>
-        </h1>
-        <div id="search-hint" class="govuk-hint">
-          To find a specific case, search by reference, case name, applicant, status or local authority.
-        </div>
-        <div class="row-inline">
-          <input class="govuk-input govuk-input--width-30" id="search-input" name="searchCriteria" type="text" value="{{ searchTerm }}">
-          {{ govukButton({
-            text: "Search",
-            classes: "govuk-!-margin-bottom-0"
-          }) }}
-        </div>
-      </div>
-    </form>
-
-    <div id="pagination-info" class="govuk-body">
-      <p class="govuk-body">
-        Showing <strong>1</strong> to <strong>25</strong> of <strong>123</strong> results
-      </p>
-      <p class="pins-pagination-options">
-        <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
-        <span class="govuk-body">25</span>&nbsp;&nbsp;|&nbsp;&nbsp;
-        <a class="govuk-link--no-visited-state" href="?itemsPerPage=50">50</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-        <a class="govuk-link--no-visited-state" href="?itemsPerPage=100">100</a>
-      </p>
+    <div class="govuk-!-margin-left-4">
+       {# ADD YOUR SEARCH BOX AND TABLE HERE #}
+       <h2 class="govuk-heading-m">Results (123)</h2>
+       <p class="govuk-body">Table and results go in this column.</p>
     </div>
 
-    {# Table with Sorting #}
-    <table class="govuk-table" data-module="moj-sortable-table">
-      <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header" aria-sort="none">Reference</th>
-          <th scope="col" class="govuk-table__header" aria-sort="none">Subtype</th>
-          <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
-          <th scope="col" class="govuk-table__header" aria-sort="none">Status</th>
-        </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-        {% for c in cases %}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell"><a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">{{ c.reference }}</a></td>
-            <td class="govuk-table__cell">{{ c.type }}</td>
-            <td class="govuk-table__cell">{{ c.name }}</td>
-            <td class="govuk-table__cell">{{ c.status }}</td>
-          </tr>
-        {% else %}
-          {# Fallback if session is empty #}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell"><a class="govuk-link" href="#">DRO/PER/00001</a></td>
-            <td class="govuk-table__cell">Drought Permits</td>
-            <td class="govuk-table__cell">Edward - Test Drought</td>
-            <td class="govuk-table__cell">New case</td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell"><a class="govuk-link" href="#">SOS/REV/00001</a></td>
-            <td class="govuk-table__cell">Revocation</td>
-            <td class="govuk-table__cell">Revocation Test</td>
-            <td class="govuk-table__cell">New case</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    {# Pagination Footer #}
-    {{ govukPagination({
-      next: { href: "#" },
-      items: [
-        { number: 1, current: true, href: "#" },
-        { number: 2, href: "#" },
-        { ellipsis: true },
-        { number: 5, href: "#" }
-      ]
-    }) }}
-
   </div>
+
 </div>
 {% endblock %}
