@@ -393,7 +393,7 @@
           {% set filterCategories = (filterCategories.push({ heading: { text: "Subtype" }, items: subtypeItems }), filterCategories) %}
         {% endif %}
       {% endif %}
-      
+
       {{ mojFilter({
         heading: { text: "Filter" },
         selectedFilters: {
@@ -437,21 +437,46 @@
 
     <br>
 
-    {# Results Header - Stacked Layout #}
+    {# Results Header - Dynamic Counts #}
     <div id="pagination-header" class="govuk-!-margin-bottom-6">
-      {% if cases.length > 0 %}
-  <p class="govuk-body govuk-!-margin-bottom-2">
-    Showing <strong>1</strong> to <strong>{{ cases.length if cases.length < 25 else 25 }}</strong> of <strong>{{ cases.length }}</strong> results
-  </p>
-{% endif %}
-
-    <br>
       
-      <p class="govuk-body">
-        <strong>Results per page</strong> &nbsp;&nbsp; 25 &nbsp;|&nbsp; <a class="govuk-link" href="?limit=50">50</a> &nbsp;|&nbsp; <a class="govuk-link" href="?limit=100">100</a>
+      {# 1. ALWAYS show this text. If 0 cases, the route math naturally outputs 0 to 0 of 0 #}
+      <p class="govuk-body govuk-!-margin-bottom-2">
+        Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalCases }}</strong> results
       </p>
-    </div>
 
+      {# 2. ONLY show the "Results per page" options if there are actual cases to paginate #}
+      {% if totalCases > 0 %}
+        <br>
+        <p class="pins-pagination-options govuk-!-margin-bottom-0">
+            <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            {% if itemsPerPage == 25 %}
+                <span class="govuk-body">25</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="/cases-filter?itemsPerPage=25" data-pagination="25">25</a>
+            {% endif %}
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            {% if itemsPerPage == 50 %}
+                <span class="govuk-body">50</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="/cases-filter?itemsPerPage=50" data-pagination="50">50</a>
+            {% endif %}
+
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+            {% if itemsPerPage == 100 %}
+                <span class="govuk-body">100</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="/cases-filter?itemsPerPage=100" data-pagination="100">100</a>
+            {% endif %}
+        </p>
+      {% endif %}
+      
+    </div>
+    
     {# The Data Table #}
 <table class="govuk-table" data-module="moj-sortable-table" style="table-layout: fixed; width: 100%;">
   <thead class="govuk-table__head">
@@ -488,32 +513,25 @@
     {% else %}
       {# 2. This shows only if the database is actually empty (initial state) #}
       <tr class="govuk-table__row">
-        <td class="govuk-table__cell"><a class="govuk-link" href="#">DRO/PER/00001</a></td>
-        <td class="govuk-table__cell">Drought Permits</td>
-        <td class="govuk-table__cell">Edward - Test Drought</td>
-        <td class="govuk-table__cell">New case</td>
-      </tr>
-      <tr class="govuk-table__row">
-        <td class="govuk-table__cell"><a class="govuk-link" href="#">SOS/REV/00001</a></td>
-        <td class="govuk-table__cell">Revocation</td>
-        <td class="govuk-table__cell">Revocation Test</td>
-        <td class="govuk-table__cell">New case</td>
-      </tr>
+        <td class="govuk-table__cell" colspan="4">
+          <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
+            <h2 class="govuk-heading-m">No cases found</h2>
+            <p class="govuk-body">There are currently no cases in the database.</p>
+          </div>
+        </td>
     {% endif %}
   {% endfor %}
 </tbody>
 </table>
 
-    {# Footer Pagination #}
-    {{ govukPagination({
-      next: { href: "#" },
-      items: [
-        { number: 1, current: true, href: "#" },
-        { number: 2, href: "#" },
-        { ellipsis: true },
-        { number: 5, href: "#" }
-      ]
-    }) }}
+{# Footer Pagination - Only show if there's more than 1 page #}
+    {% if pageItems.length > 1 %}
+      {{ govukPagination({
+        previous: prevLink and { href: prevLink },
+        next: nextLink and { href: nextLink },
+        items: pageItems
+      }) }}
+    {% endif %}
 
   </div>
 </div>

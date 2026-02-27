@@ -12212,7 +12212,7 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
 // ============================================================================= ALL CASES PAGE ==============================================================================
 
 // Catch BOTH the normal page load and the filter submission
-router.get(['/cases', '/cases-filter'], function (req, res) {
+router.get(['/cases-page', '/cases-filter'], function (req, res) {
   let cases = req.session.data['cases'] || [];
 
   // 1. Did the user submit the filter form?
@@ -12236,7 +12236,7 @@ router.get(['/cases', '/cases-filter'], function (req, res) {
   const subtypes = cleanArray(req.session.data['subtype']);
   const search = req.session.data['searchCriteria'] || "";
 
-// 3. The Filter Logic (Using "OR" Logic)
+  // 3. The Filter Logic (Using "OR" Logic)
   if (areas.length > 0 || types.length > 0 || subtypes.length > 0) {
     cases = cases.filter(c => {
       // Check if the case matches any explicitly checked boxes
@@ -12249,7 +12249,7 @@ router.get(['/cases', '/cases-filter'], function (req, res) {
     });
   }
 
-// 4. Search Filter
+  // 4. Search Filter
   if (search) {
     cases = cases.filter(c => {
       // Safely extract names from the applicants array of objects
@@ -12272,11 +12272,58 @@ router.get(['/cases', '/cases-filter'], function (req, res) {
       return content.includes(search.toLowerCase());
     });
   }
+  
 
-  // 5. Render the page
-  res.render('cases', { 
-    cases: cases,
-    searchTerm: search
+// --- 5. PAGINATION LOGIC ---
+  const totalCasesCount = cases.length; 
+  
+  // 1. Bulletproof Items Per Page
+  let rawItems = req.query.itemsPerPage || req.session.data['itemsPerPage'];
+  let itemsPerPage = parseInt(rawItems, 10);
+  if (isNaN(itemsPerPage) || itemsPerPage <= 0) {
+    itemsPerPage = 25; // Fallback to 25 if corrupted
+  }
+  req.session.data['itemsPerPage'] = itemsPerPage; 
+
+  // 2. Bulletproof Current Page
+  let rawPage = req.query.page || 1;
+  let currentPage = parseInt(rawPage, 10);
+  if (isNaN(currentPage) || currentPage <= 0) {
+    currentPage = 1;
+  }
+
+  // Calculate pages
+  const totalPages = Math.ceil(totalCasesCount / itemsPerPage) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  // Slice the array
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCases = cases.slice(startIndex, endIndex);
+
+  // Generate pagination items array
+  let paginationItems = [];
+  for (let i = 1; i <= totalPages; i++) {
+    paginationItems.push({
+      number: i,
+      current: (i === currentPage),
+      href: "/cases-filter?page=" + i 
+    });
+  }
+
+  // --- 6. RENDER THE PAGE ---
+  res.render('cases-page', { 
+    cases: paginatedCases, 
+    searchTerm: search,
+    
+    totalCases: totalCasesCount,
+    itemsPerPage: itemsPerPage,
+    startItem: totalCasesCount === 0 ? 0 : startIndex + 1,
+    endItem: Math.min(endIndex, totalCasesCount),
+    
+    pageItems: paginationItems,
+    prevLink: currentPage > 1 ? "/cases-filter?page=" + (currentPage - 1) : null, 
+    nextLink: currentPage < totalPages ? "/cases-filter?page=" + (currentPage + 1) : null 
   });
 });
 
@@ -12297,8 +12344,7 @@ router.get('/cases/clear-filters', function (req, res) {
   req.session.data['type'] = "";
   req.session.data['subtype'] = "";
   req.session.data['searchCriteria'] = "";
-  res.redirect('/cases');
+  res.redirect('/cases-filter');
 });
 
-// THIS LINE MUST BE AT THE VERY BOTTOM OF THE FILE
 module.exports = router;
