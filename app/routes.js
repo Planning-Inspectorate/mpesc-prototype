@@ -548,6 +548,8 @@ router.post('/cases/edit/case-name', function(req, res) {
   
   // SAVE to new variable
   c.caseName = val;
+
+  req.session.flashSection = "case-details"; 
   
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -10715,8 +10717,31 @@ router.get('/cases', function (req, res) {
 
 
 
+// --- LOAD CASE DETAILS PAGE ---
+router.get('/cases/case-details', function(req, res) {
+  let ref = req.query.ref;
+  
+  // 1. Keep the ref in the session so other pages remember it
+  if (ref) {
+    req.session.data['ref'] = ref;
+  }
 
+  // 2. Find the case directly in the server memory
+  let cases = req.session.data['cases'] || [];
+  let foundCase = cases.find(c => c.reference === ref);
 
+  // 3. Grab the flash message (if it exists)
+  let sectionToJumpTo = req.session.flashSection;
+
+  // 4. Delete it immediately so it doesn't get stuck!
+  req.session.flashSection = null; 
+
+  // 5. Render the page and pass BOTH the case and the flash banner
+  res.render('cases/case-details', { 
+    currentCase: foundCase,       
+    flashSection: sectionToJumpTo 
+  });
+});
 
 
 

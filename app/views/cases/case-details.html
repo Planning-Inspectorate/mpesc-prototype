@@ -25,6 +25,30 @@
 
 {% if currentCase %}
 
+{# --- SUCCESS BANNER --- #}
+
+  {% if flashSection %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        {% set bannerHtml %}
+
+          <p class="govuk-notification-banner__heading">
+            Case has been updated.
+            <a class="govuk-notification-banner__link govuk-!-font-weight-heavy" href="#{{ flashSection }}">Return to section</a>
+          </p>
+        {% endset %}
+
+        {{ govukNotificationBanner({
+          html: bannerHtml,
+          type: "success"
+        }) }}
+      </div>
+    </div>
+
+  {% endif %}
+
+
   {# --- ROW 1: HEADER --- #}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
