@@ -12216,8 +12216,8 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   let cases = req.session.data['cases'] || [];
 
   // 1. Did the user submit the filter form?
-  const isFormSubmit = req.originalUrl.includes('/cases-filter');
-
+  const isFormSubmit = req.query.isFilterSubmit === 'true';
+  
   if (isFormSubmit) {
     // Overwrite the session with the live URL data
     req.session.data['area'] = req.query.area;
