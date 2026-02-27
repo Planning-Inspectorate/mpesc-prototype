@@ -89,36 +89,31 @@ Check outcome details - Planning Inspectorate Portal
         </tbody>
       </table>
     {% else %}
-      <p class="govuk-body">You will be able to add multiple outcome details.</p>
+      <p class="govuk-body">Add one or more outcomes. No outcome details have been added.</p>
     {% endif %}
 
     {# --- BUTTONS --- #}
-    <form action="/cases/case-details" method="get">
-      <input type="hidden" name="ref" value="{{ ref }}">
-      
-      <div class="govuk-button-group">
-        {{ govukButton({
-          text: "Add details",
-          classes: "govuk-button" if outcomeList.length == 0 else "govuk-button--secondary",
-          href: "/cases/outcomes/step-1?ref=" + ref
-        }) }}
-
-        {% if outcomeList.length == 0 %}
-            {{ govukButton({
-              text: "Cancel",
-              classes: "govuk-button--secondary",
-              href: "/cases/case-details?ref=" + ref
-            }) }}
-          {% endif %}
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Add details",
+        classes: "govuk-button--secondary",
+        href: "/cases/outcomes/step-1?ref=" + ref
+      }) }}
       </div>
 
-      {% if outcomeList.length > 0 %}
-        <div class="govuk-button-group">
-          {{ govukButton({ text: "Save and continue" }) }}
-            {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/cases/case-details?ref=" + ref }) }}
-        </div>
-      {% endif %}
-    </form>
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Save and continue",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          classes: "govuk-button--secondary",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+      </div>
+    </div>
 
   </div>
 </div>

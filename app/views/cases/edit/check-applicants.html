@@ -81,27 +81,18 @@ Check applicant or appellant details - Planning Inspectorate Portal
         </tbody>
       </table>
     {% else %}
-      <p class="govuk-body">No applicant or appellant details added yet.</p>
+      <p class="govuk-body">Add one or more applicants or appellants. No applicant or appellant details have been added.</p>
     {% endif %}
 
     {# --- BUTTONS --- #}
     <div class="govuk-button-group">
       {{ govukButton({
         text: "Add details",
-        classes: "govuk-button" if applicants.length == 0 else "govuk-button--secondary",
+        classes: "govuk-button--secondary",
         href: "/cases/edit/applicant-name?ref=" + ref
       }) }}
-
-      {% if applicants and applicants.length == 0 %}
-        {{ govukButton({
-          text: "Cancel",
-          classes: "govuk-button--secondary",
-          href: "/cases/case-details?ref=" + ref
-        }) }}
-      {% endif %}
       </div>
 
-      {% if applicants and applicants.length > 0 %}
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Save and continue",
@@ -114,7 +105,6 @@ Check applicant or appellant details - Planning Inspectorate Portal
           href: "/cases/case-details?ref=" + ref
         }) }}
       </div>
-      {% endif %}
     </div>
 
   </div>

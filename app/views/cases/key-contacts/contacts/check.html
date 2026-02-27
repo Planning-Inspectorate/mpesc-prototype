@@ -52,34 +52,32 @@
         </tbody>
       </table>
     {% else %}
-      <p class="govuk-body">No contact details found</p>
+      <p class="govuk-body">Add one or more contacts. No contact details have been added.</p>
     {% endif %}
 
-    <form action="/cases/case-details" method="get">
-      <input type="hidden" name="ref" value="{{ ref }}">
+    {# --- BUTTONS --- #}
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Add details",
+        classes: "govuk-button--secondary",
+        href: "/cases/key-contacts/contacts/step-1?ref=" + ref
+      }) }}
+      </div>
+
       <div class="govuk-button-group">
         {{ govukButton({
-            text: "Add details",
-            classes: "govuk-button" if contacts.length == 0 else "govuk-button--secondary",
-            href: "/cases/key-contacts/contacts/step-1?ref=" + ref
-          }) }}
+          text: "Save and continue",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
 
-          {% if contacts.length == 0 %}
-            {{ govukButton({
-              text: "Cancel",
-              classes: "govuk-button--secondary",
-              href: "/cases/case-details?ref=" + ref
-            }) }}
-          {% endif %}
-        </div>
+        {{ govukButton({
+          text: "Cancel",
+          classes: "govuk-button--secondary",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+      </div>
+    </div>
 
-      {% if contacts.length > 0 %}
-        <div class="govuk-button-group">
-          {{ govukButton({ text: "Save and continue" }) }}
-          {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/cases/case-details?ref=" + ref }) }}
-        </div>
-      {% endif %}
-    </form>
   </div>
 </div>
 {% endblock %}
