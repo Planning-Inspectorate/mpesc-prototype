@@ -12347,4 +12347,31 @@ router.get('/cases/clear-filters', function (req, res) {
   res.redirect('/cases-filter');
 });
 
+// --- SECRET ROUTE: GENERATE 130 DUMMY CASES ---
+router.get('/cases/generate-dummy', function (req, res) {
+  // 1. Create the array if it doesn't exist yet
+  if (!req.session.data['cases']) {
+    req.session.data['cases'] = [];
+  }
+
+  // 2. Loop 130 times to create fake cases
+  for (let i = 1; i <= 25; i++) {
+    req.session.data['cases'].push({
+      reference: "TEST/2026/" + i.toString().padStart(4, '0'), // Creates TEST/2026/0001
+      caseName: "Dummy Pagination Case " + i,
+      areaValue: "planning-environmental-and-applications",
+      typeValue: "drought",
+      subtypeValue: "drought-permits",
+      caseStatus: "New case",
+      authorityName: "Test Authority",
+      applicants: [{ firstName: "John", lastName: "Doe " + i }]
+    });
+  }
+
+  console.log("✅ Successfully injected 130 dummy cases into the session!");
+  
+  // 3. Send you straight back to the Case List to see the results
+  res.redirect('/cases-page');
+});
+
 module.exports = router;
