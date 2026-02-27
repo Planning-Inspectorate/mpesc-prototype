@@ -12211,62 +12211,94 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
 
 // ============================================================================= ALL CASES PAGE ==============================================================================
 
-// This is a simplified example of how you might implement the filtering logic on the /cases page.
-router.get('/cases', function (req, res) {
-  // 1. Get all cases (from a JSON file or local array)
-  let cases = req.session.data['all-cases'] || []; 
-  
-  // 2. Get active filters from the session/query
-  const selectedAreas = req.session.data['area'];
-  const selectedTypes = req.session.data['type'];
-  const selectedSubtypes = req.session.data['subtype'];
+// Catch BOTH the normal page load and the filter submission
+router.get(['/cases', '/cases-filter'], function (req, res) {
+  let cases = req.session.data['cases'] || [];
 
-  // 3. Apply Filtering Logic
-  if (selectedAreas || selectedTypes || selectedSubtypes) {
+  // 1. Did the user submit the filter form?
+  const isFormSubmit = req.originalUrl.includes('/cases-filter');
+
+  if (isFormSubmit) {
+    // Overwrite the session with the live URL data
+    req.session.data['area'] = req.query.area;
+    req.session.data['type'] = req.query.type;
+    req.session.data['subtype'] = req.query.subtype;
+    req.session.data['searchCriteria'] = req.query.searchCriteria;
+  }
+
+  // 2. Clean the arrays (Destroys the '_unchecked' junk from the Kit)
+  const cleanArray = (val) => {
+    return [].concat(val || []).filter(item => item && item !== '_unchecked');
+  };
+
+  const areas = cleanArray(req.session.data['area']);
+  const types = cleanArray(req.session.data['type']);
+  const subtypes = cleanArray(req.session.data['subtype']);
+  const search = req.session.data['searchCriteria'] || "";
+
+// 3. The Filter Logic (Using "OR" Logic)
+  if (areas.length > 0 || types.length > 0 || subtypes.length > 0) {
     cases = cases.filter(c => {
-      // Check Area (matches if no area selected OR if case area is in the selected list)
-      const matchesArea = !selectedAreas || 
-        (Array.isArray(selectedAreas) ? selectedAreas.includes(c.areaValue) : selectedAreas === c.areaValue);
+      // Check if the case matches any explicitly checked boxes
+      const matchesArea = areas.includes(c.areaValue);
+      const matchesType = types.includes(c.typeValue);
+      const matchesSubtype = subtypes.includes(c.subtypeValue);
 
-      // Check Type
-      const matchesType = !selectedTypes || 
-        (Array.isArray(selectedTypes) ? selectedTypes.includes(c.typeValue) : selectedTypes === c.typeValue);
-
-      // Check Subtype
-      const matchesSubtype = !selectedSubtypes || 
-        (Array.isArray(selectedSubtypes) ? selectedSubtypes.includes(c.subtypeValue) : selectedSubtypes === c.subtypeValue);
-
-      return matchesArea && matchesType && matchesSubtype;
+      // If the case hits ANY of the active filters, keep it in the list!
+      return matchesArea || matchesType || matchesSubtype;
     });
   }
 
-  res.render('cases', {
-    cases: cases
+// 4. Search Filter
+  if (search) {
+    cases = cases.filter(c => {
+      // Safely extract names from the applicants array of objects
+      let applicantsString = "";
+      if (Array.isArray(c.applicants)) {
+        applicantsString = c.applicants.map(a => {
+          return `${a.firstName || ""} ${a.lastName || ""} ${a.companyName || ""}`;
+        }).join(" ");
+      }
+
+      // Concatenate all searchable fields into one massive string
+      const content = (
+        (c.reference || "") + 
+        (c.caseName || "") + 
+        (c.caseStatus || "") + 
+        (c.authorityName || "") + 
+        (applicantsString)            // Our newly extracted names!
+      ).toLowerCase();
+      
+      return content.includes(search.toLowerCase());
+    });
+  }
+
+  // 5. Render the page
+  res.render('cases', { 
+    cases: cases,
+    searchTerm: search
   });
 });
 
-// 4. The Route to remove individual tags (as discussed previously)
+// --- REMOVE FILTER ROUTE (For the 'X' tags) ---
 router.get('/cases/remove-filter/:category/:value', function (req, res) {
-  const { category, value } = req.params;
-
-  if (req.session.data[category]) {
-    if (Array.isArray(req.session.data[category])) {
-      req.session.data[category] = req.session.data[category].filter(item => item !== value);
-      if (req.session.data[category].length === 0) delete req.session.data[category];
-    } else {
-      if (req.session.data[category] === value) delete req.session.data[category];
-    }
-  }
+  const category = req.params.category;
+  const value = req.params.value;
+  
+  let filters = [].concat(req.session.data[category] || []).filter(item => item && item !== '_unchecked');
+  req.session.data[category] = filters.filter(item => item !== value);
+  
   res.redirect('/cases');
 });
 
+// --- CLEAR ALL FILTERS ROUTE ---
 router.get('/cases/clear-filters', function (req, res) {
-  // Delete the specific filter keys from the session
-  delete req.session.data['area'];
-  delete req.session.data['type'];
-  delete req.session.data['subtype'];
-  // delete req.session.data['searchCriteria']; // Optional: clear search too
-
-  // Redirect back to the case list
+  req.session.data['area'] = "";
+  req.session.data['type'] = "";
+  req.session.data['subtype'] = "";
+  req.session.data['searchCriteria'] = "";
   res.redirect('/cases');
 });
+
+// THIS LINE MUST BE AT THE VERY BOTTOM OF THE FILE
+module.exports = router;
