@@ -12301,14 +12301,41 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   const endIndex = startIndex + itemsPerPage;
   const paginatedCases = cases.slice(startIndex, endIndex);
 
-  // Generate pagination items array
+  // Generate smart pagination links for the GOV.UK Macro
   let paginationItems = [];
+  
+  // 1. Identify which page numbers we actually want to show
+  let pagesToShow = [];
   for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||                   // Always show first page
+      i === totalPages ||          // Always show last page
+      i === currentPage ||         // Always show current page
+      i === currentPage - 1 ||     // Show page immediately before current
+      i === currentPage + 1        // Show page immediately after current
+    ) {
+      pagesToShow.push(i);
+    }
+  }
+
+  // 2. Build the array with ellipses in the gaps
+  let previousPage = null;
+  for (let i of pagesToShow) {
+    if (previousPage) {
+      // If there is a jump between numbers (e.g., from 3 to 5), insert an ellipsis
+      if (i - previousPage > 1) {
+        paginationItems.push({ ellipsis: true });
+      }
+    }
+    
+    // Add the actual page number
     paginationItems.push({
       number: i,
       current: (i === currentPage),
-      href: "/cases-filter?page=" + i 
+      href: "/cases-filter?page=" + i
     });
+    
+    previousPage = i;
   }
 
   // --- 6. RENDER THE PAGE ---
@@ -12347,30 +12374,43 @@ router.get('/cases/clear-filters', function (req, res) {
   res.redirect('/cases-filter');
 });
 
-// --- SECRET ROUTE: GENERATE 130 DUMMY CASES ---
+// --- SECRET ROUTE: GENERATE 130 MIXED DUMMY CASES ---
 router.get('/cases/generate-dummy', function (req, res) {
-  // 1. Create the array if it doesn't exist yet
   if (!req.session.data['cases']) {
     req.session.data['cases'] = [];
   }
 
-  // 2. Loop 130 times to create fake cases
-  for (let i = 1; i <= 25; i++) {
+  // 1. Generate 65 Planning, Environmental and Applications Cases
+  for (let i = 1; i <= 65; i++) {
     req.session.data['cases'].push({
-      reference: "TEST/2026/" + i.toString().padStart(4, '0'), // Creates TEST/2026/0001
-      caseName: "Dummy Pagination Case " + i,
+      reference: "PLAN/2026/" + i.toString().padStart(4, '0'),
+      caseName: "Planning Dummy Case " + i,
       areaValue: "planning-environmental-and-applications",
       typeValue: "drought",
       subtypeValue: "drought-permits",
       caseStatus: "New case",
-      authorityName: "Test Authority",
-      applicants: [{ firstName: "John", lastName: "Doe " + i }]
+      authorityName: "Waterways Authority",
+      applicants: [{ firstName: "John", lastName: "Doe " + i, companyName: "Aqua Corp" }]
     });
   }
 
-  console.log("✅ Successfully injected 130 dummy cases into the session!");
+  // 2. Generate 65 Rights of Way and Common Land Cases
+  for (let i = 1; i <= 65; i++) {
+    req.session.data['cases'].push({
+      reference: "ROW/2026/" + i.toString().padStart(4, '0'),
+      caseName: "Rights of Way Dummy Case " + i,
+      areaValue: "rights-of-way-and-common-land",
+      typeValue: "rights-of-way",
+      subtypeValue: "schedule-14-appeal",
+      caseStatus: "New case",
+      authorityName: "Ramblers Council",
+      applicants: [{ firstName: "Jane", lastName: "Smith " + i, companyName: "Pathways Ltd" }]
+    });
+  }
+
+  console.log("✅ Successfully injected 65 Planning and 65 Rights of Way cases!");
   
-  // 3. Send you straight back to the Case List to see the results
+  // Bounce back to the cases list
   res.redirect('/cases-page');
 });
 
