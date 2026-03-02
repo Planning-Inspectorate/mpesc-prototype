@@ -244,10 +244,13 @@
   
 {% endblock %}
 
-{% block bodyEnd %}
+{% block scripts %}
+  {# Loads the standard GOV.UK scripts first #}
   {{ super() }}
-  <script src="/plugin-assets/@ministryofjustice/frontend/moj/all.js"></script>
-  <script>
-    window.MOJFrontend.initAll();
+  
+  {# NEW: Import the MOJ functionality through our safe tunnel #}
+  <script type="module">
+    import { initAll } from '/safe-moj/moj/all.mjs';
+    initAll();
   </script>
 {% endblock %}
