@@ -567,6 +567,8 @@ router.post('/cases/edit/external-reference', function(req, res) {
   var c = getCase(req);
   
   c.externalReference = val;
+
+  req.session.flashSection = "case-details";
   
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -697,6 +699,15 @@ router.get('/cases/edit/applicant-remove', (req, res) => {
   res.redirect(`/cases/edit/check-applicants?ref=${req.query.ref}`);
 });
 
+// 5. Return to Case Details (From Check Applicants Hub)
+router.get('/cases/applicant-appellant/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Overview' card
+  req.session.flashSection = "case-details";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
 // --- 4. EDIT SITE ADDRESS (With Strict Postcode Validation) ---
 router.get('/cases/edit/site-address', function(req, res) {
   var c = getCase(req);
@@ -785,6 +796,8 @@ router.post('/cases/edit/site-address', function(req, res) {
   c.siteAddress = fullAddress; 
   delete c['site-address']; 
 
+  req.session.flashSection = "case-details";
+
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -802,6 +815,8 @@ router.post('/cases/edit/site-location', function(req, res) {
   
   c.siteLocation = val;
   delete c['site-location'];
+
+  req.session.flashSection = "case-details";
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -821,6 +836,8 @@ router.post('/cases/edit/authority', function(req, res) {
   c.authorityName = val;
   delete c['authority'];
 
+  req.session.flashSection = "case-details";
+
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -838,6 +855,8 @@ router.post('/cases/edit/historical-reference', function(req, res) {
   
   c.historicalReference = req.body.historicalReference;
   delete c['historical-reference']; // Cleanup old var
+
+  req.session.flashSection = "case-details";
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -859,6 +878,9 @@ router.post('/cases/edit/case-status', function(req, res) {
   if (action === 'remove') {
     delete c.caseStatus;
     delete c['case-status'];
+
+    req.session.flashSection = "case-details";
+
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
 
@@ -874,6 +896,9 @@ router.post('/cases/edit/case-status', function(req, res) {
   // 3. Save
   c.caseStatus = val;
   delete c['case-status'];
+
+  req.session.flashSection = "case-details";
+
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -893,6 +918,7 @@ router.post('/cases/edit/modification-status', function(req, res) {
   if (action === 'remove') {
     delete c.modificationStatus;
     delete c['modification-status'];
+    req.session.flashSection = "case-details";
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
 
@@ -906,6 +932,7 @@ router.post('/cases/edit/modification-status', function(req, res) {
 
   c.modificationStatus = val;
   delete c['modification-status'];
+  req.session.flashSection = "case-details";
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -925,6 +952,8 @@ router.post('/cases/edit/priority', function(req, res) {
   if (action === 'remove') {
     delete c.priority;
     delete c['priority'];
+
+    req.session.flashSection = "case-details";
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
 
@@ -937,6 +966,8 @@ router.post('/cases/edit/priority', function(req, res) {
   }
 
   c.priority = val;
+
+  req.session.flashSection = "case-details";
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -1011,6 +1042,8 @@ router.post('/cases/edit/act', function(req, res) {
 
   // 4. Save to the case object
   c.act = val;
+
+  req.session.flashSection = "overview";
   
   // Redirect back to case details with a success parameter
   // 'updated=legislation' can be used to trigger a success banner
@@ -1040,6 +1073,7 @@ router.post('/cases/edit/case-officer', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.caseOfficer;
+    req.session.flashSection = "team";
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
   }
 
@@ -1072,12 +1106,82 @@ router.post('/cases/edit/case-officer', function(req, res) {
   // 3. Save
   c.caseOfficer = val;
   delete c['case-officer']; // Cleanup old variable
+  req.session.flashSection = "team";
   
   // Note: updated=team refers to the ID of the new summary card below
   res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
 });
 
 
+// --- CONSENT SOUGHT ---
+router.get('/cases/edit/consent-sought', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Pass the case reference and the current saved value to the page
+  res.render('cases/edit/consent-sought', {
+    ref: ref,
+    currentValue: c['consent-sought'] // Sends the current answer (e.g., "Yes")
+  });
+});
+
+router.post('/cases/edit/consent-sought', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // 1. Grab the value from the form 
+  // (IMPORTANT: Make sure your HTML input/radio buttons have name="consent-sought")
+  var val = req.body['consent-sought'];
+
+  // 2. Save the value directly to the case object
+  // (Using bracket notation because of the hyphen in the name)
+  c['consent-sought'] = val;
+
+  // 3. Set the flash message for the 'Overview' card
+  req.session.flashSection = "overview";
+
+  // 4. Redirect smoothly back to the case details page
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+
+// --- INSPECTOR BAND ---
+router.get('/cases/edit/inspector-band', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // If the case doesn't exist, bounce them back to the case list
+  if (!c) {
+    return res.redirect('/cases');
+  }
+
+  // Render the page and pass the existing value so the form can pre-fill
+  res.render('cases/edit/inspector-band', {
+    ref: ref,
+    currentValue: c['inspector-band'] // Sends "Band 1", "Band 2", etc.
+  });
+});
+
+router.post('/cases/edit/inspector-band', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  if (req.body.action === "remove") {
+    
+    c['inspector-band'] = ""; 
+
+    req.session.flashSection = "overview";
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+  var val = req.body['inspector-band'];
+
+  c['inspector-band'] = val;
+
+  req.session.flashSection = "overview";
+
+  
+  res.redirect('/cases/case-details?ref=' + ref);
+});
 
 
 // --- INSPECTOR LOGIC (Add, Edit, Delete & Validation) ---
@@ -1306,6 +1410,15 @@ router.get('/cases/edit/inspector-remove', function (req, res) {
   res.redirect('/cases/edit/check-inspectors?ref=' + ref);
 });
 
+// 7. Return to Case Details (From Linked Cases Hub)
+router.get('/cases/check-inspectors/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Overview' card
+  req.session.flashSection = "team";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
 
 // ------------------------------------- TIMETABLE SUMMARY CARD --------------------------------------------
 
@@ -1358,7 +1471,7 @@ router.post('/cases/edit/case-received-date', function(req, res) {
     delete c['case-received-date-day'];
     delete c['case-received-date-month'];
     delete c['case-received-date-year'];
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -1456,7 +1569,9 @@ router.post('/cases/edit/case-received-date', function(req, res) {
   c.receivedMonth = month;
   c.receivedYear = year;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -1488,7 +1603,8 @@ router.post('/cases/edit/start-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.startDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -1577,7 +1693,9 @@ router.post('/cases/edit/start-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -1608,7 +1726,8 @@ router.post('/cases/edit/expected-submission-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.expectedSubmissionDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -1696,8 +1815,9 @@ router.post('/cases/edit/expected-submission-date', function(req, res) {
     year: year,
     formatted: formatted
   };
+  req.session.flashSection = "timetable";
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- 4. TARGET DECISION DATE ---
@@ -1727,7 +1847,8 @@ router.post('/cases/edit/target-decision-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.targetDecisionDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -1816,7 +1937,9 @@ router.post('/cases/edit/target-decision-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -1847,7 +1970,8 @@ router.post('/cases/edit/co-verification-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.coVerificationDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -1936,7 +2060,9 @@ router.post('/cases/edit/co-verification-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -1967,7 +2093,8 @@ router.post('/cases/edit/modifications-advertised-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.modificationsAdvertisedDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2056,7 +2183,9 @@ router.post('/cases/edit/modifications-advertised-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- 7. OBJECTION PERIOD END DATE ---
@@ -2086,7 +2215,8 @@ router.post('/cases/edit/objection-period-end-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.objectionPeriodEndDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2175,7 +2305,9 @@ router.post('/cases/edit/objection-period-end-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- 8. DEADLINE FOR CONSENT ---
@@ -2205,7 +2337,8 @@ router.post('/cases/edit/consent-deadline-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.consentDeadlineDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2294,7 +2427,9 @@ router.post('/cases/edit/consent-deadline-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -2325,7 +2460,8 @@ router.post('/cases/edit/ogd-due-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.ogdDueDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2414,7 +2550,8 @@ router.post('/cases/edit/ogd-due-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -2445,7 +2582,8 @@ router.post('/cases/edit/proposal-letter-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.proposalLetterDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2534,7 +2672,9 @@ router.post('/cases/edit/proposal-letter-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -2565,7 +2705,8 @@ router.post('/cases/edit/decision-issued-by-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.decisionIssuedByDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2654,7 +2795,9 @@ router.post('/cases/edit/decision-issued-by-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -2685,7 +2828,8 @@ router.post('/cases/edit/decision-notification-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.decisionNotificationDate;
-    return res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+    req.session.flashSection = "timetable";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation Logic
@@ -2774,7 +2918,9 @@ router.post('/cases/edit/decision-notification-date', function(req, res) {
     formatted: formatted
   };
 
-  res.redirect('/cases/case-details?ref=' + ref + '#timetable');
+  req.session.flashSection = "timetable";
+
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -3168,7 +3314,8 @@ router.post('/cases/procedures/procedure-1/type', function(req, res) {
     // --- TRIGGER REVERSE SYNC ---
     syncDetailedToOverview(c);
 
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (!type) {
@@ -3185,7 +3332,8 @@ router.post('/cases/procedures/procedure-1/type', function(req, res) {
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -3221,10 +3369,11 @@ router.post('/cases/procedures/procedure-1/status', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.status = status;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -3253,7 +3402,8 @@ router.post('/cases/procedures/procedure-1/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.adminType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (!adminType) {
@@ -3268,8 +3418,9 @@ router.post('/cases/procedures/procedure-1/admin-type', function(req, res) {
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
-
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -3308,12 +3459,13 @@ router.post('/cases/procedures/procedure-1/in-house-date', function(req, res) {
     'in-house',          
     'In house date',     
     c.procedure1,        
-    'inHouse'           
+    'inHouse'            
   );
 
   // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3364,7 +3516,8 @@ router.post('/cases/procedures/procedure-1/site-visit', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3415,7 +3568,8 @@ router.post('/cases/procedures/procedure-1/target-hearing-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3466,7 +3620,8 @@ router.post('/cases/procedures/procedure-1/hearing-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3520,7 +3675,8 @@ router.post('/cases/procedures/procedure-1/proofs-received', function(req, res) 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3570,7 +3726,8 @@ router.post('/cases/procedures/procedure-1/statements-received', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3621,7 +3778,8 @@ router.post('/cases/procedures/procedure-1/verification-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3679,7 +3837,8 @@ router.post('/cases/procedures/procedure-1/cmc-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3724,7 +3883,8 @@ router.post('/cases/procedures/procedure-1/cmc-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.cmcType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -3739,7 +3899,8 @@ router.post('/cases/procedures/procedure-1/cmc-type', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.cmcType = cmcType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- CMC VENUE ---
@@ -3780,7 +3941,8 @@ router.post('/cases/procedures/procedure-1/cmc-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3832,7 +3994,8 @@ router.post('/cases/procedures/procedure-1/cmc-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3886,7 +4049,8 @@ router.post('/cases/procedures/procedure-1/confirmed-hearing-date', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3935,12 +4099,13 @@ router.post('/cases/procedures/procedure-1/deadline-for-consent', function(req, 
     'deadline-for-consent',          
     'Deadline for consent',     
     c.procedure1,        
-    'deadlineForConsent'           
+    'deadlineForConsent'            
   );
 
   // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -3982,7 +4147,8 @@ router.post('/cases/procedures/procedure-1/hearing-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.hearingType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -3997,7 +4163,8 @@ router.post('/cases/procedures/procedure-1/hearing-type', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.hearingType = hearingType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- HEARING VENUE ---
@@ -4038,7 +4205,8 @@ router.post('/cases/procedures/procedure-1/hearing-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4090,7 +4258,8 @@ router.post('/cases/procedures/procedure-1/notified-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4141,7 +4310,8 @@ router.post('/cases/procedures/procedure-1/notified-hearing-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4192,7 +4362,8 @@ router.post('/cases/procedures/procedure-1/earliest-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4231,7 +4402,9 @@ router.post('/cases/procedures/procedure-1/hearing-length-of-event', function(re
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4262,7 +4435,8 @@ router.post('/cases/procedures/procedure-1/hearing-in-target', function(req, res
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.hearingInTarget;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -4277,7 +4451,8 @@ router.post('/cases/procedures/procedure-1/hearing-in-target', function(req, res
   c.procedure1 = c.procedure1 || {};
   c.procedure1.hearingInTarget = val;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- HEARING CLOSED DATE ---
@@ -4315,7 +4490,8 @@ router.post('/cases/procedures/procedure-1/hearing-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4365,7 +4541,9 @@ router.post('/cases/procedures/procedure-1/hearing-preparation-time', function(r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4397,7 +4575,9 @@ router.post('/cases/procedures/procedure-1/hearing-travel-time', function(req, r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4429,7 +4609,9 @@ router.post('/cases/procedures/procedure-1/hearing-sitting-time', function(req, 
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4461,7 +4643,9 @@ router.post('/cases/procedures/procedure-1/hearing-reporting-time', function(req
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4507,7 +4691,8 @@ router.post('/cases/procedures/procedure-1/target-inquiry-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4558,7 +4743,8 @@ router.post('/cases/procedures/procedure-1/inquiry-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4601,7 +4787,8 @@ router.post('/cases/procedures/procedure-1/pre-inquiry-meeting-cmc', function(re
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.preInquiryMeetingCmc;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -4616,7 +4803,8 @@ router.post('/cases/procedures/procedure-1/pre-inquiry-meeting-cmc', function(re
   c.procedure1 = c.procedure1 || {};
   c.procedure1.preInquiryMeetingCmc = meetingType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4663,7 +4851,8 @@ router.post('/cases/procedures/procedure-1/pim-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4708,7 +4897,8 @@ router.post('/cases/procedures/procedure-1/pim-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.pimType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -4723,7 +4913,8 @@ router.post('/cases/procedures/procedure-1/pim-type', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.pimType = pimType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4763,7 +4954,8 @@ router.post('/cases/procedures/procedure-1/pim-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4818,7 +5010,8 @@ router.post('/cases/procedures/procedure-1/confirmed-inquiry-date', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4861,7 +5054,8 @@ router.post('/cases/procedures/procedure-1/inquiry-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.inquiryType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -4876,7 +5070,8 @@ router.post('/cases/procedures/procedure-1/inquiry-type', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.inquiryType = inquiryType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -4918,7 +5113,8 @@ router.post('/cases/procedures/procedure-1/inquiry-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -4971,7 +5167,8 @@ router.post('/cases/procedures/procedure-1/notified-inquiry-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5022,7 +5219,8 @@ router.post('/cases/procedures/procedure-1/notified-inquiry-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5073,7 +5271,8 @@ router.post('/cases/procedures/procedure-1/earliest-inquiry-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5112,7 +5311,9 @@ router.post('/cases/procedures/procedure-1/inquiry-length-of-event', function(re
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5151,7 +5352,8 @@ router.post('/cases/procedures/procedure-1/inquiry-finished-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5194,7 +5396,8 @@ router.post('/cases/procedures/procedure-1/event-in-target', function(req, res) 
   // Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.eventInTarget;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // Validation
@@ -5209,7 +5412,8 @@ router.post('/cases/procedures/procedure-1/event-in-target', function(req, res) 
   c.procedure1 = c.procedure1 || {};
   c.procedure1.eventInTarget = val;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5248,7 +5452,8 @@ router.post('/cases/procedures/procedure-1/inquiry-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5299,7 +5504,9 @@ router.post('/cases/procedures/procedure-1/inquiry-preparation-time', function(r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5331,7 +5538,9 @@ router.post('/cases/procedures/procedure-1/inquiry-travel-time', function(req, r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5363,7 +5572,9 @@ router.post('/cases/procedures/procedure-1/inquiry-sitting-time', function(req, 
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5395,7 +5606,9 @@ router.post('/cases/procedures/procedure-1/inquiry-reporting-time', function(req
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  
+  req.session.flashSection = "procedure1";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5428,10 +5641,11 @@ router.post('/cases/procedures/procedure-1/site-visit-type', function(req, res) 
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.siteVisitType;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -5449,7 +5663,8 @@ router.post('/cases/procedures/procedure-1/site-visit-type', function(req, res) 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+  req.session.flashSection = "procedure1";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5489,7 +5704,8 @@ router.post('/cases/procedures/procedure-1/written-reps-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
+    req.session.flashSection = "procedure1";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5539,10 +5755,11 @@ router.post('/cases/procedures/procedure-2/type', function(req, res) {
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2;
 
-// --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
+    // --- TRIGGER REVERSE SYNC ---
+    syncDetailedToOverview(c);
 
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (!type) {
@@ -5556,10 +5773,11 @@ router.post('/cases/procedures/procedure-2/type', function(req, res) {
   c.procedure2.type = type;
   c.procedure2.active = true;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5598,7 +5816,8 @@ router.post('/cases/procedures/procedure-2/status', function(req, res) {
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5609,10 +5828,10 @@ router.get('/cases/procedures/procedure-2/admin-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
   res.render('cases/procedures/procedure-2/admin-type', {
     ref: ref,
-    adminType: p1.adminType
+    adminType: p2.adminType
   });
 });
 
@@ -5627,11 +5846,8 @@ router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.adminType;
-
-    // --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
-
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (!adminType) {
@@ -5644,10 +5860,11 @@ router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
   c.procedure2 = c.procedure2 || {};
   c.procedure2.adminType = adminType;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
-
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -5662,8 +5879,8 @@ router.get('/cases/procedures/procedure-2/in-house-date', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.inHouse || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.inHouse || {}; 
 
   res.render('cases/procedures/procedure-2/in-house-date', {
     ref: ref,
@@ -5675,7 +5892,7 @@ router.get('/cases/procedures/procedure-2/in-house-date', function(req, res) {
 
 router.post('/cases/procedures/procedure-2/in-house-date', function(req, res) {
   var ref = req.body.ref || req.query.ref;
-  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var cases = req.session.data['cases'] || []; 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/');
 
@@ -5686,12 +5903,12 @@ router.post('/cases/procedures/procedure-2/in-house-date', function(req, res) {
     'in-house',          
     'In house date',     
     c.procedure2,        
-    'inHouse'           
+    'inHouse'            
   );
 
-  // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5714,8 +5931,8 @@ router.get('/cases/procedures/procedure-2/site-visit', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.siteVisit || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.siteVisit || {}; 
 
   res.render('cases/procedures/procedure-2/site-visit', {
     ref: ref,
@@ -5742,7 +5959,8 @@ router.post('/cases/procedures/procedure-2/site-visit', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5765,8 +5983,8 @@ router.get('/cases/procedures/procedure-2/target-hearing-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.targetHearing || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.targetHearing || {}; 
 
   res.render('cases/procedures/procedure-2/target-hearing-date', {
     ref: ref,
@@ -5793,7 +6011,8 @@ router.post('/cases/procedures/procedure-2/target-hearing-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5816,8 +6035,8 @@ router.get('/cases/procedures/procedure-2/hearing-notified-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.hearingNotified || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.hearingNotified || {}; 
 
   res.render('cases/procedures/procedure-2/hearing-notified-date', {
     ref: ref,
@@ -5844,7 +6063,8 @@ router.post('/cases/procedures/procedure-2/hearing-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5866,8 +6086,8 @@ router.get('/cases/procedures/procedure-2/proofs-received', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.proofsReceived || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.proofsReceived || {}; 
 
   res.render('cases/procedures/procedure-2/proofs-received', {
     ref: ref,
@@ -5898,7 +6118,8 @@ router.post('/cases/procedures/procedure-2/proofs-received', function(req, res) 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5920,8 +6141,8 @@ router.get('/cases/procedures/procedure-2/statements-received', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.statementsReceived || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.statementsReceived || {}; 
 
   res.render('cases/procedures/procedure-2/statements-received', {
     ref: ref,
@@ -5948,7 +6169,8 @@ router.post('/cases/procedures/procedure-2/statements-received', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -5971,8 +6193,8 @@ router.get('/cases/procedures/procedure-2/verification-date', function(req, res)
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.verification || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.verification || {}; 
 
   res.render('cases/procedures/procedure-2/verification-date', {
     ref: ref,
@@ -5999,7 +6221,8 @@ router.post('/cases/procedures/procedure-2/verification-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6014,58 +6237,7 @@ router.post('/cases/procedures/procedure-2/verification-date', function(req, res
   }
 });
 
-// --- DEADLINE FOR CONSENT ---
-router.get('/cases/procedures/procedure-2/deadline-for-consent', function(req, res) {
-  var ref = req.query.ref;
-  var cases = req.session.data['cases'] || [];
-  var c = cases.find(x => x.reference === ref);
-  if (!c) return res.redirect('/'); 
-
-  var p2 = c.procedure2 || {};
-  var val = p2.deadlineForConsent || {}; 
-
-  res.render('cases/procedures/procedure-2/deadline-for-consent', {
-    ref: ref,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/procedures/procedure-2/deadline-for-consent', function(req, res) {
-  var ref = req.body.ref || req.query.ref;
-  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
-  var c = cases.find(x => x.reference === ref);
-  if (!c) return res.redirect('/');
-
-  c.procedure2 = c.procedure2 || {};
-
-  var result = validateAndSaveDate(
-    req, res,
-    'deadline-for-consent',          
-    'Deadline for consent',     
-    c.procedure2,        
-    'deadlineForConsent'           
-  );
-
-  // FIX: Route handles redirect now
-  if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
-  }
-
-  if (result.status === "ERROR") {
-    return res.render('cases/procedures/procedure-2/deadline-for-consent', {
-      ref: ref,
-      day: req.body['deadline-for-consent-day'],
-      month: req.body['deadline-for-consent-month'],
-      year: req.body['deadline-for-consent-year'],
-      errorList: result.errorList,
-      errorFields: result.errorFields
-    });
-  }
-});
-
-// --- CMC ROUTES (Place this with your other Procedure 1 routes) ---
+// --- CMC ROUTES (Place this with your other Procedure 2 routes) ---
 
 // GET
 router.get('/cases/procedures/procedure-2/cmc-date', function(req, res) {
@@ -6074,8 +6246,8 @@ router.get('/cases/procedures/procedure-2/cmc-date', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.cmcDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.cmcDate || {}; 
 
   res.render('cases/procedures/procedure-2/cmc-date', {
     ref: ref,
@@ -6108,7 +6280,8 @@ router.post('/cases/procedures/procedure-2/cmc-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6133,11 +6306,11 @@ router.get('/cases/procedures/procedure-2/cmc-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/cmc-type', {
     ref: ref,
-    cmcType: p1.cmcType
+    cmcType: p2.cmcType
   });
 });
 
@@ -6153,7 +6326,8 @@ router.post('/cases/procedures/procedure-2/cmc-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.cmcType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -6168,7 +6342,8 @@ router.post('/cases/procedures/procedure-2/cmc-type', function(req, res) {
   c.procedure2 = c.procedure2 || {};
   c.procedure2.cmcType = cmcType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- CMC VENUE ---
@@ -6178,8 +6353,8 @@ router.get('/cases/procedures/procedure-2/cmc-venue', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.cmcVenue || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.cmcVenue || {}; 
 
   res.render('cases/procedures/procedure-2/cmc-venue', {
     ref: ref,
@@ -6202,14 +6377,15 @@ router.post('/cases/procedures/procedure-2/cmc-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // Field prefix (e.g. venue-line1)
+    'venue',          // Field prefix
     'Venue address',  // Display name
     c.procedure2,     // Storage object
     'cmcVenue'        // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6233,8 +6409,8 @@ router.get('/cases/procedures/procedure-2/cmc-note-sent', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.cmcNoteSent || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.cmcNoteSent || {}; 
 
   res.render('cases/procedures/procedure-2/cmc-note-sent', {
     ref: ref,
@@ -6261,7 +6437,8 @@ router.post('/cases/procedures/procedure-2/cmc-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6283,8 +6460,8 @@ router.get('/cases/procedures/procedure-2/confirmed-hearing-date', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.confirmedHearing || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.confirmedHearing || {}; 
 
   res.render('cases/procedures/procedure-2/confirmed-hearing-date', {
     ref: ref,
@@ -6294,7 +6471,7 @@ router.get('/cases/procedures/procedure-2/confirmed-hearing-date', function(req,
     hour: val.hour,
     minute: val.minute,
     ampm: val.ampm,
-    errorFields: [] // Important to prevent Nunjucks error on load
+    errorFields: [] 
   });
 });
 
@@ -6308,14 +6485,15 @@ router.post('/cases/procedures/procedure-2/confirmed-hearing-date', function(req
 
   var result = validateAndSaveDateTime(
     req, res,
-    'confirmed-hearing',       // HTML Field prefix
-    'Confirmed hearing date',  // Display name for errors
-    c.procedure2,              // Storage Object
-    'confirmedHearing'         // Storage Key
+    'confirmed-hearing',       
+    'Confirmed hearing date',  
+    c.procedure2,              
+    'confirmedHearing'         
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6333,6 +6511,57 @@ router.post('/cases/procedures/procedure-2/confirmed-hearing-date', function(req
   }
 });
 
+// --- DEADLINE FOR CONSENT ---
+router.get('/cases/procedures/procedure-2/deadline-for-consent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p2 = c.procedure2 || {};
+  var val = p2.deadlineForConsent || {}; 
+
+  res.render('cases/procedures/procedure-2/deadline-for-consent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-2/deadline-for-consent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; 
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure2 = c.procedure2 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'deadline-for-consent',          
+    'Deadline for consent',     
+    c.procedure2,        
+    'deadlineForConsent'            
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-2/deadline-for-consent', {
+      ref: ref,
+      day: req.body['deadline-for-consent-day'],
+      month: req.body['deadline-for-consent-month'],
+      year: req.body['deadline-for-consent-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
 // --- HEARING TYPE ---
 router.get('/cases/procedures/procedure-2/hearing-type', function(req, res) {
   var ref = req.query.ref;
@@ -6340,11 +6569,11 @@ router.get('/cases/procedures/procedure-2/hearing-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/hearing-type', {
     ref: ref,
-    hearingType: p1.hearingType
+    hearingType: p2.hearingType
   });
 });
 
@@ -6357,13 +6586,12 @@ router.post('/cases/procedures/procedure-2/hearing-type', function(req, res) {
   var action = req.body.action;
   var hearingType = req.body['hearing-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.hearingType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!hearingType) {
     return res.render('cases/procedures/procedure-2/hearing-type', {
       ref: ref,
@@ -6371,11 +6599,11 @@ router.post('/cases/procedures/procedure-2/hearing-type', function(req, res) {
     });
   }
 
-  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.hearingType = hearingType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- HEARING VENUE ---
@@ -6385,8 +6613,8 @@ router.get('/cases/procedures/procedure-2/hearing-venue', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.hearingVenue || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.hearingVenue || {}; 
 
   res.render('cases/procedures/procedure-2/hearing-venue', {
     ref: ref,
@@ -6409,14 +6637,15 @@ router.post('/cases/procedures/procedure-2/hearing-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // HTML field prefix
-    'Hearing venue',  // Error display name
-    c.procedure2,     // Storage object
-    'hearingVenue'    // Storage key
+    'venue',          
+    'Hearing venue',  
+    c.procedure2,     
+    'hearingVenue'    
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6440,8 +6669,8 @@ router.get('/cases/procedures/procedure-2/notified-hearing-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.notifiedHearingDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.notifiedHearingDate || {}; 
 
   res.render('cases/procedures/procedure-2/notified-hearing-date', {
     ref: ref,
@@ -6461,14 +6690,15 @@ router.post('/cases/procedures/procedure-2/notified-hearing-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-date',          // HTML prefix
-    'Date parties notified',  // Error name
-    c.procedure2,             // Storage object
-    'notifiedHearingDate'     // Storage key
+    'notified-date',          
+    'Date parties notified',  
+    c.procedure2,             
+    'notifiedHearingDate'     
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6491,8 +6721,8 @@ router.get('/cases/procedures/procedure-2/notified-hearing-venue', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.notifiedHearingVenue || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.notifiedHearingVenue || {}; 
 
   res.render('cases/procedures/procedure-2/notified-hearing-venue', {
     ref: ref,
@@ -6519,7 +6749,8 @@ router.post('/cases/procedures/procedure-2/notified-hearing-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6542,8 +6773,8 @@ router.get('/cases/procedures/procedure-2/earliest-hearing-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.earliestHearingDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.earliestHearingDate || {}; 
 
   res.render('cases/procedures/procedure-2/earliest-hearing-date', {
     ref: ref,
@@ -6570,7 +6801,8 @@ router.post('/cases/procedures/procedure-2/earliest-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6591,7 +6823,7 @@ router.get('/cases/procedures/procedure-2/hearing-length-of-event', function(req
   var c = req.session.data['cases'].find(x => x.reference === ref);
   res.render('cases/procedures/procedure-2/hearing-length-of-event', {
     ref: ref,
-    value: c.procedure2.hearingLengthOfEvent // NEW KEY
+    value: c.procedure2.hearingLengthOfEvent 
   });
 });
 
@@ -6599,7 +6831,6 @@ router.post('/cases/procedures/procedure-2/hearing-length-of-event', function(re
   var ref = req.body.ref;
   var c = req.session.data['cases'].find(x => x.reference === ref);
   
-  // Reuse your existing helper
   var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure2, 'hearingLengthOfEvent');
 
   if (result.status === "ERROR") {
@@ -6609,7 +6840,9 @@ router.post('/cases/procedures/procedure-2/hearing-length-of-event', function(re
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -6620,11 +6853,11 @@ router.get('/cases/procedures/procedure-2/hearing-in-target', function(req, res)
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/hearing-in-target', {
     ref: ref,
-    hearingInTarget: p1.hearingInTarget
+    hearingInTarget: p2.hearingInTarget
   });
 });
 
@@ -6637,13 +6870,12 @@ router.post('/cases/procedures/procedure-2/hearing-in-target', function(req, res
   var action = req.body.action;
   var val = req.body['hearing-in-target'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.hearingInTarget;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-2/hearing-in-target', {
       ref: ref,
@@ -6651,11 +6883,11 @@ router.post('/cases/procedures/procedure-2/hearing-in-target', function(req, res
     });
   }
 
-  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.hearingInTarget = val;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- HEARING CLOSED DATE ---
@@ -6665,8 +6897,8 @@ router.get('/cases/procedures/procedure-2/hearing-closed-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.hearingClosed || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.hearingClosed || {}; 
 
   res.render('cases/procedures/procedure-2/hearing-closed-date', {
     ref: ref,
@@ -6693,7 +6925,8 @@ router.post('/cases/procedures/procedure-2/hearing-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6717,7 +6950,7 @@ router.get('/cases/procedures/procedure-2/hearing-preparation-time', function(re
 
   res.render('cases/procedures/procedure-2/hearing-preparation-time', {
     ref: ref,
-    value: c.procedure2.hearingPrepTime // Specific Key
+    value: c.procedure2.hearingPrepTime 
   });
 });
 
@@ -6733,7 +6966,7 @@ router.post('/cases/procedures/procedure-2/hearing-preparation-time', function(r
     'prep-time', 
     'Preparation time', 
     c.procedure2, 
-    'hearingPrepTime' // Specific Key
+    'hearingPrepTime' 
   );
 
   if (result.status === "ERROR") {
@@ -6743,7 +6976,9 @@ router.post('/cases/procedures/procedure-2/hearing-preparation-time', function(r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -6775,7 +7010,9 @@ router.post('/cases/procedures/procedure-2/hearing-travel-time', function(req, r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -6807,7 +7044,9 @@ router.post('/cases/procedures/procedure-2/hearing-sitting-time', function(req, 
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -6839,7 +7078,9 @@ router.post('/cases/procedures/procedure-2/hearing-reporting-time', function(req
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -6857,8 +7098,8 @@ router.get('/cases/procedures/procedure-2/target-inquiry-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.targetInquiry || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.targetInquiry || {}; 
 
   res.render('cases/procedures/procedure-2/target-inquiry-date', {
     ref: ref,
@@ -6885,7 +7126,8 @@ router.post('/cases/procedures/procedure-2/target-inquiry-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6908,8 +7150,8 @@ router.get('/cases/procedures/procedure-2/inquiry-notified-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.inquiryNotified || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.inquiryNotified || {}; 
 
   res.render('cases/procedures/procedure-2/inquiry-notified-date', {
     ref: ref,
@@ -6936,7 +7178,8 @@ router.post('/cases/procedures/procedure-2/inquiry-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -6959,11 +7202,11 @@ router.get('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(req
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/pre-inquiry-meeting-cmc', {
     ref: ref,
-    meetingType: p1.preInquiryMeetingCmc
+    meetingType: p2.preInquiryMeetingCmc
   });
 });
 
@@ -6976,13 +7219,12 @@ router.post('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(re
   var action = req.body.action;
   var meetingType = req.body['meeting-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.preInquiryMeetingCmc;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!meetingType) {
     return res.render('cases/procedures/procedure-2/pre-inquiry-meeting-cmc', {
       ref: ref,
@@ -6990,11 +7232,11 @@ router.post('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(re
     });
   }
 
-  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.preInquiryMeetingCmc = meetingType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7007,8 +7249,8 @@ router.get('/cases/procedures/procedure-2/pim-date', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.pimDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.pimDate || {}; 
 
   res.render('cases/procedures/procedure-2/pim-date', {
     ref: ref,
@@ -7041,7 +7283,8 @@ router.post('/cases/procedures/procedure-2/pim-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7066,11 +7309,11 @@ router.get('/cases/procedures/procedure-2/pim-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/pim-type', {
     ref: ref,
-    pimType: p1.pimType
+    pimType: p2.pimType
   });
 });
 
@@ -7083,13 +7326,12 @@ router.post('/cases/procedures/procedure-2/pim-type', function(req, res) {
   var action = req.body.action;
   var pimType = req.body['pim-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.pimType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!pimType) {
     return res.render('cases/procedures/procedure-2/pim-type', {
       ref: ref,
@@ -7097,11 +7339,11 @@ router.post('/cases/procedures/procedure-2/pim-type', function(req, res) {
     });
   }
 
-  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.pimType = pimType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7113,8 +7355,8 @@ router.get('/cases/procedures/procedure-2/pim-note-sent', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.pimNoteSent || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.pimNoteSent || {}; 
 
   res.render('cases/procedures/procedure-2/pim-note-sent', {
     ref: ref,
@@ -7141,7 +7383,8 @@ router.post('/cases/procedures/procedure-2/pim-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7164,8 +7407,8 @@ router.get('/cases/procedures/procedure-2/confirmed-inquiry-date', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.confirmedInquiry || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.confirmedInquiry || {}; 
 
   res.render('cases/procedures/procedure-2/confirmed-inquiry-date', {
     ref: ref,
@@ -7175,7 +7418,7 @@ router.get('/cases/procedures/procedure-2/confirmed-inquiry-date', function(req,
     hour: val.hour,
     minute: val.minute,
     ampm: val.ampm,
-    errorFields: [] // Important to prevent Nunjucks error on load
+    errorFields: [] 
   });
 });
 
@@ -7189,14 +7432,15 @@ router.post('/cases/procedures/procedure-2/confirmed-inquiry-date', function(req
 
   var result = validateAndSaveDate(
     req, res,
-    'confirmed-inquiry',       // HTML Field prefix
-    'Confirmed inquiry date',  // Display name for errors
-    c.procedure2,              // Storage Object
-    'confirmedInquiry'         // Storage Key
+    'confirmed-inquiry',       
+    'Confirmed inquiry date',  
+    c.procedure2,              
+    'confirmedInquiry'         
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7219,11 +7463,11 @@ router.get('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/inquiry-type', {
     ref: ref,
-    inquiryType: p1.inquiryType
+    inquiryType: p2.inquiryType
   });
 });
 
@@ -7236,13 +7480,12 @@ router.post('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
   var action = req.body.action;
   var inquiryType = req.body['inquiry-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.inquiryType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!inquiryType) {
     return res.render('cases/procedures/procedure-2/inquiry-type', {
       ref: ref,
@@ -7250,11 +7493,11 @@ router.post('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
     });
   }
 
-  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.inquiryType = inquiryType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7265,8 +7508,8 @@ router.get('/cases/procedures/procedure-2/inquiry-venue', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.inquiryVenue || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.inquiryVenue || {}; 
 
   res.render('cases/procedures/procedure-2/inquiry-venue', {
     ref: ref,
@@ -7289,14 +7532,15 @@ router.post('/cases/procedures/procedure-2/inquiry-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // HTML field prefix
-    'Inquiry venue',  // Error display name
-    c.procedure2,     // Storage object
-    'inquiryVenue'    // Storage key
+    'venue',          
+    'Inquiry venue',  
+    c.procedure2,     
+    'inquiryVenue'    
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7321,8 +7565,8 @@ router.get('/cases/procedures/procedure-2/notified-inquiry-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.notifiedInquiryDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.notifiedInquiryDate || {}; 
 
   res.render('cases/procedures/procedure-2/notified-inquiry-date', {
     ref: ref,
@@ -7342,14 +7586,15 @@ router.post('/cases/procedures/procedure-2/notified-inquiry-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-inquiry-date',  // HTML prefix
+    'notified-inquiry-date',  
     'Date parties notified of inquiry date',
     c.procedure2,
-    'notifiedInquiryDate'     // Storage key
+    'notifiedInquiryDate'     
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7372,8 +7617,8 @@ router.get('/cases/procedures/procedure-2/notified-inquiry-venue', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.notifiedInquiryVenue || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.notifiedInquiryVenue || {}; 
 
   res.render('cases/procedures/procedure-2/notified-inquiry-venue', {
     ref: ref,
@@ -7393,14 +7638,15 @@ router.post('/cases/procedures/procedure-2/notified-inquiry-venue', function(req
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-inquiry-venue', // HTML prefix
+    'notified-inquiry-venue', 
     'Date parties notified of inquiry venue',
     c.procedure2,
-    'notifiedInquiryVenue'    // Storage key
+    'notifiedInquiryVenue'    
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7423,8 +7669,8 @@ router.get('/cases/procedures/procedure-2/earliest-inquiry-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.earliestInquiryDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.earliestInquiryDate || {}; 
 
   res.render('cases/procedures/procedure-2/earliest-inquiry-date', {
     ref: ref,
@@ -7444,14 +7690,15 @@ router.post('/cases/procedures/procedure-2/earliest-inquiry-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'earliest-inquiry-date',           // HTML prefix
-    'Earliest potential inquiry date', // Error display name
-    c.procedure2,                      // Storage object
-    'earliestInquiryDate'              // Storage key
+    'earliest-inquiry-date',           
+    'Earliest potential inquiry date', 
+    c.procedure2,                      
+    'earliestInquiryDate'              
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7473,7 +7720,7 @@ router.get('/cases/procedures/procedure-2/inquiry-length-of-event', function(req
   var c = req.session.data['cases'].find(x => x.reference === ref);
   res.render('cases/procedures/procedure-2/inquiry-length-of-event', {
     ref: ref,
-    value: c.procedure2.inquiryLengthOfEvent // NEW KEY
+    value: c.procedure2.inquiryLengthOfEvent 
   });
 });
 
@@ -7490,7 +7737,9 @@ router.post('/cases/procedures/procedure-2/inquiry-length-of-event', function(re
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7501,8 +7750,8 @@ router.get('/cases/procedures/procedure-2/inquiry-finished-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.inquiryFinished || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.inquiryFinished || {}; 
 
   res.render('cases/procedures/procedure-2/inquiry-finished-date', {
     ref: ref,
@@ -7522,14 +7771,15 @@ router.post('/cases/procedures/procedure-2/inquiry-finished-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'inquiry-finished',      // HTML prefix
-    'Date inquiry finished', // Error name
+    'inquiry-finished',      
+    'Date inquiry finished', 
     c.procedure2,
-    'inquiryFinished'        // Storage key
+    'inquiryFinished'        
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7552,11 +7802,11 @@ router.get('/cases/procedures/procedure-2/event-in-target', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/event-in-target', {
     ref: ref,
-    eventInTarget: p1.eventInTarget
+    eventInTarget: p2.eventInTarget
   });
 });
 
@@ -7569,13 +7819,12 @@ router.post('/cases/procedures/procedure-2/event-in-target', function(req, res) 
   var action = req.body.action;
   var val = req.body['event-in-target'];
 
-  // Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.eventInTarget;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // Validation
   if (!val) {
     return res.render('cases/procedures/procedure-2/event-in-target', {
       ref: ref,
@@ -7583,11 +7832,11 @@ router.post('/cases/procedures/procedure-2/event-in-target', function(req, res) 
     });
   }
 
-  // Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.eventInTarget = val;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7598,8 +7847,8 @@ router.get('/cases/procedures/procedure-2/inquiry-closed-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.inquiryClosed || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.inquiryClosed || {}; 
 
   res.render('cases/procedures/procedure-2/inquiry-closed-date', {
     ref: ref,
@@ -7619,14 +7868,15 @@ router.post('/cases/procedures/procedure-2/inquiry-closed-date', function(req, r
 
   var result = validateAndSaveDate(
     req, res,
-    'inquiry-closed',      // HTML prefix
-    'Date inquiry closed', // Error name
+    'inquiry-closed',      
+    'Date inquiry closed', 
     c.procedure2,
-    'inquiryClosed'        // Storage key
+    'inquiryClosed'        
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7651,7 +7901,7 @@ router.get('/cases/procedures/procedure-2/inquiry-preparation-time', function(re
 
   res.render('cases/procedures/procedure-2/inquiry-preparation-time', {
     ref: ref,
-    value: c.procedure2.inquiryPrepTime // Specific Key
+    value: c.procedure2.inquiryPrepTime 
   });
 });
 
@@ -7667,7 +7917,7 @@ router.post('/cases/procedures/procedure-2/inquiry-preparation-time', function(r
     'prep-time', 
     'Preparation time', 
     c.procedure2, 
-    'inquiryPrepTime' // Specific Key
+    'inquiryPrepTime' 
   );
 
   if (result.status === "ERROR") {
@@ -7677,7 +7927,9 @@ router.post('/cases/procedures/procedure-2/inquiry-preparation-time', function(r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7709,7 +7961,9 @@ router.post('/cases/procedures/procedure-2/inquiry-travel-time', function(req, r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7741,7 +7995,9 @@ router.post('/cases/procedures/procedure-2/inquiry-sitting-time', function(req, 
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7773,7 +8029,9 @@ router.post('/cases/procedures/procedure-2/inquiry-reporting-time', function(req
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  
+  req.session.flashSection = "procedure2";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7785,11 +8043,11 @@ router.get('/cases/procedures/procedure-2/site-visit-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
+  var p2 = c.procedure2 || {};
 
   res.render('cases/procedures/procedure-2/site-visit-type', {
     ref: ref,
-    siteVisitType: p1.siteVisitType
+    siteVisitType: p2.siteVisitType
   });
 });
 
@@ -7802,17 +8060,16 @@ router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) 
   var action = req.body.action;
   var val = req.body['site-visit-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.siteVisitType;
 
-    // --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-2/site-visit-type', {
       ref: ref,
@@ -7820,14 +8077,14 @@ router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) 
     });
   }
 
-  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.siteVisitType = val;
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+  req.session.flashSection = "procedure2";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7839,8 +8096,8 @@ router.get('/cases/procedures/procedure-2/written-reps-date', function(req, res)
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure2 || {};
-  var val = p1.writtenRepsDate || {}; 
+  var p2 = c.procedure2 || {};
+  var val = p2.writtenRepsDate || {}; 
 
   res.render('cases/procedures/procedure-2/written-reps-date', {
     ref: ref,
@@ -7860,14 +8117,15 @@ router.post('/cases/procedures/procedure-2/written-reps-date', function(req, res
 
   var result = validateAndSaveDate(
     req, res,
-    'written-reps-date',                  // HTML prefix
-    'Date offer for written representations', // Error display name
-    c.procedure2,                         // Storage object
-    'writtenRepsDate'                     // Storage key
+    'written-reps-date',                  
+    'Date offer for written representations', 
+    c.procedure2,                         
+    'writtenRepsDate'                     
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure2');
+    req.session.flashSection = "procedure2";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -7881,6 +8139,7 @@ router.post('/cases/procedures/procedure-2/written-reps-date', function(req, res
     });
   }
 });
+
 
 
 // ==============================================
@@ -7917,10 +8176,11 @@ router.post('/cases/procedures/procedure-3/type', function(req, res) {
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3;
 
-// --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
+    // --- TRIGGER REVERSE SYNC ---
+    syncDetailedToOverview(c);
 
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (!type) {
@@ -7937,7 +8197,8 @@ router.post('/cases/procedures/procedure-3/type', function(req, res) {
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7973,10 +8234,11 @@ router.post('/cases/procedures/procedure-3/status', function(req, res) {
   c.procedure3 = c.procedure3 || {};
   c.procedure3.status = status;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -7987,10 +8249,10 @@ router.get('/cases/procedures/procedure-3/admin-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
   res.render('cases/procedures/procedure-3/admin-type', {
     ref: ref,
-    adminType: p1.adminType
+    adminType: p3.adminType
   });
 });
 
@@ -8005,11 +8267,8 @@ router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.adminType;
-
-// --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
-
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (!adminType) {
@@ -8022,10 +8281,11 @@ router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
   c.procedure3 = c.procedure3 || {};
   c.procedure3.adminType = adminType;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
-
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -8040,8 +8300,8 @@ router.get('/cases/procedures/procedure-3/in-house-date', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.inHouse || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.inHouse || {}; 
 
   res.render('cases/procedures/procedure-3/in-house-date', {
     ref: ref,
@@ -8053,7 +8313,7 @@ router.get('/cases/procedures/procedure-3/in-house-date', function(req, res) {
 
 router.post('/cases/procedures/procedure-3/in-house-date', function(req, res) {
   var ref = req.body.ref || req.query.ref;
-  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
+  var cases = req.session.data['cases'] || []; 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/');
 
@@ -8064,12 +8324,12 @@ router.post('/cases/procedures/procedure-3/in-house-date', function(req, res) {
     'in-house',          
     'In house date',     
     c.procedure3,        
-    'inHouse'           
+    'inHouse'            
   );
 
-  // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8092,8 +8352,8 @@ router.get('/cases/procedures/procedure-3/site-visit', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.siteVisit || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.siteVisit || {}; 
 
   res.render('cases/procedures/procedure-3/site-visit', {
     ref: ref,
@@ -8120,7 +8380,8 @@ router.post('/cases/procedures/procedure-3/site-visit', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8143,8 +8404,8 @@ router.get('/cases/procedures/procedure-3/target-hearing-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.targetHearing || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.targetHearing || {}; 
 
   res.render('cases/procedures/procedure-3/target-hearing-date', {
     ref: ref,
@@ -8171,7 +8432,8 @@ router.post('/cases/procedures/procedure-3/target-hearing-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8194,8 +8456,8 @@ router.get('/cases/procedures/procedure-3/hearing-notified-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.hearingNotified || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.hearingNotified || {}; 
 
   res.render('cases/procedures/procedure-3/hearing-notified-date', {
     ref: ref,
@@ -8222,7 +8484,8 @@ router.post('/cases/procedures/procedure-3/hearing-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8244,8 +8507,8 @@ router.get('/cases/procedures/procedure-3/proofs-received', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.proofsReceived || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.proofsReceived || {}; 
 
   res.render('cases/procedures/procedure-3/proofs-received', {
     ref: ref,
@@ -8276,7 +8539,8 @@ router.post('/cases/procedures/procedure-3/proofs-received', function(req, res) 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8298,8 +8562,8 @@ router.get('/cases/procedures/procedure-3/statements-received', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.statementsReceived || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.statementsReceived || {}; 
 
   res.render('cases/procedures/procedure-3/statements-received', {
     ref: ref,
@@ -8326,7 +8590,8 @@ router.post('/cases/procedures/procedure-3/statements-received', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8349,8 +8614,8 @@ router.get('/cases/procedures/procedure-3/verification-date', function(req, res)
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.verification || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.verification || {}; 
 
   res.render('cases/procedures/procedure-3/verification-date', {
     ref: ref,
@@ -8377,7 +8642,8 @@ router.post('/cases/procedures/procedure-3/verification-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8392,7 +8658,7 @@ router.post('/cases/procedures/procedure-3/verification-date', function(req, res
   }
 });
 
-// --- CMC ROUTES (Place this with your other Procedure 1 routes) ---
+// --- CMC ROUTES (Place this with your other Procedure 3 routes) ---
 
 // GET
 router.get('/cases/procedures/procedure-3/cmc-date', function(req, res) {
@@ -8401,8 +8667,8 @@ router.get('/cases/procedures/procedure-3/cmc-date', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.cmcDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.cmcDate || {}; 
 
   res.render('cases/procedures/procedure-3/cmc-date', {
     ref: ref,
@@ -8435,7 +8701,8 @@ router.post('/cases/procedures/procedure-3/cmc-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8460,11 +8727,11 @@ router.get('/cases/procedures/procedure-3/cmc-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/cmc-type', {
     ref: ref,
-    cmcType: p1.cmcType
+    cmcType: p3.cmcType
   });
 });
 
@@ -8480,7 +8747,8 @@ router.post('/cases/procedures/procedure-3/cmc-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.cmcType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   // 2. Validation
@@ -8495,7 +8763,8 @@ router.post('/cases/procedures/procedure-3/cmc-type', function(req, res) {
   c.procedure3 = c.procedure3 || {};
   c.procedure3.cmcType = cmcType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- CMC VENUE ---
@@ -8505,8 +8774,8 @@ router.get('/cases/procedures/procedure-3/cmc-venue', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.cmcVenue || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.cmcVenue || {}; 
 
   res.render('cases/procedures/procedure-3/cmc-venue', {
     ref: ref,
@@ -8529,14 +8798,15 @@ router.post('/cases/procedures/procedure-3/cmc-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // Field prefix (e.g. venue-line1)
+    'venue',          // Field prefix
     'Venue address',  // Display name
     c.procedure3,     // Storage object
     'cmcVenue'        // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8560,8 +8830,8 @@ router.get('/cases/procedures/procedure-3/cmc-note-sent', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.cmcNoteSent || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.cmcNoteSent || {}; 
 
   res.render('cases/procedures/procedure-3/cmc-note-sent', {
     ref: ref,
@@ -8588,7 +8858,8 @@ router.post('/cases/procedures/procedure-3/cmc-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8610,8 +8881,8 @@ router.get('/cases/procedures/procedure-3/confirmed-hearing-date', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.confirmedHearing || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.confirmedHearing || {}; 
 
   res.render('cases/procedures/procedure-3/confirmed-hearing-date', {
     ref: ref,
@@ -8621,7 +8892,7 @@ router.get('/cases/procedures/procedure-3/confirmed-hearing-date', function(req,
     hour: val.hour,
     minute: val.minute,
     ampm: val.ampm,
-    errorFields: [] // Important to prevent Nunjucks error on load
+    errorFields: [] 
   });
 });
 
@@ -8635,14 +8906,15 @@ router.post('/cases/procedures/procedure-3/confirmed-hearing-date', function(req
 
   var result = validateAndSaveDateTime(
     req, res,
-    'confirmed-hearing',       // HTML Field prefix
-    'Confirmed hearing date',  // Display name for errors
-    c.procedure3,              // Storage Object
-    'confirmedHearing'         // Storage Key
+    'confirmed-hearing',       
+    'Confirmed hearing date',  
+    c.procedure3,              
+    'confirmedHearing'         
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8660,6 +8932,57 @@ router.post('/cases/procedures/procedure-3/confirmed-hearing-date', function(req
   }
 });
 
+// --- DEADLINE FOR CONSENT ---
+router.get('/cases/procedures/procedure-3/deadline-for-consent', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/'); 
+
+  var p3 = c.procedure3 || {};
+  var val = p3.deadlineForConsent || {}; 
+
+  res.render('cases/procedures/procedure-3/deadline-for-consent', {
+    ref: ref,
+    day: val.day,
+    month: val.month,
+    year: val.year
+  });
+});
+
+router.post('/cases/procedures/procedure-3/deadline-for-consent', function(req, res) {
+  var ref = req.body.ref || req.query.ref;
+  var cases = req.session.data['cases'] || []; 
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  c.procedure3 = c.procedure3 || {};
+
+  var result = validateAndSaveDate(
+    req, res,
+    'deadline-for-consent',          
+    'Deadline for consent',     
+    c.procedure3,        
+    'deadlineForConsent'            
+  );
+
+  if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  if (result.status === "ERROR") {
+    return res.render('cases/procedures/procedure-3/deadline-for-consent', {
+      ref: ref,
+      day: req.body['deadline-for-consent-day'],
+      month: req.body['deadline-for-consent-month'],
+      year: req.body['deadline-for-consent-year'],
+      errorList: result.errorList,
+      errorFields: result.errorFields
+    });
+  }
+});
+
 // --- HEARING TYPE ---
 router.get('/cases/procedures/procedure-3/hearing-type', function(req, res) {
   var ref = req.query.ref;
@@ -8667,11 +8990,11 @@ router.get('/cases/procedures/procedure-3/hearing-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/hearing-type', {
     ref: ref,
-    hearingType: p1.hearingType
+    hearingType: p3.hearingType
   });
 });
 
@@ -8684,13 +9007,12 @@ router.post('/cases/procedures/procedure-3/hearing-type', function(req, res) {
   var action = req.body.action;
   var hearingType = req.body['hearing-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.hearingType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!hearingType) {
     return res.render('cases/procedures/procedure-3/hearing-type', {
       ref: ref,
@@ -8698,11 +9020,11 @@ router.post('/cases/procedures/procedure-3/hearing-type', function(req, res) {
     });
   }
 
-  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.hearingType = hearingType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- HEARING VENUE ---
@@ -8712,8 +9034,8 @@ router.get('/cases/procedures/procedure-3/hearing-venue', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.hearingVenue || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.hearingVenue || {}; 
 
   res.render('cases/procedures/procedure-3/hearing-venue', {
     ref: ref,
@@ -8736,14 +9058,15 @@ router.post('/cases/procedures/procedure-3/hearing-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // HTML field prefix
-    'Hearing venue',  // Error display name
-    c.procedure3,     // Storage object
-    'hearingVenue'    // Storage key
+    'venue',          
+    'Hearing venue',  
+    c.procedure3,     
+    'hearingVenue'    
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8767,8 +9090,8 @@ router.get('/cases/procedures/procedure-3/notified-hearing-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.notifiedHearingDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.notifiedHearingDate || {}; 
 
   res.render('cases/procedures/procedure-3/notified-hearing-date', {
     ref: ref,
@@ -8788,14 +9111,15 @@ router.post('/cases/procedures/procedure-3/notified-hearing-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-date',          // HTML prefix
-    'Date parties notified',  // Error name
-    c.procedure3,             // Storage object
-    'notifiedHearingDate'     // Storage key
+    'notified-date',          
+    'Date parties notified',  
+    c.procedure3,             
+    'notifiedHearingDate'     
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8818,8 +9142,8 @@ router.get('/cases/procedures/procedure-3/notified-hearing-venue', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.notifiedHearingVenue || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.notifiedHearingVenue || {}; 
 
   res.render('cases/procedures/procedure-3/notified-hearing-venue', {
     ref: ref,
@@ -8846,7 +9170,8 @@ router.post('/cases/procedures/procedure-3/notified-hearing-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8869,8 +9194,8 @@ router.get('/cases/procedures/procedure-3/earliest-hearing-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.earliestHearingDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.earliestHearingDate || {}; 
 
   res.render('cases/procedures/procedure-3/earliest-hearing-date', {
     ref: ref,
@@ -8897,7 +9222,8 @@ router.post('/cases/procedures/procedure-3/earliest-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -8918,7 +9244,7 @@ router.get('/cases/procedures/procedure-3/hearing-length-of-event', function(req
   var c = req.session.data['cases'].find(x => x.reference === ref);
   res.render('cases/procedures/procedure-3/hearing-length-of-event', {
     ref: ref,
-    value: c.procedure3.hearingLengthOfEvent // NEW KEY
+    value: c.procedure3.hearingLengthOfEvent 
   });
 });
 
@@ -8926,7 +9252,6 @@ router.post('/cases/procedures/procedure-3/hearing-length-of-event', function(re
   var ref = req.body.ref;
   var c = req.session.data['cases'].find(x => x.reference === ref);
   
-  // Reuse your existing helper
   var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure3, 'hearingLengthOfEvent');
 
   if (result.status === "ERROR") {
@@ -8936,7 +9261,9 @@ router.post('/cases/procedures/procedure-3/hearing-length-of-event', function(re
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -8947,11 +9274,11 @@ router.get('/cases/procedures/procedure-3/hearing-in-target', function(req, res)
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/hearing-in-target', {
     ref: ref,
-    hearingInTarget: p1.hearingInTarget
+    hearingInTarget: p3.hearingInTarget
   });
 });
 
@@ -8964,13 +9291,12 @@ router.post('/cases/procedures/procedure-3/hearing-in-target', function(req, res
   var action = req.body.action;
   var val = req.body['hearing-in-target'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.hearingInTarget;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-3/hearing-in-target', {
       ref: ref,
@@ -8978,11 +9304,11 @@ router.post('/cases/procedures/procedure-3/hearing-in-target', function(req, res
     });
   }
 
-  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.hearingInTarget = val;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // --- HEARING CLOSED DATE ---
@@ -8992,8 +9318,8 @@ router.get('/cases/procedures/procedure-3/hearing-closed-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.hearingClosed || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.hearingClosed || {}; 
 
   res.render('cases/procedures/procedure-3/hearing-closed-date', {
     ref: ref,
@@ -9020,7 +9346,8 @@ router.post('/cases/procedures/procedure-3/hearing-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9044,7 +9371,7 @@ router.get('/cases/procedures/procedure-3/hearing-preparation-time', function(re
 
   res.render('cases/procedures/procedure-3/hearing-preparation-time', {
     ref: ref,
-    value: c.procedure3.hearingPrepTime // Specific Key
+    value: c.procedure3.hearingPrepTime 
   });
 });
 
@@ -9060,7 +9387,7 @@ router.post('/cases/procedures/procedure-3/hearing-preparation-time', function(r
     'prep-time', 
     'Preparation time', 
     c.procedure3, 
-    'hearingPrepTime' // Specific Key
+    'hearingPrepTime' 
   );
 
   if (result.status === "ERROR") {
@@ -9070,7 +9397,9 @@ router.post('/cases/procedures/procedure-3/hearing-preparation-time', function(r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9102,7 +9431,9 @@ router.post('/cases/procedures/procedure-3/hearing-travel-time', function(req, r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9134,7 +9465,9 @@ router.post('/cases/procedures/procedure-3/hearing-sitting-time', function(req, 
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9166,59 +9499,9 @@ router.post('/cases/procedures/procedure-3/hearing-reporting-time', function(req
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
-});
-
-
-// --- DEADLINE FOR CONSENT ---
-router.get('/cases/procedures/procedure-3/deadline-for-consent', function(req, res) {
-  var ref = req.query.ref;
-  var cases = req.session.data['cases'] || [];
-  var c = cases.find(x => x.reference === ref);
-  if (!c) return res.redirect('/'); 
-
-  var p3 = c.procedure3 || {};
-  var val = p3.deadlineForConsent || {}; 
-
-  res.render('cases/procedures/procedure-3/deadline-for-consent', {
-    ref: ref,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/procedures/procedure-3/deadline-for-consent', function(req, res) {
-  var ref = req.body.ref || req.query.ref;
-  var cases = req.session.data['cases'] || []; // Using manual find to ensure Reference
-  var c = cases.find(x => x.reference === ref);
-  if (!c) return res.redirect('/');
-
-  c.procedure3 = c.procedure3 || {};
-
-  var result = validateAndSaveDate(
-    req, res,
-    'deadline-for-consent',          
-    'Deadline for consent',     
-    c.procedure3,        
-    'deadlineForConsent'           
-  );
-
-  // FIX: Route handles redirect now
-  if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure1');
-  }
-
-  if (result.status === "ERROR") {
-    return res.render('cases/procedures/procedure-3/deadline-for-consent', {
-      ref: ref,
-      day: req.body['deadline-for-consent-day'],
-      month: req.body['deadline-for-consent-month'],
-      year: req.body['deadline-for-consent-year'],
-      errorList: result.errorList,
-      errorFields: result.errorFields
-    });
-  }
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9236,8 +9519,8 @@ router.get('/cases/procedures/procedure-3/target-inquiry-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.targetInquiry || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.targetInquiry || {}; 
 
   res.render('cases/procedures/procedure-3/target-inquiry-date', {
     ref: ref,
@@ -9264,7 +9547,8 @@ router.post('/cases/procedures/procedure-3/target-inquiry-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9287,8 +9571,8 @@ router.get('/cases/procedures/procedure-3/inquiry-notified-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.inquiryNotified || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.inquiryNotified || {}; 
 
   res.render('cases/procedures/procedure-3/inquiry-notified-date', {
     ref: ref,
@@ -9315,7 +9599,8 @@ router.post('/cases/procedures/procedure-3/inquiry-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9338,11 +9623,11 @@ router.get('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(req
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/pre-inquiry-meeting-cmc', {
     ref: ref,
-    meetingType: p1.preInquiryMeetingCmc
+    meetingType: p3.preInquiryMeetingCmc
   });
 });
 
@@ -9355,13 +9640,12 @@ router.post('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(re
   var action = req.body.action;
   var meetingType = req.body['meeting-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.preInquiryMeetingCmc;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!meetingType) {
     return res.render('cases/procedures/procedure-3/pre-inquiry-meeting-cmc', {
       ref: ref,
@@ -9369,11 +9653,11 @@ router.post('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(re
     });
   }
 
-  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.preInquiryMeetingCmc = meetingType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9386,8 +9670,8 @@ router.get('/cases/procedures/procedure-3/pim-date', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.pimDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.pimDate || {}; 
 
   res.render('cases/procedures/procedure-3/pim-date', {
     ref: ref,
@@ -9420,7 +9704,8 @@ router.post('/cases/procedures/procedure-3/pim-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9445,11 +9730,11 @@ router.get('/cases/procedures/procedure-3/pim-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/pim-type', {
     ref: ref,
-    pimType: p1.pimType
+    pimType: p3.pimType
   });
 });
 
@@ -9462,13 +9747,12 @@ router.post('/cases/procedures/procedure-3/pim-type', function(req, res) {
   var action = req.body.action;
   var pimType = req.body['pim-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.pimType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!pimType) {
     return res.render('cases/procedures/procedure-3/pim-type', {
       ref: ref,
@@ -9476,11 +9760,11 @@ router.post('/cases/procedures/procedure-3/pim-type', function(req, res) {
     });
   }
 
-  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.pimType = pimType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9492,8 +9776,8 @@ router.get('/cases/procedures/procedure-3/pim-note-sent', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.pimNoteSent || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.pimNoteSent || {}; 
 
   res.render('cases/procedures/procedure-3/pim-note-sent', {
     ref: ref,
@@ -9520,7 +9804,8 @@ router.post('/cases/procedures/procedure-3/pim-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9543,8 +9828,8 @@ router.get('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.confirmedInquiry || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.confirmedInquiry || {}; 
 
   res.render('cases/procedures/procedure-3/confirmed-inquiry-date', {
     ref: ref,
@@ -9554,7 +9839,7 @@ router.get('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req,
     hour: val.hour,
     minute: val.minute,
     ampm: val.ampm,
-    errorFields: [] // Important to prevent Nunjucks error on load
+    errorFields: [] 
   });
 });
 
@@ -9568,14 +9853,15 @@ router.post('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req
 
   var result = validateAndSaveDate(
     req, res,
-    'confirmed-inquiry',       // HTML Field prefix
-    'Confirmed inquiry date',  // Display name for errors
-    c.procedure3,              // Storage Object
-    'confirmedInquiry'         // Storage Key
+    'confirmed-inquiry',       
+    'Confirmed inquiry date',  
+    c.procedure3,              
+    'confirmedInquiry'         
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9598,11 +9884,11 @@ router.get('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/inquiry-type', {
     ref: ref,
-    inquiryType: p1.inquiryType
+    inquiryType: p3.inquiryType
   });
 });
 
@@ -9615,13 +9901,12 @@ router.post('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
   var action = req.body.action;
   var inquiryType = req.body['inquiry-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.inquiryType;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!inquiryType) {
     return res.render('cases/procedures/procedure-3/inquiry-type', {
       ref: ref,
@@ -9629,11 +9914,11 @@ router.post('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
     });
   }
 
-  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.inquiryType = inquiryType;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9644,8 +9929,8 @@ router.get('/cases/procedures/procedure-3/inquiry-venue', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.inquiryVenue || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.inquiryVenue || {}; 
 
   res.render('cases/procedures/procedure-3/inquiry-venue', {
     ref: ref,
@@ -9668,14 +9953,15 @@ router.post('/cases/procedures/procedure-3/inquiry-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // HTML field prefix
-    'Inquiry venue',  // Error display name
-    c.procedure3,     // Storage object
-    'inquiryVenue'    // Storage key
+    'venue',          
+    'Inquiry venue',  
+    c.procedure3,     
+    'inquiryVenue'    
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9700,8 +9986,8 @@ router.get('/cases/procedures/procedure-3/notified-inquiry-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.notifiedInquiryDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.notifiedInquiryDate || {}; 
 
   res.render('cases/procedures/procedure-3/notified-inquiry-date', {
     ref: ref,
@@ -9721,14 +10007,15 @@ router.post('/cases/procedures/procedure-3/notified-inquiry-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-inquiry-date',  // HTML prefix
+    'notified-inquiry-date',  
     'Date parties notified of inquiry date',
     c.procedure3,
-    'notifiedInquiryDate'     // Storage key
+    'notifiedInquiryDate'     
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9751,8 +10038,8 @@ router.get('/cases/procedures/procedure-3/notified-inquiry-venue', function(req,
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.notifiedInquiryVenue || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.notifiedInquiryVenue || {}; 
 
   res.render('cases/procedures/procedure-3/notified-inquiry-venue', {
     ref: ref,
@@ -9772,14 +10059,15 @@ router.post('/cases/procedures/procedure-3/notified-inquiry-venue', function(req
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-inquiry-venue', // HTML prefix
+    'notified-inquiry-venue', 
     'Date parties notified of inquiry venue',
     c.procedure3,
-    'notifiedInquiryVenue'    // Storage key
+    'notifiedInquiryVenue'    
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9802,8 +10090,8 @@ router.get('/cases/procedures/procedure-3/earliest-inquiry-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.earliestInquiryDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.earliestInquiryDate || {}; 
 
   res.render('cases/procedures/procedure-3/earliest-inquiry-date', {
     ref: ref,
@@ -9823,14 +10111,15 @@ router.post('/cases/procedures/procedure-3/earliest-inquiry-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'earliest-inquiry-date',           // HTML prefix
-    'Earliest potential inquiry date', // Error display name
-    c.procedure3,                      // Storage object
-    'earliestInquiryDate'              // Storage key
+    'earliest-inquiry-date',           
+    'Earliest potential inquiry date', 
+    c.procedure3,                      
+    'earliestInquiryDate'              
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9852,7 +10141,7 @@ router.get('/cases/procedures/procedure-3/inquiry-length-of-event', function(req
   var c = req.session.data['cases'].find(x => x.reference === ref);
   res.render('cases/procedures/procedure-3/inquiry-length-of-event', {
     ref: ref,
-    value: c.procedure3.inquiryLengthOfEvent // NEW KEY
+    value: c.procedure3.inquiryLengthOfEvent 
   });
 });
 
@@ -9869,7 +10158,9 @@ router.post('/cases/procedures/procedure-3/inquiry-length-of-event', function(re
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9880,8 +10171,8 @@ router.get('/cases/procedures/procedure-3/inquiry-finished-date', function(req, 
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.inquiryFinished || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.inquiryFinished || {}; 
 
   res.render('cases/procedures/procedure-3/inquiry-finished-date', {
     ref: ref,
@@ -9901,14 +10192,15 @@ router.post('/cases/procedures/procedure-3/inquiry-finished-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'inquiry-finished',      // HTML prefix
-    'Date inquiry finished', // Error name
+    'inquiry-finished',      
+    'Date inquiry finished', 
     c.procedure3,
-    'inquiryFinished'        // Storage key
+    'inquiryFinished'        
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -9931,11 +10223,11 @@ router.get('/cases/procedures/procedure-3/event-in-target', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/event-in-target', {
     ref: ref,
-    eventInTarget: p1.eventInTarget
+    eventInTarget: p3.eventInTarget
   });
 });
 
@@ -9948,13 +10240,12 @@ router.post('/cases/procedures/procedure-3/event-in-target', function(req, res) 
   var action = req.body.action;
   var val = req.body['event-in-target'];
 
-  // Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.eventInTarget;
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // Validation
   if (!val) {
     return res.render('cases/procedures/procedure-3/event-in-target', {
       ref: ref,
@@ -9962,11 +10253,11 @@ router.post('/cases/procedures/procedure-3/event-in-target', function(req, res) 
     });
   }
 
-  // Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.eventInTarget = val;
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -9977,8 +10268,8 @@ router.get('/cases/procedures/procedure-3/inquiry-closed-date', function(req, re
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.inquiryClosed || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.inquiryClosed || {}; 
 
   res.render('cases/procedures/procedure-3/inquiry-closed-date', {
     ref: ref,
@@ -9998,14 +10289,15 @@ router.post('/cases/procedures/procedure-3/inquiry-closed-date', function(req, r
 
   var result = validateAndSaveDate(
     req, res,
-    'inquiry-closed',      // HTML prefix
-    'Date inquiry closed', // Error name
+    'inquiry-closed',      
+    'Date inquiry closed', 
     c.procedure3,
-    'inquiryClosed'        // Storage key
+    'inquiryClosed'        
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -10030,7 +10322,7 @@ router.get('/cases/procedures/procedure-3/inquiry-preparation-time', function(re
 
   res.render('cases/procedures/procedure-3/inquiry-preparation-time', {
     ref: ref,
-    value: c.procedure3.inquiryPrepTime // Specific Key
+    value: c.procedure3.inquiryPrepTime 
   });
 });
 
@@ -10046,7 +10338,7 @@ router.post('/cases/procedures/procedure-3/inquiry-preparation-time', function(r
     'prep-time', 
     'Preparation time', 
     c.procedure3, 
-    'inquiryPrepTime' // Specific Key
+    'inquiryPrepTime' 
   );
 
   if (result.status === "ERROR") {
@@ -10056,7 +10348,9 @@ router.post('/cases/procedures/procedure-3/inquiry-preparation-time', function(r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -10088,7 +10382,9 @@ router.post('/cases/procedures/procedure-3/inquiry-travel-time', function(req, r
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -10120,7 +10416,9 @@ router.post('/cases/procedures/procedure-3/inquiry-sitting-time', function(req, 
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -10152,7 +10450,9 @@ router.post('/cases/procedures/procedure-3/inquiry-reporting-time', function(req
       errorList: result.errorList
     });
   }
-  return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  
+  req.session.flashSection = "procedure3";
+  return res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -10164,11 +10464,11 @@ router.get('/cases/procedures/procedure-3/site-visit-type', function(req, res) {
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
+  var p3 = c.procedure3 || {};
 
   res.render('cases/procedures/procedure-3/site-visit-type', {
     ref: ref,
-    siteVisitType: p1.siteVisitType
+    siteVisitType: p3.siteVisitType
   });
 });
 
@@ -10181,17 +10481,16 @@ router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) 
   var action = req.body.action;
   var val = req.body['site-visit-type'];
 
-  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.siteVisitType;
 
-// --- TRIGGER REVERSE SYNC ---
+  // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-3/site-visit-type', {
       ref: ref,
@@ -10199,14 +10498,14 @@ router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) 
     });
   }
 
-  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.siteVisitType = val;
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
-  res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+  req.session.flashSection = "procedure3";
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -10218,8 +10517,8 @@ router.get('/cases/procedures/procedure-3/written-reps-date', function(req, res)
   var c = cases.find(x => x.reference === ref);
   if (!c) return res.redirect('/'); 
 
-  var p1 = c.procedure3 || {};
-  var val = p1.writtenRepsDate || {}; 
+  var p3 = c.procedure3 || {};
+  var val = p3.writtenRepsDate || {}; 
 
   res.render('cases/procedures/procedure-3/written-reps-date', {
     ref: ref,
@@ -10239,14 +10538,15 @@ router.post('/cases/procedures/procedure-3/written-reps-date', function(req, res
 
   var result = validateAndSaveDate(
     req, res,
-    'written-reps-date',                  // HTML prefix
-    'Date offer for written representations', // Error display name
-    c.procedure3,                         // Storage object
-    'writtenRepsDate'                     // Storage key
+    'written-reps-date',                  
+    'Date offer for written representations', 
+    c.procedure3,                         
+    'writtenRepsDate'                     
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
-    return res.redirect('/cases/case-details?ref=' + ref + '#procedure3');
+    req.session.flashSection = "procedure3";
+    return res.redirect('/cases/case-details?ref=' + ref);
   }
 
   if (result.status === "ERROR") {
@@ -10347,8 +10647,12 @@ router.post('/cases/edit/abeyance-period', (req, res) => {
   }
 
   // Success!
+
+  req.session.flashSection = "case-details";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
+
+
 
 // =========================================================
 // INVOICING 
@@ -10370,6 +10674,9 @@ router.post('/cases/edit/invoicing-rechargeable', (req, res) => {
 
   if (!c.invoicing) c.invoicing = {};
   c.invoicing.rechargeable = val;
+  
+  // --- SET FLASH MESSAGE ---
+  req.session.flashSection = "invoicing";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10405,6 +10712,8 @@ router.post('/cases/edit/invoicing-final-cost', (req, res) => {
   let num = parseFloat(cost);
   c.invoicing.finalCost = Number.isInteger(num) ? num.toString() : num.toFixed(2);
   
+  // --- SET FLASH MESSAGE ---
+  req.session.flashSection = "invoicing";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10424,6 +10733,9 @@ router.post('/cases/edit/invoicing-invoice-sent', (req, res) => {
 
   if (!c.invoicing) c.invoicing = {};
   c.invoicing.invoiceSent = val;
+  
+  // --- SET FLASH MESSAGE ---
+  req.session.flashSection = "invoicing";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10443,6 +10755,9 @@ router.post('/cases/edit/invoicing-fee-received', (req, res) => {
 
   if (!c.invoicing) c.invoicing = {};
   c.invoicing.feeReceived = val;
+  
+  // --- SET FLASH MESSAGE ---
+  req.session.flashSection = "invoicing";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10669,6 +10984,11 @@ router.get('/cases/create-a-case/questions/applicant-remove', (req, res) => {
 });
 
 
+
+// =========================================================
+// DOCUMENTS: File Location (Independent Edit)
+// =========================================================
+
 // GET: Independent edit for file location
 router.get('/cases/edit/file-location', function(req, res) {
   var c = getCase(req);
@@ -10688,9 +11008,11 @@ router.post('/cases/edit/file-location', function(req, res) {
 
   // Save directly to the case
   c.fileLocation = req.body.fileLocation;
+
+  req.session.flashSection = "documents";
   
   // Redirect back to the main case view with a success flag
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=file-location');
+  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
@@ -10742,9 +11064,6 @@ router.get('/cases/case-details', function(req, res) {
     flashSection: sectionToJumpTo 
   });
 });
-
-
-
 
 
 
@@ -10892,6 +11211,15 @@ router.get('/cases/related-cases/remove', function (req, res) {
   res.redirect('/cases/edit/check-related-cases?ref=' + ref);
 });
 
+// 6. Return to Case Details (From Related Cases Hub)
+router.get('/cases/related-cases/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Overview' card
+  req.session.flashSection = "overview";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
 
 
 
@@ -11026,6 +11354,15 @@ router.get('/cases/linked-cases/remove', function (req, res) {
     myCase.linkedCases = myCase.linkedCases.filter(i => i.id !== id);
   }
   res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
+});
+
+// 7. Return to Case Details (From Linked Cases Hub)
+router.get('/cases/linked-cases/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Overview' card
+  req.session.flashSection = "overview";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
 
@@ -11284,6 +11621,15 @@ router.post('/cases/overview-procedures/remove', (req, res) => {
   res.redirect(`/cases/overview-procedures/check?ref=${ref}`);
 });
 
+// 5. Return to Case Details (From Procedures Hub)
+router.get('/cases/overview-procedures/return-to-case', (req, res) => {
+  // 1. Attach the success banner to jump to the 'Overview' card
+  req.session.flashSection = "overview";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
 
 // CASE DETAILS ROUTE
 router.get('/cases/case-details', function (req, res) {
@@ -11508,6 +11854,15 @@ router.get('/cases/key-contacts/objectors/remove', function(req, res) {
   res.redirect('/cases/key-contacts/objectors?ref=' + ref);
 });
 
+// STEP 5. Return to Case Details
+router.get('/cases/objectors/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Key Contacts' card
+  req.session.flashSection = "key-contacts";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
 
 
 
@@ -11696,6 +12051,15 @@ router.get('/cases/key-contacts/contacts/remove', function(req, res) {
   var c = getCase(req);
   if (c.contacts) c.contacts = c.contacts.filter(x => x.id != id);
   res.redirect('/cases/key-contacts/contacts?ref=' + ref);
+});
+
+// STEP 5. Return to Case Details
+router.get('/cases/contacts/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Key Contacts' card
+  req.session.flashSection = "key-contacts";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
 
@@ -12071,6 +12435,15 @@ router.post('/cases/outcomes/remove', (req, res) => {
   res.redirect(`/cases/outcomes/check?ref=${req.query.ref}`);
 });
 
+// 7. Return to Case Details (From Outcomes Hub)
+router.get('/cases/outcomes/return-to-case', function (req, res) {
+  // 1. Attach the success banner to jump to the 'Outcome overview' card
+  req.session.flashSection = "outcomeOverview";
+  
+  // 2. Send them back to the main Case Details page
+  res.redirect('/cases/case-details?ref=' + req.query.ref);
+});
+
 
 // =========================================================
 // OVERVIEW OUTCOME: Parties notified of outcome (Optional)
@@ -12104,6 +12477,7 @@ router.post('/cases/overview-outcome/parties-notified', (req, res) => {
   // 1. Check if completely blank
   if (!day && !month && !year) {
     c.outcomeOverview.partiesNotifiedDate = null; 
+    req.session.flashSection = "outcomeOverview";
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12130,6 +12504,7 @@ router.post('/cases/overview-outcome/parties-notified', (req, res) => {
   }
 
   // 3. Success
+  req.session.flashSection = "outcomeOverview";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -12153,6 +12528,7 @@ router.post('/cases/overview-outcome/order-dispatch', (req, res) => {
 
   if (!day && !month && !year) {
     c.outcomeOverview.orderDispatchDate = null; 
+    req.session.flashSection = "outcomeOverview";
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12163,6 +12539,8 @@ router.post('/cases/overview-outcome/order-dispatch', (req, res) => {
       ref: req.query.ref, day, month, year, errorList: result.errorList, errorFields: result.errorFields 
     });
   }
+  
+  req.session.flashSection = "outcomeOverview";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -12186,6 +12564,7 @@ router.post('/cases/overview-outcome/sealed-order', (req, res) => {
 
   if (!day && !month && !year) {
     c.outcomeOverview.sealedOrderReturnedDate = null; 
+    req.session.flashSection = "outcomeOverview";
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12196,6 +12575,8 @@ router.post('/cases/overview-outcome/sealed-order', (req, res) => {
       ref: req.query.ref, day, month, year, errorList: result.errorList, errorFields: result.errorFields 
     });
   }
+  
+  req.session.flashSection = "outcomeOverview";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -12219,6 +12600,7 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
 
   if (!day && !month && !year) {
     c.outcomeOverview.decisionPublishedDate = null; 
+    req.session.flashSection = "outcomeOverview";
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12229,6 +12611,8 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
       ref: req.query.ref, day, month, year, errorList: result.errorList, errorFields: result.errorFields 
     });
   }
+  
+  req.session.flashSection = "outcomeOverview";
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
