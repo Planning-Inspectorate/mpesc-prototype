@@ -1,19 +1,5 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}
-  {{ currentCase.reference }} - Case audit log - Planning Inspectorate Portal
-{% endblock %}
-
-{% block beforeContent %}
-  {{ govukBackLink({
-  text: "Back to case details",
-  href: "javascript:window.history.back()"
-}) }}
-{% endblock %}
-
-{% block content %}
-
-{# 1. FIND THE CASE #}
 {% set currentCase = null %}
 {% if data['cases'] %}
   {% for case in data['cases'] %}
@@ -22,6 +8,19 @@
     {% endif %}
   {% endfor %}
 {% endif %}
+
+{% block pageTitle %}
+  {{ currentCase.reference }} - Case history
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back to case details",
+    href: "/cases/case-details?ref=" + currentCase.reference
+  }) }}
+{% endblock %}
+
+{% block content %}
 
   {# --- ROW 1: HEADER --- #}
   <div class="govuk-grid-row">
@@ -43,31 +42,27 @@
           </tr>
         </thead>
         <tbody class="govuk-table__body">
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-cy="history-date-0">2 March 2026<br>11:57am</td>
-            <td class="govuk-table__cell" data-cy="history-details-0">Files location was updated</td>
-            <td class="govuk-table__cell" data-cy="history-user-0">Kieran De La Cruz</td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-cy="history-date-1">27 February 2026<br>3:57pm</td>
-            <td class="govuk-table__cell" data-cy="history-details-1">Act was updated</td>
-            <td class="govuk-table__cell" data-cy="history-user-1">User Account</td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-cy="history-date-2">27 February 2026<br>2:10pm</td>
-            <td class="govuk-table__cell" data-cy="history-details-2">Subtype was updated</td>
-            <td class="govuk-table__cell" data-cy="history-user-2">User Account</td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-cy="history-date-3">27 February 2026<br>9:28am</td>
-            <td class="govuk-table__cell" data-cy="history-details-3">Site address was updated</td>
-            <td class="govuk-table__cell" data-cy="history-user-3">Sophie Coates</td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-cy="history-date-4">26 February 2026<br>3:28pm</td>
-            <td class="govuk-table__cell" data-cy="history-details-4">Applicant details updated</td>
-            <td class="govuk-table__cell" data-cy="history-user-4">Edward Mitchell</td>
-          </tr>
+          
+          {% if currentCase.auditLog and currentCase.auditLog.length > 0 %}
+            
+            {# Loop through the dynamic log #}
+            {% for log in currentCase.auditLog %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell" data-cy="history-date-{{ loop.index0 }}">{{ log.date | safe }}</td>
+                <td class="govuk-table__cell" data-cy="history-details-{{ loop.index0 }}">{{ log.details }}</td>
+                <td class="govuk-table__cell" data-cy="history-user-{{ loop.index0 }}">{{ log.user }}</td>
+              </tr>
+            {% endfor %}
+
+          {% else %}
+            
+            {# Fallback if the case is brand new and has no history yet #}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell" colspan="3" data-cy="history-empty">No history recorded yet.</td>
+            </tr>
+
+          {% endif %}
+
         </tbody>
       </table>
     </div>

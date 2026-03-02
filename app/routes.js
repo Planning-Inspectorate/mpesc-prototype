@@ -492,6 +492,8 @@ var areaSelection = req.session.data['casework-area'];
   // This wipes all the form data used during creation
   req.session.data = { 'cases': savedCases };
 
+  addAuditLog(req, finalRef, "Case created");
+
   // 3. Log the success for your own terminal debugging
   console.log("SUCCESS: Case Saved with Ref:", finalRef);
   
@@ -550,6 +552,8 @@ router.post('/cases/edit/case-name', function(req, res) {
   c.caseName = val;
 
   req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Case name updated to '" + val + "'"); 
   
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -568,7 +572,9 @@ router.post('/cases/edit/external-reference', function(req, res) {
   
   c.externalReference = val;
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "External reference updated to '" + val + "'");
   
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -702,7 +708,9 @@ router.get('/cases/edit/applicant-remove', (req, res) => {
 // 5. Return to Case Details (From Check Applicants Hub)
 router.get('/cases/applicant-appellant/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, req.query.ref, "Applicant details updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -796,7 +804,9 @@ router.post('/cases/edit/site-address', function(req, res) {
   c.siteAddress = fullAddress; 
   delete c['site-address']; 
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Site address updated to '" + fullAddress.replace(/\n/g, ', ') + "'");
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -816,7 +826,9 @@ router.post('/cases/edit/site-location', function(req, res) {
   c.siteLocation = val;
   delete c['site-location'];
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Site location updated to '" + val + "'");
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -836,7 +848,9 @@ router.post('/cases/edit/authority', function(req, res) {
   c.authorityName = val;
   delete c['authority'];
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Authority updated to '" + val + "'");
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -856,7 +870,9 @@ router.post('/cases/edit/historical-reference', function(req, res) {
   c.historicalReference = req.body.historicalReference;
   delete c['historical-reference']; // Cleanup old var
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Historical reference updated to '" + c.historicalReference + "'");
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -879,7 +895,9 @@ router.post('/cases/edit/case-status', function(req, res) {
     delete c.caseStatus;
     delete c['case-status'];
 
-    req.session.flashSection = "case-details";
+    req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Case status removed");
 
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
@@ -897,7 +915,9 @@ router.post('/cases/edit/case-status', function(req, res) {
   c.caseStatus = val;
   delete c['case-status'];
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Case status updated to '" + val + "'");
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
@@ -918,7 +938,9 @@ router.post('/cases/edit/modification-status', function(req, res) {
   if (action === 'remove') {
     delete c.modificationStatus;
     delete c['modification-status'];
-    req.session.flashSection = "case-details";
+    req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Modification status removed");
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
 
@@ -932,7 +954,9 @@ router.post('/cases/edit/modification-status', function(req, res) {
 
   c.modificationStatus = val;
   delete c['modification-status'];
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Modification status updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -953,7 +977,9 @@ router.post('/cases/edit/priority', function(req, res) {
     delete c.priority;
     delete c['priority'];
 
-    req.session.flashSection = "case-details";
+    req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Priority removed");
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
 
@@ -967,7 +993,9 @@ router.post('/cases/edit/priority', function(req, res) {
 
   c.priority = val;
 
-  req.session.flashSection = "case-details";
+  req.session.flashSection = "case-details"; 
+
+addAuditLog(req, ref, "Priority updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -3274,6 +3302,37 @@ function validateAndSaveNumber(req, res, fieldName, displayName, storageObj, sto
   storageObj[storageKey] = value;
 
   return { status: "SUCCESS" };
+}
+
+// =========================================================
+// AUDIT LOG HELPER FUNCTION
+// =========================================================
+function addAuditLog(req, caseRef, details) {
+  let cases = req.session.data['cases'] || [];
+  let targetCase = cases.find(c => c.reference === caseRef);
+
+  if (targetCase) {
+    // 1. If this case doesn't have an audit log yet, create an empty one
+    if (!targetCase.auditLog) {
+      targetCase.auditLog = [];
+    }
+
+    // 2. Generate the current date and time
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+
+    // 3. Add the new entry to the START of the array (so newest is always at the top)
+    targetCase.auditLog.unshift({
+      date: `${dateStr}<br>${timeStr}`,
+      details: details,
+      user: req.session.data['currentUser'] || "User Account" // Change this if you have dynamic users
+    });
+
+    // 4. Update the top-level case fields so your summary card is always perfectly accurate
+    targetCase.lastModified = `${dateStr} at ${timeStr}`;
+    targetCase.lastModifiedBy = req.session.data['currentUser'] || "User Account";
+  }
 }
 
 
@@ -10591,6 +10650,10 @@ router.post('/cases/edit/abeyance-period', (req, res) => {
   // 1. Check if they cleared everything to remove the abeyance period
   if (!sD && !sM && !sY && !eD && !eM && !eY) {
     c.abeyancePeriod = null;
+    
+    // AUDIT LOG: Stamp that the abeyance period was completely removed
+    addAuditLog(req, req.query.ref, "Abeyance period was removed");
+    
     return res.redirect('/cases/case-details?ref=' + req.query.ref);
   }
 
@@ -10647,8 +10710,16 @@ router.post('/cases/edit/abeyance-period', (req, res) => {
   }
 
   // Success!
+  req.session.flashSection = "case-details"; 
 
-  req.session.flashSection = "case-details";
+  // AUDIT LOG: Stamp the specific dates! 
+  // Notice we passed req.query.ref as the second argument here.
+  addAuditLog(
+    req, 
+    req.query.ref, 
+    `Abeyance period updated: ${c.abeyancePeriod.startDate ? `${c.abeyancePeriod.startDate.day}/${c.abeyancePeriod.startDate.month}/${c.abeyancePeriod.startDate.year}` : 'N/A'} to ${c.abeyancePeriod.endDate ? `${c.abeyancePeriod.endDate.day}/${c.abeyancePeriod.endDate.month}/${c.abeyancePeriod.endDate.year}` : 'N/A'}`
+  );
+
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 

@@ -1278,26 +1278,26 @@
   </div>
 
       {# 11. CASE HISTORY #}
-{{ govukSummaryList({
-  attributes: { id: "case-history" },
-  card: { 
-    title: { text: "Case history" } 
-  },
-  rows: [
-    { 
-      key: { text: "Last modified date" }, 
-      value: { text: currentCase.lastModified if currentCase.lastModified else "2 March 2026" } 
+  {{ govukSummaryList({
+    attributes: { id: "case-history" },
+    card: { 
+      title: { text: "Case history" } 
     },
-    { 
-      key: { text: "Last modified by" }, 
-      value: { text: currentCase.lastModifiedBy if currentCase.lastModifiedBy else "Kieran De La Cruz" }
-    },
-    { 
-      key: { text: "Case history" }, 
-      actions: { items: [{ href: "/cases/edit/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
-    }
-  ]
-}) }}
+    rows: [
+      { 
+        key: { text: "Last modified date" }, 
+        value: { text: currentCase.lastModified if currentCase.lastModified else "Not yet modified" } 
+      },
+      { 
+        key: { text: "Last modified by" }, 
+        value: { text: currentCase.lastModifiedBy if currentCase.lastModifiedBy else "N/A" }
+      },
+      { 
+        key: { text: "Case history" }, 
+        actions: { items: [{ href: "/cases/edit/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
+      }
+    ]
+  }) }}
 
 
 {% else %}
