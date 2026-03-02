@@ -2,8 +2,7 @@
   "scripts": {
     "dev": "govuk-prototype-kit dev",
     "serve": "govuk-prototype-kit serve",
-    "start": "govuk-prototype-kit start",
-    "build": "govuk-prototype-kit build"
+    "start": "govuk-prototype-kit start"
   },
   "dependencies": {
     "@govuk-prototype-kit/common-templates": "3.0.0",
