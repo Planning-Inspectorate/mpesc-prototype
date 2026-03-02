@@ -245,7 +245,13 @@
 {% endblock %}
 
 {% block scripts %}
+  {# Loads the standard GOV.UK scripts #}
   {{ super() }}
+  
+  {# THE BYPASS: Loads the MOJ Javascript directly from a global CDN #}
+  <script src="https://cdn.jsdelivr.net/npm/@ministryofjustice/frontend@8.0.0/moj/all.js"></script>
+  
+  {# Initializes the sortable tables #}
   <script>
     if (window.MOJFrontend) {
       window.MOJFrontend.initAll();
