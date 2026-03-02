@@ -2,11 +2,8 @@
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
 {% block head %}
-  {# Loads the standard GOV.UK styles #}
   {{ super() }}
-  
-  {# Loads the MOJ styles safely via CDN to bypass Azure's block #}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ministryofjustice/frontend@8.0.0/moj/all.css">
+  <link href="/plugin-assets/@ministryofjustice/frontend/moj/all.css" rel="stylesheet" />
 {% endblock %}
 
 {% block header %}
