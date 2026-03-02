@@ -277,11 +277,6 @@
         ]
       }) }}
 
-      {{ govukButton({
-        text: "Apply filters",
-        classes: "govuk-!-margin-top-4"
-      }) }}
-
     {% endset -%}
 
 
@@ -343,8 +338,8 @@
           {% if item == "drought-permits" %}{% set label = "Drought Permits" %}
           {% elif item == "drought-orders" %}{% set label = "Drought Orders" %}
           {% elif item == "housing" %}{% set label = "Housing" %}
-          {% elif item == "planning-sub" %}{% set label = "Planning" %}
-          {% elif item == "adhoc" %}{% set label = "Ad hoc" %}
+          {% elif item == "planning" %}{% set label = "Planning" %}
+          {% elif item == "ad-hoc" %}{% set label = "Ad hoc" %}
           {% elif item == "defra-cpo" %}{% set label = "DEFRA CPO" %}
           {% elif item == "desnz-cpo" %}{% set label = "DESNZ CPO" %}
           {% elif item == "dft-cpo" %}{% set label = "DfT CPO" %}
@@ -352,36 +347,36 @@
           {% elif item == "advert" %}{% set label = "Advert" %}
           {% elif item == "completion-notice" %}{% set label = "Completion notice" %}
           {% elif item == "discontinuance-notice" %}{% set label = "Discontinuance notice" %}
-          {% elif item == "modification-to-pp" %}{% set label = "Modification to planning permission" %}
-          {% elif item == "review-mineral-permission" %}{% set label = "Review of mineral permission" %}
-          {% elif item == "revocation" %}{% set label = "Revocation" %}
+          {% elif item == "modification-to-planning-permission" %}{% set label = "Modification to planning permission" %}
+          {% elif item == "review-of-mineral-permission" %}{% set label = "Review of mineral permission" %}
+          {% elif item == "revocation-of-planning-permission" %}{% set label = "Revocation of planning permission" %}
           {% elif item == "new-lines" %}{% set label = "New lines" %}
           {% elif item == "tree-lopping" %}{% set label = "Tree lopping" %}
-          {% elif item == "wayleaves-generic" %}{% set label = "Wayleaves" %}
+          {% elif item == "wayleaves" %}{% set label = "Wayleaves" %}
           {% elif item == "coastal-access-appeal" %}{% set label = "Coastal access appeal" %}
           {% elif item == "notice-appeal" %}{% set label = "Notice appeal" %}
           {% elif item == "objection" %}{% set label = "Objection" %}
-          {% elif item == "restriction-appeal" %}{% set label = "Restriction appeal (access land)" %}
-          {% elif item == "commons-ecclesiastical" %}{% set label = "Commons for Ecclesiastical Purposes" %}
-          {% elif item == "greater-london" %}{% set label = "Commons in Greater London" %}
-          {% elif item == "compulsory-purchase" %}{% set label = "Compulsory Purchase of Common Land" %}
-          {% elif item == "correction-cl-register" %}{% set label = "Correction of the Common Land or Village Green Registers" %}
-          {% elif item == "deregistration-exchange" %}{% set label = "Deregistration & Exchange" %}
+          {% elif item == "restriction-appeal-access-land" %}{% set label = "Restriction appeal (access land)" %}
+          {% elif item == "commons-for-ecclesiastical-purposes" %}{% set label = "Commons for Ecclesiastical Purposes" %}
+          {% elif item == "commons-in-greater-london" %}{% set label = "Commons in Greater London" %}
+          {% elif item == "compulsory-purchase-of-common-land" %}{% set label = "Compulsory Purchase of Common Land" %}
+          {% elif item == "correction-of-the-common-land-or-village-green-registers" %}{% set label = "Correction of the Common Land or Village Green Registers" %}
+          {% elif item == "deregistration-and-exchange" %}{% set label = "Deregistration & Exchange" %}
           {% elif item == "inclosure" %}{% set label = "Inclosure" %}
-          {% elif item == "inclosure-obsolescent" %}{% set label = "Inclosure : obsolescent functions" %}
+          {% elif item == "inclosure-obsolescent-functions" %}{% set label = "Inclosure : obsolescent functions" %}
           {% elif item == "land-exchange" %}{% set label = "Land Exchange" %}
-          {% elif item == "local-acts" %}{% set label = "Local Acts and Provisional Order Confirmation Acts" %}
-          {% elif item == "public-access-limitations" %}{% set label = "Public Access to Commons - limitations and restrictions" %}
-          {% elif item == "scheme-management" %}{% set label = "Scheme of Management" %}
+          {% elif item == "local-acts-and-provisional-order-confirmation-acts" %}{% set label = "Local Acts and Provisional Order Confirmation Acts" %}
+          {% elif item == "public-access-to-commons-limitations-and-restrictions" %}{% set label = "Public Access to Commons - limitations and restrictions" %}
+          {% elif item == "scheme-of-management" %}{% set label = "Scheme of Management" %}
           {% elif item == "stint-rates" %}{% set label = "Stint Rates" %}
-          {% elif item == "works-common-land" %}{% set label = "Works on Common Land" %}
-          {% elif item == "works-national-trust" %}{% set label = "Works on Common Land (National Trust)" %}
-          {% elif item == "dispensation-ha80" %}{% set label = "Dispensation for Serving Notice HA80" %}
-          {% elif item == "dispensation-tcpa90" %}{% set label = "Dispensation for Serving Notice TCPA90" %}
-          {% elif item == "dispensation-wca81" %}{% set label = "Dispensation for Serving Notice WCA81" %}
-          {% elif item == "opposed-dmmo" %}{% set label = "Opposed Definitive Map Modification Order (DMMO)" %}
-          {% elif item == "opposed-ppo-ha80" %}{% set label = "Opposed Public Path Order (PPO) HA80" %}
-          {% elif item == "opposed-ppo-tcpa90" %}{% set label = "Opposed Public Path Order (PPO) TCPA90" %}
+          {% elif item == "works-on-common-land" %}{% set label = "Works on Common Land" %}
+          {% elif item == "works-on-common-land-national-trust" %}{% set label = "Works on Common Land (National Trust)" %}
+          {% elif item == "dispensation-for-serving-notice-ha80" %}{% set label = "Dispensation for Serving Notice HA80" %}
+          {% elif item == "dispensation-for-serving-notice-tcpa90" %}{% set label = "Dispensation for Serving Notice TCPA90" %}
+          {% elif item == "dispensation-for-serving-notice-wca81" %}{% set label = "Dispensation for Serving Notice WCA81" %}
+          {% elif item == "opposed-definitive-map-modification-order-dmmo" %}{% set label = "Opposed Definitive Map Modification Order (DMMO)" %}
+          {% elif item == "opposed-public-path-order-ppo-ha80" %}{% set label = "Opposed Public Path Order (PPO) HA80" %}
+          {% elif item == "opposed-public-path-order-ppo-tcpa90" %}{% set label = "Opposed Public Path Order (PPO) TCPA90" %}
           {% elif item == "schedule-14-appeal" %}{% set label = "Schedule 14 Appeal" %}
           {% elif item == "schedule-14-direction" %}{% set label = "Schedule 14 Direction" %}
           {% elif item == "schedule-13a-appeal" %}{% set label = "Schedule 13A Appeal" %}
@@ -394,7 +389,7 @@
           {% set filterCategories = (filterCategories.push({ heading: { text: "Subtype" }, items: subtypeItems }), filterCategories) %}
         {% endif %}
       {% endif %}
-
+      
       {{ mojFilter({
         heading: { text: "Filter" },
         selectedFilters: {

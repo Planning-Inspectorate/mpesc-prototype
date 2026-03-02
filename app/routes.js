@@ -12631,18 +12631,36 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
     // Overwrite the session with the live URL data
     req.session.data['area'] = req.query.area;
     req.session.data['type'] = req.query.type;
-    req.session.data['subtype'] = req.query.subtype;
     req.session.data['searchCriteria'] = req.query.searchCriteria;
+
+    // --- EXPRESS ARRAY LIMIT FIX ---
+    // If the user checks > 20 boxes, Express turns req.query.subtype into an object.
+    // We convert it back to a standard array before saving it to the session.
+    let rawSubtypes = req.query.subtype;
+    if (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes)) {
+      req.session.data['subtype'] = Object.values(rawSubtypes);
+    } else {
+      req.session.data['subtype'] = rawSubtypes;
+    }
   }
 
-  // 2. Clean the arrays (Destroys the '_unchecked' junk from the Kit)
-  const cleanArray = (val) => {
+  // 2. Clean the arrays (Destroys the '_unchecked' junk AND double-checks the Express bug)
+  const cleanArray = (categoryName) => {
+    let val = req.session.data[categoryName];
+    
+    // Auto-heal the session if it somehow got stuck as an object from an older refresh
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      val = Object.values(val);
+      req.session.data[categoryName] = val; 
+    }
+
     return [].concat(val || []).filter(item => item && item !== '_unchecked');
   };
 
-  const areas = cleanArray(req.session.data['area']);
-  const types = cleanArray(req.session.data['type']);
-  const subtypes = cleanArray(req.session.data['subtype']);
+  // Run the data through the upgraded cleaner
+  const areas = cleanArray('area');
+  const types = cleanArray('type');
+  const subtypes = cleanArray('subtype');
   const search = req.session.data['searchCriteria'] || "";
 
   // 3. The Filter Logic (Using "OR" Logic)
@@ -12763,15 +12781,30 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   });
 });
 
-// --- REMOVE FILTER ROUTE (For the 'X' tags) ---
-router.get('/cases/remove-filter/:category/:value', function (req, res) {
-  const category = req.params.category;
-  const value = req.params.value;
-  
-  let filters = [].concat(req.session.data[category] || []).filter(item => item && item !== '_unchecked');
-  req.session.data[category] = filters.filter(item => item !== value);
-  
-  res.redirect('/cases');
+// =========================================================
+// REMOVE INDIVIDUAL FILTER TAGS
+// =========================================================
+router.get('/cases/remove-filter/:filterCategory/:filterValue', function(req, res) {
+  let category = req.params.filterCategory; // e.g., 'area', 'type', or 'subtype'
+  let valueToRemove = req.params.filterValue; // e.g., 'housing'
+
+  // Look up the current array of filters in the session
+  let currentFilters = req.session.data[category];
+
+  if (currentFilters) {
+    if (Array.isArray(currentFilters)) {
+      // If there are multiple checkboxes selected, filter out the one we clicked
+      req.session.data[category] = currentFilters.filter(item => item !== valueToRemove);
+    } else {
+      // If there was only one checkbox selected, wipe it out completely
+      if (currentFilters === valueToRemove) {
+        req.session.data[category] = null;
+      }
+    }
+  }
+
+  // Redirect back to the cases page to refresh the view
+  res.redirect('/cases-filter'); 
 });
 
 // --- CLEAR ALL FILTERS ROUTE ---
