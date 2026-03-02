@@ -244,11 +244,10 @@
   
 {% endblock %}
 
-{% block scripts %}
+{% block bodyEnd %}
   {{ super() }}
+  <script src="/plugin-assets/@ministryofjustice/frontend/moj/all.js"></script>
   <script>
-    if (window.MOJFrontend) {
-      window.MOJFrontend.initAll();
-    }
+    window.MOJFrontend.initAll();
   </script>
 {% endblock %}
