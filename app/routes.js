@@ -3397,6 +3397,19 @@ function addAuditLog(req, caseRef, details) {
 
 
 // ==============================================
+// AUDIT LOG HELPER FOR PROCEDURE 1
+// ==============================================
+function getProcType(c) {
+  if (!c || !c.procedure1) return 'Procedure';
+  
+  let type = c.procedure1.type || 'Procedure';
+  // Grab the status. If they haven't explicitly set one yet, default to 'Not Selected'
+  let status = c.procedure1.status || 'Not Selected'; 
+  
+  return `${type} (${status})`;
+}
+
+// ==============================================
 // PROCEDURE 1 ROUTES
 // ==============================================
 
@@ -3430,6 +3443,9 @@ router.post('/cases/procedures/procedure-1/type', function(req, res) {
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1;
 
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Procedure type removed`);
+
     // --- TRIGGER REVERSE SYNC ---
     syncDetailedToOverview(c);
 
@@ -3447,6 +3463,9 @@ router.post('/cases/procedures/procedure-1/type', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.type = type;
   c.procedure1.active = true;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Procedure type updated to ${type}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -3488,6 +3507,9 @@ router.post('/cases/procedures/procedure-1/status', function(req, res) {
   c.procedure1 = c.procedure1 || {};
   c.procedure1.status = status;
 
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Procedure status for ${getProcType(c)} updated to ${status}`);
+
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
@@ -3521,6 +3543,10 @@ router.post('/cases/procedures/procedure-1/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.adminType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Admin procedure type for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3534,6 +3560,9 @@ router.post('/cases/procedures/procedure-1/admin-type', function(req, res) {
 
   c.procedure1 = c.procedure1 || {};
   c.procedure1.adminType = adminType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Admin procedure type for ${getProcType(c)} updated to ${adminType}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -3583,6 +3612,14 @@ router.post('/cases/procedures/procedure-1/in-house-date', function(req, res) {
 
   // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `In house date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `In house date for ${getProcType(c)} updated to ${c.procedure1.inHouse.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3635,6 +3672,14 @@ router.post('/cases/procedures/procedure-1/site-visit', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Site visit date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Site visit date for ${getProcType(c)} updated to ${c.procedure1.siteVisit.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3687,6 +3732,14 @@ router.post('/cases/procedures/procedure-1/target-hearing-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Target hearing date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Target hearing date for ${getProcType(c)} updated to ${c.procedure1.targetHearing.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3739,6 +3792,14 @@ router.post('/cases/procedures/procedure-1/hearing-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties must be notified of hearing for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties must be notified of hearing for ${getProcType(c)} updated to ${c.procedure1.hearingNotified.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3794,6 +3855,14 @@ router.post('/cases/procedures/procedure-1/proofs-received', function(req, res) 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Proofs of evidence received date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Proofs of evidence received date for ${getProcType(c)} updated to ${c.procedure1.proofsReceived.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3845,6 +3914,14 @@ router.post('/cases/procedures/procedure-1/statements-received', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Statements of case received date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Statements of case received date for ${getProcType(c)} updated to ${c.procedure1.statementsReceived.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3897,6 +3974,14 @@ router.post('/cases/procedures/procedure-1/verification-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Verification date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Verification date for ${getProcType(c)} updated to ${c.procedure1.verification.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -3956,6 +4041,15 @@ router.post('/cases/procedures/procedure-1/cmc-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management conference date for ${getProcType(c)} removed`);
+    } else {
+      let dtStr = c.procedure1.cmcDate.formattedDate + (c.procedure1.cmcDate.formattedTime ? ' at ' + c.procedure1.cmcDate.formattedTime : '');
+      addAuditLog(req, ref, `Case management conference date for ${getProcType(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4002,6 +4096,10 @@ router.post('/cases/procedures/procedure-1/cmc-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.cmcType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Case management conference type for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4017,6 +4115,9 @@ router.post('/cases/procedures/procedure-1/cmc-type', function(req, res) {
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.cmcType = cmcType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Case management conference type for ${getProcType(c)} updated to ${cmcType}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -4060,6 +4161,15 @@ router.post('/cases/procedures/procedure-1/cmc-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management venue address for ${getProcType(c)} removed`);
+    } else {
+      let addStr = c.procedure1.cmcVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Case management venue address for ${getProcType(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4113,6 +4223,14 @@ router.post('/cases/procedures/procedure-1/cmc-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management conference note sent date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Case management conference note sent date for ${getProcType(c)} updated to ${c.procedure1.cmcNoteSent.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4168,6 +4286,15 @@ router.post('/cases/procedures/procedure-1/confirmed-hearing-date', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Confirmed hearing date for ${getProcType(c)} removed`);
+    } else {
+      let dtStr = c.procedure1.confirmedHearing.formattedDate + (c.procedure1.confirmedHearing.formattedTime ? ' at ' + c.procedure1.confirmedHearing.formattedTime : '');
+      addAuditLog(req, ref, `Confirmed hearing date for ${getProcType(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4223,6 +4350,14 @@ router.post('/cases/procedures/procedure-1/deadline-for-consent', function(req, 
 
   // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Deadline for consent for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Deadline for consent for ${getProcType(c)} updated to ${c.procedure1.deadlineForConsent.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4266,6 +4401,10 @@ router.post('/cases/procedures/procedure-1/hearing-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.hearingType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Hearing type for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4281,6 +4420,9 @@ router.post('/cases/procedures/procedure-1/hearing-type', function(req, res) {
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.hearingType = hearingType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Hearing type for ${getProcType(c)} updated to ${hearingType}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -4324,6 +4466,15 @@ router.post('/cases/procedures/procedure-1/hearing-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Hearing venue for ${getProcType(c)} removed`);
+    } else {
+      let addStr = c.procedure1.hearingVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Hearing venue for ${getProcType(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4377,6 +4528,14 @@ router.post('/cases/procedures/procedure-1/notified-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of hearing date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of hearing date for ${getProcType(c)} updated to ${c.procedure1.notifiedHearingDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4429,6 +4588,14 @@ router.post('/cases/procedures/procedure-1/notified-hearing-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of hearing venue for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of hearing venue for ${getProcType(c)} updated to ${c.procedure1.notifiedHearingVenue.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4481,6 +4648,14 @@ router.post('/cases/procedures/procedure-1/earliest-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Earliest potential hearing date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Earliest potential hearing date for ${getProcType(c)} updated to ${c.procedure1.earliestHearingDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4522,6 +4697,13 @@ router.post('/cases/procedures/procedure-1/hearing-length-of-event', function(re
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Length of event for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Length of event for ${getProcType(c)} updated to ${c.procedure1.hearingLengthOfEvent} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -4554,6 +4736,10 @@ router.post('/cases/procedures/procedure-1/hearing-in-target', function(req, res
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.hearingInTarget;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Hearing in target for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4569,6 +4755,9 @@ router.post('/cases/procedures/procedure-1/hearing-in-target', function(req, res
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.hearingInTarget = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Hearing in target for ${getProcType(c)} updated to ${val}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -4609,6 +4798,14 @@ router.post('/cases/procedures/procedure-1/hearing-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date hearing closed for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date hearing closed for ${getProcType(c)} updated to ${c.procedure1.hearingClosed.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4661,6 +4858,13 @@ router.post('/cases/procedures/procedure-1/hearing-preparation-time', function(r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Preparation time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Preparation time for ${getProcType(c)} updated to ${c.procedure1.hearingPrepTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -4695,6 +4899,13 @@ router.post('/cases/procedures/procedure-1/hearing-travel-time', function(req, r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Travel time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Travel time for ${getProcType(c)} updated to ${c.procedure1.hearingTravelTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -4729,6 +4940,13 @@ router.post('/cases/procedures/procedure-1/hearing-sitting-time', function(req, 
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Sitting time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Sitting time for ${getProcType(c)} updated to ${c.procedure1.hearingSittingTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -4763,6 +4981,13 @@ router.post('/cases/procedures/procedure-1/hearing-reporting-time', function(req
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Reporting time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Reporting time for ${getProcType(c)} updated to ${c.procedure1.hearingReportingTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -4810,6 +5035,14 @@ router.post('/cases/procedures/procedure-1/target-inquiry-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Target inquiry date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Target inquiry date for ${getProcType(c)} updated to ${c.procedure1.targetInquiry.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4862,6 +5095,14 @@ router.post('/cases/procedures/procedure-1/inquiry-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties must be notified of inquiry for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties must be notified of inquiry for ${getProcType(c)} updated to ${c.procedure1.inquiryNotified.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4906,6 +5147,10 @@ router.post('/cases/procedures/procedure-1/pre-inquiry-meeting-cmc', function(re
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.preInquiryMeetingCmc;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Pre inquiry meeting or case management conference for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -4921,6 +5166,9 @@ router.post('/cases/procedures/procedure-1/pre-inquiry-meeting-cmc', function(re
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.preInquiryMeetingCmc = meetingType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Pre inquiry meeting or case management conference for ${getProcType(c)} updated to ${meetingType}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -4970,6 +5218,15 @@ router.post('/cases/procedures/procedure-1/pim-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Pre inquiry meeting date for ${getProcType(c)} removed`);
+    } else {
+      let dtStr = c.procedure1.pimDate.formattedDate + (c.procedure1.pimDate.formattedTime ? ' at ' + c.procedure1.pimDate.formattedTime : '');
+      addAuditLog(req, ref, `Pre inquiry meeting date for ${getProcType(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5016,6 +5273,10 @@ router.post('/cases/procedures/procedure-1/pim-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.pimType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Pre inquiry meeting type for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5031,6 +5292,9 @@ router.post('/cases/procedures/procedure-1/pim-type', function(req, res) {
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.pimType = pimType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Pre inquiry meeting type for ${getProcType(c)} updated to ${pimType}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -5073,6 +5337,14 @@ router.post('/cases/procedures/procedure-1/pim-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Pre inquiry meeting note sent date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Pre inquiry meeting note sent date for ${getProcType(c)} updated to ${c.procedure1.pimNoteSent.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5129,6 +5401,14 @@ router.post('/cases/procedures/procedure-1/confirmed-inquiry-date', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Confirmed inquiry date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Confirmed inquiry date for ${getProcType(c)} updated to ${c.procedure1.confirmedInquiry.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5173,6 +5453,10 @@ router.post('/cases/procedures/procedure-1/inquiry-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.inquiryType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Inquiry type for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5188,6 +5472,9 @@ router.post('/cases/procedures/procedure-1/inquiry-type', function(req, res) {
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.inquiryType = inquiryType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Inquiry type for ${getProcType(c)} updated to ${inquiryType}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -5232,6 +5519,15 @@ router.post('/cases/procedures/procedure-1/inquiry-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Inquiry venue for ${getProcType(c)} removed`);
+    } else {
+      let addStr = c.procedure1.inquiryVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Inquiry venue for ${getProcType(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5286,6 +5582,14 @@ router.post('/cases/procedures/procedure-1/notified-inquiry-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of inquiry date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of inquiry date for ${getProcType(c)} updated to ${c.procedure1.notifiedInquiryDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5338,6 +5642,14 @@ router.post('/cases/procedures/procedure-1/notified-inquiry-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of inquiry venue for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of inquiry venue for ${getProcType(c)} updated to ${c.procedure1.notifiedInquiryVenue.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5390,6 +5702,14 @@ router.post('/cases/procedures/procedure-1/earliest-inquiry-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Earliest potential inquiry date for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Earliest potential inquiry date for ${getProcType(c)} updated to ${c.procedure1.earliestInquiryDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5431,6 +5751,13 @@ router.post('/cases/procedures/procedure-1/inquiry-length-of-event', function(re
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Length of event for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Length of event for ${getProcType(c)} updated to ${c.procedure1.inquiryLengthOfEvent} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -5471,6 +5798,14 @@ router.post('/cases/procedures/procedure-1/inquiry-finished-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date inquiry finished for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date inquiry finished for ${getProcType(c)} updated to ${c.procedure1.inquiryFinished.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5515,6 +5850,10 @@ router.post('/cases/procedures/procedure-1/event-in-target', function(req, res) 
   // Handle Remove
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.eventInTarget;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Event in target for ${getProcType(c)} removed`);
+    
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5530,6 +5869,9 @@ router.post('/cases/procedures/procedure-1/event-in-target', function(req, res) 
   // Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.eventInTarget = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Event in target for ${getProcType(c)} updated to ${val}`);
 
   req.session.flashSection = "procedure1";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -5571,6 +5913,14 @@ router.post('/cases/procedures/procedure-1/inquiry-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date inquiry closed for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date inquiry closed for ${getProcType(c)} updated to ${c.procedure1.inquiryClosed.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5624,6 +5974,13 @@ router.post('/cases/procedures/procedure-1/inquiry-preparation-time', function(r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Preparation time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Preparation time for ${getProcType(c)} updated to ${c.procedure1.inquiryPrepTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -5658,6 +6015,13 @@ router.post('/cases/procedures/procedure-1/inquiry-travel-time', function(req, r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Travel time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Travel time for ${getProcType(c)} updated to ${c.procedure1.inquiryTravelTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -5692,6 +6056,13 @@ router.post('/cases/procedures/procedure-1/inquiry-sitting-time', function(req, 
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Sitting time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Sitting time for ${getProcType(c)} updated to ${c.procedure1.inquirySittingTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -5726,6 +6097,13 @@ router.post('/cases/procedures/procedure-1/inquiry-reporting-time', function(req
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Reporting time for ${getProcType(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Reporting time for ${getProcType(c)} updated to ${c.procedure1.inquiryReportingTime} days`);
+  }
+
   req.session.flashSection = "procedure1";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -5760,8 +6138,11 @@ router.post('/cases/procedures/procedure-1/site-visit-type', function(req, res) 
   if (action === 'remove') {
     if (c.procedure1) delete c.procedure1.siteVisitType;
 
-  // --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Site visit type for ${getProcType(c)} removed`);
+
+    // --- TRIGGER REVERSE SYNC ---
+    syncDetailedToOverview(c);
 
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
@@ -5778,6 +6159,9 @@ router.post('/cases/procedures/procedure-1/site-visit-type', function(req, res) 
   // 3. Save Data
   c.procedure1 = c.procedure1 || {};
   c.procedure1.siteVisitType = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Site visit type for ${getProcType(c)} updated to ${val}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -5823,6 +6207,14 @@ router.post('/cases/procedures/procedure-1/written-reps-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date offer for written representations for ${getProcType(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date offer for written representations for ${getProcType(c)} updated to ${c.procedure1.writtenRepsDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure1";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5839,6 +6231,18 @@ router.post('/cases/procedures/procedure-1/written-reps-date', function(req, res
   }
 });
 
+
+// ==============================================
+// AUDIT LOG HELPER FOR PROCEDURE 2
+// ==============================================
+function getProc2Type(c) {
+  if (!c || !c.procedure2) return 'Procedure';
+  
+  let type = c.procedure2.type || 'Procedure';
+  let status = c.procedure2.status || 'Not selected'; 
+  
+  return `${type} (${status})`;
+}
 
 // ==============================================
 // PROCEDURE 2 ROUTES
@@ -5874,6 +6278,9 @@ router.post('/cases/procedures/procedure-2/type', function(req, res) {
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2;
 
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Procedure type removed`);
+
     // --- TRIGGER REVERSE SYNC ---
     syncDetailedToOverview(c);
 
@@ -5891,6 +6298,9 @@ router.post('/cases/procedures/procedure-2/type', function(req, res) {
   c.procedure2 = c.procedure2 || {};
   c.procedure2.type = type;
   c.procedure2.active = true;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Procedure type updated to ${type}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -5932,6 +6342,9 @@ router.post('/cases/procedures/procedure-2/status', function(req, res) {
   c.procedure2 = c.procedure2 || {};
   c.procedure2.status = status;
 
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Procedure status for ${getProc2Type(c)} updated to ${status}`);
+
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
@@ -5965,6 +6378,10 @@ router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.adminType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Admin procedure type for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -5978,6 +6395,9 @@ router.post('/cases/procedures/procedure-2/admin-type', function(req, res) {
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.adminType = adminType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Admin procedure type for ${getProc2Type(c)} updated to ${adminType}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -6026,6 +6446,13 @@ router.post('/cases/procedures/procedure-2/in-house-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `In house date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `In house date for ${getProc2Type(c)} updated to ${c.procedure2.inHouse.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6078,6 +6505,13 @@ router.post('/cases/procedures/procedure-2/site-visit', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Site visit date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Site visit date for ${getProc2Type(c)} updated to ${c.procedure2.siteVisit.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6130,6 +6564,13 @@ router.post('/cases/procedures/procedure-2/target-hearing-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Target hearing date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Target hearing date for ${getProc2Type(c)} updated to ${c.procedure2.targetHearing.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6182,6 +6623,13 @@ router.post('/cases/procedures/procedure-2/hearing-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties must be notified of hearing for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties must be notified of hearing for ${getProc2Type(c)} updated to ${c.procedure2.hearingNotified.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6237,6 +6685,13 @@ router.post('/cases/procedures/procedure-2/proofs-received', function(req, res) 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Proofs of evidence received date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Proofs of evidence received date for ${getProc2Type(c)} updated to ${c.procedure2.proofsReceived.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6288,6 +6743,13 @@ router.post('/cases/procedures/procedure-2/statements-received', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Statements of case received date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Statements of case received date for ${getProc2Type(c)} updated to ${c.procedure2.statementsReceived.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6340,6 +6802,13 @@ router.post('/cases/procedures/procedure-2/verification-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Verification date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Verification date for ${getProc2Type(c)} updated to ${c.procedure2.verification.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6399,6 +6868,14 @@ router.post('/cases/procedures/procedure-2/cmc-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management conference date for ${getProc2Type(c)} removed`);
+    } else {
+      let dtStr = c.procedure2.cmcDate.formattedDate + (c.procedure2.cmcDate.formattedTime ? ' at ' + c.procedure2.cmcDate.formattedTime : '');
+      addAuditLog(req, ref, `Case management conference date for ${getProc2Type(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6445,6 +6922,10 @@ router.post('/cases/procedures/procedure-2/cmc-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.cmcType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Case management conference type for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6460,6 +6941,9 @@ router.post('/cases/procedures/procedure-2/cmc-type', function(req, res) {
   // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.cmcType = cmcType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Case management conference type for ${getProc2Type(c)} updated to ${cmcType}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -6496,13 +6980,21 @@ router.post('/cases/procedures/procedure-2/cmc-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // Field prefix
-    'Venue address',  // Display name
-    c.procedure2,     // Storage object
-    'cmcVenue'        // Storage key
+    'venue',          
+    'Venue address',  
+    c.procedure2,     
+    'cmcVenue'        
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management venue address for ${getProc2Type(c)} removed`);
+    } else {
+      let addStr = c.procedure2.cmcVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Case management venue address for ${getProc2Type(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6556,6 +7048,13 @@ router.post('/cases/procedures/procedure-2/cmc-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management conference note sent date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Case management conference note sent date for ${getProc2Type(c)} updated to ${c.procedure2.cmcNoteSent.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6611,6 +7110,14 @@ router.post('/cases/procedures/procedure-2/confirmed-hearing-date', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Confirmed hearing date for ${getProc2Type(c)} removed`);
+    } else {
+      let dtStr = c.procedure2.confirmedHearing.formattedDate + (c.procedure2.confirmedHearing.formattedTime ? ' at ' + c.procedure2.confirmedHearing.formattedTime : '');
+      addAuditLog(req, ref, `Confirmed hearing date for ${getProc2Type(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6665,6 +7172,13 @@ router.post('/cases/procedures/procedure-2/deadline-for-consent', function(req, 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Deadline for consent for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Deadline for consent for ${getProc2Type(c)} updated to ${c.procedure2.deadlineForConsent.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6707,6 +7221,10 @@ router.post('/cases/procedures/procedure-2/hearing-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.hearingType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Hearing type for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6720,6 +7238,9 @@ router.post('/cases/procedures/procedure-2/hearing-type', function(req, res) {
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.hearingType = hearingType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Hearing type for ${getProc2Type(c)} updated to ${hearingType}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -6763,6 +7284,14 @@ router.post('/cases/procedures/procedure-2/hearing-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Hearing venue for ${getProc2Type(c)} removed`);
+    } else {
+      let addStr = c.procedure2.hearingVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Hearing venue for ${getProc2Type(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6816,6 +7345,13 @@ router.post('/cases/procedures/procedure-2/notified-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of hearing date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of hearing date for ${getProc2Type(c)} updated to ${c.procedure2.notifiedHearingDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6868,6 +7404,13 @@ router.post('/cases/procedures/procedure-2/notified-hearing-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of hearing venue for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of hearing venue for ${getProc2Type(c)} updated to ${c.procedure2.notifiedHearingVenue.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6920,6 +7463,13 @@ router.post('/cases/procedures/procedure-2/earliest-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Earliest potential hearing date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Earliest potential hearing date for ${getProc2Type(c)} updated to ${c.procedure2.earliestHearingDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -6960,6 +7510,13 @@ router.post('/cases/procedures/procedure-2/hearing-length-of-event', function(re
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Length of event for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Length of event for ${getProc2Type(c)} updated to ${c.procedure2.hearingLengthOfEvent} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -6991,6 +7548,10 @@ router.post('/cases/procedures/procedure-2/hearing-in-target', function(req, res
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.hearingInTarget;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Hearing in target for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7004,6 +7565,9 @@ router.post('/cases/procedures/procedure-2/hearing-in-target', function(req, res
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.hearingInTarget = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Hearing in target for ${getProc2Type(c)} updated to ${val}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -7044,6 +7608,13 @@ router.post('/cases/procedures/procedure-2/hearing-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date hearing closed for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date hearing closed for ${getProc2Type(c)} updated to ${c.procedure2.hearingClosed.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7096,6 +7667,13 @@ router.post('/cases/procedures/procedure-2/hearing-preparation-time', function(r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Preparation time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Preparation time for ${getProc2Type(c)} updated to ${c.procedure2.hearingPrepTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -7130,6 +7708,13 @@ router.post('/cases/procedures/procedure-2/hearing-travel-time', function(req, r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Travel time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Travel time for ${getProc2Type(c)} updated to ${c.procedure2.hearingTravelTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -7164,6 +7749,13 @@ router.post('/cases/procedures/procedure-2/hearing-sitting-time', function(req, 
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Sitting time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Sitting time for ${getProc2Type(c)} updated to ${c.procedure2.hearingSittingTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -7198,6 +7790,13 @@ router.post('/cases/procedures/procedure-2/hearing-reporting-time', function(req
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Reporting time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Reporting time for ${getProc2Type(c)} updated to ${c.procedure2.hearingReportingTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -7245,6 +7844,13 @@ router.post('/cases/procedures/procedure-2/target-inquiry-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Target inquiry date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Target inquiry date for ${getProc2Type(c)} updated to ${c.procedure2.targetInquiry.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7297,6 +7903,13 @@ router.post('/cases/procedures/procedure-2/inquiry-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties must be notified of inquiry for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties must be notified of inquiry for ${getProc2Type(c)} updated to ${c.procedure2.inquiryNotified.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7340,6 +7953,10 @@ router.post('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(re
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.preInquiryMeetingCmc;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Pre inquiry meeting or case management conference for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7353,6 +7970,9 @@ router.post('/cases/procedures/procedure-2/pre-inquiry-meeting-cmc', function(re
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.preInquiryMeetingCmc = meetingType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Pre inquiry meeting or case management conference for ${getProc2Type(c)} updated to ${meetingType}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -7402,6 +8022,14 @@ router.post('/cases/procedures/procedure-2/pim-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Pre inquiry meeting date for ${getProc2Type(c)} removed`);
+    } else {
+      let dtStr = c.procedure2.pimDate.formattedDate + (c.procedure2.pimDate.formattedTime ? ' at ' + c.procedure2.pimDate.formattedTime : '');
+      addAuditLog(req, ref, `Pre inquiry meeting date for ${getProc2Type(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7447,6 +8075,10 @@ router.post('/cases/procedures/procedure-2/pim-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.pimType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Pre inquiry meeting type for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7460,6 +8092,9 @@ router.post('/cases/procedures/procedure-2/pim-type', function(req, res) {
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.pimType = pimType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Pre inquiry meeting type for ${getProc2Type(c)} updated to ${pimType}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -7502,6 +8137,13 @@ router.post('/cases/procedures/procedure-2/pim-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Pre inquiry meeting note sent date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Pre inquiry meeting note sent date for ${getProc2Type(c)} updated to ${c.procedure2.pimNoteSent.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7558,6 +8200,13 @@ router.post('/cases/procedures/procedure-2/confirmed-inquiry-date', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Confirmed inquiry date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Confirmed inquiry date for ${getProc2Type(c)} updated to ${c.procedure2.confirmedInquiry.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7601,6 +8250,10 @@ router.post('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.inquiryType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Inquiry type for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7614,6 +8267,9 @@ router.post('/cases/procedures/procedure-2/inquiry-type', function(req, res) {
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.inquiryType = inquiryType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Inquiry type for ${getProc2Type(c)} updated to ${inquiryType}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -7658,6 +8314,14 @@ router.post('/cases/procedures/procedure-2/inquiry-venue', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Inquiry venue for ${getProc2Type(c)} removed`);
+    } else {
+      let addStr = c.procedure2.inquiryVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Inquiry venue for ${getProc2Type(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7712,6 +8376,13 @@ router.post('/cases/procedures/procedure-2/notified-inquiry-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of inquiry date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of inquiry date for ${getProc2Type(c)} updated to ${c.procedure2.notifiedInquiryDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7764,6 +8435,13 @@ router.post('/cases/procedures/procedure-2/notified-inquiry-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of inquiry venue for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of inquiry venue for ${getProc2Type(c)} updated to ${c.procedure2.notifiedInquiryVenue.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7816,6 +8494,13 @@ router.post('/cases/procedures/procedure-2/earliest-inquiry-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Earliest potential inquiry date for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Earliest potential inquiry date for ${getProc2Type(c)} updated to ${c.procedure2.earliestInquiryDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7857,6 +8542,13 @@ router.post('/cases/procedures/procedure-2/inquiry-length-of-event', function(re
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Length of event for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Length of event for ${getProc2Type(c)} updated to ${c.procedure2.inquiryLengthOfEvent} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -7897,6 +8589,13 @@ router.post('/cases/procedures/procedure-2/inquiry-finished-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date inquiry finished for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date inquiry finished for ${getProc2Type(c)} updated to ${c.procedure2.inquiryFinished.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7940,6 +8639,10 @@ router.post('/cases/procedures/procedure-2/event-in-target', function(req, res) 
 
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.eventInTarget;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Event in target for ${getProc2Type(c)} removed`);
+    
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -7953,6 +8656,9 @@ router.post('/cases/procedures/procedure-2/event-in-target', function(req, res) 
 
   c.procedure2 = c.procedure2 || {};
   c.procedure2.eventInTarget = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Event in target for ${getProc2Type(c)} updated to ${val}`);
 
   req.session.flashSection = "procedure2";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -7994,6 +8700,13 @@ router.post('/cases/procedures/procedure-2/inquiry-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date inquiry closed for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date inquiry closed for ${getProc2Type(c)} updated to ${c.procedure2.inquiryClosed.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8047,6 +8760,13 @@ router.post('/cases/procedures/procedure-2/inquiry-preparation-time', function(r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Preparation time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Preparation time for ${getProc2Type(c)} updated to ${c.procedure2.inquiryPrepTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -8081,6 +8801,13 @@ router.post('/cases/procedures/procedure-2/inquiry-travel-time', function(req, r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Travel time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Travel time for ${getProc2Type(c)} updated to ${c.procedure2.inquiryTravelTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -8115,6 +8842,13 @@ router.post('/cases/procedures/procedure-2/inquiry-sitting-time', function(req, 
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Sitting time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Sitting time for ${getProc2Type(c)} updated to ${c.procedure2.inquirySittingTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -8149,6 +8883,13 @@ router.post('/cases/procedures/procedure-2/inquiry-reporting-time', function(req
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Reporting time for ${getProc2Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Reporting time for ${getProc2Type(c)} updated to ${c.procedure2.inquiryReportingTime} days`);
+  }
+
   req.session.flashSection = "procedure2";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -8179,16 +8920,21 @@ router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) 
   var action = req.body.action;
   var val = req.body['site-visit-type'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure2) delete c.procedure2.siteVisitType;
 
-  // --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Site visit type for ${getProc2Type(c)} removed`);
+
+    // --- TRIGGER REVERSE SYNC ---
+    syncDetailedToOverview(c);
 
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-2/site-visit-type', {
       ref: ref,
@@ -8196,8 +8942,12 @@ router.post('/cases/procedures/procedure-2/site-visit-type', function(req, res) 
     });
   }
 
+  // 3. Save Data
   c.procedure2 = c.procedure2 || {};
   c.procedure2.siteVisitType = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Site visit type for ${getProc2Type(c)} updated to ${val}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -8243,6 +8993,13 @@ router.post('/cases/procedures/procedure-2/written-reps-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date offer for written representations for ${getProc2Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date offer for written representations for ${getProc2Type(c)} updated to ${c.procedure2.writtenRepsDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure2";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8260,6 +9017,18 @@ router.post('/cases/procedures/procedure-2/written-reps-date', function(req, res
 });
 
 
+
+// ==============================================
+// AUDIT LOG HELPER FOR PROCEDURE 3
+// ==============================================
+function getProc3Type(c) {
+  if (!c || !c.procedure3) return 'Procedure';
+  
+  let type = c.procedure3.type || 'Procedure';
+  let status = c.procedure3.status || 'Not selected'; 
+  
+  return `${type} (${status})`;
+}
 
 // ==============================================
 // PROCEDURE 3 ROUTES
@@ -8295,6 +9064,9 @@ router.post('/cases/procedures/procedure-3/type', function(req, res) {
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3;
 
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Procedure type removed`);
+
     // --- TRIGGER REVERSE SYNC ---
     syncDetailedToOverview(c);
 
@@ -8312,6 +9084,9 @@ router.post('/cases/procedures/procedure-3/type', function(req, res) {
   c.procedure3 = c.procedure3 || {};
   c.procedure3.type = type;
   c.procedure3.active = true;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Procedure type updated to ${type}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -8353,6 +9128,9 @@ router.post('/cases/procedures/procedure-3/status', function(req, res) {
   c.procedure3 = c.procedure3 || {};
   c.procedure3.status = status;
 
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Procedure status for ${getProc3Type(c)} updated to ${status}`);
+
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
 
@@ -8386,6 +9164,10 @@ router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
 
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.adminType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Admin procedure type for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8399,6 +9181,9 @@ router.post('/cases/procedures/procedure-3/admin-type', function(req, res) {
 
   c.procedure3 = c.procedure3 || {};
   c.procedure3.adminType = adminType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Admin procedure type for ${getProc3Type(c)} updated to ${adminType}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -8447,6 +9232,14 @@ router.post('/cases/procedures/procedure-3/in-house-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `In house date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `In house date for ${getProc3Type(c)} updated to ${c.procedure3.inHouse.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8499,6 +9292,14 @@ router.post('/cases/procedures/procedure-3/site-visit', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Site visit date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Site visit date for ${getProc3Type(c)} updated to ${c.procedure3.siteVisit.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8551,6 +9352,14 @@ router.post('/cases/procedures/procedure-3/target-hearing-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Target hearing date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Target hearing date for ${getProc3Type(c)} updated to ${c.procedure3.targetHearing.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8603,6 +9412,14 @@ router.post('/cases/procedures/procedure-3/hearing-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties must be notified of hearing for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties must be notified of hearing for ${getProc3Type(c)} updated to ${c.procedure3.hearingNotified.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8658,6 +9475,14 @@ router.post('/cases/procedures/procedure-3/proofs-received', function(req, res) 
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Proofs of evidence received date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Proofs of evidence received date for ${getProc3Type(c)} updated to ${c.procedure3.proofsReceived.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8709,6 +9534,14 @@ router.post('/cases/procedures/procedure-3/statements-received', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Statements of case received date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Statements of case received date for ${getProc3Type(c)} updated to ${c.procedure3.statementsReceived.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8761,6 +9594,14 @@ router.post('/cases/procedures/procedure-3/verification-date', function(req, res
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Verification date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Verification date for ${getProc3Type(c)} updated to ${c.procedure3.verification.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8820,6 +9661,15 @@ router.post('/cases/procedures/procedure-3/cmc-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management conference date for ${getProc3Type(c)} removed`);
+    } else {
+      let dtStr = c.procedure3.cmcDate.formattedDate + (c.procedure3.cmcDate.formattedTime ? ' at ' + c.procedure3.cmcDate.formattedTime : '');
+      addAuditLog(req, ref, `Case management conference date for ${getProc3Type(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8866,6 +9716,10 @@ router.post('/cases/procedures/procedure-3/cmc-type', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.cmcType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Case management conference type for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8881,6 +9735,9 @@ router.post('/cases/procedures/procedure-3/cmc-type', function(req, res) {
   // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.cmcType = cmcType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Case management conference type for ${getProc3Type(c)} updated to ${cmcType}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -8917,13 +9774,22 @@ router.post('/cases/procedures/procedure-3/cmc-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          // Field prefix
+    'venue',          // Field prefix 
     'Venue address',  // Display name
     c.procedure3,     // Storage object
     'cmcVenue'        // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management venue address for ${getProc3Type(c)} removed`);
+    } else {
+      let addStr = c.procedure3.cmcVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Case management venue address for ${getProc3Type(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -8977,6 +9843,14 @@ router.post('/cases/procedures/procedure-3/cmc-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Case management conference note sent date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Case management conference note sent date for ${getProc3Type(c)} updated to ${c.procedure3.cmcNoteSent.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9025,13 +9899,22 @@ router.post('/cases/procedures/procedure-3/confirmed-hearing-date', function(req
 
   var result = validateAndSaveDateTime(
     req, res,
-    'confirmed-hearing',       
-    'Confirmed hearing date',  
-    c.procedure3,              
-    'confirmedHearing'         
+    'confirmed-hearing',       // HTML Field prefix
+    'Confirmed hearing date',  // Display name for errors
+    c.procedure3,              // Storage Object
+    'confirmedHearing'         // Storage Key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Confirmed hearing date for ${getProc3Type(c)} removed`);
+    } else {
+      let dtStr = c.procedure3.confirmedHearing.formattedDate + (c.procedure3.confirmedHearing.formattedTime ? ' at ' + c.procedure3.confirmedHearing.formattedTime : '');
+      addAuditLog(req, ref, `Confirmed hearing date for ${getProc3Type(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9085,7 +9968,16 @@ router.post('/cases/procedures/procedure-3/deadline-for-consent', function(req, 
     'deadlineForConsent'            
   );
 
+  // FIX: Route handles redirect now
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Deadline for consent for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Deadline for consent for ${getProc3Type(c)} updated to ${c.procedure3.deadlineForConsent.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9126,12 +10018,18 @@ router.post('/cases/procedures/procedure-3/hearing-type', function(req, res) {
   var action = req.body.action;
   var hearingType = req.body['hearing-type'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.hearingType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Hearing type for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!hearingType) {
     return res.render('cases/procedures/procedure-3/hearing-type', {
       ref: ref,
@@ -9139,8 +10037,12 @@ router.post('/cases/procedures/procedure-3/hearing-type', function(req, res) {
     });
   }
 
+  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.hearingType = hearingType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Hearing type for ${getProc3Type(c)} updated to ${hearingType}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -9177,13 +10079,22 @@ router.post('/cases/procedures/procedure-3/hearing-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          
-    'Hearing venue',  
-    c.procedure3,     
-    'hearingVenue'    
+    'venue',          // HTML field prefix
+    'Hearing venue',  // Error display name
+    c.procedure3,     // Storage object
+    'hearingVenue'    // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Hearing venue for ${getProc3Type(c)} removed`);
+    } else {
+      let addStr = c.procedure3.hearingVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Hearing venue for ${getProc3Type(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9230,13 +10141,21 @@ router.post('/cases/procedures/procedure-3/notified-hearing-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-date',          
-    'Date parties notified',  
-    c.procedure3,             
-    'notifiedHearingDate'     
+    'notified-date',          // HTML prefix
+    'Date parties notified',  // Error name
+    c.procedure3,             // Storage object
+    'notifiedHearingDate'     // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of hearing date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of hearing date for ${getProc3Type(c)} updated to ${c.procedure3.notifiedHearingDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9289,6 +10208,14 @@ router.post('/cases/procedures/procedure-3/notified-hearing-venue', function(req
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of hearing venue for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of hearing venue for ${getProc3Type(c)} updated to ${c.procedure3.notifiedHearingVenue.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9341,6 +10268,14 @@ router.post('/cases/procedures/procedure-3/earliest-hearing-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Earliest potential hearing date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Earliest potential hearing date for ${getProc3Type(c)} updated to ${c.procedure3.earliestHearingDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9363,7 +10298,7 @@ router.get('/cases/procedures/procedure-3/hearing-length-of-event', function(req
   var c = req.session.data['cases'].find(x => x.reference === ref);
   res.render('cases/procedures/procedure-3/hearing-length-of-event', {
     ref: ref,
-    value: c.procedure3.hearingLengthOfEvent 
+    value: c.procedure3.hearingLengthOfEvent // NEW KEY
   });
 });
 
@@ -9371,6 +10306,7 @@ router.post('/cases/procedures/procedure-3/hearing-length-of-event', function(re
   var ref = req.body.ref;
   var c = req.session.data['cases'].find(x => x.reference === ref);
   
+  // Reuse your existing helper
   var result = validateAndSaveNumber(req, res, 'length-event', 'Length of event', c.procedure3, 'hearingLengthOfEvent');
 
   if (result.status === "ERROR") {
@@ -9381,6 +10317,13 @@ router.post('/cases/procedures/procedure-3/hearing-length-of-event', function(re
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Length of event for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Length of event for ${getProc3Type(c)} updated to ${c.procedure3.hearingLengthOfEvent} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -9410,12 +10353,18 @@ router.post('/cases/procedures/procedure-3/hearing-in-target', function(req, res
   var action = req.body.action;
   var val = req.body['hearing-in-target'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.hearingInTarget;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Hearing in target for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-3/hearing-in-target', {
       ref: ref,
@@ -9423,8 +10372,12 @@ router.post('/cases/procedures/procedure-3/hearing-in-target', function(req, res
     });
   }
 
+  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.hearingInTarget = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Hearing in target for ${getProc3Type(c)} updated to ${val}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -9465,6 +10418,14 @@ router.post('/cases/procedures/procedure-3/hearing-closed-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date hearing closed for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date hearing closed for ${getProc3Type(c)} updated to ${c.procedure3.hearingClosed.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9490,7 +10451,7 @@ router.get('/cases/procedures/procedure-3/hearing-preparation-time', function(re
 
   res.render('cases/procedures/procedure-3/hearing-preparation-time', {
     ref: ref,
-    value: c.procedure3.hearingPrepTime 
+    value: c.procedure3.hearingPrepTime // Specific Key
   });
 });
 
@@ -9506,7 +10467,7 @@ router.post('/cases/procedures/procedure-3/hearing-preparation-time', function(r
     'prep-time', 
     'Preparation time', 
     c.procedure3, 
-    'hearingPrepTime' 
+    'hearingPrepTime' // Specific Key
   );
 
   if (result.status === "ERROR") {
@@ -9517,6 +10478,13 @@ router.post('/cases/procedures/procedure-3/hearing-preparation-time', function(r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Preparation time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Preparation time for ${getProc3Type(c)} updated to ${c.procedure3.hearingPrepTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -9551,6 +10519,13 @@ router.post('/cases/procedures/procedure-3/hearing-travel-time', function(req, r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Travel time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Travel time for ${getProc3Type(c)} updated to ${c.procedure3.hearingTravelTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -9585,6 +10560,13 @@ router.post('/cases/procedures/procedure-3/hearing-sitting-time', function(req, 
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Sitting time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Sitting time for ${getProc3Type(c)} updated to ${c.procedure3.hearingSittingTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -9619,6 +10601,13 @@ router.post('/cases/procedures/procedure-3/hearing-reporting-time', function(req
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Reporting time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Reporting time for ${getProc3Type(c)} updated to ${c.procedure3.hearingReportingTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -9666,6 +10655,14 @@ router.post('/cases/procedures/procedure-3/target-inquiry-date', function(req, r
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Target inquiry date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Target inquiry date for ${getProc3Type(c)} updated to ${c.procedure3.targetInquiry.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9718,6 +10715,14 @@ router.post('/cases/procedures/procedure-3/inquiry-notified-date', function(req,
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties must be notified of inquiry for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties must be notified of inquiry for ${getProc3Type(c)} updated to ${c.procedure3.inquiryNotified.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9759,12 +10764,18 @@ router.post('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(re
   var action = req.body.action;
   var meetingType = req.body['meeting-type'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.preInquiryMeetingCmc;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Pre inquiry meeting or case management conference for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!meetingType) {
     return res.render('cases/procedures/procedure-3/pre-inquiry-meeting-cmc', {
       ref: ref,
@@ -9772,8 +10783,12 @@ router.post('/cases/procedures/procedure-3/pre-inquiry-meeting-cmc', function(re
     });
   }
 
+  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.preInquiryMeetingCmc = meetingType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Pre inquiry meeting or case management conference for ${getProc3Type(c)} updated to ${meetingType}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -9823,6 +10838,15 @@ router.post('/cases/procedures/procedure-3/pim-date', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Pre inquiry meeting date for ${getProc3Type(c)} removed`);
+    } else {
+      let dtStr = c.procedure3.pimDate.formattedDate + (c.procedure3.pimDate.formattedTime ? ' at ' + c.procedure3.pimDate.formattedTime : '');
+      addAuditLog(req, ref, `Pre inquiry meeting date for ${getProc3Type(c)} updated to ${dtStr}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9866,12 +10890,18 @@ router.post('/cases/procedures/procedure-3/pim-type', function(req, res) {
   var action = req.body.action;
   var pimType = req.body['pim-type'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.pimType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Pre inquiry meeting type for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!pimType) {
     return res.render('cases/procedures/procedure-3/pim-type', {
       ref: ref,
@@ -9879,8 +10909,12 @@ router.post('/cases/procedures/procedure-3/pim-type', function(req, res) {
     });
   }
 
+  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.pimType = pimType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Pre inquiry meeting type for ${getProc3Type(c)} updated to ${pimType}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -9923,6 +10957,14 @@ router.post('/cases/procedures/procedure-3/pim-note-sent', function(req, res) {
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Pre inquiry meeting note sent date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Pre inquiry meeting note sent date for ${getProc3Type(c)} updated to ${c.procedure3.pimNoteSent.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -9958,7 +11000,7 @@ router.get('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req,
     hour: val.hour,
     minute: val.minute,
     ampm: val.ampm,
-    errorFields: [] 
+    errorFields: [] // Important to prevent Nunjucks error on load
   });
 });
 
@@ -9972,13 +11014,21 @@ router.post('/cases/procedures/procedure-3/confirmed-inquiry-date', function(req
 
   var result = validateAndSaveDate(
     req, res,
-    'confirmed-inquiry',       
-    'Confirmed inquiry date',  
-    c.procedure3,              
-    'confirmedInquiry'         
+    'confirmed-inquiry',       // HTML Field prefix
+    'Confirmed inquiry date',  // Display name for errors
+    c.procedure3,              // Storage Object
+    'confirmedInquiry'         // Storage Key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Confirmed inquiry date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Confirmed inquiry date for ${getProc3Type(c)} updated to ${c.procedure3.confirmedInquiry.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10020,12 +11070,18 @@ router.post('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
   var action = req.body.action;
   var inquiryType = req.body['inquiry-type'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.inquiryType;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Inquiry type for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!inquiryType) {
     return res.render('cases/procedures/procedure-3/inquiry-type', {
       ref: ref,
@@ -10033,8 +11089,12 @@ router.post('/cases/procedures/procedure-3/inquiry-type', function(req, res) {
     });
   }
 
+  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.inquiryType = inquiryType;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Inquiry type for ${getProc3Type(c)} updated to ${inquiryType}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -10072,13 +11132,22 @@ router.post('/cases/procedures/procedure-3/inquiry-venue', function(req, res) {
 
   var result = validateAndSaveAddress(
     req, res,
-    'venue',          
-    'Inquiry venue',  
-    c.procedure3,     
-    'inquiryVenue'    
+    'venue',          // HTML field prefix
+    'Inquiry venue',  // Error display name
+    c.procedure3,     // Storage object
+    'inquiryVenue'    // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Inquiry venue for ${getProc3Type(c)} removed`);
+    } else {
+      let addStr = c.procedure3.inquiryVenue.formatted.replace(/<br>/g, ', ');
+      addAuditLog(req, ref, `Inquiry venue for ${getProc3Type(c)} updated to ${addStr}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10126,13 +11195,21 @@ router.post('/cases/procedures/procedure-3/notified-inquiry-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-inquiry-date',  
+    'notified-inquiry-date',  // HTML prefix
     'Date parties notified of inquiry date',
     c.procedure3,
-    'notifiedInquiryDate'     
+    'notifiedInquiryDate'     // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of inquiry date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of inquiry date for ${getProc3Type(c)} updated to ${c.procedure3.notifiedInquiryDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10178,13 +11255,21 @@ router.post('/cases/procedures/procedure-3/notified-inquiry-venue', function(req
 
   var result = validateAndSaveDate(
     req, res,
-    'notified-inquiry-venue', 
+    'notified-inquiry-venue', // HTML prefix
     'Date parties notified of inquiry venue',
     c.procedure3,
-    'notifiedInquiryVenue'    
+    'notifiedInquiryVenue'    // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date parties notified of inquiry venue for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date parties notified of inquiry venue for ${getProc3Type(c)} updated to ${c.procedure3.notifiedInquiryVenue.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10230,13 +11315,21 @@ router.post('/cases/procedures/procedure-3/earliest-inquiry-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'earliest-inquiry-date',           
-    'Earliest potential inquiry date', 
-    c.procedure3,                      
-    'earliestInquiryDate'              
+    'earliest-inquiry-date',           // HTML prefix
+    'Earliest potential inquiry date', // Error display name
+    c.procedure3,                      // Storage object
+    'earliestInquiryDate'              // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Earliest potential inquiry date for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Earliest potential inquiry date for ${getProc3Type(c)} updated to ${c.procedure3.earliestInquiryDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10260,7 +11353,7 @@ router.get('/cases/procedures/procedure-3/inquiry-length-of-event', function(req
   var c = req.session.data['cases'].find(x => x.reference === ref);
   res.render('cases/procedures/procedure-3/inquiry-length-of-event', {
     ref: ref,
-    value: c.procedure3.inquiryLengthOfEvent 
+    value: c.procedure3.inquiryLengthOfEvent // NEW KEY
   });
 });
 
@@ -10278,6 +11371,13 @@ router.post('/cases/procedures/procedure-3/inquiry-length-of-event', function(re
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Length of event for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Length of event for ${getProc3Type(c)} updated to ${c.procedure3.inquiryLengthOfEvent} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -10311,13 +11411,21 @@ router.post('/cases/procedures/procedure-3/inquiry-finished-date', function(req,
 
   var result = validateAndSaveDate(
     req, res,
-    'inquiry-finished',      
-    'Date inquiry finished', 
+    'inquiry-finished',      // HTML prefix
+    'Date inquiry finished', // Error name
     c.procedure3,
-    'inquiryFinished'        
+    'inquiryFinished'        // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date inquiry finished for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date inquiry finished for ${getProc3Type(c)} updated to ${c.procedure3.inquiryFinished.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10359,12 +11467,18 @@ router.post('/cases/procedures/procedure-3/event-in-target', function(req, res) 
   var action = req.body.action;
   var val = req.body['event-in-target'];
 
+  // Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.eventInTarget;
+    
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Event in target for ${getProc3Type(c)} removed`);
+    
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // Validation
   if (!val) {
     return res.render('cases/procedures/procedure-3/event-in-target', {
       ref: ref,
@@ -10372,8 +11486,12 @@ router.post('/cases/procedures/procedure-3/event-in-target', function(req, res) 
     });
   }
 
+  // Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.eventInTarget = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Event in target for ${getProc3Type(c)} updated to ${val}`);
 
   req.session.flashSection = "procedure3";
   res.redirect('/cases/case-details?ref=' + ref);
@@ -10408,13 +11526,21 @@ router.post('/cases/procedures/procedure-3/inquiry-closed-date', function(req, r
 
   var result = validateAndSaveDate(
     req, res,
-    'inquiry-closed',      
-    'Date inquiry closed', 
+    'inquiry-closed',      // HTML prefix
+    'Date inquiry closed', // Error name
     c.procedure3,
-    'inquiryClosed'        
+    'inquiryClosed'        // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date inquiry closed for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date inquiry closed for ${getProc3Type(c)} updated to ${c.procedure3.inquiryClosed.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
@@ -10441,7 +11567,7 @@ router.get('/cases/procedures/procedure-3/inquiry-preparation-time', function(re
 
   res.render('cases/procedures/procedure-3/inquiry-preparation-time', {
     ref: ref,
-    value: c.procedure3.inquiryPrepTime 
+    value: c.procedure3.inquiryPrepTime // Specific Key
   });
 });
 
@@ -10457,7 +11583,7 @@ router.post('/cases/procedures/procedure-3/inquiry-preparation-time', function(r
     'prep-time', 
     'Preparation time', 
     c.procedure3, 
-    'inquiryPrepTime' 
+    'inquiryPrepTime' // Specific Key
   );
 
   if (result.status === "ERROR") {
@@ -10468,6 +11594,13 @@ router.post('/cases/procedures/procedure-3/inquiry-preparation-time', function(r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Preparation time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Preparation time for ${getProc3Type(c)} updated to ${c.procedure3.inquiryPrepTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -10502,6 +11635,13 @@ router.post('/cases/procedures/procedure-3/inquiry-travel-time', function(req, r
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Travel time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Travel time for ${getProc3Type(c)} updated to ${c.procedure3.inquiryTravelTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -10536,6 +11676,13 @@ router.post('/cases/procedures/procedure-3/inquiry-sitting-time', function(req, 
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Sitting time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Sitting time for ${getProc3Type(c)} updated to ${c.procedure3.inquirySittingTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -10570,6 +11717,13 @@ router.post('/cases/procedures/procedure-3/inquiry-reporting-time', function(req
     });
   }
   
+  // --- AUDIT LOG ---
+  if (result.status === "REMOVED") {
+    addAuditLog(req, ref, `Reporting time for ${getProc3Type(c)} removed`);
+  } else {
+    addAuditLog(req, ref, `Reporting time for ${getProc3Type(c)} updated to ${c.procedure3.inquiryReportingTime} days`);
+  }
+
   req.session.flashSection = "procedure3";
   return res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -10600,16 +11754,21 @@ router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) 
   var action = req.body.action;
   var val = req.body['site-visit-type'];
 
+  // 1. Handle Remove
   if (action === 'remove') {
     if (c.procedure3) delete c.procedure3.siteVisitType;
 
-  // --- TRIGGER REVERSE SYNC ---
-  syncDetailedToOverview(c);
+    // --- AUDIT LOG ---
+    addAuditLog(req, ref, `Site visit type for ${getProc3Type(c)} removed`);
+
+    // --- TRIGGER REVERSE SYNC ---
+    syncDetailedToOverview(c);
 
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
+  // 2. Validation
   if (!val) {
     return res.render('cases/procedures/procedure-3/site-visit-type', {
       ref: ref,
@@ -10617,8 +11776,12 @@ router.post('/cases/procedures/procedure-3/site-visit-type', function(req, res) 
     });
   }
 
+  // 3. Save Data
   c.procedure3 = c.procedure3 || {};
   c.procedure3.siteVisitType = val;
+
+  // --- AUDIT LOG ---
+  addAuditLog(req, ref, `Site visit type for ${getProc3Type(c)} updated to ${val}`);
 
   // --- TRIGGER REVERSE SYNC ---
   syncDetailedToOverview(c);
@@ -10657,13 +11820,21 @@ router.post('/cases/procedures/procedure-3/written-reps-date', function(req, res
 
   var result = validateAndSaveDate(
     req, res,
-    'written-reps-date',                  
-    'Date offer for written representations', 
-    c.procedure3,                         
-    'writtenRepsDate'                     
+    'written-reps-date',                  // HTML prefix
+    'Date offer for written representations', // Error display name
+    c.procedure3,                         // Storage object
+    'writtenRepsDate'                     // Storage key
   );
 
   if (result.status === "REMOVED" || result.status === "SUCCESS") {
+    
+    // --- AUDIT LOG ---
+    if (result.status === "REMOVED") {
+      addAuditLog(req, ref, `Date offer for written representations for ${getProc3Type(c)} removed`);
+    } else {
+      addAuditLog(req, ref, `Date offer for written representations for ${getProc3Type(c)} updated to ${c.procedure3.writtenRepsDate.formatted}`);
+    }
+
     req.session.flashSection = "procedure3";
     return res.redirect('/cases/case-details?ref=' + ref);
   }
