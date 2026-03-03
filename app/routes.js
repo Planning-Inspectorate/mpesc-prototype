@@ -14250,4 +14250,41 @@ router.get('/cases/generate-dummy', function (req, res) {
   res.redirect('/cases-page');
 });
 
+
+// ==============================================
+// CASE NOTES ROUTE
+// ==============================================
+router.post('/cases/add-case-note', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var c = cases.find(x => x.reference === ref);
+  if (!c) return res.redirect('/');
+
+  var comment = req.body.comment;
+
+  // Only save if they actually typed something!
+  if (comment && comment.trim() !== "") {
+    
+    // Create the caseNotes array if it doesn't exist yet
+    if (!c.caseNotes) c.caseNotes = [];
+
+    // Generate the specific date & time format
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+    const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Add the new note to the TOP of the list
+    c.caseNotes.unshift({
+      text: comment,
+      meta: `${timeStr} on ${dateStr} by User Account`
+    });
+
+    // Add a record to Case Audit Log too!
+    addAuditLog(req, ref, "Case note added");
+  }
+
+  // Redirect back to the case details page
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
 module.exports = router;

@@ -49,42 +49,83 @@
   {% endif %}
 
 
-  {# --- ROW 1: HEADER --- #}
+{# ========================================== #}
+  {# --- ROW 1: HEADER & BUTTONS ---            #}
+  {# ========================================== #}
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+    <div class="govuk-grid-column-full">
+      
       <span class="govuk-caption-m">{{ currentCase.reference }}</span>
-      <h1 class="govuk-heading-l">
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-4">
         {{ currentCase.caseName }}
       </h1>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Manage case files",
+          classes: "govuk-button--secondary",
+          href: "#"
+        }) }}
+
+        {{ govukButton({
+          text: "Download this case",
+          classes: "govuk-button--secondary",
+          href: "#"
+        }) }}
+      </div>
+
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+      
     </div>
   </div>
 
-  {# --- ROW 2: NAV, BUTTON & CARDS --- #}
+{# ========================================== #}
+  {# --- ROW 2: NAV & CASE NOTES ---            #}
+  {# ========================================== #}
   <div class="govuk-grid-row">
-
-    {# LEFT COLUMN: Navigation Links & Case Notes #}
     <div class="govuk-grid-column-two-thirds">
       
-      {# Navigation Links #}
-      <ul class="govuk-list">
+      <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Summary card list</h2>
+      
+      {# 1. Always Visible Links #}
+      <ul class="govuk-list govuk-!-margin-bottom-3">
         <li><a href="#overview" class="govuk-link govuk-link--no-visited-state">Overview</a></li>
         <li><a href="#case-details" class="govuk-link govuk-link--no-visited-state">Case details</a></li>
         <li><a href="#team" class="govuk-link govuk-link--no-visited-state">Team</a></li>
-        <li><a href="#timetable" class="govuk-link govuk-link--no-visited-state">Timetable</a></li>
-        <li><a href="#key-contacts" class="govuk-link govuk-link--no-visited-state">Key contacts</a></li>
-        <li><a href="#procedure1" class="govuk-link govuk-link--no-visited-state">Procedure 1</a></li>
-        <li><a href="#procedure2" class="govuk-link govuk-link--no-visited-state">Procedure 2</a></li>
-        <li><a href="#procedure3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
-        <li><a href="#outcomeOverview" class="govuk-link govuk-link--no-visited-state">Outcome</a></li>
-        <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
-        <li><a href="#invoicing" class="govuk-link govuk-link--no-visited-state">Invoicing</a></li>
       </ul>
 
-      {# Case Notes Component #}
+      {# 2. The Custom Toggle Button (Matches your image) #}
+      <a href="#" id="toggle-summary-cards" class="govuk-link govuk-link--no-visited-state govuk-!-margin-bottom-4" style="display: inline-flex; align-items: center; text-decoration: none;">
+        <svg id="toggle-icon" class="govuk-!-margin-right-1" width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="8" r="7.5" stroke="#1d70b8"/>
+          <path d="M5 6.5L8 9.5L11 6.5" stroke="#1d70b8" stroke-width="1.5"/>
+        </svg>
+        <span id="toggle-text" style="text-decoration: underline; font-family: Helvetica, Arial, sans-serif; font-size: 16px;">Show more</span>
+      </a>
+
+      {# 3. Hidden Links Container #}
+      <div id="extra-summary-cards" style="display: none;" class="govuk-!-margin-bottom-8">
+        <ul class="govuk-list">
+          <li><a href="#timetable" class="govuk-link govuk-link--no-visited-state">Timetable</a></li>
+          <li><a href="#key-contacts" class="govuk-link govuk-link--no-visited-state">Key contacts</a></li>
+          <li><a href="#procedure1" class="govuk-link govuk-link--no-visited-state">Procedure 1</a></li>
+          <li><a href="#procedure2" class="govuk-link govuk-link--no-visited-state">Procedure 2</a></li>
+          <li><a href="#procedure3" class="govuk-link govuk-link--no-visited-state">Procedure 3</a></li>
+          <li><a href="#outcomeOverview" class="govuk-link govuk-link--no-visited-state">Outcome overview</a></li>
+          <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
+          <li><a href="#invoicing" class="govuk-link govuk-link--no-visited-state">Invoicing</a></li>
+          <li><a href="#case-history" class="govuk-link govuk-link--no-visited-state">Case audit log</a></li>
+        </ul>
+      </div>
+
+      {# 4. Case Notes Section #}
+      <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Case note actions</h2>
+
       {% set caseNotesHtml %}
-        <form method="POST" action="#">
+        {# 1. Point the form to the new route #}
+        <form method="POST" action="/cases/add-case-note?ref={{ currentCase.reference }}">
           <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-grid-column-full">
               {{ govukCharacterCount({
                 name: "comment",
                 id: "comment",
@@ -102,27 +143,73 @@
             classes: "govuk-button--secondary govuk-!-margin-bottom-1"
           }) }}
         </form>
-        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+        {# 2. Loop through and display the saved notes (if any exist) #}
+        {% if currentCase.caseNotes and currentCase.caseNotes.length > 0 %}
+          <div>
+            <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            {% for note in currentCase.caseNotes %}
+              <section>
+                <p class="govuk-body govuk-!-margin-bottom-1 govuk-!-text-break-word">
+                  {{ note.text }}
+                </p>
+                <p class="govuk-hint govuk-!-margin-bottom-6">
+                  {{ note.meta }}
+                </p>
+                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+              </section>
+            {% endfor %}
+          </div>
+        {% endif %}
       {% endset %}
 
+      {# 3. Make the summary text dynamically count the notes! #}
+      {% set noteCount = currentCase.caseNotes | length if currentCase.caseNotes else 0 %}
+      
       {{ govukDetails({
-        summaryText: "0 case notes",
+        summaryText: noteCount ~ " case notes",
         html: caseNotesHtml
       }) }}
 
     </div>
+  </div> 
 
-    {# RIGHT COLUMN: Manage Files Button #}
-    <div class="govuk-grid-column-one-third govuk-!-text-align-right">
-      {{ govukButton({
-        text: "Manage case files",
-        classes: "govuk-button--secondary",
-        href: "#"
-      }) }}
-    </div>
+  {# ========================================== #}
+  {# --- JAVASCRIPT FOR THE TOGGLE BUTTON ---   #}
+  {# ========================================== #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('toggle-summary-cards');
+      const extraCards = document.getElementById('extra-summary-cards');
+      const toggleText = document.getElementById('toggle-text');
+      const toggleIcon = document.getElementById('toggle-icon');
 
-    {# FULL WIDTH COLUMN: Summary Cards #}
+      if(toggleBtn) {
+        toggleBtn.addEventListener('click', function(e) {
+          e.preventDefault(); // Prevents the page from jumping when clicked
+          
+          if(extraCards.style.display === 'none') {
+            // SHOW THE LINKS: Change text to "Hide" and point arrow UP
+            extraCards.style.display = 'block';
+            toggleText.textContent = 'Hide';
+            toggleIcon.innerHTML = '<circle cx="8" cy="8" r="7.5" stroke="#1d70b8"/><path d="M11 9.5L8 6.5L5 9.5" stroke="#1d70b8" stroke-width="1.5"/>';
+          } else {
+            // HIDE THE LINKS: Change text back and point arrow DOWN
+            extraCards.style.display = 'none';
+            toggleText.textContent = 'Show more';
+            toggleIcon.innerHTML = '<circle cx="8" cy="8" r="7.5" stroke="#1d70b8"/><path d="M5 6.5L8 9.5L11 6.5" stroke="#1d70b8" stroke-width="1.5"/>';
+          }
+        });
+      }
+    });
+  </script>
+
+  {# ========================================== #}
+  {# --- ROW 3: SUMMARY CARDS ---               #}
+  {# ========================================== #}
+  <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
+  
       
       {# 1. OVERVIEW #}
       {% set procedureListHtml %}
@@ -1274,9 +1361,6 @@
   ]
 }) }}
 
-    </div>
-  </div>
-
       {# 11. CASE HISTORY #}
   {{ govukSummaryList({
     attributes: { id: "case-history" },
@@ -1298,6 +1382,9 @@
       }
     ]
   }) }}
+
+      </div>
+  </div>
 
 
 {% else %}

@@ -6,8 +6,10 @@
 // Add extra styles here
 
 /* GLOBAL FONT OVERRIDE */
-html, body, 
+html, body,
+.govuk-tag--grey, .govuk-tag--green, .govuk-tag--teal, .govuk-tag--blue, .govuk-tag--purple, .govuk-tag--magenta, .govuk-tag--red, .govuk-tag--orange, .govuk-tag--yellow,
 .govuk-heading-xl, .govuk-heading-l, .govuk-heading-m, .govuk-heading-s,
+.govuk-task-list__hint, .govuk-task-list__name-and-hint,
 .govuk-caption-xl, .govuk-caption-l, .govuk-caption-m,
 .govuk-body, .govuk-body-l, .govuk-body-m, .govuk-body-s,
 .govuk-label, .govuk-hint, .govuk-fieldset__legend,
