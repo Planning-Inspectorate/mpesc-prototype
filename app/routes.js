@@ -1071,7 +1071,9 @@ router.post('/cases/edit/act', function(req, res) {
   // 4. Save to the case object
   c.act = val;
 
-  req.session.flashSection = "overview";
+  req.session.flashSection = "overview"; 
+
+addAuditLog(req, ref, "Act updated to '" + val + "'");
   
   // Redirect back to case details with a success parameter
   // 'updated=legislation' can be used to trigger a success banner
@@ -1101,7 +1103,9 @@ router.post('/cases/edit/case-officer', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.caseOfficer;
-    req.session.flashSection = "team";
+    req.session.flashSection = "team"; 
+
+addAuditLog(req, req.query.ref, "Case officer removed");
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
   }
 
@@ -1134,7 +1138,9 @@ router.post('/cases/edit/case-officer', function(req, res) {
   // 3. Save
   c.caseOfficer = val;
   delete c['case-officer']; // Cleanup old variable
-  req.session.flashSection = "team";
+  req.session.flashSection = "team"; 
+
+addAuditLog(req, req.query.ref, "Case officer updated to '" + val + "'");
   
   // Note: updated=team refers to the ID of the new summary card below
   res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
@@ -1166,7 +1172,9 @@ router.post('/cases/edit/consent-sought', function(req, res) {
   c['consent-sought'] = val;
 
   // 3. Set the flash message for the 'Overview' card
-  req.session.flashSection = "overview";
+  req.session.flashSection = "overview"; 
+
+addAuditLog(req, ref, "Consent sought updated to '" + val + "'");
 
   // 4. Redirect smoothly back to the case details page
   res.redirect('/cases/case-details?ref=' + ref);
@@ -1198,14 +1206,18 @@ router.post('/cases/edit/inspector-band', function(req, res) {
     
     c['inspector-band'] = ""; 
 
-    req.session.flashSection = "overview";
+    req.session.flashSection = "overview"; 
+
+addAuditLog(req, ref, "Inspector band removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
   var val = req.body['inspector-band'];
 
   c['inspector-band'] = val;
 
-  req.session.flashSection = "overview";
+  req.session.flashSection = "overview"; 
+
+addAuditLog(req, ref, "Inspector band updated to '" + val + "'");
 
   
   res.redirect('/cases/case-details?ref=' + ref);
@@ -1441,7 +1453,9 @@ router.get('/cases/edit/inspector-remove', function (req, res) {
 // 7. Return to Case Details (From Linked Cases Hub)
 router.get('/cases/check-inspectors/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "team";
+  req.session.flashSection = "team"; 
+
+addAuditLog(req, req.query.ref, "Inspector details updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -1597,7 +1611,9 @@ router.post('/cases/edit/case-received-date', function(req, res) {
   c.receivedMonth = month;
   c.receivedYear = year;
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Case received / submitted date updated to '" + formatted + "'"); 
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -1631,7 +1647,9 @@ router.post('/cases/edit/start-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.startDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Start date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -1721,7 +1739,9 @@ router.post('/cases/edit/start-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Start date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -1754,7 +1774,9 @@ router.post('/cases/edit/expected-submission-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.expectedSubmissionDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Expected submission date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -1843,7 +1865,9 @@ router.post('/cases/edit/expected-submission-date', function(req, res) {
     year: year,
     formatted: formatted
   };
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Expected submission date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -1875,7 +1899,9 @@ router.post('/cases/edit/target-decision-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.targetDecisionDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Target decision date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -1965,7 +1991,9 @@ router.post('/cases/edit/target-decision-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Target decision date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -1998,7 +2026,9 @@ router.post('/cases/edit/co-verification-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.coVerificationDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Case officer verification date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2088,7 +2118,9 @@ router.post('/cases/edit/co-verification-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Case officer verification date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -2121,7 +2153,9 @@ router.post('/cases/edit/modifications-advertised-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.modificationsAdvertisedDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Date proposed modifications advertised removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2211,7 +2245,9 @@ router.post('/cases/edit/modifications-advertised-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Date proposed modifications advertised updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -2243,7 +2279,9 @@ router.post('/cases/edit/objection-period-end-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.objectionPeriodEndDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Objection period end date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2333,7 +2371,9 @@ router.post('/cases/edit/objection-period-end-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Objection period end date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -2365,7 +2405,9 @@ router.post('/cases/edit/consent-deadline-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.consentDeadlineDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Consent deadline date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2455,7 +2497,9 @@ router.post('/cases/edit/consent-deadline-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Consent deadline date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -2488,7 +2532,9 @@ router.post('/cases/edit/ogd-due-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.ogdDueDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Date due to Other Government Department (OGD) removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2578,7 +2624,9 @@ router.post('/cases/edit/ogd-due-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Date due to Other Government Department (OGD) updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
@@ -2610,7 +2658,9 @@ router.post('/cases/edit/proposal-letter-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.proposalLetterDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Proposal letter date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2700,7 +2750,9 @@ router.post('/cases/edit/proposal-letter-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Proposal letter date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -2733,7 +2785,9 @@ router.post('/cases/edit/decision-issued-by-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.decisionIssuedByDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Decision issued by date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2823,7 +2877,9 @@ router.post('/cases/edit/decision-issued-by-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Decision issued by date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -2856,7 +2912,9 @@ router.post('/cases/edit/decision-notification-date', function(req, res) {
   // 1. Handle Remove
   if (action === 'remove') {
     delete c.decisionNotificationDate;
-    req.session.flashSection = "timetable";
+    req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Decision notification date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -2946,7 +3004,9 @@ router.post('/cases/edit/decision-notification-date', function(req, res) {
     formatted: formatted
   };
 
-  req.session.flashSection = "timetable";
+  req.session.flashSection = "timetable"; 
+
+addAuditLog(req, ref, "Decision notification date updated to '" + formatted + "'");
 
   res.redirect('/cases/case-details?ref=' + ref);
 });
@@ -10747,7 +10807,9 @@ router.post('/cases/edit/invoicing-rechargeable', (req, res) => {
   c.invoicing.rechargeable = val;
   
   // --- SET FLASH MESSAGE ---
-  req.session.flashSection = "invoicing";
+  req.session.flashSection = "invoicing"; 
+
+addAuditLog(req, req.query.ref, "Invoicing rechargeable value updated to " + val);
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10784,7 +10846,9 @@ router.post('/cases/edit/invoicing-final-cost', (req, res) => {
   c.invoicing.finalCost = Number.isInteger(num) ? num.toString() : num.toFixed(2);
   
   // --- SET FLASH MESSAGE ---
-  req.session.flashSection = "invoicing";
+  req.session.flashSection = "invoicing"; 
+
+addAuditLog(req, req.query.ref, "Invoicing final cost updated to \u00A3" + c.invoicing.finalCost);
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10806,7 +10870,9 @@ router.post('/cases/edit/invoicing-invoice-sent', (req, res) => {
   c.invoicing.invoiceSent = val;
   
   // --- SET FLASH MESSAGE ---
-  req.session.flashSection = "invoicing";
+  req.session.flashSection = "invoicing"; 
+
+addAuditLog(req, req.query.ref, "Invoicing invoice sent value updated to " + val);
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -10828,7 +10894,9 @@ router.post('/cases/edit/invoicing-fee-received', (req, res) => {
   c.invoicing.feeReceived = val;
   
   // --- SET FLASH MESSAGE ---
-  req.session.flashSection = "invoicing";
+  req.session.flashSection = "invoicing"; 
+
+addAuditLog(req, req.query.ref, "Invoicing fee received value updated to" + val);
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -11080,7 +11148,9 @@ router.post('/cases/edit/file-location', function(req, res) {
   // Save directly to the case
   c.fileLocation = req.body.fileLocation;
 
-  req.session.flashSection = "documents";
+  req.session.flashSection = "documents"; 
+
+addAuditLog(req, ref, "Document file location updated to: " + (c.fileLocation || "N/A"));
   
   // Redirect back to the main case view with a success flag
   res.redirect('/cases/case-details?ref=' + ref);
@@ -11285,7 +11355,9 @@ router.get('/cases/related-cases/remove', function (req, res) {
 // 6. Return to Case Details (From Related Cases Hub)
 router.get('/cases/related-cases/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "overview";
+  req.session.flashSection = "overview"; 
+
+addAuditLog(req, req.query.ref, "Related cases updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -11430,7 +11502,9 @@ router.get('/cases/linked-cases/remove', function (req, res) {
 // 7. Return to Case Details (From Linked Cases Hub)
 router.get('/cases/linked-cases/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "overview";
+  req.session.flashSection = "overview"; 
+
+addAuditLog(req, req.query.ref, "Linked cases updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -11695,7 +11769,9 @@ router.post('/cases/overview-procedures/remove', (req, res) => {
 // 5. Return to Case Details (From Procedures Hub)
 router.get('/cases/overview-procedures/return-to-case', (req, res) => {
   // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "overview";
+  req.session.flashSection = "overview"; 
+
+addAuditLog(req, req.query.ref, "Procedures updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -11928,7 +12004,9 @@ router.get('/cases/key-contacts/objectors/remove', function(req, res) {
 // STEP 5. Return to Case Details
 router.get('/cases/objectors/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Key Contacts' card
-  req.session.flashSection = "key-contacts";
+  req.session.flashSection = "key-contacts"; 
+
+addAuditLog(req, req.query.ref, "Objectors updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -12127,7 +12205,9 @@ router.get('/cases/key-contacts/contacts/remove', function(req, res) {
 // STEP 5. Return to Case Details
 router.get('/cases/contacts/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Key Contacts' card
-  req.session.flashSection = "key-contacts";
+  req.session.flashSection = "key-contacts"; 
+
+addAuditLog(req, req.query.ref, "Contacts updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -12509,7 +12589,9 @@ router.post('/cases/outcomes/remove', (req, res) => {
 // 7. Return to Case Details (From Outcomes Hub)
 router.get('/cases/outcomes/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Outcome overview' card
-  req.session.flashSection = "outcomeOverview";
+  req.session.flashSection = "outcomeOverview"; 
+
+addAuditLog(req, req.query.ref, "Outcomes updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -12548,7 +12630,9 @@ router.post('/cases/overview-outcome/parties-notified', (req, res) => {
   // 1. Check if completely blank
   if (!day && !month && !year) {
     c.outcomeOverview.partiesNotifiedDate = null; 
-    req.session.flashSection = "outcomeOverview";
+    req.session.flashSection = "outcomeOverview"; 
+
+addAuditLog(req, req.query.ref, "Parties notified date removed");
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12575,7 +12659,22 @@ router.post('/cases/overview-outcome/parties-notified', (req, res) => {
   }
 
   // 3. Success
-  req.session.flashSection = "outcomeOverview";
+  req.session.flashSection = "outcomeOverview"; 
+
+  // --- FORMAT THE DATE ---
+  // 1. Create a lookup list for the months
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  // 2. Turn the numerical month (e.g., "3") into the word (e.g., "March")
+  // We subtract 1 because arrays start counting at 0!
+  const prettyMonth = monthNames[parseInt(month, 10) - 1]; 
+  
+  // 3. Stick it all together into a pretty string
+  const formattedDate = `${day} ${prettyMonth} ${year}`;
+  
+  // AUDIT LOG: Stamp the beautiful date!
+  addAuditLog(req, req.query.ref, `Parties notified date updated to '${formattedDate}'`);
+  
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -12599,7 +12698,10 @@ router.post('/cases/overview-outcome/order-dispatch', (req, res) => {
 
   if (!day && !month && !year) {
     c.outcomeOverview.orderDispatchDate = null; 
-    req.session.flashSection = "outcomeOverview";
+    req.session.flashSection = "outcomeOverview"; 
+
+    // AUDIT LOG: Stamp removal
+    addAuditLog(req, req.query.ref, "Order dispatch date removed");
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12611,7 +12713,23 @@ router.post('/cases/overview-outcome/order-dispatch', (req, res) => {
     });
   }
   
-  req.session.flashSection = "outcomeOverview";
+  // Success!
+  req.session.flashSection = "outcomeOverview"; 
+
+  // --- FORMAT THE DATE ---
+  // 1. Create a lookup list for the months
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  // 2. Turn the numerical month (e.g., "3") into the word (e.g., "March")
+  // We subtract 1 because arrays start counting at 0!
+  const prettyMonth = monthNames[parseInt(month, 10) - 1]; 
+  
+  // 3. Stick it all together into a pretty string
+  const formattedDate = `${day} ${prettyMonth} ${year}`;
+  
+  // AUDIT LOG: Stamp the beautiful date!
+  addAuditLog(req, req.query.ref, `Order dispatch date updated to '${formattedDate}'`);
+  
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -12635,7 +12753,9 @@ router.post('/cases/overview-outcome/sealed-order', (req, res) => {
 
   if (!day && !month && !year) {
     c.outcomeOverview.sealedOrderReturnedDate = null; 
-    req.session.flashSection = "outcomeOverview";
+    req.session.flashSection = "outcomeOverview"; 
+
+addAuditLog(req, req.query.ref, "Sealed order returned date removed");
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12647,7 +12767,22 @@ router.post('/cases/overview-outcome/sealed-order', (req, res) => {
     });
   }
   
-  req.session.flashSection = "outcomeOverview";
+  req.session.flashSection = "outcomeOverview"; 
+
+  // --- FORMAT THE DATE ---
+  // 1. Create a lookup list for the months
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  // 2. Turn the numerical month (e.g., "3") into the word (e.g., "March")
+  // We subtract 1 because arrays start counting at 0!
+  const prettyMonth = monthNames[parseInt(month, 10) - 1]; 
+  
+  // 3. Stick it all together into a pretty string
+  const formattedDate = `${day} ${prettyMonth} ${year}`;
+  
+  // AUDIT LOG: Stamp the beautiful date!
+  addAuditLog(req, req.query.ref, `Sealed order date updated to '${formattedDate}'`);
+  
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -12671,7 +12806,9 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
 
   if (!day && !month && !year) {
     c.outcomeOverview.decisionPublishedDate = null; 
-    req.session.flashSection = "outcomeOverview";
+    req.session.flashSection = "outcomeOverview"; 
+
+addAuditLog(req, req.query.ref, "Decision published date removed");
     return res.redirect('/cases/case-details?ref=' + req.query.ref); 
   }
 
@@ -12683,7 +12820,22 @@ router.post('/cases/overview-outcome/decision-published', (req, res) => {
     });
   }
   
-  req.session.flashSection = "outcomeOverview";
+  req.session.flashSection = "outcomeOverview"; 
+
+  // --- FORMAT THE DATE ---
+  // 1. Create a lookup list for the months
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  // 2. Turn the numerical month (e.g., "3") into the word (e.g., "March")
+  // We subtract 1 because arrays start counting at 0!
+  const prettyMonth = monthNames[parseInt(month, 10) - 1]; 
+  
+  // 3. Stick it all together into a pretty string
+  const formattedDate = `${day} ${prettyMonth} ${year}`;
+  
+  // AUDIT LOG: Stamp the beautiful date!
+  addAuditLog(req, req.query.ref, `Decision published date updated to '${formattedDate}'`);
+  
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
