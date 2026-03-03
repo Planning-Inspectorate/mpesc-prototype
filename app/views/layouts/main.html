@@ -1,6 +1,18 @@
 {% extends "govuk-prototype-kit/layouts/govuk-branded.njk" %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
+{% block headIcons %}
+  <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/favicon.ico" type="image/x-icon">
+  <link rel="mask-icon" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
+  <link rel="apple-touch-icon" sizes="180x180" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-apple-touch-icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-apple-touch-icon-167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-apple-touch-icon.png">
+  
+  {# Here is our fixed manifest link! #}
+  <link rel="manifest" href="/plugin-assets/govuk-frontend/dist/govuk/assets/manifest.json" crossorigin="use-credentials">
+{% endblock %}
+
 {% block header %}
 
 <style>
