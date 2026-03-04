@@ -1,0 +1,66 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {{ currentCase.reference }} - Manage a Case
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to case details", href: "/cases/case-details?ref=" + currentCase.reference }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+    
+      <span class="govuk-caption-m">{{ currentCase.reference }}</span>
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-4">
+        {{ currentCase.caseName }}
+      </h1>
+
+    <form id="search-bar-form" method="GET" data-cy="search-form">
+      <div class="govuk-form-group">
+        <div id="search-hint" class="govuk-hint">
+          To find a document, search by file name
+        </div>
+        <div style="display: flex; gap: 15px; align-items: flex-start;">
+          <input class="govuk-input govuk-input--width-30" id="search-input" value="" name="searchCriteria" type="text" data-cy="search-input">
+          {{ govukButton({
+            text: "Search",
+            classes: "govuk-!-margin-bottom-0",
+            formaction: "/cases/manage-folders/search-results?ref=" + currentCase.reference
+          }) }}
+        </div>
+      </div>
+    </form>
+
+    {{ govukButton({
+      text: "Create folder",
+      classes: "govuk-button--secondary",
+      href: "/cases/manage-folders/create?ref=" + currentCase.reference
+    }) }}
+
+    <hr class="govuk-section-break govuk-section-break--s govuk-section-break--visible">
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    
+    <div class="pins-link-menu" data-cy="folder-list">
+      
+      {# Simple list of parent folders #}
+      {% for folder in currentCase.folders %}
+        <div class="govuk-!-margin-bottom-4">
+          <a class="govuk-link govuk-heading-s govuk-link--no-visited-state" 
+             href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}?ref={{ currentCase.reference }}" 
+             data-cy="folder-link-{{ folder.id }}">
+            {{ folder.name }}
+          </a>
+        </div>
+      {% endfor %}
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

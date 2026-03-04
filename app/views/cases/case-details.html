@@ -7,7 +7,7 @@
 {% block beforeContent %}
   {{ govukBackLink({
   text: "Back",
-  href: "javascript:window.history.back()"
+  href: "/cases-page"
 }) }}
 {% endblock %}
 
@@ -64,7 +64,7 @@
         {{ govukButton({
           text: "Manage case files",
           classes: "govuk-button--secondary",
-          href: "#"
+          href: "/cases/manage-folders?ref=" + currentCase.reference
         }) }}
 
         {{ govukButton({

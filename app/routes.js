@@ -14503,4 +14503,137 @@ router.post('/cases/add-case-note', function(req, res) {
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
+
+
+// ==============================================
+// MANAGE CASE FILES (FOLDERS & SUBFOLDERS)
+// ==============================================
+
+// We now ONLY pass in caseType, because it's the only variable we need to know what folders to make!
+function getDefaultFolders(caseType) {
+  
+  const createFolder = (id, name, subfolders = []) => {
+    return {
+      id: id,
+      name: name,
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+      subfolders: subfolders.map((subName, index) => ({
+        id: `${id}-sub${index + 1}`,
+        name: subName,
+        slug: subName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+      }))
+    };
+  };
+
+  const type = (caseType || "").toLowerCase();
+
+  // 1. RIGHTS OF WAY AND COMMON LAND
+  // If the Case Type is Coastal Access or Rights of Way
+  if (type.includes('coastal access') || type.includes('rights of way')) {
+    return [
+      createFolder('f1', 'Letters'),
+      createFolder('f2', 'Internal correspondence'),
+      createFolder('f3', 'Submissions'),
+      createFolder('f4', 'Notices and order documents'),
+      createFolder('f5', 'Decision'),
+      createFolder('f6', 'Advertised modifications', [
+        'Communications',
+        'Representations',
+        'New Decision'
+      ]),
+      createFolder('f7', 'Other')
+    ];
+  } 
+  
+  // If the Case Type is Common Land
+  else if (type.includes('common land')) {
+    return [
+      createFolder('f1', 'Application documents'),
+      createFolder('f2', 'Public representations'),
+      createFolder('f3', 'Applicant response to representations'),
+      createFolder('f4', 'Correspondence with applicant, representations parties, other parties, registration authority & internal/inspector'),
+      createFolder('f5', 'Hearing documents'),
+      createFolder('f6', 'Decision'),
+      createFolder('f7', 'Other')
+    ];
+  }
+
+  // 2. PLANNING AND ENVIRONMENTAL APPLICATIONS (Default Fallback for Drought, CPOs, Wayleaves, etc.)
+  return [
+    createFolder('f1', 'Initial documentation'),
+    createFolder('f2', 'Procedure'),
+    createFolder('f3', 'Statements of case / final comments', [
+      'Statements of case',
+      'Final comments'
+    ]),
+    createFolder('f4', 'Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)'),
+    createFolder('f5', 'Start Date Letters'),
+    createFolder('f6', 'Events information and notifications', [
+      'Pre-inquiry meeting or Case management conference',
+      'Site Visit information (if written reps)',
+      'Inquiry notice'
+    ]),
+    createFolder('f7', 'Decision / report'),
+    createFolder('f8', 'Invoice'),
+    createFolder('f9', 'Costs'),
+    createFolder('f10', 'Other')
+  ];
+}
+
+// MAIN ROUTE: View Main Folders List
+router.get('/cases/manage-folders', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  if (!currentCase.folders || currentCase.folders.length === 0) {
+    // Only pass currentCase.type now!
+    currentCase.folders = getDefaultFolders(currentCase.type); 
+  }
+
+  res.render('cases/manage-folders/index', {
+    currentCase: currentCase
+  });
+});
+
+// ROUTE: View Inside a Specific Folder
+router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) {
+      activeFolder = f;
+      break;
+    }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) {
+        activeFolder = sub;
+        break;
+      }
+    }
+  }
+
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  res.render('cases/manage-folders/view', {
+    currentCase: currentCase,
+    folder: activeFolder
+  });
+});
+
+
+
+
+
 module.exports = router;
+
+
+

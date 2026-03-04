@@ -1,0 +1,128 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {{ currentCase.reference }} - Case folder
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to folders", href: "/cases/manage-folders?ref=" + currentCase.reference }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+    
+      <span class="govuk-caption-m">{{ currentCase.reference }}</span>
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-4">
+        {{ currentCase.caseName }}
+      </h1>
+
+    <h1 class="govuk-heading-m" data-cy="folder-name-heading">
+      {{ folder.name }} folder
+    </h1>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full govuk-button-group">
+    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-cy="create-subfolder-btn">
+      Create subfolder
+    </a>
+    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+      Rename folder
+    </a>
+    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+      Delete folder
+    </a>
+  </div>
+</div>
+
+{# --- ACCORDION FOR SUBFOLDERS --- #}
+{% if folder.subfolders and folder.subfolders.length > 0 %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      
+      {# CSS FIX: Hides the "Show all" button AND the empty title line so it's a perfect single-line toggle #}
+      <style>
+        .hide-controls .govuk-accordion__show-all { display: none !important; }
+        .hide-controls .govuk-accordion__section-heading-text { display: none !important; }
+        .hide-controls .govuk-accordion__section-button { padding-top: 10px; padding-bottom: 10px; }
+      </style>
+
+      <div class="govuk-accordion hide-controls" data-module="govuk-accordion" id="sub-folders-accordion" data-i18n.hide-section="Hide subfolders list" data-i18n.show-section="Show subfolders list" data-cy="subfolders-accordion">
+        <div class="govuk-accordion__section">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="sub-folders-accordion-heading-1">
+                {# Left completely blank so the CSS can collapse it #}
+              </span>
+            </h2>
+          </div>
+          <div id="sub-folders-accordion-content-1" class="govuk-accordion__section-content">
+            <div class="pins-link-menu">
+              
+              {# Spaced out using standard GOV.UK lists #}
+              <ul class="govuk-list">
+                {% for sub in folder.subfolders %}
+                  <li class="govuk-!-margin-bottom-4">
+                    <a class="govuk-link govuk-heading-s govuk-!-margin-bottom-0" href="/cases/manage-folders/view/{{ sub.id }}/{{ sub.slug }}?ref={{ currentCase.reference }}" data-cy="subfolder-link-{{ sub.id }}">
+                      {{ sub.name }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endif %}
+
+{# --- FILES SECTION --- #}
+<div id="pagination" class="govuk-body">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <p class="govuk-body govuk-!-font-weight-bold">Files</p>
+      
+      <form action="#" method="POST">
+        <div class="govuk-button-group">
+          <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-cy="upload-files-btn">
+            Upload files
+          </a>
+        </div>
+        
+        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+        
+        <p class="govuk-body" data-cy="no-documents-message">This folder contains 0 documents</p>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{# --- JAVASCRIPT FOR SELECT ALL --- #}
+<script type="module" nonce="">
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('checkboxes-all');
+    const checkboxes = document.querySelectorAll('input[name="selectedFiles"]');
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function(e) {
+        checkboxes.forEach(function(cb) {
+          cb.checked = e.target.checked;
+        });
+      });
+
+      checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', function() {
+          const allChecked = Array.from(checkboxes).every(c => c.checked);
+          selectAll.checked = allChecked;
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}
