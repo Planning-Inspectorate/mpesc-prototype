@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  Who is the objector? - Planning Inspectorate Portal
+  {% if errorList.length > 0 %}Error: {% endif %}Who is the objector? - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
@@ -11,7 +11,15 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <form method="post" action="/cases/key-contacts/objectors/step-1?ref={{ ref }}&id={{ id }}">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form method="post" action="/cases/key-contacts/objectors/step-1?ref={{ ref }}&id={{ id }}" novalidate>
 
       {# OPEN FIELDSET #}
       {% call govukFieldset({
@@ -27,13 +35,19 @@
         Enter the name of the individual, the organisation, or both.
       </div>
 
+      {# Render general error inline if they left everything blank #}
+      {% if errors.general %}
+        <p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errors.general.text }}</p>
+      {% endif %}
+
       {{ govukInput({
         label: {
           text: "First Name"
         },
         id: "obj-fname",
         name: "obj-fname",
-        value: fname
+        value: fname,
+        errorMessage: errors.fname if errors.fname else null
       }) }}
 
       {{ govukInput({
@@ -42,7 +56,8 @@
         },
         id: "obj-lname",
         name: "obj-lname",
-        value: lname
+        value: lname,
+        errorMessage: errors.lname if errors.lname else null
       }) }}
 
       {{ govukInput({
@@ -51,7 +66,8 @@
         },
         id: "obj-org",
         name: "obj-org",
-        value: org
+        value: org,
+        errorMessage: errors.org if errors.org else null
       }) }}
 
       {# CLOSE FIELDSET #}

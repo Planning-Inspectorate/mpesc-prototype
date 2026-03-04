@@ -13002,12 +13002,54 @@ router.get('/cases/key-contacts/objectors/step-1', function(req, res) {
 });
 
 router.post('/cases/key-contacts/objectors/step-1', function(req, res) {
-  req.session.data['temp_obj_fname'] = req.body['obj-fname'];
-  req.session.data['temp_obj_lname'] = req.body['obj-lname'];
-  req.session.data['temp_obj_org']   = req.body['obj-org'];
+  var first = req.body['obj-fname'] || "";
+  var last = req.body['obj-lname'] || "";
+  var org = req.body['obj-org'] || "";
   
-  res.redirect(`/cases/key-contacts/objectors/step-2?ref=${req.query.ref}&id=${req.query.id}`);
+  let errors = {};
+  let errorList = [];
+
+  // Validation
+  if (!first && !last && !org) {
+    let err = { text: "Enter at least one of first name, last name or organisation", href: "#obj-fname" };
+    errors.general = err;
+    errorList.push(err);
+  }
+  if (first.length > 250) {
+    let err = { text: "First name must be less than 250 characters", href: "#obj-fname" };
+    errors.fname = err;
+    errorList.push(err);
+  }
+  if (last.length > 250) {
+    let err = { text: "Last name must be less than 250 characters", href: "#obj-lname" };
+    errors.lname = err;
+    errorList.push(err);
+  }
+  if (org.length > 250) {
+    let err = { text: "Organisation name must be less than 250 characters", href: "#obj-org" };
+    errors.org = err;
+    errorList.push(err);
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/key-contacts/objectors/step-1', {
+      ref: req.query.ref,
+      id: req.query.id,
+      fname: first,
+      lname: last,
+      org: org,
+      errors: errors,
+      errorList: errorList
+    });
+  }
+
+  req.session.data['temp_obj_fname'] = first;
+  req.session.data['temp_obj_lname'] = last;
+  req.session.data['temp_obj_org']   = org;
+  
+  res.redirect(`/cases/key-contacts/objectors/step-2?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
+
 
 // STEP 2: Address
 router.get('/cases/key-contacts/objectors/step-2', function(req, res) {
@@ -13026,20 +13068,61 @@ router.get('/cases/key-contacts/objectors/step-2', function(req, res) {
     address1: req.session.data['temp_obj_address1'] || objector.address1,
     address2: req.session.data['temp_obj_address2'] || objector.address2,
     town:     req.session.data['temp_obj_town']     || objector.town,
-    county:   req.session.data['temp_obj_county']   || objector.county, // NEW
+    county:   req.session.data['temp_obj_county']   || objector.county,
     postcode: req.session.data['temp_obj_postcode'] || objector.postcode
   });
 });
 
 router.post('/cases/key-contacts/objectors/step-2', function(req, res) {
-  req.session.data['temp_obj_address1'] = req.body['obj-address1'];
-  req.session.data['temp_obj_address2'] = req.body['obj-address2'];
-  req.session.data['temp_obj_town']     = req.body['obj-town'];
-  req.session.data['temp_obj_county']   = req.body['obj-county']; // NEW
-  req.session.data['temp_obj_postcode'] = req.body['obj-postcode'];
+  var line1 = req.body['obj-address1'];
+  var line2 = req.body['obj-address2'];
+  var town = req.body['obj-town'];
+  var county = req.body['obj-county'];
+  var postcode = req.body['obj-postcode'];
 
-  res.redirect(`/cases/key-contacts/objectors/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+  let errors = {};
+  let errorList = [];
+
+  // Postcode Validation (Strict UK)
+  if (postcode && postcode.trim() !== "") {
+    var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+    var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
+
+    if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
+      let err = { text: "Postcode must be between 5 and 7 characters", href: "#obj-postcode" };
+      errors.postcode = err;
+      errorList.push(err);
+    } 
+    else if (!postcodeRegex.test(cleanPostcode)) {
+      let err = { text: "Enter a real postcode", href: "#obj-postcode" };
+      errors.postcode = err;
+      errorList.push(err);
+    }
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/key-contacts/objectors/step-2', {
+      ref: req.query.ref,
+      id: req.query.id,
+      address1: line1,
+      address2: line2,
+      town: town,
+      county: county,
+      postcode: postcode,
+      errors: errors,
+      errorList: errorList
+    });
+  }
+
+  req.session.data['temp_obj_address1'] = line1;
+  req.session.data['temp_obj_address2'] = line2;
+  req.session.data['temp_obj_town']     = town;
+  req.session.data['temp_obj_county']   = county;
+  req.session.data['temp_obj_postcode'] = postcode;
+
+  res.redirect(`/cases/key-contacts/objectors/step-3?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
+
 
 // STEP 3: Contact Details
 router.get('/cases/key-contacts/objectors/step-3', function(req, res) {
@@ -13061,11 +13144,41 @@ router.get('/cases/key-contacts/objectors/step-3', function(req, res) {
 });
 
 router.post('/cases/key-contacts/objectors/step-3', function(req, res) {
-  req.session.data['temp_obj_email'] = req.body['obj-email'];
-  req.session.data['temp_obj_phone'] = req.body['obj-phone'];
+  let email = req.body['obj-email'] || "";
+  let phone = req.body['obj-phone'] || "";
 
-  res.redirect(`/cases/key-contacts/objectors/step-4?ref=${req.query.ref}&id=${req.query.id}`);
+  let errors = {};
+  let errorList = [];
+
+  // Validation
+  if (email.length > 250) {
+    let err = { text: "Email must be less than 250 characters", href: "#obj-email" };
+    errors.email = err;
+    errorList.push(err);
+  }
+  if (phone.length > 15) {
+    let err = { text: "Phone number must be less than 15 characters", href: "#obj-phone" };
+    errors.phone = err;
+    errorList.push(err);
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/key-contacts/objectors/step-3', {
+      ref: req.query.ref,
+      id: req.query.id,
+      email: email,
+      phone: phone,
+      errors: errors,
+      errorList: errorList
+    });
+  }
+
+  req.session.data['temp_obj_email'] = email;
+  req.session.data['temp_obj_phone'] = phone;
+
+  res.redirect(`/cases/key-contacts/objectors/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
+
 
 // STEP 4: Status (Final Save)
 router.get('/cases/key-contacts/objectors/step-4', function(req, res) {
@@ -13182,7 +13295,7 @@ router.get('/cases/objectors/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Key Contacts' card
   req.session.flashSection = "key-contacts"; 
 
-addAuditLog(req, req.query.ref, "Objectors updated");
+  addAuditLog(req, req.query.ref, "Objectors updated");
   
   // 2. Send them back to the main Case Details page
   res.redirect('/cases/case-details?ref=' + req.query.ref);
@@ -13205,7 +13318,7 @@ router.get('/cases/key-contacts/contacts', function(req, res) {
 
 // --- ADD / EDIT FLOW ---
 
-// STEP 1: Contact Type (New Step 1)
+// STEP 1: Contact Type
 router.get('/cases/key-contacts/contacts/step-1', function(req, res) {
   var c = getCase(req);
   var id = req.query.id;
@@ -13236,10 +13349,10 @@ router.post('/cases/key-contacts/contacts/step-1', function(req, res) {
   }
 
   req.session.data['temp_con_type'] = type;
-  res.redirect(`/cases/key-contacts/contacts/step-2?ref=${req.query.ref}&id=${req.query.id}`);
+  res.redirect(`/cases/key-contacts/contacts/step-2?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-// STEP 2: Who is the contact? (Was Objector Step 1)
+// STEP 2: Who is the contact?
 router.get('/cases/key-contacts/contacts/step-2', function(req, res) {
   var c = getCase(req);
   var id = req.query.id;
@@ -13256,14 +13369,55 @@ router.get('/cases/key-contacts/contacts/step-2', function(req, res) {
 });
 
 router.post('/cases/key-contacts/contacts/step-2', function(req, res) {
-  req.session.data['temp_con_fname'] = req.body['con-fname'];
-  req.session.data['temp_con_lname'] = req.body['con-lname'];
-  req.session.data['temp_con_org']   = req.body['con-org'];
+  var first = req.body['con-fname'] || "";
+  var last = req.body['con-lname'] || "";
+  var org = req.body['con-org'] || "";
+  
+  let errors = {};
+  let errorList = [];
 
-  res.redirect(`/cases/key-contacts/contacts/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+  // Validation
+  if (!first && !last && !org) {
+    let err = { text: "Enter at least one of first name, last name or organisation", href: "#con-fname" };
+    errors.general = err;
+    errorList.push(err);
+  }
+  if (first.length > 250) {
+    let err = { text: "First name must be less than 250 characters", href: "#con-fname" };
+    errors.fname = err;
+    errorList.push(err);
+  }
+  if (last.length > 250) {
+    let err = { text: "Last name must be less than 250 characters", href: "#con-lname" };
+    errors.lname = err;
+    errorList.push(err);
+  }
+  if (org.length > 250) {
+    let err = { text: "Organisation name must be less than 250 characters", href: "#con-org" };
+    errors.org = err;
+    errorList.push(err);
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/key-contacts/contacts/step-2', {
+      ref: req.query.ref,
+      id: req.query.id,
+      fname: first,
+      lname: last,
+      org: org,
+      errors: errors,
+      errorList: errorList
+    });
+  }
+
+  req.session.data['temp_con_fname'] = first;
+  req.session.data['temp_con_lname'] = last;
+  req.session.data['temp_con_org']   = org;
+
+  res.redirect(`/cases/key-contacts/contacts/step-3?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-// STEP 3: Address (Was Objector Step 2)
+// STEP 3: Address
 router.get('/cases/key-contacts/contacts/step-3', function(req, res) {
   var c = getCase(req);
   var id = req.query.id;
@@ -13282,16 +13436,56 @@ router.get('/cases/key-contacts/contacts/step-3', function(req, res) {
 });
 
 router.post('/cases/key-contacts/contacts/step-3', function(req, res) {
-  req.session.data['temp_con_address1'] = req.body['con-address1'];
-  req.session.data['temp_con_address2'] = req.body['con-address2'];
-  req.session.data['temp_con_town']     = req.body['con-town'];
-  req.session.data['temp_con_county']   = req.body['con-county'];
-  req.session.data['temp_con_postcode'] = req.body['con-postcode'];
+  var line1 = req.body['con-address1'];
+  var line2 = req.body['con-address2'];
+  var town = req.body['con-town'];
+  var county = req.body['con-county'];
+  var postcode = req.body['con-postcode'];
 
-  res.redirect(`/cases/key-contacts/contacts/step-4?ref=${req.query.ref}&id=${req.query.id}`);
+  let errors = {};
+  let errorList = [];
+
+  // Postcode Validation (Strict UK)
+  if (postcode && postcode.trim() !== "") {
+    var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+    var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
+
+    if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
+      let err = { text: "Postcode must be between 5 and 7 characters", href: "#con-postcode" };
+      errors.postcode = err;
+      errorList.push(err);
+    } 
+    else if (!postcodeRegex.test(cleanPostcode)) {
+      let err = { text: "Enter a real postcode", href: "#con-postcode" };
+      errors.postcode = err;
+      errorList.push(err);
+    }
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/key-contacts/contacts/step-3', {
+      ref: req.query.ref,
+      id: req.query.id,
+      address1: line1,
+      address2: line2,
+      town: town,
+      county: county,
+      postcode: postcode,
+      errors: errors,
+      errorList: errorList
+    });
+  }
+
+  req.session.data['temp_con_address1'] = line1;
+  req.session.data['temp_con_address2'] = line2;
+  req.session.data['temp_con_town']     = town;
+  req.session.data['temp_con_county']   = county;
+  req.session.data['temp_con_postcode'] = postcode;
+
+  res.redirect(`/cases/key-contacts/contacts/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-// STEP 4: Contact Details + SAVE (Was Objector Step 3)
+// STEP 4: Contact Details + SAVE
 router.get('/cases/key-contacts/contacts/step-4', function(req, res) {
   var c = getCase(req);
   var id = req.query.id;
@@ -13311,50 +13505,71 @@ router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
   var id = req.query.id;
   var c = getCase(req);
 
-  // 1. Get inputs from this step
-  var email = req.body['con-email'];
-  var phone = req.body['con-phone'];
+  var email = req.body['con-email'] || "";
+  var phone = req.body['con-phone'] || "";
 
-  // 2. Find existing data (if editing)
+  let errors = {};
+  let errorList = [];
+
+  // Validation
+  if (email.length > 250) {
+    let err = { text: "Email must be less than 250 characters", href: "#con-email" };
+    errors.email = err;
+    errorList.push(err);
+  }
+  if (phone.length > 15) {
+    let err = { text: "Phone number must be less than 15 characters", href: "#con-phone" };
+    errors.phone = err;
+    errorList.push(err);
+  }
+
+  if (errorList.length > 0) {
+    return res.render('cases/key-contacts/contacts/step-4', {
+      ref: req.query.ref,
+      id: req.query.id,
+      email: email,
+      phone: phone,
+      errors: errors,
+      errorList: errorList
+    });
+  }
+
+  // Find existing data (if editing)
   var existing = {};
   if (id && c.contacts) {
     existing = c.contacts.find(x => x.id == id) || {};
   }
 
-  // 3. Helper to get New Session Data OR Old DB Data
+  // Helper to get New Session Data OR Old DB Data
   function getVal(sess, db) { return (req.session.data[sess] !== undefined) ? req.session.data[sess] : db; }
 
-  // 4. Build Object
+  // Build Object
   var newContact = {
     id: id || Date.now().toString(),
     
-    // Step 1: Type
     type: getVal('temp_con_type', existing.type),
 
-    // Step 2: Name
     fname: getVal('temp_con_fname', existing.fname),
     lname: getVal('temp_con_lname', existing.lname),
     org:   getVal('temp_con_org',   existing.org),
 
-    // Step 3: Address
     address1: getVal('temp_con_address1', existing.address1),
     address2: getVal('temp_con_address2', existing.address2),
     town:     getVal('temp_con_town',     existing.town),
     county:   getVal('temp_con_county',   existing.county),
     postcode: getVal('temp_con_postcode', existing.postcode),
 
-    // Step 4: Contact
     email: email,
     phone: phone
   };
 
-  // 5. Save
+  // Save
   c.contacts = c.contacts || [];
   var idx = c.contacts.findIndex(x => x.id == id);
   if (idx >= 0) c.contacts[idx] = newContact;
   else c.contacts.push(newContact);
 
-  // 6. Cleanup
+  // Cleanup
   delete req.session.data['temp_con_type'];
   delete req.session.data['temp_con_fname'];
   delete req.session.data['temp_con_lname'];
@@ -13364,7 +13579,7 @@ router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
   delete req.session.data['temp_con_town'];
   delete req.session.data['temp_con_county'];
   delete req.session.data['temp_con_postcode'];
-  delete req.session.data['temp_con_email']; // Clean up specific keys
+  delete req.session.data['temp_con_email']; 
 
   res.redirect('/cases/key-contacts/contacts?ref=' + ref);
 });
@@ -13380,12 +13595,8 @@ router.get('/cases/key-contacts/contacts/remove', function(req, res) {
 
 // STEP 5. Return to Case Details
 router.get('/cases/contacts/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Key Contacts' card
   req.session.flashSection = "key-contacts"; 
-
-addAuditLog(req, req.query.ref, "Contacts updated");
-  
-  // 2. Send them back to the main Case Details page
+  addAuditLog(req, req.query.ref, "Contacts updated");
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 

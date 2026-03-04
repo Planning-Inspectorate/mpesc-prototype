@@ -8,14 +8,17 @@
     <h1 class="govuk-heading-l">Check contact details</h1>
 
     {% if contacts.length > 0 %}
-      <table class="govuk-table">
+      {# Added the MOJ Sortable Module to the table #}
+      <table class="govuk-table" data-module="moj-sortable-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th class="govuk-table__header">Contact Type</th>
-            <th class="govuk-table__header">Name</th>
-            <th class="govuk-table__header">Address</th>
-            <th class="govuk-table__header">Contact</th>
-            <th class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+            {# Added aria-sort="none" to the headers you want to sort by #}
+            <th scope="col" class="govuk-table__header" aria-sort="none">Contact Type</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Name</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Address</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Contact</th>
+            {# Not adding aria-sort to Actions because it doesn't make sense to sort by actions #}
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">

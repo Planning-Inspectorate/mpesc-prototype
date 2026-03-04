@@ -19,12 +19,15 @@ Check applicant or appellant - Planning Inspectorate Portal
 
     {# --- DATA TABLE --- #}
     {% if applicantList.length > 0 %}
-      <table class="govuk-table">
+      {# Added the MOJ Sortable Module to the table #}
+      <table class="govuk-table" data-module="moj-sortable-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Address</th>
-            <th scope="col" class="govuk-table__header">Contact details</th>
+            {# Added aria-sort="none" to the headers you want to sort by #}
+            <th scope="col" class="govuk-table__header" aria-sort="none">Name</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Address</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Contact details</th>
+            {# Not adding aria-sort to Actions #}
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
         </thead>

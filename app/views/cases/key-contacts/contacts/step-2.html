@@ -1,20 +1,62 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}Who is the contact? - Planning Inspectorate Portal{% endblock %}
+
+{% block pageTitle %}
+  {% if errorList.length > 0 %}Error: {% endif %}Who is the contact? - Planning Inspectorate Portal
+{% endblock %}
+
 {% block beforeContent %}
   {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
 {% endblock %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <form method="post" action="/cases/key-contacts/contacts/step-2?ref={{ ref }}&id={{ id }}">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form method="post" action="/cases/key-contacts/contacts/step-2?ref={{ ref }}&id={{ id }}" novalidate>
+      
       {% call govukFieldset({
         legend: { text: "Who is the contact?", classes: "govuk-fieldset__legend--l", isPageHeading: true }
       }) %}
+      
       <div class="govuk-hint">Enter the name of the individual, the organisation, or both.</div>
-      {{ govukInput({ label: { text: "First Name" }, id: "con-fname", name: "con-fname", value: fname }) }}
-      {{ govukInput({ label: { text: "Last Name" }, id: "con-lname", name: "con-lname", value: lname }) }}
-      {{ govukInput({ label: { text: "Contact company or organisation name" }, id: "con-org", name: "con-org", value: org }) }}
+
+      {% if errors.general %}
+        <p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errors.general.text }}</p>
+      {% endif %}
+
+      {{ govukInput({ 
+        label: { text: "First Name" }, 
+        id: "con-fname", 
+        name: "con-fname", 
+        value: fname,
+        errorMessage: errors.fname if errors.fname else null
+      }) }}
+      
+      {{ govukInput({ 
+        label: { text: "Last Name" }, 
+        id: "con-lname", 
+        name: "con-lname", 
+        value: lname,
+        errorMessage: errors.lname if errors.lname else null
+      }) }}
+      
+      {{ govukInput({ 
+        label: { text: "Contact company or organisation name" }, 
+        id: "con-org", 
+        name: "con-org", 
+        value: org,
+        errorMessage: errors.org if errors.org else null
+      }) }}
+      
       {% endcall %}
+      
       {{ govukButton({ text: "Continue" }) }}
     </form>
   </div>
