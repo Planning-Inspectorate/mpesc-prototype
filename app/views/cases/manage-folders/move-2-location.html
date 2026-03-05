@@ -1,0 +1,86 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}File location - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/manage-folders/view/" + folder.id + "/slug/move-files/step-1?ref=" + currentCase.reference }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <form action="" method="post" novalidate>
+      
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h1 class="govuk-fieldset__heading">File location</h1>
+          </legend>
+
+          {# --- RECURSIVE MACRO TO BUILD INFINITE NESTED FOLDERS --- #}
+          {% macro renderFolderRadios(folderList, level) %}
+            <div class="govuk-radios" data-cy="folder-level-{{ level }}" {% if level == 0 %}data-module="govuk-radios"{% endif %}>
+              
+              {% for f in folderList %}
+                
+                {# Setup our logic variables #}
+                {% set isCurrent = (f.id == folder.id) %}
+                {% set hasSubfolders = (f.subfolders and f.subfolders.length > 0) %}
+
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="folder-{{ f.id }}" name="destinationFolderId" type="radio" value="{{ f.id }}" 
+                         {% if isCurrent %}disabled{% endif %} 
+                         
+                         {# Only attach the JS click-to-expand if it's NOT the current disabled folder #}
+                         {% if hasSubfolders and not isCurrent %}aria-controls="conditional-{{ f.id }}" aria-expanded="false"{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="folder-{{ f.id }}">
+                    {{ f.name }} {% if isCurrent %}(Current folder){% endif %}
+                  </label>
+                </div>
+
+               {% if hasSubfolders %}
+                  {# Add 'js-keep-open' if it IS the current folder so our script knows to leave it alone #}
+                  <div class="govuk-radios__conditional {% if not isCurrent %}govuk-radios__conditional--hidden{% else %}js-keep-open{% endif %}" id="conditional-{{ f.id }}">
+                    <div class="govuk-form-group">
+                      {{ renderFolderRadios(f.subfolders, level + 1) }}
+                    </div>
+                  </div>
+                {% endif %}
+
+              {% endfor %}
+
+            </div>
+          {% endmacro %}
+          {# --- END MACRO --- #}
+
+          {# Trigger the macro starting at Level 0 with all case folders #}
+          {{ renderFolderRadios(allFolders, 0) }}
+
+        </fieldset>
+      </div>
+
+      <div class="govuk-button-group">
+        <button type="submit" class="govuk-button" data-module="govuk-button" data-cy="button-save-and-continue">Select folder</button>
+        <button type="button" class="govuk-button govuk-button--secondary" id="clear-selection-btn">Clear selection</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script nonce="">
+  document.addEventListener('DOMContentLoaded', function() {
+    // Clear selection logic
+    document.getElementById('clear-selection-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // 1. Uncheck all radio buttons
+      document.querySelectorAll('input[name="destinationFolderId"]').forEach(radio => radio.checked = false);
+      
+      // 2. Hide conditional blocks, BUT ignore the current folder's permanently open block
+      document.querySelectorAll('.govuk-radios__conditional:not(.js-keep-open)').forEach(block => {
+        block.classList.add('govuk-radios__conditional--hidden');
+      });
+    });
+  });
+</script>
+{% endblock %}

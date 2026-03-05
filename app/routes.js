@@ -14624,17 +14624,28 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
 
   if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
 
-// FIX: Catch ALL success banners for the folder view!
+// Catch ALL success banners
   var successBanner = req.session.data['folderCreated'];
   var renameBanner = req.session.data['folderRenamed'];
   var deleteBanner = req.session.data['folderDeleted'];
-  var updateBanner = req.session.data['folderUpdated']; // <-- Catch the new upload banner!
+  var updateBanner = req.session.data['folderUpdated'];
+  var moveBanner = req.session.data['filesMovedBanner'];
   
-  // Delete them instantly so they don't persist on refresh
+  // NEW: Catch the move error
+  var moveFileError = req.session.data['moveFileError'];
+  
   if (successBanner) delete req.session.data['folderCreated'];
   if (renameBanner) delete req.session.data['folderRenamed'];
   if (deleteBanner) delete req.session.data['folderDeleted'];
-  if (updateBanner) delete req.session.data['folderUpdated']; // <-- Clear it!
+  if (updateBanner) delete req.session.data['folderUpdated'];
+  if (moveBanner) delete req.session.data['filesMovedBanner'];
+  
+  // NEW: Process the error and clear it
+  let errorList = null;
+  if (moveFileError) {
+    errorList = [{ text: moveFileError, href: "#checkboxes-all" }];
+    delete req.session.data['moveFileError'];
+  }
 
 // --- PAGINATION LOGIC ---
   var documents = activeFolder.documents || [];
@@ -14692,6 +14703,8 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     renameBanner: renameBanner,
     deleteBanner: deleteBanner,
     updateBanner: updateBanner,
+    moveBanner: moveBanner,
+    errorList: errorList,
     
     // Pagination variables passed to the template
     paginatedDocuments: paginatedDocuments, 
@@ -14951,6 +14964,194 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(
 
   req.session.save(function(err) {
     res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`);
+  });
+});
+
+// ==============================================
+// MOVE FILES JOURNEY
+// ==============================================
+
+// 1. INITIATE MOVE: Catch POST from the main folder view table
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug; // <-- FIX: Capture the actual slug!
+  
+  var selectedFiles = req.body.selectedFiles;
+  
+  // VALIDATION: Did they click Move without selecting anything?
+  if (!selectedFiles || selectedFiles.length === 0) {
+    req.session.data['moveFileError'] = "Select file(s) to move";
+    
+    return req.session.save(function() {
+      // FIX: Use the dynamic ${folderSlug} variable instead of the word 'slug'
+      res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`); 
+    });
+  }
+
+  if (!Array.isArray(selectedFiles)) selectedFiles = [selectedFiles];
+  req.session.data['filesToMove'] = selectedFiles;
+
+  // FIX: Also use it here
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/move-files/step-1?ref=${ref}`);
+});
+
+// STEP 1: View Selected Files
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/step-1', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+
+  var fileIdsToMove = req.session.data['filesToMove'] || [];
+  // Filter the actual document objects so we can display their names
+  var docsToMove = (activeFolder.documents || []).filter(d => fileIdsToMove.includes(d.id));
+
+  res.render('cases/manage-folders/move-1-files', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    docsToMove: docsToMove
+  });
+});
+
+// STEP 2: Choose Destination Location
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/location', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+
+  res.render('cases/manage-folders/move-2-location', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    allFolders: currentCase.folders // Pass all folders to build the radio tree
+  });
+});
+
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files/location', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug; // <-- FIX: Capture the actual slug!
+  var destinationId = req.body.destinationFolderId;
+
+  if (!destinationId) {
+    return res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/move-files/location?ref=${ref}`);
+  }
+
+  req.session.data['moveDestinationId'] = destinationId;
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/move-files/check?ref=${ref}`);
+});
+
+// STEP 3: Check Details & Execute
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+
+  // Find the destination folder so we can show its name
+  var destId = req.session.data['moveDestinationId'];
+  var destFolder = null;
+  var destParent = null;
+
+  for (let f of currentCase.folders) {
+    if (f.id === destId) { destFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === destId);
+      if (sub) { destFolder = sub; destParent = f; break; }
+    }
+  }
+
+  res.render('cases/manage-folders/move-3-check', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    destFolder: destFolder,
+    destParent: destParent
+  });
+});
+
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+
+  // 1. Find Source Folder
+  var sourceFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { sourceFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { sourceFolder = sub; break; }
+    }
+  }
+
+  // 2. Find Destination Folder
+  var destId = req.session.data['moveDestinationId'];
+  var destFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === destId) { destFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === destId);
+      if (sub) { destFolder = sub; break; }
+    }
+  }
+
+  // 3. Perform the move
+  var fileIdsToMove = req.session.data['filesToMove'] || [];
+  var extractedDocs = [];
+
+  // Remove from source
+  sourceFolder.documents = sourceFolder.documents.filter(d => {
+    if (fileIdsToMove.includes(d.id)) {
+      extractedDocs.push(d);
+      return false; // exclude from source
+    }
+    return true; // keep in source
+  });
+
+  // Add to destination
+  if (!destFolder.documents) destFolder.documents = [];
+  destFolder.documents.unshift(...extractedDocs); // Add to top
+
+  // Clean up session
+  req.session.data['filesToMove'] = null;
+  req.session.data['moveDestinationId'] = null;
+
+  // Set the success banner
+  req.session.data['filesMovedBanner'] = { count: extractedDocs.length, destName: destFolder.name };
+  
+  req.session.save(function(err) {
+    res.redirect(`/cases/manage-folders/view/${sourceFolder.id}/${sourceFolder.slug}?ref=${ref}`);
   });
 });
 

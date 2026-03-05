@@ -1,0 +1,43 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Move files - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "?ref=" + currentCase.reference }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l" data-cy="page-heading">Move {{ docsToMove.length }} file{% if docsToMove.length != 1 %}s{% endif %}</h1>
+
+    <table class="govuk-table" data-cy="move-files-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-!-width-full">File name</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for doc in docsToMove %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell"><span data-cy="file-name-{{ doc.id }}">{{ doc.name }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {{ govukButton({
+      text: "Move selected",
+      href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "/move-files/location?ref=" + currentCase.reference,
+      classes: "govuk-!-margin-top-4"
+    }) }}
+
+  </div>
+  <div class="govuk-grid-column-two-thirds">
+    <a class="govuk-link" href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}?ref={{ currentCase.reference }}" data-cy="cancel-link">
+      Cancel and return to folder
+    </a>
+  </div>
+</div>
+{% endblock %}

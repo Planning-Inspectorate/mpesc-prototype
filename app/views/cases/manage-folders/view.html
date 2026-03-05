@@ -31,6 +31,20 @@
 
 {% block content %}
 
+{# --- ERROR SUMMARY (Backend & JS Placeholder) --- #}
+<div id="js-error-container">
+  {% if errorList %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: errorList
+        }) }}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
 {# --- SUCCESS BANNER --- #}
 {% if successBanner %}
     <div class="govuk-grid-row">
@@ -91,6 +105,20 @@
         </h3>
       {% endset %}
       {{ govukNotificationBanner({ html: updateHtml, type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
+{# --- MOVE FILES BANNER --- #}
+{% if moveBanner %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% set moveHtml %}
+        <h3 class="govuk-notification-banner__heading">
+          {{ moveBanner.count }} selected file(s) moved to {{ moveBanner.destName }} folder
+        </h3>
+      {% endset %}
+      {{ govukNotificationBanner({ html: moveHtml, type: "success" }) }}
     </div>
   </div>
 {% endif %}
@@ -283,9 +311,11 @@
   </div>
 </div>
 
-{# --- JAVASCRIPT FOR SELECT ALL --- #}
+{# --- JAVASCRIPT FOR SELECT ALL AND VALIDATION --- #}
 <script type="module" nonce="">
   document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- 1. SELECT ALL LOGIC ---
     const selectAll = document.getElementById('checkboxes-all');
     const checkboxes = document.querySelectorAll('input[name="selectedFiles"]');
 
@@ -303,6 +333,43 @@
         });
       });
     }
+
+    // --- 2. FRONTEND VALIDATION FOR "MOVE SELECTED" ---
+    // Find the form that handles the move action
+    const moveForm = document.querySelector('form[action*="move-files"]');
+    const errorContainer = document.getElementById('js-error-container');
+
+    if (moveForm) {
+      moveForm.addEventListener('submit', function(e) {
+        // Count how many individual file checkboxes are actually checked
+        const checkedFiles = document.querySelectorAll('input[name="selectedFiles"]:checked');
+        
+        // If nothing is checked, STOP the form and show the error!
+        if (checkedFiles.length === 0) {
+          e.preventDefault(); // Stop the redirect
+          window.scrollTo(0, 0); // Scroll to the top of the page
+          
+          // Inject the GOV.UK Error Summary directly into the page
+          errorContainer.innerHTML = `
+            <div class="govuk-grid-row">
+              <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-error-summary" data-module="govuk-error-summary">
+                  <div role="alert">
+                    <h2 class="govuk-error-summary__title">There is a problem</h2>
+                    <div class="govuk-error-summary__body">
+                      <ul class="govuk-list govuk-error-summary__list">
+                        <li><a href="#checkboxes-all">Select file(s) to move</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+    }
+
   });
 </script>
 {% endblock %}
