@@ -227,7 +227,7 @@
                   </summary>
                   <div class="govuk-details__text">
                     <ol class="govuk-list">
-                      <li><a href="">Work in progress</a></li>
+                      <li><a href="/cases/create-a-case/questions/casework-area">Create a case to see how it works (will be changed later to show the only feature)</a></li>
                     </ol>
                   </div>
                 </details>
@@ -249,8 +249,8 @@
             <ul class="govuk-task-list">
               <li class="govuk-task-list__item govuk-task-list__item--with-link">
                 <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="/features/multiple-entities/index">Download Case Button</a>
-                  <div class="govuk-task-list__hint">Download button for all files related to the case</div>
+                  <a class="govuk-link govuk-task-list__link" href="#">Download Case Button</a>
+                  <div class="govuk-task-list__hint">Mock download for all files related to the case</div>
                 </div>
                 <div class="govuk-task-list__status">
                   <strong class="govuk-tag govuk-tag--blue">In progress</strong>
@@ -258,11 +258,37 @@
               </li>
               <li class="govuk-task-list__item govuk-task-list__item--with-link">
                 <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="/features/document-filters/index">Assigned to me tab</a>
+                  <a class="govuk-link govuk-task-list__link" href="#">Assigned to me tab</a>
                   <div class="govuk-task-list__hint">See cases that are assigned to you</div>
                 </div>
                 <div class="govuk-task-list__status">
                   <strong class="govuk-tag govuk-tag--blue">In progress</strong>
+                </div>
+              </li>
+            </ul>
+          '
+        }) }}
+
+        {{ govukDetails({
+          summaryText: "Recently Added",
+          html: '
+            <ul class="govuk-task-list">
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="#">Manage case files</a>
+                  <div class="govuk-task-list__hint">Manage case files with ability to create folders, upload files, move, edit, and delete.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <span class="govuk-tag govuk-tag--green" style="text-align: center">5 March 2026</span>
+                </div>
+              </li>
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="#">Case audit log</a>
+                  <div class="govuk-task-list__hint">Track all changes made to a case in a chronological order, and by who.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <strong class="govuk-tag govuk-tag--green">4 March 2026</strong>
                 </div>
               </li>
             </ul>

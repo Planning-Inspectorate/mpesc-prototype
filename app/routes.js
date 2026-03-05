@@ -14948,28 +14948,48 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(
     });
   }
 
-  // Ensure it's an array (if they only upload 1 file, it comes through as a string)
+  // Ensure it's an array
   if (!Array.isArray(uploadedFiles)) {
     uploadedFiles = [uploadedFiles];
   }
 
   if (!activeFolder.documents) activeFolder.documents = [];
 
-  // Create a document object for every valid mock file they selected
-  for (let fileName of uploadedFiles) {
-    var ext = fileName.split('.').pop().toUpperCase();
+  // --- LIST OF RANDOM DOCUMENT NAMES ---
+  const randomNames = [
+    "Site-inspection-report",
+    "Appellant-costs-application",
+    "LPA-questionnaire-response",
+    "Interested-party-comments",
+    "Hearing-attendance-sheet",
+    "Decision-draft-v2",
+    "Ecological-survey-results",
+    "Transport-assessment-summary",
+    "Planning-obligation-draft",
+    "Officer-delegated-report"
+  ];
+
+// Create a document object for every valid mock file they selected
+  for (let mockData of uploadedFiles) {
+    
+    // FIX: Unpack the string from the frontend (e.g., "Report-1234.pdf|1.4MB|1400")
+    var parts = mockData.split('|');
+    var exactName = parts[0];
+    var exactSizeStr = parts[1] || "11KB";
+    var exactSizeNum = parseInt(parts[2]) || 11;
+    
+    var ext = exactName.split('.').pop().toUpperCase();
     
     activeFolder.documents.unshift({
       id: 'doc-' + Date.now() + Math.floor(Math.random() * 1000),
-      name: fileName,
+      name: exactName, // Use the exact name you saw on screen
       type: ext,
-      sizeNum: 11, // Mock size for sorting
-      size: "11KB", // Mock size for display
+      sizeNum: exactSizeNum, // Use the exact sorting size
+      size: exactSizeStr, // Use the exact display size
       dateTimestamp: Date.now(),
       date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     });
   }
-
   addAuditLog(req, ref, `${uploadedFiles.length} file(s) uploaded to folder: ${activeFolder.name}`);
   req.session.data['folderUpdated'] = true;
 
