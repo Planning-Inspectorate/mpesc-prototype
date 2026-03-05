@@ -5,13 +5,71 @@
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back to folders", href: "/cases/manage-folders?ref=" + currentCase.reference }) }}
+  <div class="govuk-breadcrumbs govuk-!-margin-bottom-0 govuk-!-margin-top-4">
+    <ol class="govuk-breadcrumbs__list">
+      
+      {# 1. Always show the root 'Manage case files' link #}
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/cases/manage-folders?ref={{ currentCase.reference }}">Manage case files</a>
+      </li>
+      
+      {# 2. If we are inside a subfolder, show the Parent Folder link #}
+      {% if parentFolder %}
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/cases/manage-folders/view/{{ parentFolder.id }}/{{ parentFolder.slug }}?ref={{ currentCase.reference }}">
+          {{ parentFolder.name }}
+        </a>
+      </li>
+      {% endif %}
+      
+      {# 3. The current folder (not a link, just text indicating where we are) #}
+      <li class="govuk-breadcrumbs__list-item" aria-current="page">{{ folder.name }}</li>
+      
+    </ol>
+  </div>
 {% endblock %}
 
 {% block content %}
+
+{# --- SUCCESS BANNER --- #}
+{% if successBanner %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+  {% set successHtml %}
+    <h3 class="govuk-notification-banner__heading">
+      <a class="govuk-notification-banner__link" href="/cases/manage-folders/view/{{ successBanner.id }}/{{ successBanner.slug }}?ref={{ currentCase.reference }}">
+        {{ successBanner.name }}
+      </a> folder created
+    </h3>
+    {% endset %}
+
+    {{ govukNotificationBanner({
+        html: successHtml,
+        type: "success"
+      }) }}
+
+      </div>
+    </div>
+  {% endif %}
+
+  {# --- RENAME BANNER --- #}
+{% if renameBanner %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% set renameHtml %}
+        <h3 class="govuk-notification-banner__heading">
+          Folder renamed to {{ renameBanner.name }}
+        </h3>
+      {% endset %}
+      {{ govukNotificationBanner({ html: renameHtml, type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
-    
+
       <span class="govuk-caption-m">{{ currentCase.reference }}</span>
       <h1 class="govuk-heading-l govuk-!-margin-bottom-4">
         {{ currentCase.caseName }}
@@ -25,10 +83,10 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full govuk-button-group">
-    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-cy="create-subfolder-btn">
+    <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/create-subfolder?ref={{ currentCase.reference }}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-cy="create-subfolder-btn" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-cy="create-subfolder-btn">
       Create subfolder
     </a>
-    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+    <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/rename?ref={{ currentCase.reference }}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
       Rename folder
     </a>
     <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">

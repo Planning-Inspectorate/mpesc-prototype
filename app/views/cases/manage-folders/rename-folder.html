@@ -1,0 +1,53 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errorList %}Error: {% endif %}Rename folder - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ 
+    text: "Back", 
+    href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "?ref=" + currentCase.reference 
+  }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form method="post" novalidate>
+      <span class="govuk-caption-l">Rename folder</span>
+
+      {{ govukInput({
+        label: {
+          text: "Folder name",
+          classes: "govuk-label--l",
+          isPageHeading: true
+        },
+        id: "folderName",
+        name: "folderName",
+        value: folderName or folder.name, 
+        errorMessage: { text: errorList[0].text } if errorList else null
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save and return" }) }}
+      </div>
+
+      <p class="govuk-body">
+        <a class="govuk-link" href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}?ref={{ currentCase.reference }}">
+          Cancel and return to folder
+        </a>
+      </p>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

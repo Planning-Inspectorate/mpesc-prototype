@@ -14583,17 +14583,24 @@ function getDefaultFolders(caseType) {
 // MAIN ROUTE: View Main Folders List
 router.get('/cases/manage-folders', function(req, res) {
   var ref = req.query.ref;
+  
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
   if (!currentCase.folders || currentCase.folders.length === 0) {
-    // Only pass currentCase.type now!
     currentCase.folders = getDefaultFolders(currentCase.type); 
   }
 
+  // Grab the folder data from the session
+  var successBanner = req.session.data['folderCreated'];
+  
+  // IMMEDIATELY delete it from the session so it doesn't show up again if the user refreshes!
+  delete req.session.data['folderCreated'];
+
   res.render('cases/manage-folders/index', {
-    currentCase: currentCase
+    currentCase: currentCase,
+    successBanner: successBanner
   });
 });
 
@@ -14607,6 +14614,8 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   if (!currentCase) return res.redirect('/');
 
   var activeFolder = null;
+  var parentFolder = null; 
+
   for (let f of currentCase.folders) {
     if (f.id === folderId) {
       activeFolder = f;
@@ -14616,6 +14625,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
       let sub = f.subfolders.find(s => s.id === folderId);
       if (sub) {
         activeFolder = sub;
+        parentFolder = f; 
         break;
       }
     }
@@ -14623,13 +14633,286 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
 
   if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
 
+  // Catch both types of success banners
+  var successBanner = req.session.data['folderCreated'];
+  var renameBanner = req.session.data['folderRenamed'];
+  
+  if (successBanner) delete req.session.data['folderCreated'];
+  if (renameBanner) delete req.session.data['folderRenamed'];
+
   res.render('cases/manage-folders/view', {
     currentCase: currentCase,
-    folder: activeFolder
+    folder: activeFolder,
+    parentFolder: parentFolder,
+    successBanner: successBanner,
+    renameBanner: renameBanner // <-- Pass the rename banner to the template
   });
 });
 
+// ==============================================
+// RENAME A FOLDER
+// ==============================================
 
+// 1. View the Rename form
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/rename', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  var parentFolder = null; 
+
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; parentFolder = f; break; }
+    }
+  }
+
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  res.render('cases/manage-folders/rename-folder', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    parentFolder: parentFolder
+  });
+});
+
+// 2. Submit the Rename form
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/rename', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var newFolderName = req.body.folderName;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  var parentFolder = null; 
+
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; parentFolder = f; break; }
+    }
+  }
+
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  var renderError = (msg) => {
+    return res.render('cases/manage-folders/rename-folder', {
+      currentCase: currentCase,
+      folder: activeFolder,
+      parentFolder: parentFolder,
+      folderName: newFolderName, // Keep what they typed
+      errorList: [{ text: msg, href: "#folderName" }]
+    });
+  };
+
+  // Validation
+  if (!newFolderName || newFolderName.trim() === '') return renderError("Enter a folder name");
+  
+  var cleanName = newFolderName.trim();
+  if (cleanName.length < 3 || cleanName.length > 255) return renderError("Folder name must be between 3 and 255 characters");
+  
+  var validCharsRegex = /^[a-zA-Z0-9 _\-']+$/;
+  if (!validCharsRegex.test(cleanName)) {
+    return renderError("Folder name must only include letters a to z, numbers and special characters such as spaces, underscores, hyphens and apostrophes");
+  }
+
+  // Duplicate check (ensure we only check siblings in the exact same level, and exclude THIS folder)
+  var siblingsList = parentFolder ? parentFolder.subfolders : currentCase.folders;
+  var isDuplicate = siblingsList.some(f => f.name.toLowerCase() === cleanName.toLowerCase() && f.id !== folderId);
+  
+  if (isDuplicate) return renderError("A folder with this name already exists");
+
+  // Save the old name for the audit log
+  var oldName = activeFolder.name;
+
+  // Update the folder
+  activeFolder.name = cleanName;
+  activeFolder.slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+  addAuditLog(req, ref, `Folder renamed: ${oldName} to ${cleanName}`);
+
+  // Save to session to trigger the banner
+  req.session.data['folderRenamed'] = activeFolder;
+
+  // Force session save and redirect to the NEW slug URL
+  req.session.save(function(err) {
+    res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`);
+  });
+});
+
+// ==============================================
+// CREATE A SUBFOLDER
+// ==============================================
+
+// 1. View the Create Subfolder form
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/create-subfolder', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var parentFolder = currentCase.folders.find(f => f.id === folderId);
+  if (!parentFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  res.render('cases/manage-folders/create-subfolder', {
+    currentCase: currentCase,
+    parentFolder: parentFolder
+  });
+});
+
+// 2. Submit the Create Subfolder form
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/create-subfolder', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug;
+  var folderName = req.body.folderName;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var parentFolder = currentCase.folders.find(f => f.id === folderId);
+  if (!parentFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  // Helper function to render errors cleanly
+  var renderError = (msg) => {
+    return res.render('cases/manage-folders/create-subfolder', {
+      currentCase: currentCase,
+      parentFolder: parentFolder,
+      folderName: folderName, // Keep what they typed
+      errorList: [{ text: msg, href: "#folderName" }]
+    });
+  };
+
+  // Validation 1: Empty check
+  if (!folderName || folderName.trim() === '') {
+    return renderError("Enter a folder name");
+  }
+
+  var cleanFolderName = folderName.trim();
+
+  // Validation 2: Length check (3 to 255)
+  if (cleanFolderName.length < 3 || cleanFolderName.length > 255) {
+    return renderError("Folder name must be between 3 and 255 characters");
+  }
+
+  // Validation 3: Allowed characters only
+  var validCharsRegex = /^[a-zA-Z0-9 _\-']+$/;
+  if (!validCharsRegex.test(cleanFolderName)) {
+    return renderError("Folder name must only include letters a to z, numbers and special characters such as spaces, underscores, hyphens and apostrophes");
+  }
+
+  // Ensure subfolders array exists
+  if (!parentFolder.subfolders) parentFolder.subfolders = [];
+
+  // Validation 4: Duplicate check
+  var isDuplicate = parentFolder.subfolders.some(f => f.name.toLowerCase() === cleanFolderName.toLowerCase());
+  if (isDuplicate) {
+    return renderError("A folder with this name already exists");
+  }
+
+  // Create the subfolder
+  var newId = parentFolder.id + '-sub-' + Date.now();
+  var newSlug = cleanFolderName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  
+  var newSubfolder = {
+    id: newId,
+    name: cleanFolderName,
+    slug: newSlug
+  };
+
+  parentFolder.subfolders.push(newSubfolder);
+
+  // Add to Audit Log
+  addAuditLog(req, ref, `Subfolder created: ${cleanFolderName} (in ${parentFolder.name})`);
+
+  // Set success banner data
+  req.session.data['folderCreated'] = newSubfolder;
+
+  // Redirect back to the parent folder view
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`);
+});
+
+// ==============================================
+// CREATE A MAIN FOLDER
+// ==============================================
+
+// 1. View the Create Folder form
+router.get('/cases/manage-folders/create', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  res.render('cases/manage-folders/create', {
+    currentCase: currentCase
+  });
+});
+
+// 2. Submit the Create Folder form
+router.post('/cases/manage-folders/create', function(req, res) {
+  var ref = req.query.ref;
+  var folderName = req.body.folderName;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  // Validation 1: Check if it's empty
+  if (!folderName || folderName.trim() === '') {
+    return res.render('cases/manage-folders/create', {
+      currentCase: currentCase,
+      errorList: [{ text: "Enter a folder name", href: "#folderName" }]
+    });
+  }
+
+  var cleanFolderName = folderName.trim();
+
+  // Validation 2: Check if duplicate
+  var isDuplicate = currentCase.folders.some(f => f.name.toLowerCase() === cleanFolderName.toLowerCase());
+  
+  if (isDuplicate) {
+    return res.render('cases/manage-folders/create', {
+      currentCase: currentCase,
+      folderName: cleanFolderName,
+      errorList: [{ text: "A folder with this name already exists", href: "#folderName" }]
+    });
+  }
+
+  // Create the new folder object
+  var newId = 'f-' + Date.now();
+  var newSlug = cleanFolderName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  
+  var newFolder = {
+    id: newId,
+    name: cleanFolderName,
+    slug: newSlug,
+    subfolders: []
+  };
+
+  currentCase.folders.push(newFolder);
+
+  // LOG TO AUDIT LOG
+  addAuditLog(req, ref, "Folder created: " + cleanFolderName);
+
+  // Save the folder securely in the session data
+  req.session.data['folderCreated'] = newFolder;
+
+  // Redirect cleanly without any messy URL parameters
+  res.redirect(`/cases/manage-folders?ref=${ref}`);
+});
 
 
 

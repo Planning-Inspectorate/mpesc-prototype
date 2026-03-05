@@ -9,6 +9,29 @@
 {% endblock %}
 
 {% block content %}
+
+{# --- SUCCESS BANNER --- #}
+{% if successBanner %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+  {% set successHtml %}
+    <h3 class="govuk-notification-banner__heading">
+      <a class="govuk-notification-banner__link" href="/cases/manage-folders/view/{{ successBanner.id }}/{{ successBanner.slug }}?ref={{ currentCase.reference }}">
+        {{ successBanner.name }}
+      </a> folder created
+    </h3>
+  {% endset %}
+
+  {{ govukNotificationBanner({
+    html: successHtml,
+    type: "success"
+  }) }}
+
+  </div>
+    </div>
+{% endif %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
     

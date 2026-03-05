@@ -133,6 +133,23 @@
 {% endblock %}
 
 {% block content %}
+
+{# --- SUCCESS BANNER --- #}
+{% if successBanner %}
+  {% set successHtml %}
+    <h3 class="govuk-notification-banner__heading">
+      <a class="govuk-notification-banner__link" href="/cases/manage-folders/view/{{ successBanner.id }}/{{ successBanner.slug }}?ref={{ currentCase.reference }}">
+        {{ successBanner.name }}
+      </a> created
+    </h3>
+  {% endset %}
+
+  {{ govukNotificationBanner({
+    html: successHtml,
+    type: "success"
+  }) }}
+{% endif %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
 
@@ -275,10 +292,10 @@
               </div>
             </div>
             <div class="govuk-task-list__status">
-              <strong class="govuk-tag govuk-tag--blue">Azure Issue</strong>
+              <strong class="govuk-tag govuk-tag--blue" style="text-align: center;">Azure Issue</strong>
             </div>
           </li>
-        </ul>
+        
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
@@ -301,7 +318,7 @@
               <strong class="govuk-tag govuk-tag--green">Fixed</strong>
             </div>
           </li>
-        </ul>
+        
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
@@ -322,7 +339,7 @@
             </div>
           </li>
 
-          
+          </ul>
         
       </div>
 {% endblock %}
