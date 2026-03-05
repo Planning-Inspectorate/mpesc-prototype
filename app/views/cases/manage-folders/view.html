@@ -67,6 +67,34 @@
   </div>
 {% endif %}
 
+{# --- DELETE BANNER --- #}
+{% if deleteBanner %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% set deleteHtml %}
+        <h3 class="govuk-notification-banner__heading">
+          {{ deleteBanner }} folder deleted
+        </h3>
+      {% endset %}
+      {{ govukNotificationBanner({ html: deleteHtml, type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
+{# --- UPDATE BANNER (FILE UPLOAD) --- #}
+{% if updateBanner %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% set updateHtml %}
+        <h3 class="govuk-notification-banner__heading">
+          Folder has been updated
+        </h3>
+      {% endset %}
+      {{ govukNotificationBanner({ html: updateHtml, type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
 
@@ -89,7 +117,7 @@
     <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/rename?ref={{ currentCase.reference }}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
       Rename folder
     </a>
-    <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+    <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/delete?ref={{ currentCase.reference }}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
       Delete folder
     </a>
   </div>
@@ -145,18 +173,112 @@
     <div class="govuk-grid-column-full">
       <p class="govuk-body govuk-!-font-weight-bold">Files</p>
       
-      <form action="#" method="POST">
+      <form action="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" method="POST">
+
         <div class="govuk-button-group">
-          <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-cy="upload-files-btn">
+          <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/upload?ref={{ currentCase.reference }}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
             Upload files
           </a>
-        </div>
-        
-        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-        
-        <p class="govuk-body" data-cy="no-documents-message">This folder contains 0 documents</p>
-      </form>
 
+          {# Only show the Move button if there are files to move! #}
+          {% if folder.documents and folder.documents.length > 0 %}
+            <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+              Move selected
+            </button>
+          {% endif %}
+        </div>
+
+        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+        {# --- IF NO DOCUMENTS --- #}
+        {% if not folder.documents or folder.documents.length === 0 %}
+          <p class="govuk-body" data-cy="no-documents-message">This folder contains 0 documents</p>
+
+        {# --- IF DOCUMENTS EXIST --- #}
+        {% else %}
+          
+          <p class="govuk-body govuk-clearfix"></p>
+          
+          <p class="govuk-body govuk-!-margin-bottom-2" data-cy="pagination-results-text">
+            Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalDocs }}</strong> results
+          </p>
+
+          <p class="pins-pagination-options govuk-!-margin-bottom-4">
+            <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            {% if itemsPerPage == 25 %}
+                <span class="govuk-body">25</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=25" data-pagination="25">25</a>
+            {% endif %}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 50 %}
+                <span class="govuk-body">50</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=50" data-pagination="50">50</a>
+            {% endif %}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 100 %}
+                <span class="govuk-body">100</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=100" data-pagination="100">100</a>
+            {% endif %}
+          </p>
+
+          <table class="govuk-table" data-module="moj-sortable-table" data-cy="documents-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">
+                  <div class="govuk-checkboxes__item govuk-checkboxes--small mo-checkbox-table-cell">
+                    <input type="checkbox" class="govuk-checkboxes__input" id="checkboxes-all" name="checkboxes-all" value="all">
+                    <label class="govuk-label govuk-checkboxes__label" for="checkboxes-all"><span class="govuk-visually-hidden">Select all</span></label>
+                  </div>
+                </th>
+                <th scope="col" class="govuk-table__header govuk-!-width-one-third" aria-sort="none"><button type="button" data-index="1">File name</button></th>
+                <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="2">File type</button></th>
+                <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="3">File size</button></th>
+                <th scope="col" class="govuk-table__header" aria-sort="descending"><button type="button" data-index="4">Uploaded</button></th>
+                <th scope="col" class="govuk-table__header">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              
+              {# NEW: Loop over 'paginatedDocuments' instead of all documents! #}
+              {% for doc in paginatedDocuments %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                  <div class="govuk-checkboxes__item govuk-checkboxes--small mo-checkbox-table-cell">
+                    <input class="govuk-checkboxes__input" id="select-file-{{ doc.id }}" name="selectedFiles" type="checkbox" value="{{ doc.id }}">
+                    <label class="govuk-label govuk-checkboxes__label" for="select-file-{{ doc.id }}"><span class="govuk-visually-hidden">Select {{ doc.name }}</span></label>
+                  </div>
+                </td>
+                <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}">
+                  <a class="govuk-link govuk-!-font-weight-bold" href="#" target="_blank">{{ doc.name }}</a>
+                </td>
+                <td class="govuk-table__cell">{{ doc.type }}</td>
+                <td class="govuk-table__cell" data-sort-value="{{ doc.sizeNum }}">{{ doc.size }}</td>
+                <td class="govuk-table__cell" data-sort-value="{{ doc.dateTimestamp }}">{{ doc.date }}</td>
+                <td class="govuk-table__cell">
+                  <a class="govuk-link" href="#">Download</a> | <a class="govuk-link" href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/{{ doc.id }}/delete?ref={{ currentCase.reference }}">Delete</a>
+                </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+
+          {# Dynamic GOV.UK Pagination Macro #}
+          {% if pageItems.length > 1 %}
+            {{ govukPagination({
+              previous: prevLink and { href: prevLink },
+              next: nextLink and { href: nextLink },
+              items: pageItems
+            }) }}
+          {% endif %}
+
+        {% endif %}
+
+      </form>
     </div>
   </div>
 </div>

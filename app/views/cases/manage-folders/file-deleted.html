@@ -1,0 +1,28 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Document - Delete Document
+{% endblock %}
+
+{# No back link on this page as the action is completed #}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">
+      You have deleted the file
+    </h1>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <p class="govuk-body">Click continue to return to folder.</p>
+    
+    {{ govukButton({
+      text: "Continue",
+      href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "?ref=" + currentCase.reference
+    }) }}
+  </div>
+</div>
+{% endblock %}

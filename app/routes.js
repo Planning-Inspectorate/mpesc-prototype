@@ -14580,31 +14580,29 @@ function getDefaultFolders(caseType) {
   ];
 }
 
-// MAIN ROUTE: View Main Folders List
+// ROUTE: View Main Folders List (Updated to catch delete banner)
 router.get('/cases/manage-folders', function(req, res) {
   var ref = req.query.ref;
-  
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  if (!currentCase.folders || currentCase.folders.length === 0) {
-    currentCase.folders = getDefaultFolders(currentCase.type); 
-  }
+  if (!currentCase.folders) currentCase.folders = [];
 
-  // Grab the folder data from the session
   var successBanner = req.session.data['folderCreated'];
+  var deleteBanner = req.session.data['folderDeleted']; // <-- Catch delete banner
   
-  // IMMEDIATELY delete it from the session so it doesn't show up again if the user refreshes!
-  delete req.session.data['folderCreated'];
+  if (successBanner) delete req.session.data['folderCreated'];
+  if (deleteBanner) delete req.session.data['folderDeleted'];
 
   res.render('cases/manage-folders/index', {
     currentCase: currentCase,
-    successBanner: successBanner
+    successBanner: successBanner,
+    deleteBanner: deleteBanner
   });
 });
 
-// ROUTE: View Inside a Specific Folder
+// ROUTE: View Inside a Specific Folder (Updated to catch delete banner)
 router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res) {
   var ref = req.query.ref;
   var folderId = req.params.folderId;
@@ -14617,35 +14615,342 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   var parentFolder = null; 
 
   for (let f of currentCase.folders) {
-    if (f.id === folderId) {
-      activeFolder = f;
-      break;
-    }
+    if (f.id === folderId) { activeFolder = f; break; }
     if (f.subfolders) {
       let sub = f.subfolders.find(s => s.id === folderId);
-      if (sub) {
-        activeFolder = sub;
-        parentFolder = f; 
-        break;
-      }
+      if (sub) { activeFolder = sub; parentFolder = f; break; }
     }
   }
 
   if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
 
-  // Catch both types of success banners
+// FIX: Catch ALL success banners for the folder view!
   var successBanner = req.session.data['folderCreated'];
   var renameBanner = req.session.data['folderRenamed'];
+  var deleteBanner = req.session.data['folderDeleted'];
+  var updateBanner = req.session.data['folderUpdated']; // <-- Catch the new upload banner!
   
+  // Delete them instantly so they don't persist on refresh
   if (successBanner) delete req.session.data['folderCreated'];
   if (renameBanner) delete req.session.data['folderRenamed'];
+  if (deleteBanner) delete req.session.data['folderDeleted'];
+  if (updateBanner) delete req.session.data['folderUpdated']; // <-- Clear it!
+
+// --- PAGINATION LOGIC ---
+  var documents = activeFolder.documents || [];
+  const totalDocsCount = documents.length; 
+  
+  // Items Per Page
+  let rawItems = req.query.itemsPerPage || req.session.data['folderItemsPerPage'];
+  let itemsPerPage = parseInt(rawItems, 10);
+  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25;
+  req.session.data['folderItemsPerPage'] = itemsPerPage; 
+
+  // Current Page
+  let rawPage = req.query.page || 1;
+  let currentPage = parseInt(rawPage, 10);
+  if (isNaN(currentPage) || currentPage <= 0) currentPage = 1;
+
+  const totalPages = Math.ceil(totalDocsCount / itemsPerPage) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  // Slice the array for the current page
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDocuments = documents.slice(startIndex, endIndex);
+
+  // Generate smart pagination links
+  let paginationItems = [];
+  let pagesToShow = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || i === currentPage || i === currentPage - 1 || i === currentPage + 1) {
+      pagesToShow.push(i);
+    }
+  }
+
+  let previousPage = null;
+  // Base URL for pagination links so we don't lose the folder or case reference!
+  let baseUrl = `/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`;
+
+  for (let i of pagesToShow) {
+    if (previousPage && i - previousPage > 1) {
+      paginationItems.push({ ellipsis: true });
+    }
+    paginationItems.push({
+      number: i,
+      current: (i === currentPage),
+      href: `${baseUrl}&page=${i}`
+    });
+    previousPage = i;
+  }
 
   res.render('cases/manage-folders/view', {
     currentCase: currentCase,
     folder: activeFolder,
     parentFolder: parentFolder,
     successBanner: successBanner,
-    renameBanner: renameBanner // <-- Pass the rename banner to the template
+    renameBanner: renameBanner,
+    deleteBanner: deleteBanner,
+    updateBanner: updateBanner,
+    
+    // Pagination variables passed to the template
+    paginatedDocuments: paginatedDocuments, 
+    totalDocs: totalDocsCount,
+    itemsPerPage: itemsPerPage,
+    startItem: totalDocsCount === 0 ? 0 : startIndex + 1,
+    endItem: Math.min(endIndex, totalDocsCount),
+    pageItems: paginationItems,
+    prevLink: currentPage > 1 ? `${baseUrl}&page=${currentPage - 1}` : null, 
+    nextLink: currentPage < totalPages ? `${baseUrl}&page=${currentPage + 1}` : null 
+  });
+});
+
+// ==============================================
+// DELETE A FOLDER
+// ==============================================
+
+// 1. View the Delete form
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/delete', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  var parentFolder = null; 
+
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; parentFolder = f; break; }
+    }
+  }
+
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  res.render('cases/manage-folders/delete-folder', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    parentFolder: parentFolder
+  });
+});
+
+// 2. Submit the Delete form
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  var parentFolder = null; 
+
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; parentFolder = f; break; }
+    }
+  }
+
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  // VALIDATION: Check for subfolders and documents
+  var issues = [];
+  if (activeFolder.subfolders && activeFolder.subfolders.length > 0) {
+    issues.push("It contains subfolders");
+  }
+  // Check if documents array exists and has items (ready for when you add files)
+  if (activeFolder.documents && activeFolder.documents.length > 0) {
+    issues.push("It contains documents");
+  }
+
+  if (issues.length > 0) {
+    return res.render('cases/manage-folders/delete-folder', {
+      currentCase: currentCase,
+      folder: activeFolder,
+      parentFolder: parentFolder,
+      deleteIssues: issues // Pass issues to the template
+    });
+  }
+
+  // EXECUTE DELETION
+  var deletedName = activeFolder.name;
+  
+  if (parentFolder) {
+    // It's a subfolder, remove it from the parent's array
+    parentFolder.subfolders = parentFolder.subfolders.filter(f => f.id !== folderId);
+  } else {
+    // It's a main folder, remove it from the case's array
+    currentCase.folders = currentCase.folders.filter(f => f.id !== folderId);
+  }
+
+  addAuditLog(req, ref, `Folder deleted: ${deletedName}`);
+  req.session.data['folderDeleted'] = deletedName;
+
+  req.session.save(function(err) {
+    // Redirect logic: If deleted a main folder, go to root. If subfolder, go to parent.
+    if (parentFolder) {
+      res.redirect(`/cases/manage-folders/view/${parentFolder.id}/${parentFolder.slug}?ref=${ref}`);
+    } else {
+      res.redirect(`/cases/manage-folders?ref=${ref}`);
+    }
+  });
+});
+
+// ==============================================
+// HIDDEN UTILITY: GENERATE DUMMY FILES
+// ==============================================
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/generate-dummy', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+  if (!activeFolder.documents) activeFolder.documents = [];
+
+  var fileTypes = ["PDF", "DOCX", "XLSX", "JPG", "PNG"];
+
+  // Generate 65 files to easily test 3 pages (at 25 per page)
+  for (let i = 1; i <= 65; i++) {
+    var type = fileTypes[Math.floor(Math.random() * fileTypes.length)];
+    var randomSizeNum = Math.floor(Math.random() * 5000) + 50; 
+    var sizeLabel = randomSizeNum > 1000 ? (randomSizeNum / 1000).toFixed(1) + "MB" : randomSizeNum + "KB";
+
+    activeFolder.documents.push({
+      id: 'dummy-doc-' + Date.now() + '-' + i,
+      name: `Generated Test File ${i}.${type.toLowerCase()}`,
+      type: type,
+      sizeNum: randomSizeNum,
+      size: sizeLabel,
+      dateTimestamp: Date.now() - (i * 100000), 
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    });
+  }
+
+  // Redirect instantly back to the folder
+  res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`);
+});
+
+// ==============================================
+// UPLOAD FILES
+// ==============================================
+
+// 1. View the Upload form
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  res.render('cases/manage-folders/upload', {
+    currentCase: currentCase,
+    folder: activeFolder
+  });
+});
+
+// 2. AJAX Endpoint: Mock the individual file upload for the MOJ component
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload/document', function(req, res) {
+  // In a real app, you would process the file here. 
+  // For the prototype, we just tell the MOJ component "Success!"
+  res.json({
+    success: { messageText: "File uploaded successfully" },
+    file: { originalname: "uploaded-file.pdf", filename: "file-" + Date.now() }
+  });
+});
+
+// 3. AJAX Endpoint: Mock the individual file deletion for the MOJ component
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload/delete', function(req, res) {
+  res.json({ success: { messageText: "File deleted" } });
+});
+
+// 4. Submit the FINAL form (Clicking the main "Upload" button)
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  // Grab the hidden inputs passed from our mock UI
+  var uploadedFiles = req.body.mockFiles;
+
+  // VALIDATION: Did they click upload with nothing selected?
+  if (!uploadedFiles || uploadedFiles.length === 0) {
+    return res.render('cases/manage-folders/upload', {
+      currentCase: currentCase,
+      folder: activeFolder,
+      errorList: [{ text: "Select a file to upload", href: "#mock-choose-files-btn" }]
+    });
+  }
+
+  // Ensure it's an array (if they only upload 1 file, it comes through as a string)
+  if (!Array.isArray(uploadedFiles)) {
+    uploadedFiles = [uploadedFiles];
+  }
+
+  if (!activeFolder.documents) activeFolder.documents = [];
+
+  // Create a document object for every valid mock file they selected
+  for (let fileName of uploadedFiles) {
+    var ext = fileName.split('.').pop().toUpperCase();
+    
+    activeFolder.documents.unshift({
+      id: 'doc-' + Date.now() + Math.floor(Math.random() * 1000),
+      name: fileName,
+      type: ext,
+      sizeNum: 11, // Mock size for sorting
+      size: "11KB", // Mock size for display
+      dateTimestamp: Date.now(),
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    });
+  }
+
+  addAuditLog(req, ref, `${uploadedFiles.length} file(s) uploaded to folder: ${activeFolder.name}`);
+  req.session.data['folderUpdated'] = true;
+
+  req.session.save(function(err) {
+    res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`);
   });
 });
 
@@ -14914,7 +15219,100 @@ router.post('/cases/manage-folders/create', function(req, res) {
   res.redirect(`/cases/manage-folders?ref=${ref}`);
 });
 
+// ==============================================
+// DELETE A FILE
+// ==============================================
 
+// 1. View Delete File Confirmation
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/:docId/delete', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var docId = req.params.docId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  // Find the active folder
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  // Find the specific document
+  var activeDoc = (activeFolder.documents || []).find(d => d.id === docId);
+  if (!activeDoc) return res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`);
+
+  res.render('cases/manage-folders/delete-file', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    doc: activeDoc
+  });
+});
+
+// 2. Submit Delete File
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/:docId/delete', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var docId = req.params.docId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  var activeDoc = (activeFolder.documents || []).find(d => d.id === docId);
+  
+  if (activeDoc) {
+    // Filter out the deleted document from the array
+    activeFolder.documents = activeFolder.documents.filter(d => d.id !== docId);
+    
+    // Add to audit log
+    addAuditLog(req, ref, `File deleted: ${activeDoc.name} from ${activeFolder.name}`);
+  }
+
+  // Redirect to the success screen
+  res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}/file-deleted?ref=${ref}`);
+});
+
+// 3. File Deleted Success Page
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/file-deleted', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+  if (!activeFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+
+  res.render('cases/manage-folders/file-deleted', {
+    currentCase: currentCase,
+    folder: activeFolder
+  });
+});
 
 module.exports = router;
 
