@@ -123,6 +123,24 @@
   </div>
 {% endif %}
 
+{# --- DOWNLOAD MOCK BANNER --- #}
+{% if downloadBanner %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>" + downloadBanner + " file(s) downloaded securely (mock download)</h3>", type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
+{# --- BULK DELETE BANNER --- #}
+{% if bulkDeleteBanner %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>" + bulkDeleteBanner + " file(s) deleted</h3>", type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
 
@@ -203,15 +221,20 @@
       
       <form action="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" method="POST">
 
-        <div class="govuk-button-group">
-          <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/upload?ref={{ currentCase.reference }}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+       <div class="govuk-button-group">
+          <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/upload?ref={{ currentCase.reference }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">
             Upload files
           </a>
 
-          {# Only show the Move button if there are files to move! #}
           {% if folder.documents and folder.documents.length > 0 %}
-            <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" data-module="govuk-button">
               Move selected
+            </button>
+            <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/download-selected?ref={{ currentCase.reference }}" data-module="govuk-button">
+              Download selected
+            </button>
+            <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/delete-selected?ref={{ currentCase.reference }}" data-module="govuk-button">
+              Delete selected
             </button>
           {% endif %}
         </div>
@@ -227,9 +250,10 @@
           
           <p class="govuk-body govuk-clearfix"></p>
           
-          <p class="govuk-body govuk-!-margin-bottom-2" data-cy="pagination-results-text">
+          <p class="govuk-body govuk-!-margin-bottom-4" data-cy="pagination-results-text">
             Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalDocs }}</strong> results
           </p>
+
 
           <p class="pins-pagination-options govuk-!-margin-bottom-4">
             <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -334,22 +358,21 @@
       });
     }
 
-    // --- 2. FRONTEND VALIDATION FOR "MOVE SELECTED" ---
-    // Find the form that handles the move action
-    const moveForm = document.querySelector('form[action*="move-files"]');
+    // --- 2. FRONTEND VALIDATION FOR BULK ACTIONS ---
+    const bulkForm = document.querySelector('form[action*="move-files"]');
     const errorContainer = document.getElementById('js-error-container');
 
-    if (moveForm) {
-      moveForm.addEventListener('submit', function(e) {
-        // Count how many individual file checkboxes are actually checked
+    if (bulkForm) {
+      bulkForm.addEventListener('submit', function(e) {
         const checkedFiles = document.querySelectorAll('input[name="selectedFiles"]:checked');
         
-        // If nothing is checked, STOP the form and show the error!
         if (checkedFiles.length === 0) {
-          e.preventDefault(); // Stop the redirect
-          window.scrollTo(0, 0); // Scroll to the top of the page
+          e.preventDefault(); 
+          window.scrollTo(0, 0); 
           
-          // Inject the GOV.UK Error Summary directly into the page
+          // e.submitter finds exactly which button triggered the submit!
+          let actionName = e.submitter ? e.submitter.textContent.trim().toLowerCase().split(' ')[0] : 'move';
+          
           errorContainer.innerHTML = `
             <div class="govuk-grid-row">
               <div class="govuk-grid-column-two-thirds">
@@ -358,7 +381,7 @@
                     <h2 class="govuk-error-summary__title">There is a problem</h2>
                     <div class="govuk-error-summary__body">
                       <ul class="govuk-list govuk-error-summary__list">
-                        <li><a href="#checkboxes-all">Select file(s) to move</a></li>
+                        <li><a href="#checkboxes-all">Select file(s) to ${actionName}</a></li>
                       </ul>
                     </div>
                   </div>

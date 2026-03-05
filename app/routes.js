@@ -14635,6 +14635,8 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   var deleteBanner = req.session.data['folderDeleted'];
   var updateBanner = req.session.data['folderUpdated'];
   var moveBanner = req.session.data['filesMovedBanner'];
+  var downloadBanner = req.session.data['filesDownloadedBanner'];
+  var bulkDeleteBanner = req.session.data['filesBulkDeletedBanner'];
   
   // NEW: Catch the move error
   var moveFileError = req.session.data['moveFileError'];
@@ -14644,6 +14646,8 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   if (deleteBanner) delete req.session.data['folderDeleted'];
   if (updateBanner) delete req.session.data['folderUpdated'];
   if (moveBanner) delete req.session.data['filesMovedBanner'];
+  if (downloadBanner) delete req.session.data['filesDownloadedBanner'];
+  if (bulkDeleteBanner) delete req.session.data['filesBulkDeletedBanner'];
   
   // NEW: Process the error and clear it
   let errorList = null;
@@ -14710,6 +14714,8 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     updateBanner: updateBanner,
     moveBanner: moveBanner,
     errorList: errorList,
+    downloadBanner: downloadBanner,
+    bulkDeleteBanner: bulkDeleteBanner,
     
     // Pagination variables passed to the template
     paginatedDocuments: paginatedDocuments, 
@@ -14980,24 +14986,24 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(
 router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files', function(req, res) {
   var ref = req.query.ref;
   var folderId = req.params.folderId;
-  var folderSlug = req.params.folderSlug; // <-- FIX: Capture the actual slug!
+  var folderSlug = req.params.folderSlug;
   
-  var selectedFiles = req.body.selectedFiles;
+  // FIX: Strip out the GOV.UK '_unchecked' artifact
+  var rawSelected = req.body.selectedFiles || req.session.data['selectedFiles'];
+  var selectedFiles = [];
+  if (rawSelected) {
+    var arr = Array.isArray(rawSelected) ? rawSelected : [rawSelected];
+    selectedFiles = arr.filter(item => item && item !== '_unchecked');
+  }
   
-  // VALIDATION: Did they click Move without selecting anything?
-  if (!selectedFiles || selectedFiles.length === 0) {
+  if (selectedFiles.length === 0) {
     req.session.data['moveFileError'] = "Select file(s) to move";
-    
     return req.session.save(function() {
-      // FIX: Use the dynamic ${folderSlug} variable instead of the word 'slug'
       res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`); 
     });
   }
 
-  if (!Array.isArray(selectedFiles)) selectedFiles = [selectedFiles];
   req.session.data['filesToMove'] = selectedFiles;
-
-  // FIX: Also use it here
   res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/move-files/step-1?ref=${ref}`);
 });
 
@@ -15158,6 +15164,120 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check',
   req.session.save(function(err) {
     res.redirect(`/cases/manage-folders/view/${sourceFolder.id}/${sourceFolder.slug}?ref=${ref}`);
   });
+});
+
+// ==============================================
+// BULK DOWNLOAD (Dummy Mock)
+// ==============================================
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/download-selected', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug;
+  
+  // FIX: Strip out the GOV.UK '_unchecked' artifact
+  var rawSelected = req.body.selectedFiles || req.session.data['selectedFiles'];
+  var selectedFiles = [];
+  if (rawSelected) {
+    var arr = Array.isArray(rawSelected) ? rawSelected : [rawSelected];
+    selectedFiles = arr.filter(item => item && item !== '_unchecked');
+  }
+
+  if (selectedFiles.length === 0) {
+    req.session.data['moveFileError'] = "Select file(s) to download";
+    return req.session.save(() => res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`));
+  }
+
+  // Pass the correct length!
+  req.session.data['filesDownloadedBanner'] = selectedFiles.length;
+  req.session.save(() => res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`));
+});
+
+// ==============================================
+// BULK DELETE
+// ==============================================
+
+// 1. INITIATE BULK DELETE
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug;
+  
+  // FIX: Strip out the GOV.UK '_unchecked' artifact
+  var rawSelected = req.body.selectedFiles || req.session.data['selectedFiles'];
+  var selectedFiles = [];
+  if (rawSelected) {
+    var arr = Array.isArray(rawSelected) ? rawSelected : [rawSelected];
+    selectedFiles = arr.filter(item => item && item !== '_unchecked');
+  }
+
+  if (selectedFiles.length === 0) {
+    req.session.data['moveFileError'] = "Select file(s) to delete";
+    return req.session.save(() => res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`));
+  }
+
+  req.session.data['filesToDelete'] = selectedFiles;
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/delete-selected/confirm?ref=${ref}`);
+});
+
+// 2. VIEW BULK DELETE CONFIRMATION
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/confirm', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+
+  var fileIdsToDelete = req.session.data['filesToDelete'] || [];
+  var docsToDelete = (activeFolder.documents || []).filter(d => fileIdsToDelete.includes(d.id));
+
+  res.render('cases/manage-folders/delete-selected', {
+    currentCase: currentCase,
+    folder: activeFolder,
+    docsToDelete: docsToDelete
+  });
+});
+
+// 3. EXECUTE BULK DELETE
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/confirm', function(req, res) {
+  var ref = req.query.ref;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+
+  var activeFolder = null;
+  for (let f of currentCase.folders) {
+    if (f.id === folderId) { activeFolder = f; break; }
+    if (f.subfolders) {
+      let sub = f.subfolders.find(s => s.id === folderId);
+      if (sub) { activeFolder = sub; break; }
+    }
+  }
+
+  var fileIdsToDelete = req.session.data['filesToDelete'] || [];
+  
+  // Identify EXACTLY how many real files we are deleting
+  var docsToDelete = (activeFolder.documents || []).filter(d => fileIdsToDelete.includes(d.id));
+  var actualDeletedCount = docsToDelete.length;
+
+  // Filter out the deleted documents from the folder
+  activeFolder.documents = activeFolder.documents.filter(d => !fileIdsToDelete.includes(d.id));
+
+  req.session.data['filesToDelete'] = null;
+  addAuditLog(req, ref, `${actualDeletedCount} file(s) bulk deleted from ${activeFolder.name}`);
+
+  // FIX: Set success banner using the true file count!
+  req.session.data['filesBulkDeletedBanner'] = actualDeletedCount;
+  
+  req.session.save(() => res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`));
 });
 
 // ==============================================
