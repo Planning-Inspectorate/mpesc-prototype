@@ -14587,10 +14587,15 @@ router.get('/cases/manage-folders', function(req, res) {
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  if (!currentCase.folders) currentCase.folders = [];
+  // FIX: If the case has no folders, generate the defaults based on its case type!
+  if (!currentCase.folders) {
+    // Note: Use whatever variable your case uses for its type (e.g., currentCase.type or currentCase.caseType)
+    var caseType = currentCase.type || currentCase.caseType || "";
+    currentCase.folders = getDefaultFolders(caseType);
+  }
 
   var successBanner = req.session.data['folderCreated'];
-  var deleteBanner = req.session.data['folderDeleted']; // <-- Catch delete banner
+  var deleteBanner = req.session.data['folderDeleted']; 
   
   if (successBanner) delete req.session.data['folderCreated'];
   if (deleteBanner) delete req.session.data['folderDeleted'];
