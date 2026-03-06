@@ -54,17 +54,22 @@
         {{ currentCase.caseName }}
       </h1>
 
-    <form id="search-bar-form" method="GET" data-cy="search-form">
+    <form id="search-bar-form" action="/cases/manage-folders/search-results" method="GET" data-cy="search-form">
+      
+      {# MUST BE A HIDDEN INPUT: Ensures 'ref' is securely kept in the URL #}
+      <input type="hidden" name="ref" value="{{ currentCase.reference }}">
+
       <div class="govuk-form-group">
         <div id="search-hint" class="govuk-hint">
           To find a document, search by file name
         </div>
         <div style="display: flex; gap: 15px; align-items: flex-start;">
           <input class="govuk-input govuk-input--width-30" id="search-input" value="" name="searchCriteria" type="text" data-cy="search-input">
+          
+          {# Removed formaction so it uses the clean form action above #}
           {{ govukButton({
             text: "Search",
-            classes: "govuk-!-margin-bottom-0",
-            formaction: "/cases/manage-folders/search-results?ref=" + currentCase.reference
+            classes: "govuk-!-margin-bottom-0"
           }) }}
         </div>
       </div>

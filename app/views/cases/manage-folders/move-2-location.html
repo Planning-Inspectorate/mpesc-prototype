@@ -7,6 +7,16 @@
 {% endblock %}
 
 {% block content %}
+
+<style>
+  /* Instant, glitch-free fix: Force the parent container to stay open 
+    if any child radio inside it is currently checked. 
+  */
+  .govuk-radios__conditional:has(input[name="destinationFolderId"]:checked) {
+    display: block !important;
+  }
+</style>
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <form action="" method="post" novalidate>
@@ -69,18 +79,20 @@
 
 <script nonce="">
   document.addEventListener('DOMContentLoaded', function() {
-    // Clear selection logic
+    
+    // Clear selection logic (CSS automatically handles the hiding/showing now!)
     document.getElementById('clear-selection-btn').addEventListener('click', function(e) {
       e.preventDefault();
       
-      // 1. Uncheck all radio buttons
+      // 1. Uncheck all radios
       document.querySelectorAll('input[name="destinationFolderId"]').forEach(radio => radio.checked = false);
       
-      // 2. Hide conditional blocks, BUT ignore the current folder's permanently open block
+      // 2. Hide all the blocks (except the current folder which stays permanently open)
       document.querySelectorAll('.govuk-radios__conditional:not(.js-keep-open)').forEach(block => {
         block.classList.add('govuk-radios__conditional--hidden');
       });
     });
+
   });
 </script>
 {% endblock %}

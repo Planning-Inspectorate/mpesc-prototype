@@ -1,0 +1,126 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Search results - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+  <div class="govuk-breadcrumbs govuk-!-margin-bottom-0 govuk-!-margin-top-4">
+    <ol class="govuk-breadcrumbs__list">
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="/cases/manage-folders?ref={{ currentCase.reference }}">Manage case files</a>
+      </li>
+      <li class="govuk-breadcrumbs__list-item" aria-current="page">Search results</li>
+    </ol>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    
+    <h1 class="govuk-heading-l">Search results</h1>
+    
+    <p class="govuk-body">All files relating to the case</p>
+
+    {# SEARCH INPUT FORM #}
+    <form method="GET" action="/cases/manage-folders/search-results">
+      <input type="hidden" name="ref" value="{{ currentCase.reference }}">
+      
+      <div class="govuk-form-group">
+        <div style="display: flex; gap: 15px; align-items: flex-start;">
+          <input class="govuk-input govuk-input--width-30" id="search-input" name="searchCriteria" type="text" value="{{ searchCriteria }}">
+          
+          <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">
+            Search
+          </button>
+        </div>
+        <p class="govuk-body govuk-!-margin-top-2">
+          <a class="govuk-link" href="/cases/manage-folders/search-results?ref={{ currentCase.reference }}">Clear search</a>
+        </p>
+      </div>
+    </form>
+
+    {# NO RESULTS STATE #}
+    {% if totalDocs == 0 %}
+      <p class="govuk-body">There are no files matching your search.</p>
+    
+    {# RESULTS STATE #}
+    {% else %}
+      
+    <p class="govuk-body govuk-clearfix"></p>
+          
+          <p class="govuk-body govuk-!-margin-bottom-4" data-cy="pagination-results-text">
+            Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalDocs }}</strong> results
+          </p>
+
+          <p class="pins-pagination-options govuk-!-margin-bottom-4">
+            <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            {% if itemsPerPage == 25 %}
+                <span class="govuk-body">25</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&searchCriteria={{ searchCriteria }}&itemsPerPage=25" data-pagination="25">25</a>
+            {% endif %}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 50 %}
+                <span class="govuk-body">50</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&searchCriteria={{ searchCriteria }}&itemsPerPage=50" data-pagination="50">50</a>
+            {% endif %}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 100 %}
+                <span class="govuk-body">100</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&searchCriteria={{ searchCriteria }}&itemsPerPage=100" data-pagination="100">100</a>
+            {% endif %}
+          </p>
+
+      {# SEARCH RESULTS TABLE #}
+      <table class="govuk-table" data-module="moj-sortable-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="1">File name</button></th>
+            <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="2">File type</button></th>
+            <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="3">File size</button></th>
+            <th scope="col" class="govuk-table__header" aria-sort="descending"><button type="button" data-index="4">Uploaded</button></th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for doc in paginatedDocuments %}
+          <tr class="govuk-table__row">
+            
+            <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}">
+              <a class="govuk-link" href="#">{{ doc.name }}</a>
+            </td>
+            
+            <td class="govuk-table__cell">{{ doc.type }}</td>
+            <td class="govuk-table__cell" data-sort-value="{{ doc.sizeNum }}">{{ doc.size }}</td>
+            <td class="govuk-table__cell" data-sort-value="{{ doc.dateTimestamp }}">{{ doc.date }}</td>
+            
+            <td class="govuk-table__cell">
+              {# Action Line 1 #}
+              <a class="govuk-link" href="#">Download</a> <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span> 
+              <a class="govuk-link" href="/cases/manage-folders/view/{{ doc.folderId }}/{{ doc.folderSlug }}/{{ doc.id }}/delete?ref={{ currentCase.reference }}">Delete</a><br>
+              
+              {# Action Line 2: The dynamic View Folder link #}
+              <a class="govuk-link govuk-!-margin-top-1 govuk-!-display-inline-block" href="/cases/manage-folders/view/{{ doc.folderId }}/{{ doc.folderSlug }}?ref={{ currentCase.reference }}">View folder</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {# Dynamic GOV.UK Pagination Macro #}
+      {% if pageItems.length > 1 %}
+        {{ govukPagination({
+          previous: prevLink and { href: prevLink },
+          next: nextLink and { href: nextLink },
+          items: pageItems
+        }) }}
+      {% endif %}
+
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
