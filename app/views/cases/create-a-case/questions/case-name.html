@@ -5,10 +5,53 @@
 {% endblock %}
 
 {% block beforeContent %}
+
+  {# 1. Set a safe fallback just in case #}
+  {% set backLink = "/cases/create-a-case/questions/casework-area" %}
+
+  {# 2. CHECK BRANCH A: PEAS #}
+  {% if data['casework-area'] == "Planning, Environmental and Applications" %}
+    
+    {% if data['peas-type-of-case'] == "Drought" %}
+      {% set backLink = "/cases/create-a-case/questions/drought-subtype" %}
+    
+    {% elif data['peas-type-of-case'] == "Housing and Planning CPOs" %}
+      {% set backLink = "/cases/create-a-case/questions/housing-planning-cpos-subtype" %}
+    
+    {% elif data['peas-type-of-case'] == "Other Secretary of State casework" %}
+      {% set backLink = "/cases/create-a-case/questions/other-sos-casework-subtype" %}
+    
+    {% elif data['peas-type-of-case'] == "Purchase Notices" %}
+      {# Purchase Notices skip the subtype page, so we go back to the PEAS Type page! #}
+      {% set backLink = "/cases/create-a-case/questions/peas-type-of-case" %}
+    
+    {% elif data['peas-type-of-case'] == "Wayleaves" %}
+      {% set backLink = "/cases/create-a-case/questions/wayleaves-subtype" %}
+    
+    {% endif %}
+
+  {# 3. CHECK BRANCH B: Rights of Way and Common Land #}
+  {% elif data['casework-area'] == "Rights of Way and Common Land" %}
+    
+    {% if data['row-type-of-case'] == "Coastal Access" %}
+      {% set backLink = "/cases/create-a-case/questions/coastal-subtype" %}
+    
+    {% elif data['row-type-of-case'] == "Common Land" %}
+      {% set backLink = "/cases/create-a-case/questions/common-land-subtype" %}
+    
+    {% elif data['row-type-of-case'] == "Rights of Way" %}
+      {% set backLink = "/cases/create-a-case/questions/row-subtype" %}
+    
+    {% endif %}
+
+  {% endif %}
+
+  {# 4. Render the button using our calculated link #}
   {{ govukBackLink({
-  text: "Back",
-  href: "javascript:window.history.back()"
-}) }}
+    text: "Back",
+    href: backLink
+  }) }}
+
 {% endblock %}
 
 {% block content %}

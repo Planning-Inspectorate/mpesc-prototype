@@ -27,7 +27,7 @@
       
       <div class="govuk-form-group">
         <div style="display: flex; gap: 15px; align-items: flex-start;">
-          <input class="govuk-input govuk-input--width-30" id="search-input" name="searchCriteria" type="text" value="{{ searchCriteria }}">
+          <input class="govuk-input govuk-input--width-30" id="search-input" name="fileSearchCriteria" type="text" value="{{ fileSearchCriteria }}">
           
           <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">
             Search
@@ -58,19 +58,19 @@
             {% if itemsPerPage == 25 %}
                 <span class="govuk-body">25</span>
             {% else %}
-                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&searchCriteria={{ searchCriteria }}&itemsPerPage=25" data-pagination="25">25</a>
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&fileSearchCriteria={{ fileSearchCriteria }}&itemsPerPage=25" data-pagination="25">25</a>
             {% endif %}
             &nbsp;&nbsp;|&nbsp;&nbsp;
             {% if itemsPerPage == 50 %}
                 <span class="govuk-body">50</span>
             {% else %}
-                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&searchCriteria={{ searchCriteria }}&itemsPerPage=50" data-pagination="50">50</a>
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&fileSearchCriteria={{ fileSearchCriteria }}&itemsPerPage=50" data-pagination="50">50</a>
             {% endif %}
             &nbsp;&nbsp;|&nbsp;&nbsp;
             {% if itemsPerPage == 100 %}
                 <span class="govuk-body">100</span>
             {% else %}
-                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&searchCriteria={{ searchCriteria }}&itemsPerPage=100" data-pagination="100">100</a>
+                <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&fileSearchCriteria={{ fileSearchCriteria }}&itemsPerPage=100" data-pagination="100">100</a>
             {% endif %}
           </p>
 
@@ -90,7 +90,7 @@
           <tr class="govuk-table__row">
             
             <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}">
-              <a class="govuk-link" href="#">{{ doc.name }}</a>
+              <a class="govuk-link govuk-!-font-weight-bold" href="#">{{ doc.name }}</a>
             </td>
             
             <td class="govuk-table__cell">{{ doc.type }}</td>

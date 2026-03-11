@@ -20,13 +20,13 @@
       {% endif %}
       
       {# Always append 'Not yet allocated' #}
-      {% set radioItems = (radioItems.push({ divider: "or" }), radioItems) %}
+      
       {% set radioItems = (radioItems.push({ value: "Not yet allocated", text: "Not yet allocated", checked: (value == "Not yet allocated") }), radioItems) %}
 
       {{ govukRadios({
         name: "inspectorName",
         fieldset: {
-          legend: { text: "Who is the inspector? (optional)", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+          legend: { text: "Who is the inspector?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
         },
         hint: { text: "If no inspectors are available, add them on the inspectors page"},
         items: radioItems

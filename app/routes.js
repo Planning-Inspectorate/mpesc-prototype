@@ -184,7 +184,7 @@ router.post('/case-received-date-answer', function (req, res) {
       year: year
     })
   } else {
-    res.redirect('/cases/create-a-case/questions/applicant-check')
+    res.redirect('/cases/create-a-case/questions/applicant-check-first')
   }
 
 })
@@ -596,6 +596,16 @@ router.get('/cases/edit/check-applicants', (req, res) => {
   });
 });
 
+// 0a. Empty State Page: Check Applicants First
+router.get('/cases/edit/check-applicants-first', (req, res) => {
+  let c = getCase(req);
+  if (!c) return res.redirect('/cases/all-cases');
+  
+  res.render('cases/edit/check-applicants-first', { 
+    ref: req.query.ref 
+  });
+});
+
 // 1. Applicant Name (Edit Mode)
 router.get('/cases/edit/applicant-name', (req, res) => {
   let c = getCase(req);
@@ -697,17 +707,45 @@ router.post('/cases/edit/applicant-contact', (req, res) => {
   res.redirect(`/cases/edit/check-applicants?ref=${req.query.ref}`);
 });
 
-// 4. Instant Remove (Fixed Redirect)
+// 4. Remove Applicant Confirmation (Edit Flow)
 router.get('/cases/edit/applicant-remove', (req, res) => {
-  let c = getCase(req);
   let id = req.query.id;
+  let ref = req.query.ref;
   
-  if (c && c.applicants) {
-    c.applicants = c.applicants.filter(a => a.id !== id);
+  res.render('cases/create-a-case/questions/applicant-remove', { 
+    id: id, 
+    ref: ref,
+    backUrl: `/cases/edit/check-applicants?ref=${ref}`,
+    actionUrl: `/cases/edit/applicant-remove?id=${id}&ref=${ref}`
+  });
+});
+
+router.post('/cases/edit/applicant-remove', (req, res) => {
+  let id = req.query.id;
+  let ref = req.query.ref;
+  let confirm = req.body.applicantRemove;
+
+  // Validation: If they clicked submit without picking Yes or No
+  if (!confirm) {
+    return res.render('cases/create-a-case/questions/applicant-remove', { 
+      id: id, 
+      ref: ref,
+      error: true,
+      backUrl: `/cases/edit/check-applicants?ref=${ref}`,
+      actionUrl: `/cases/edit/applicant-remove?id=${id}&ref=${ref}`
+    });
+  }
+
+  // If Yes, delete the applicant from the specific case
+  if (confirm === 'yes') {
+    let c = getCase(req);
+    if (c && c.applicants) {
+      c.applicants = c.applicants.filter(a => a.id !== id);
+    }
   }
   
-  // Pointed back to check-applicants
-  res.redirect(`/cases/edit/check-applicants?ref=${req.query.ref}`);
+  // Redirect back to the edit hub table
+  res.redirect(`/cases/edit/check-applicants?ref=${ref}`);
 });
 
 // 5. Return to Case Details (From Check Applicants Hub)
@@ -12285,19 +12323,41 @@ router.post('/cases/create-a-case/questions/applicant-check', (req, res) => {
   res.redirect('/cases/create-a-case/questions/site-address');
 });
 
-// 5. Remove Applicant (Create Flow) - Instant Delete
+// 5. Remove Applicant Confirmation (Create Flow)
 router.get('/cases/create-a-case/questions/applicant-remove', (req, res) => {
   let id = req.query.id;
   
-  if (req.session.data['applicants']) {
-    // Filter out the applicant with the matching ID instantly
-    req.session.data['applicants'] = req.session.data['applicants'].filter(a => a.id !== id);
-  }
-  
-  // Bounce them right back to the check table
-  res.redirect('/cases/create-a-case/questions/applicant-check');
+  res.render('cases/create-a-case/questions/applicant-remove', { 
+    id: id,
+    backUrl: `/cases/create-a-case/questions/applicant-check`,
+    actionUrl: `/cases/create-a-case/questions/applicant-remove?id=${id}`
+  });
 });
 
+router.post('/cases/create-a-case/questions/applicant-remove', (req, res) => {
+  let id = req.query.id;
+  let confirm = req.body.applicantRemove; 
+
+  // Validation: If they clicked submit without picking Yes or No
+  if (!confirm) {
+    return res.render('cases/create-a-case/questions/applicant-remove', { 
+      id: id, 
+      error: true,
+      backUrl: `/cases/create-a-case/questions/applicant-check`,
+      actionUrl: `/cases/create-a-case/questions/applicant-remove?id=${id}`
+    });
+  }
+
+  // If Yes, delete it from the global session creation array
+  if (confirm === 'yes') {
+    if (req.session.data['applicants']) {
+      req.session.data['applicants'] = req.session.data['applicants'].filter(a => a.id !== id);
+    }
+  }
+  
+  // Redirect back to the create flow table
+  res.redirect('/cases/create-a-case/questions/applicant-check');
+});
 
 
 // =========================================================
@@ -12968,6 +13028,16 @@ router.get('/cases/case-details', function (req, res) {
 
 // --- KEY CONTACTS: OBJECTORS ---
 
+// 0. Empty State Page: Objectors First
+router.get('/cases/key-contacts/objectors/first', function(req, res) {
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases/case-details?ref=' + req.query.ref);
+
+  res.render('cases/key-contacts/objectors/objector-first', {
+    ref: c.reference
+  });
+});
+
 // 1. LIST VIEW
 router.get('/cases/key-contacts/objectors', function(req, res) {
   var c = getCase(req);
@@ -13277,17 +13347,50 @@ router.post('/cases/key-contacts/objectors/step-4', function(req, res) {
   res.redirect('/cases/key-contacts/objectors?ref=' + ref);
 });
 
-// REMOVE ROUTE
+// ==============================================
+// REMOVE OBJECTOR CONFIRMATION
+// ==============================================
+
+// 1. View Confirmation Page
 router.get('/cases/key-contacts/objectors/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
   
-  if (c.objectors) {
-    c.objectors = c.objectors.filter(x => x.id != id);
+  res.render('cases/key-contacts/objectors/objector-remove', { 
+    ref: ref,
+    id: id,
+    backUrl: `/cases/key-contacts/objectors?ref=${ref}`,
+    actionUrl: `/cases/key-contacts/objectors/remove?id=${id}&ref=${ref}`
+  });
+});
+
+// 2. Submit Confirmation
+router.post('/cases/key-contacts/objectors/remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.objectorRemove; // Matches the name attribute in the radios
+
+  // Validation: If they clicked submit without picking Yes or No
+  if (!confirm) {
+    return res.render('cases/key-contacts/objectors/objector-remove', { 
+      ref: ref,
+      id: id, 
+      error: true,
+      backUrl: `/cases/key-contacts/objectors?ref=${ref}`,
+      actionUrl: `/cases/key-contacts/objectors/remove?id=${id}&ref=${ref}`
+    });
+  }
+
+  // If Yes, delete the objector from the array
+  if (confirm === 'yes') {
+    var c = getCase(req);
+    if (c && c.objectors) {
+      c.objectors = c.objectors.filter(x => x.id !== id);
+    }
   }
   
-  res.redirect('/cases/key-contacts/objectors?ref=' + ref);
+  // Redirect back to the objectors list
+  res.redirect(`/cases/key-contacts/objectors?ref=${ref}`);
 });
 
 // STEP 5. Return to Case Details
@@ -13305,6 +13408,16 @@ router.get('/cases/objectors/return-to-case', function (req, res) {
 
 
 // --- KEY CONTACTS: CONTACTS ---
+
+// 0. Empty State Page: Key Contacts First
+router.get('/cases/key-contacts/contacts/first', function(req, res) {
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases/case-details?ref=' + req.query.ref);
+
+  res.render('cases/key-contacts/contacts/contact-first', {
+    ref: c.reference
+  });
+});
 
 // 1. LIST VIEW
 router.get('/cases/key-contacts/contacts', function(req, res) {
@@ -13584,13 +13697,50 @@ router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
   res.redirect('/cases/key-contacts/contacts?ref=' + ref);
 });
 
-// REMOVE ROUTE
+// ==============================================
+// REMOVE KEY CONTACT CONFIRMATION
+// ==============================================
+
+// 1. View Confirmation Page
 router.get('/cases/key-contacts/contacts/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
-  if (c.contacts) c.contacts = c.contacts.filter(x => x.id != id);
-  res.redirect('/cases/key-contacts/contacts?ref=' + ref);
+  
+  res.render('cases/key-contacts/contacts/contact-remove', { 
+    ref: ref,
+    id: id,
+    backUrl: `/cases/key-contacts/contacts?ref=${ref}`,
+    actionUrl: `/cases/key-contacts/contacts/remove?id=${id}&ref=${ref}`
+  });
+});
+
+// 2. Submit Confirmation
+router.post('/cases/key-contacts/contacts/remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.contactRemove; // Matches the name attribute in the radios
+
+  // Validation: If they clicked submit without picking Yes or No
+  if (!confirm) {
+    return res.render('cases/key-contacts/contacts/contact-remove', { 
+      ref: ref,
+      id: id, 
+      error: true,
+      backUrl: `/cases/key-contacts/contacts?ref=${ref}`,
+      actionUrl: `/cases/key-contacts/contacts/remove?id=${id}&ref=${ref}`
+    });
+  }
+
+  // If Yes, delete the contact from the array
+  if (confirm === 'yes') {
+    var c = getCase(req);
+    if (c && c.contacts) {
+      c.contacts = c.contacts.filter(x => x.id !== id);
+    }
+  }
+  
+  // Redirect back to the key contacts list
+  res.redirect(`/cases/key-contacts/contacts?ref=${ref}`);
 });
 
 // STEP 5. Return to Case Details
@@ -14606,7 +14756,7 @@ router.get('/cases/manage-folders', function(req, res) {
 router.get('/cases/manage-folders/search-results', function(req, res) {
   var ref = req.query.ref;
   // Grab the search query and make it lowercase for easy matching
-  var searchCriteria = (req.query.searchCriteria || "").toLowerCase().trim();
+  var fileSearchCriteria = (req.query.fileSearchCriteria || "").toLowerCase().trim();
 
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
@@ -14641,11 +14791,11 @@ router.get('/cases/manage-folders/search-results', function(req, res) {
   if (currentCase.folders) extractDocs(currentCase.folders);
 
   // 2. Filter the documents based on the user's search query
-  var filteredDocs = allDocuments;
-  if (searchCriteria) {
+  var filteredDocs = [];
+  if (fileSearchCriteria) {
     filteredDocs = allDocuments.filter(d => 
-      d.name.toLowerCase().includes(searchCriteria) || 
-      d.type.toLowerCase().includes(searchCriteria)
+      d.name.toLowerCase().includes(fileSearchCriteria) || 
+      d.type.toLowerCase().includes(fileSearchCriteria)
     );
   }
 
@@ -14678,7 +14828,7 @@ router.get('/cases/manage-folders/search-results', function(req, res) {
 
   let previousPage = null;
   // Keep the search criteria in the URL so pagination doesn't forget the search
-  let baseUrl = `/cases/manage-folders/search-results?ref=${ref}&searchCriteria=${encodeURIComponent(searchCriteria)}`;
+  let baseUrl = `/cases/manage-folders/search-results?ref=${ref}&fileSearchCriteria=${encodeURIComponent(fileSearchCriteria)}`;
 
   for (let i of pagesToShow) {
     if (previousPage && i - previousPage > 1) {
@@ -14694,7 +14844,7 @@ router.get('/cases/manage-folders/search-results', function(req, res) {
 
   res.render('cases/manage-folders/search-results', {
     currentCase: currentCase,
-    searchCriteria: req.query.searchCriteria || "", // Original casing for the text box
+    fileSearchCriteria: req.query.fileSearchCriteria || "", // Original casing for the text box
     paginatedDocuments: paginatedDocuments, 
     totalDocs: totalDocsCount,
     itemsPerPage: itemsPerPage,

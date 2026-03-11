@@ -11,7 +11,7 @@ Check applicant or appellant - Planning Inspectorate Portal
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-    <h1 class="govuk-heading-l">Check applicant or appellant</h1>
+    <h1 class="govuk-heading-l">Check applicant or appellant details</h1>
 
     {# --- GET DATA --- #}
     {# Pull the array directly from the session data #}
@@ -86,7 +86,9 @@ Check applicant or appellant - Planning Inspectorate Portal
         </tbody>
       </table>
     {% else %}
-      <p class="govuk-body">You will be able to add multiple main parties e.g. applicant, <br> appellant, server, utility company.</p>
+      <p class="govuk-body">Add one or more applicants or appellants. No applicant or <br> appellant details have been added.</p>
+
+  
     {% endif %}
 
     {# --- BUTTONS --- #}
@@ -97,16 +99,20 @@ Check applicant or appellant - Planning Inspectorate Portal
         {{ govukButton({
           text: "Add details",
           classes: "govuk-button" if applicantList.length == 0 else "govuk-button--secondary",
-          href: "/cases/create-a-case/questions/applicant-name"
+          href: "/cases/create-a-case/questions/applicant-check-first"
         }) }}
       </div>
 
       {% if applicantList.length > 0 %}
         <div class="govuk-button-group">
-          {{ govukButton({ text: "Continue" }) }}
-          
+          {{ govukButton({
+            text: "Continue",
+            href: "/cases/create-a-case/questions/site-address"
+           }) }}
         </div>
+        
       {% endif %}
+
     </form>
 
   </div>

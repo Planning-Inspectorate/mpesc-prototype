@@ -62,15 +62,26 @@
     <div class="govuk-button-group">
       {{ govukButton({
         text: "Add details",
-        classes: "govuk-button--secondary",
+        classes: "govuk-button" if contacts.length == 0 else "govuk-button--secondary",
         href: "/cases/key-contacts/contacts/step-1?ref=" + ref
       }) }}
+
+      {% if contacts.length == 0 %}
+      {{ govukButton({
+          text: "Back to case details",
+          classes: "govuk-button--secondary",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+
+      {% endif %}
+
       </div>
 
+      {% if contacts.length > 0 %}
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Save and continue",
-          href: "/cases/contacts/return-to-case?ref=" + ref
+        text: "Save and continue",
+        href: "/cases/contacts/return-to-case?ref=" + ref
         }) }}
 
         {{ govukButton({
@@ -78,6 +89,8 @@
           classes: "govuk-button--secondary",
           href: "/cases/case-details?ref=" + ref
         }) }}
+
+      {% endif %}
       </div>
     </div>
 
