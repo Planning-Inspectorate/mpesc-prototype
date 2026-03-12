@@ -1267,12 +1267,17 @@ addAuditLog(req, ref, "Inspector band updated to '" + val + "'");
 });
 
 
-// --- INSPECTOR LOGIC (Add, Edit, Delete & Validation) ---
+// ==============================================
+// INSPECTOR LOGIC (Working Draft Pattern)
+// ==============================================
 
 // 0. Empty State Page: Check Inspectors First
 router.get('/cases/edit/check-inspectors-first', function(req, res) {
   var c = getCase(req);
   if (!c) return res.redirect('/cases/all-cases');
+
+  // Start with a blank draft
+  req.session.data['tempInspectorsList'] = [];
 
   res.render('cases/edit/check-inspectors-first', {
     ref: req.query.ref
@@ -1284,12 +1289,18 @@ router.get('/cases/edit/check-inspectors', function (req, res) {
   var c = getCase(req);
   if (!c.inspectors) { c.inspectors = []; }
 
-  // CLEAR TEMP DATA (So "Add details" starts fresh)
+  // If there is no draft list in the session yet, clone the real data to start working!
+  if (!req.session.data['tempInspectorsList']) {
+    req.session.data['tempInspectorsList'] = JSON.parse(JSON.stringify(c.inspectors));
+  }
+
+  // Clear temp individual data (So "Add details" starts fresh)
   req.session.data['inspectorTemp'] = null; 
 
   res.render('cases/edit/check-inspectors', { 
     ref: c.reference,
-    inspectors: c.inspectors
+    // Pass the DRAFT list to the UI, not the real list!
+    inspectors: req.session.data['tempInspectorsList']
   });
 });
 
@@ -1297,14 +1308,14 @@ router.get('/cases/edit/check-inspectors', function (req, res) {
 router.get('/cases/edit/inspector-change', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
+  var draftList = req.session.data['tempInspectorsList'] || [];
 
-  var item = c.inspectors.find(i => i.id === id);
+  // Find the item in the draft list
+  var item = draftList.find(i => i.id === id);
 
   if (item) {
-    // Save existing data to a temp object in session
     req.session.data['inspectorTemp'] = {
-      id: item.id,             // We track the ID to know we are editing
+      id: item.id,
       name: item.name,
       day: item.rawDay,
       month: item.rawMonth,
@@ -1375,7 +1386,7 @@ router.get('/cases/edit/inspector-date', function (req, res) {
   });
 });
 
-// 6. STEP 2: Inspector Date (POST - Save/Update)
+// 6. STEP 2: Inspector Date (POST - Save to Draft)
 router.post('/cases/edit/inspector-date', function (req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
@@ -1452,18 +1463,19 @@ router.post('/cases/edit/inspector-date', function (req, res) {
     });
   }
 
-  // --- SUCCESS: SAVE ---
+  // --- SUCCESS: SAVE TO DRAFT ---
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   var formattedDate = day + " " + months[month - 1] + " " + year;
   
-  // Get the name from temp storage
   var temp = req.session.data['inspectorTemp'] || {};
+  var draftList = req.session.data['tempInspectorsList'] || [];
+  
   var name = temp.name;
   var editingId = temp.id; // Check if we are editing an existing ID
 
   if (editingId) {
-    // UPDATE EXISTING
-    var item = c.inspectors.find(i => i.id === editingId);
+    // UPDATE EXISTING in DRAFT
+    var item = draftList.find(i => i.id === editingId);
     if (item) {
       item.name = name;
       item.date = formattedDate;
@@ -1472,9 +1484,8 @@ router.post('/cases/edit/inspector-date', function (req, res) {
       item.rawYear = year;
     }
   } else {
-    // CREATE NEW
-    if (!c.inspectors) { c.inspectors = []; }
-    c.inspectors.push({
+    // CREATE NEW in DRAFT
+    draftList.push({
       id: 'insp-' + Math.floor(Math.random() * 10000),
       name: name,
       date: formattedDate,
@@ -1484,14 +1495,14 @@ router.post('/cases/edit/inspector-date', function (req, res) {
     });
   }
 
-  // Clear temp data
-  req.session.data['inspectorTemp'] = null;
+  req.session.data['tempInspectorsList'] = draftList;
+  req.session.data['inspectorTemp'] = null; // Clear individual temp data
 
   res.redirect('/cases/edit/check-inspectors?ref=' + ref);
 });
 
 // ==============================================
-// REMOVE INSPECTOR CONFIRMATION
+// REMOVE INSPECTOR CONFIRMATION (From Draft)
 // ==============================================
 
 // 1. View Confirmation Page
@@ -1511,9 +1522,8 @@ router.get('/cases/edit/inspector-remove', function(req, res) {
 router.post('/cases/edit/inspector-remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var confirm = req.body.inspectorRemove; // Matches the name attribute in the radios
+  var confirm = req.body.inspectorRemove; 
 
-  // Validation: If they clicked submit without picking Yes or No
   if (!confirm) {
     return res.render('cases/edit/remove-inspectors', { 
       ref: ref,
@@ -1524,27 +1534,59 @@ router.post('/cases/edit/inspector-remove', function(req, res) {
     });
   }
 
-  // If Yes, delete the inspector from the array
   if (confirm === 'yes') {
-    var c = getCase(req);
-    if (c && c.inspectors) {
-      c.inspectors = c.inspectors.filter(i => i.id !== id);
+    // Delete from the DRAFT array
+    if (req.session.data['tempInspectorsList']) {
+      req.session.data['tempInspectorsList'] = req.session.data['tempInspectorsList'].filter(i => i.id !== id);
     }
   }
   
-  // Redirect back to the inspector list
   res.redirect(`/cases/edit/check-inspectors?ref=${ref}`);
 });
 
-// 8. Return to Case Details (From Linked Cases Hub)
-router.get('/cases/check-inspectors/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "team"; 
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
 
-addAuditLog(req, req.query.ref, "Inspector details updated");
+// COMMIT DRAFT: User clicked "Save and return"
+router.post('/cases/edit/check-inspectors/save', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Overwrite the real database with our working draft
+  c.inspectors = req.session.data['tempInspectorsList'] || [];
   
-  // 2. Send them back to the main Case Details page
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+  // Clear the draft completely
+  req.session.data['tempInspectorsList'] = null;
+
+  // Flash banner and redirect
+  req.session.flashSection = "team"; 
+  addAuditLog(req, ref, "Inspector details updated");
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// CANCEL DRAFT: View Warning Page
+router.get('/cases/edit/check-inspectors/cancel', function(req, res) {
+  res.redirect(`/cases/edit/cancel-inspectors?ref=${req.query.ref}`);
+});
+
+// CANCEL DRAFT: Process Warning Page
+router.post('/cases/edit/check-inspectors/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelInspectors;
+
+  if (!confirm) {
+    return res.render('cases/edit/cancel-inspectors', { ref: ref, error: true });
+  }
+
+  if (confirm === 'yes') {
+    // Toss the draft in the trash and go to case details
+    req.session.data['tempInspectorsList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    // Take them back to the working list
+    res.redirect('/cases/edit/check-inspectors?ref=' + ref);
+  }
 });
 
 
