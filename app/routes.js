@@ -6090,8 +6090,23 @@ router.post('/cases/overview-procedures/commit', function(req, res) {
   var myCase = req.session.data['cases'].find(c => c.reference === ref);
 
   if (myCase) {
-    myCase.overviewProcedures = req.session.data['tempOverviewProcsList'] || [];
+    var oldProcs = myCase.overviewProcedures || [];
+    var newProcs = req.session.data['tempOverviewProcsList'] || [];
+
+    // SMART AUDIT LOG: Check what was removed before saving!
+    oldProcs.forEach(oldItem => {
+      // If the old item does NOT exist in the new draft array...
+      let stillExists = newProcs.find(newItem => newItem.id === oldItem.id);
+      if (!stillExists) {
+        let procType = oldItem.type || "Procedure";
+        addAuditLog(req, ref, `${procType} removed from overview`);
+      }
+    });
+
+    // Now safely overwrite the database with the draft
+    myCase.overviewProcedures = newProcs;
   }
+  
   req.session.data['tempOverviewProcsList'] = null;
   req.session.flashSection = "overview"; 
   res.redirect('/cases/case-details?ref=' + ref);
