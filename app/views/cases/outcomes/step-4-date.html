@@ -5,7 +5,15 @@
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+  {% set step4BackUrl = "/cases/outcomes/step-3?ref=" + ref + "&id=" + id %}
+  
+  {% if data['tempOutcome'].originator == 'Inspector' %}
+    {% set step4BackUrl = "/cases/outcomes/step-2a?ref=" + ref + "&id=" + id %}
+  {% elseif data['tempOutcome'].originator == 'Officer' %}
+    {% set step4BackUrl = "/cases/outcomes/step-2b?ref=" + ref + "&id=" + id %}
+  {% endif %}
+
+  {{ govukBackLink({ text: "Back", href: step4BackUrl }) }}
 {% endblock %}
 
 {% block content %}
@@ -34,7 +42,7 @@
           }
         },
         hint: { 
-          text: "Date of the decision, proposal, report or recommendation <br> For example, 27 3 2007" 
+          html: "Date of the decision, proposal, report or recommendation. <br> <br> For example, 27 3 2007" 
         },
         errorMessage: { text: errorList[0].text } if errorList else null,
         items: [

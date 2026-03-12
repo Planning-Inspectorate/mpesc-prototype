@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+  {{ govukBackLink({ text: "Back", href: "/cases/outcomes/step-4?ref=" + ref + "&id=" + id }) }}
 {% endblock %}
 
 {% block content %}
@@ -31,8 +31,8 @@
             classes: "govuk-fieldset__legend--l"
           }
         },
-        hint: {
-          text: "For example, 27 3 2007"
+        hint: { 
+          html: "Required if the decision was determined external to PINS. <br> <br> For example, 27 3 2007" 
         },
         errorMessage: { text: errorList[0].text } if errorList else null,
         items: [
@@ -54,7 +54,7 @@
         ]
       }) }}
 
-      {{ govukButton({ text: "Save and continue" }) }}
+      {{ govukButton({ text: "Continue" }) }}
     </form>
   </div>
 </div>

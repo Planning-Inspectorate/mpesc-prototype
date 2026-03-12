@@ -6094,7 +6094,6 @@ router.post('/cases/overview-procedures/remove', (req, res) => {
 // FINAL COMMIT / CANCEL ACTIONS
 // ==============================================
 
-// COMMIT DRAFT
 router.post('/cases/overview-procedures/commit', function(req, res) {
   var ref = req.query.ref;
   var myCase = req.session.data['cases'].find(c => c.reference === ref);
@@ -6103,9 +6102,8 @@ router.post('/cases/overview-procedures/commit', function(req, res) {
     var oldProcs = myCase.overviewProcedures || [];
     var newProcs = req.session.data['tempOverviewProcsList'] || [];
 
-    // SMART AUDIT LOG: Check what was removed before saving!
+    // 1. SMART AUDIT LOG: Check for REMOVALS
     oldProcs.forEach(oldItem => {
-      // If the old item does NOT exist in the new draft array...
       let stillExists = newProcs.find(newItem => newItem.id === oldItem.id);
       if (!stillExists) {
         let procType = oldItem.type || "Procedure";
@@ -6113,7 +6111,16 @@ router.post('/cases/overview-procedures/commit', function(req, res) {
       }
     });
 
-    // Now safely overwrite the database with the draft
+    // 2. SMART AUDIT LOG: Check for ADDITIONS
+    newProcs.forEach(newItem => {
+      let alreadyExisted = oldProcs.find(oldItem => oldItem.id === newItem.id);
+      if (!alreadyExisted) {
+        let procType = newItem.type || "Procedure";
+        addAuditLog(req, ref, `${procType} added to overview`);
+      }
+    });
+
+    // Safely overwrite the database with the draft
     myCase.overviewProcedures = newProcs;
   }
   
@@ -6888,63 +6895,93 @@ router.post('/cases/key-contacts/contacts/cancel', function(req, res) {
 
 
 // =============================================================================
-//  OUTCOMES FLOW (Multi-step)
+//  OUTCOMES FLOW (Working Draft Pattern)
 // =============================================================================
 
-function getOutcomes(req) {
-  var c = getCase(req); // Assuming you have your standard getCase helper
-  if (!c) return null;
-  if (!c.outcomes) c.outcomes = [];
-  return c;
-}
-
-// 0. CHECK PAGE (The Table)
+// 00. CATCH OLD LINKS / AUTO-ROUTER
 router.get('/cases/outcomes/check', (req, res) => {
-  res.render('cases/outcomes/check-outcomes', { ref: req.query.ref });
+  res.redirect('/cases/outcomes/hub?ref=' + req.query.ref);
+});
+
+// 0. Empty State Page: Start
+router.get('/cases/outcomes/start', (req, res) => {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase) return res.redirect('/cases/all-cases');
+
+  req.session.data['tempOutcomesList'] = [];
+  res.render('cases/outcomes/check-outcomes-first', { ref: ref });
+});
+
+// 1. SHOW THE LIST PAGE (Hub)
+router.get('/cases/outcomes/hub', (req, res) => {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase.outcomes) { myCase.outcomes = []; }
+
+  if (!req.session.data['tempOutcomesList']) {
+    req.session.data['tempOutcomesList'] = JSON.parse(JSON.stringify(myCase.outcomes));
+  }
+
+  delete req.session.data['tempOutcome']; // clear temp item
+
+  // EXPLICITLY PASS THE LIST TO THE TEMPLATE
+  res.render('cases/outcomes/check-outcomes', { 
+    ref: ref,
+    outcomeList: req.session.data['tempOutcomesList']
+  });
 });
 
 // 1. STEP 1: Type of decision
 router.get('/cases/outcomes/step-1', (req, res) => {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
-  // HYDRATION LOGIC: Load existing data if editing
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
-  } else if (!id) {
-    req.session.data['tempOutcome'] = {}; // Clear temp if creating a brand new one
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
+  } else if (!id && !req.session.data['tempOutcome']) {
+    req.session.data['tempOutcome'] = {}; 
   }
 
   var val = req.session.data['tempOutcome']?.type || "";
-  res.render('cases/outcomes/step-1-type', { ref: req.query.ref, id: req.query.id, value: val });
+  
+  // DYNAMIC BACK LINK LOGIC
+  var backUrl = (draftList.length > 0) ? `/cases/outcomes/hub?ref=${req.query.ref}` : `/cases/outcomes/start?ref=${req.query.ref}`;
+
+  res.render('cases/outcomes/step-1-type', { 
+    ref: req.query.ref, id: id, value: val, backUrl: backUrl 
+  });
 });
 
 router.post('/cases/outcomes/step-1', (req, res) => {
   var type = req.body.outcomeType;
-  if (!type) return res.render('cases/outcomes/step-1-type', { ref: req.query.ref, id: req.query.id, error: true });
+  var draftList = req.session.data['tempOutcomesList'] || [];
+  var backUrl = (draftList.length > 0) ? `/cases/outcomes/hub?ref=${req.query.ref}` : `/cases/outcomes/start?ref=${req.query.ref}`;
+
+  if (!type) {
+    return res.render('cases/outcomes/step-1-type', { 
+      ref: req.query.ref, id: req.query.id, error: true, backUrl: backUrl 
+    });
+  }
   
   if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
   req.session.data['tempOutcome'].type = type;
-  res.redirect(`/cases/outcomes/step-2?ref=${req.query.ref}&id=${req.query.id}`);
+  res.redirect(`/cases/outcomes/step-2?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
 // 2. STEP 2: Originator (Decision Maker)
 router.get('/cases/outcomes/step-2', (req, res) => {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
   }
 
   var val = req.session.data['tempOutcome']?.originator || "";
-  res.render('cases/outcomes/step-2-originator', { ref: req.query.ref, id: req.query.id, value: val });
+  res.render('cases/outcomes/step-2-originator', { ref: req.query.ref, id: id, value: val });
 });
 
 router.post('/cases/outcomes/step-2', (req, res) => {
@@ -6953,114 +6990,101 @@ router.post('/cases/outcomes/step-2', (req, res) => {
   
   req.session.data['tempOutcome'].originator = originator;
 
-  // BRANCHING
   if (originator === "Inspector") {
-    res.redirect(`/cases/outcomes/step-2a?ref=${req.query.ref}&id=${req.query.id}`);
+    res.redirect(`/cases/outcomes/step-2a?ref=${req.query.ref}&id=${req.query.id || ''}`);
   } else if (originator === "Officer") {
-    res.redirect(`/cases/outcomes/step-2b?ref=${req.query.ref}&id=${req.query.id}`);
+    res.redirect(`/cases/outcomes/step-2b?ref=${req.query.ref}&id=${req.query.id || ''}`);
   } else {
-    // Secretary of State
     req.session.data['tempOutcome'].inspectorName = null; 
     req.session.data['tempOutcome'].officerName = null;
-    res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+    res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id || ''}`);
   }
 });
 
 // 2a. STEP 2a: Inspector Name
 router.get('/cases/outcomes/step-2a', (req, res) => {
-  var c = getCase(req); 
+  var c = req.session.data['cases'].find(x => x.reference === req.query.ref);
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
   }
 
   res.render('cases/outcomes/step-2a-inspector', { 
-    ref: req.query.ref, 
-    id: req.query.id,
-    inspectors: c.inspectors || [] 
+    ref: req.query.ref, id: id, inspectors: c?.inspectors || [] 
   });
 });
 
+// 2a. STEP 2a: Inspector Name
 router.post('/cases/outcomes/step-2a', (req, res) => {
   var inspector = req.body.inspectorName;
-  var c = getCase(req); 
+  var c = req.session.data['cases'].find(x => x.reference === req.query.ref);
   
   if (!inspector) {
     return res.render('cases/outcomes/step-2a-inspector', { 
-      ref: req.query.ref, 
-      id: req.query.id, 
-      inspectors: c.inspectors || [], 
-      errors: {
-        inspectorName: {
-          text: "Select the inspector maker"
-        }
-      }
+      ref: req.query.ref, id: req.query.id, inspectors: c?.inspectors || [], 
+      errors: { inspectorName: { text: "Select the inspector" } }
     });
   }
 
   if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
-  
   req.session.data['tempOutcome'].inspectorName = inspector;
   req.session.data['tempOutcome'].officerName = null; 
   
-  res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+  // Safety: Wipe Step 3 data if they changed their mind from Secretary of State
+  req.session.data['tempOutcome'].decisionOutcome = null;
+  req.session.data['tempOutcome'].decisionGrantedConditions = null;
+  req.session.data['tempOutcome'].decisionOtherDetails = null;
+
+  // SKIP STEP 3, REDIRECT STRAIGHT TO STEP 4
+  res.redirect(`/cases/outcomes/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
 // 2b. STEP 2b: Officer Name
 router.get('/cases/outcomes/step-2b', (req, res) => {
-  var c = getCase(req); 
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
   }
 
-  res.render('cases/outcomes/step-2b-officer', { 
-    ref: req.query.ref, 
-    id: req.query.id 
-  }); 
+  res.render('cases/outcomes/step-2b-officer', { ref: req.query.ref, id: id }); 
 });
 
+// 2b. STEP 2b: Officer Name
 router.post('/cases/outcomes/step-2b', (req, res) => {
   var officer = req.body.officerName; 
-  
   if (!officer) {
     return res.render('cases/outcomes/step-2b-officer', { 
-      ref: req.query.ref, 
-      id: req.query.id, 
-      errors: {
-        officerName: {
-          text: "Select the officer"
-        }
-      } 
+      ref: req.query.ref, id: req.query.id, errors: { officerName: { text: "Select the officer" } } 
     });
   }
 
   if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
-  
   req.session.data['tempOutcome'].officerName = officer;
   req.session.data['tempOutcome'].inspectorName = null; 
-  
-  res.redirect(`/cases/outcomes/step-3?ref=${req.query.ref}&id=${req.query.id}`);
+
+  // Safety: Wipe Step 3 data if they changed their mind from Secretary of State
+  req.session.data['tempOutcome'].decisionOutcome = null;
+  req.session.data['tempOutcome'].decisionGrantedConditions = null;
+  req.session.data['tempOutcome'].decisionOtherDetails = null;
+
+  // SKIP STEP 3, REDIRECT STRAIGHT TO STEP 4
+  res.redirect(`/cases/outcomes/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
 // 3. STEP 3: Outcome
 router.get('/cases/outcomes/step-3', (req, res) => {
-  var c = getCase(req); 
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
   }
 
   var val = req.session.data['tempOutcome']?.decisionOutcome || "";
@@ -7068,206 +7092,198 @@ router.get('/cases/outcomes/step-3', (req, res) => {
   var otherDetails = req.session.data['tempOutcome']?.decisionOtherDetails || "";
 
   res.render('cases/outcomes/step-3-outcome', { 
-    ref: req.query.ref, 
-    id: req.query.id, 
-    value: val,
-    grantedDetails: grantedDetails,
-    otherDetails: otherDetails
+    ref: req.query.ref, id: id, value: val, grantedDetails: grantedDetails, otherDetails: otherDetails
   });
 });
 
 router.post('/cases/outcomes/step-3', (req, res) => {
   var decisionOutcome = req.body.decisionOutcome;
-
   if (!decisionOutcome) {
     return res.render('cases/outcomes/step-3-outcome', { 
-      ref: req.query.ref, id: req.query.id, 
-      errors: { decisionOutcome: { text: "Select the outcome" } }
+      ref: req.query.ref, id: req.query.id, errors: { decisionOutcome: { text: "Select the outcome" } }
     });
   }
 
   if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
-
   req.session.data['tempOutcome'].decisionOutcome = decisionOutcome;
-  
-  // Save the conditional text inputs
   req.session.data['tempOutcome'].decisionGrantedConditions = req.body.decisionGrantedConditions;
   req.session.data['tempOutcome'].decisionOtherDetails = req.body.decisionOtherDetails;
-
-  // Move on to the dates
-  res.redirect(`/cases/outcomes/step-4?ref=${req.query.ref}&id=${req.query.id}`);
+  res.redirect(`/cases/outcomes/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
 // 4. STEP 4: Outcome Date (REQUIRED)
 router.get('/cases/outcomes/step-4', (req, res) => {
-  var c = getCase(req); 
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
   }
 
   var tempOutcome = req.session.data['tempOutcome'] || {};
   var outcomeDate = tempOutcome.outcomeDate || {};
 
   res.render('cases/outcomes/step-4-date', { 
-    ref: req.query.ref, 
-    id: req.query.id, 
-    day: outcomeDate.day,
-    month: outcomeDate.month,
-    year: outcomeDate.year
+    ref: req.query.ref, id: id, day: outcomeDate.day, month: outcomeDate.month, year: outcomeDate.year
   });
 });
 
 router.post('/cases/outcomes/step-4', (req, res) => {
-  if (!req.session.data['tempOutcome']) {
-    req.session.data['tempOutcome'] = {};
-  }
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
 
-  var day = req.body['outcome-day']; 
-  var month = req.body['outcome-month']; 
-  var year = req.body['outcome-year'];
-
-  var result = validateAndSaveDate(
-    req, 
-    res, 
-    'outcome',                        
-    'Outcome date',                   
-    req.session.data['tempOutcome'],  
-    'outcomeDate'                     
-  );
+  var result = validateAndSaveDate(req, res, 'outcome', 'Outcome date', req.session.data['tempOutcome'], 'outcomeDate');
 
   if (result.status === "SUCCESS" || result.status === "REMOVED") {
-    return res.redirect(`/cases/outcomes/step-5?ref=${req.query.ref}&id=${req.query.id}`);
+    return res.redirect(`/cases/outcomes/step-5?ref=${req.query.ref}&id=${req.query.id || ''}`);
   }
 
   if (result.status === "ERROR") {
     return res.render('cases/outcomes/step-4-date', { 
-      ref: req.query.ref, 
-      id: req.query.id, 
-      day: day,
-      month: month,
-      year: year,
-      errorList: result.errorList,
-      errorFields: result.errorFields
+      ref: req.query.ref, id: req.query.id, 
+      day: req.body['outcome-day'], month: req.body['outcome-month'], year: req.body['outcome-year'],
+      errorList: result.errorList, errorFields: result.errorFields
     });
   }
 });
 
-// 5. STEP 5: Received Date (OPTIONAL) & SAVE
+// 5. STEP 5: Received Date (OPTIONAL) & SAVE TO DRAFT
 router.get('/cases/outcomes/step-5', (req, res) => {
-  var c = getCase(req); 
   var id = req.query.id;
+  var draftList = req.session.data['tempOutcomesList'] || [];
 
   if (id && (!req.session.data['tempOutcome'] || req.session.data['tempOutcome'].id !== id)) {
-    if (c && c.outcomes) {
-      var existingOutcome = c.outcomes.find(o => o.id === id);
-      if (existingOutcome) req.session.data['tempOutcome'] = { ...existingOutcome };
-    }
+    var existingOutcome = draftList.find(o => o.id === id);
+    if (existingOutcome) req.session.data['tempOutcome'] = JSON.parse(JSON.stringify(existingOutcome));
   }
 
   var tempOutcome = req.session.data['tempOutcome'] || {};
   var receivedDate = tempOutcome.receivedDate || {}; 
 
   res.render('cases/outcomes/step-5-received', { 
-    ref: req.query.ref, 
-    id: req.query.id, 
-    day: receivedDate.day,
-    month: receivedDate.month,
-    year: receivedDate.year
+    ref: req.query.ref, id: id, day: receivedDate.day, month: receivedDate.month, year: receivedDate.year
   });
 });
 
 router.post('/cases/outcomes/step-5', (req, res) => {
-  if (!req.session.data['tempOutcome']) {
-    req.session.data['tempOutcome'] = {};
-  }
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
+  var id = req.query.id;
 
-  var day = req.body['received-day']; 
-  var month = req.body['received-month']; 
-  var year = req.body['received-year'];
+  var day = req.body['received-day'], month = req.body['received-month'], year = req.body['received-year'];
 
   if (!day && !month && !year) {
     req.session.data['tempOutcome'].receivedDate = null; 
   } else {
-    var result = validateAndSaveDate(
-      req, 
-      res, 
-      'received',                       
-      'Received date',                  
-      req.session.data['tempOutcome'],  
-      'receivedDate'                    
-    );
-
+    var result = validateAndSaveDate(req, res, 'received', 'Received date', req.session.data['tempOutcome'], 'receivedDate');
     if (result.status === "ERROR") {
       return res.render('cases/outcomes/step-5-received', { 
-        ref: req.query.ref, 
-        id: req.query.id, 
-        day: day,
-        month: month,
-        year: year,
-        errorList: result.errorList,
-        errorFields: result.errorFields
+        ref: req.query.ref, id: id, day: day, month: month, year: year, errorList: result.errorList, errorFields: result.errorFields
       });
     }
   }
 
-  // --- 3. SAVE TO ARRAY ---
-  var c = getCase(req); 
-
-  if (!c) {
-    console.log("Error: Case not found for reference: ", req.query.ref);
-    return res.redirect('/'); 
-  }
-
-  if (!c.outcomes) {
-    c.outcomes = [];
-  }
-
-  var temp = req.session.data['tempOutcome'] || {};
-  var id = req.query.id;
+  // --- SAVE TO DRAFT ARRAY ---
+  var draftList = req.session.data['tempOutcomesList'] || [];
+  var temp = req.session.data['tempOutcome'];
 
   if (id) {
-    var index = c.outcomes.findIndex(i => i.id === id);
-    if (index > -1) {
-      c.outcomes[index] = { ...c.outcomes[index], ...temp };
-    }
+    var index = draftList.findIndex(i => i.id === id);
+    if (index > -1) draftList[index] = { ...temp };
   } else {
-    temp.id = 'out-' + Date.now();
-    c.outcomes.push(temp);
+    temp.id = id || 'out-' + Date.now();
+    draftList.push(temp);
   }
 
-  req.session.data['tempOutcome'] = {}; 
-  res.redirect(`/cases/outcomes/check?ref=${req.query.ref}`);
+  req.session.data['tempOutcomesList'] = draftList;
+  req.session.data['tempOutcome'] = null; 
+  res.redirect(`/cases/outcomes/hub?ref=${req.query.ref}`);
 });
 
-// 6. REMOVE OUTCOME
+// ==============================================
+// REMOVE (From Draft)
+// ==============================================
 router.get('/cases/outcomes/remove-confirm', (req, res) => {
-  res.render('cases/outcomes/remove-confirm', { ref: req.query.ref, id: req.query.id });
+  res.render('cases/outcomes/remove-confirm', { 
+    ref: req.query.ref, id: req.query.id, 
+    backUrl: `/cases/outcomes/hub?ref=${req.query.ref}`, actionUrl: `/cases/outcomes/remove?id=${req.query.id}&ref=${req.query.ref}` 
+  });
 });
+
 router.post('/cases/outcomes/remove', (req, res) => {
-  var confirm = req.body.confirmRemove;
-  if (!confirm) return res.render('cases/outcomes/remove-confirm', { ref: req.query.ref, id: req.query.id, error: true });
+  var ref = req.query.ref, id = req.query.id;
+  if (!req.body.confirmRemove) return res.render('cases/outcomes/remove-confirm', { ref: ref, id: id, error: true, backUrl: `/cases/outcomes/hub?ref=${ref}`, actionUrl: `/cases/outcomes/remove?id=${id}&ref=${ref}` });
 
-  if (confirm === 'yes') {
-    var c = getCase(req);
-    if (c && c.outcomes) c.outcomes = c.outcomes.filter(i => i.id !== req.query.id);
+  if (req.body.confirmRemove === 'yes' && req.session.data['tempOutcomesList']) {
+    req.session.data['tempOutcomesList'] = req.session.data['tempOutcomesList'].filter(i => i.id !== id);
   }
-  res.redirect(`/cases/outcomes/check?ref=${req.query.ref}`);
+  res.redirect(`/cases/outcomes/hub?ref=${ref}`);
 });
 
-// 7. Return to Case Details (From Outcomes Hub)
-router.get('/cases/outcomes/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Outcome overview' card
-  req.session.flashSection = "outcomeOverview"; 
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
 
-addAuditLog(req, req.query.ref, "Outcomes updated");
+// COMMIT DRAFT
+router.post('/cases/outcomes/commit', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  if (myCase) {
+    var oldOutcomes = myCase.outcomes || [];
+    var newOutcomes = req.session.data['tempOutcomesList'] || [];
+
+    // 1. SMART AUDIT LOG: Check for REMOVALS
+    oldOutcomes.forEach(oldItem => {
+      let stillExists = newOutcomes.find(newItem => newItem.id === oldItem.id);
+      if (!stillExists) {
+        let outType = oldItem.type || "Outcome";
+        addAuditLog(req, ref, `${outType} removed from overview`);
+      }
+    });
+
+    // 2. SMART AUDIT LOG: Check for ADDITIONS
+    newOutcomes.forEach(newItem => {
+      let alreadyExisted = oldOutcomes.find(oldItem => oldItem.id === newItem.id);
+      if (!alreadyExisted) {
+        let outType = newItem.type || "Outcome";
+        addAuditLog(req, ref, `${outType} added to overview`);
+      }
+    });
+
+    // Safely overwrite the database with the draft
+    myCase.outcomes = newOutcomes;
+  }
   
-  // 2. Send them back to the main Case Details page
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+  req.session.data['tempOutcomesList'] = null;
+  req.session.flashSection = "outcomeOverview"; 
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// CANCEL DRAFT
+router.get('/cases/outcomes/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  var originalOutcomes = myCase.outcomes || [];
+  var draftOutcomes = req.session.data['tempOutcomesList'] || [];
+
+  if (JSON.stringify(originalOutcomes) === JSON.stringify(draftOutcomes)) {
+    req.session.data['tempOutcomesList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+  res.render('cases/outcomes/cancel-outcomes', { ref: ref });
+});
+
+router.post('/cases/outcomes/cancel', function(req, res) {
+  var ref = req.query.ref;
+  if (!req.body.cancelOutcomes) return res.render('cases/outcomes/cancel-outcomes', { ref: ref, error: true });
+
+  if (req.body.cancelOutcomes === 'yes') {
+    req.session.data['tempOutcomesList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    res.redirect('/cases/outcomes/hub?ref=' + ref);
+  }
 });
 
 
@@ -7511,6 +7527,14 @@ addAuditLog(req, req.query.ref, "Decision published date removed");
   
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
+
+
+
+
+
+
+
+
 
 
 

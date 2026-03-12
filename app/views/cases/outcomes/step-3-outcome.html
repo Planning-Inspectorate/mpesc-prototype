@@ -3,7 +3,15 @@
 {% block pageTitle %}What is the outcome?{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+  {% set step3BackUrl = "/cases/outcomes/step-2?ref=" + ref + "&id=" + id %}
+  
+  {% if data['tempOutcome'].originator == 'Inspector' %}
+    {% set step3BackUrl = "/cases/outcomes/step-2a?ref=" + ref + "&id=" + id %}
+  {% elseif data['tempOutcome'].originator == 'Officer' %}
+    {% set step3BackUrl = "/cases/outcomes/step-2b?ref=" + ref + "&id=" + id %}
+  {% endif %}
+
+  {{ govukBackLink({ text: "Back", href: step3BackUrl }) }}
 {% endblock %}
 
 {% block content %}

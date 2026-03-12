@@ -1,0 +1,21 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Check outcome details - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check outcome details</h1>
+    <p class="govuk-body">You will be able to add multiple outcomes to this case.</p>
+ 
+    <div class="govuk-button-group">
+      {{ govukButton({ text: "Add details", href: "/cases/outcomes/step-1?ref=" + ref }) }}
+      {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/cases/case-details?ref=" + ref }) }}
+    </div>
+  </div>
+</div>
+{% endblock %}
