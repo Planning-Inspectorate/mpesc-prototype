@@ -7,51 +7,38 @@
 {% block beforeContent %}
   {{ govukBackLink({
     text: "Back",
-    href: "/cases/edit/check-related-cases?ref=" + ref
+    href: backUrl
   }) }}
 {% endblock %}
 
 {% block content %}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      {# ERROR SUMMARY #}
       {% if error %}
         {{ govukErrorSummary({
           titleText: "There is a problem",
-          errorList: [
-            {
-              text: errorMessage.text,
-              href: "#relatedCaseRef"
-            }
-          ]
+          errorList: [{ text: errorMessage.text, href: "#relatedCaseRef" }]
         }) }}
       {% endif %}
 
-      <form action="/cases/related-cases/save?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      <form action="/cases/related-cases/step-1?ref={{ ref }}&id={{ id }}" method="post" novalidate>
 
         <h1 class="govuk-heading-l">
           {% if id %}Edit{% else %}Add{% endif %} related case details
         </h1>
 
         {{ govukInput({
-          label: {
-            text: "Related case reference"
-          },
+          label: { text: "Related case reference" },
           id: "relatedCaseRef",
           name: "relatedCaseRef",
           value: value,
           errorMessage: errorMessage if error else null
         }) }}
 
-        {{ govukButton({
-          text: "Save"
-        }) }}
+        {{ govukButton({ text: "Save" }) }}
 
       </form>
-
     </div>
   </div>
-
 {% endblock %}

@@ -28,7 +28,7 @@
         }) }}
       {% endif %}
 
-      <form action="/cases/linked-cases/save?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      <form action="/cases/linked-cases/step-2?ref={{ ref }}&id={{ id }}" method="post" novalidate>
 
         {{ govukRadios({
           name: "isLead",

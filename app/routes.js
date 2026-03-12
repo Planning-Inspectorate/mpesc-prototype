@@ -12599,136 +12599,234 @@ router.post('/cases/edit/:field', function (req, res) {
 });
 
 
-// --- RELATED CASES LOGIC (With Validation) ---
+// ==============================================
+// RELATED CASES LOGIC (Working Draft Pattern)
+// ==============================================
 
-// 1. SHOW THE LIST PAGE
-router.get('/cases/edit/check-related-cases', function (req, res) {
-  res.render('cases/edit/check-related-cases', { ref: req.query.ref });
-});
-
-// 2. SHOW THE ADD PAGE
-router.get('/cases/related-cases/add', function (req, res) {
-  res.render('cases/edit/related-case-input', { 
-    ref: req.query.ref,
-    id: "",      
-    value: "",
-    error: false 
-  });
-});
-
-// 3. SHOW THE EDIT PAGE
-router.get('/cases/related-cases/edit', function (req, res) {
+// 0. Empty State Page: Check First
+router.get('/cases/related-cases/start', function(req, res) {
   var ref = req.query.ref;
-  var id = req.query.id;
-  
-  var cases = req.session.data['cases'];
-  var myCase = cases.find(c => c.reference === ref);
-  
-  var item = null;
-  if (myCase && myCase.relatedCases) {
-    item = myCase.relatedCases.find(i => i.id === id);
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase) return res.redirect('/cases/all-cases');
+
+  // Initialize a blank draft
+  req.session.data['tempRelatedCasesList'] = [];
+
+  res.render('cases/edit/check-related-cases-first', { ref: ref });
+});
+
+// 1. SHOW THE LIST PAGE (Hub)
+router.get('/cases/related-cases/hub', function (req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase.relatedCases) { myCase.relatedCases = []; }
+
+  // Clone real data to start working if no draft exists
+  if (!req.session.data['tempRelatedCasesList']) {
+    req.session.data['tempRelatedCasesList'] = JSON.parse(JSON.stringify(myCase.relatedCases));
   }
 
-  res.render('cases/edit/related-case-input', { 
+  res.render('cases/edit/check-related-cases', { 
     ref: ref,
-    id: id,
-    value: item ? item.reference : "",
-    error: false 
+    relatedCases: req.session.data['tempRelatedCasesList'] // Pass the DRAFT
   });
 });
 
-// 4. SAVE (Add or Update) - WITH VALIDATION
-router.post('/cases/related-cases/save', function (req, res) {
+// 2. STEP 1: SHOW INPUT (Reference)
+router.get('/cases/related-cases/step-1', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var newVal = req.body.relatedCaseRef;
+  var draftList = req.session.data['tempRelatedCasesList'] || [];
+  var value = "";
 
-  // VALIDATION CHECK
-  if (!newVal || newVal.trim() === "") {
+  if (id) {
+    var item = draftList.find(i => i.id === id);
+    if (item) value = item.reference;
+  }
+
+  var backUrl = (draftList.length > 0) 
+    ? `/cases/related-cases/hub?ref=${ref}` 
+    : `/cases/related-cases/start?ref=${ref}`;
+
+  res.render('cases/edit/related-case-input', { 
+    ref: ref, id: id, value: value, error: false, backUrl: backUrl
+  });
+});
+
+// 3. STEP 1: VALIDATE & SAVE DIRECTLY TO DRAFT
+router.post('/cases/related-cases/step-1', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var val = req.body.relatedCaseRef;
+  
+  var draftList = req.session.data['tempRelatedCasesList'] || [];
+
+  if (!val || val.trim() === "") {
+    var backUrl = (draftList.length > 0) ? `/cases/related-cases/hub?ref=${ref}` : `/cases/related-cases/start?ref=${ref}`;
     return res.render('cases/edit/related-case-input', {
-      ref: ref,
-      id: id,
-      value: newVal,
-      error: true,
-      errorMessage: { text: "Enter related case reference" }
+      ref: ref, id: id, value: val, error: true, errorMessage: { text: "Enter related case reference" }, backUrl: backUrl
     });
   }
 
-  // If valid, proceed to save
-  var cases = req.session.data['cases'];
-  var myCase = cases.find(c => c.reference === ref);
+  // Because there is only 1 step, we save straight to the draft array!
+  var newItem = {
+    id: id || 'rc-' + Math.floor(Math.random() * 10000),
+    reference: val 
+  };
+
+  var idx = draftList.findIndex(i => i.id === id);
+  if (idx >= 0) draftList[idx] = newItem;
+  else draftList.push(newItem);
+
+  req.session.data['tempRelatedCasesList'] = draftList;
   
-  if (myCase) {
-    if (!myCase.relatedCases) { myCase.relatedCases = []; }
-
-    if (id) {
-      // Update existing
-      var item = myCase.relatedCases.find(i => i.id === id);
-      if (item) { item.reference = newVal; }
-    } else {
-      // Add new
-      var newId = 'rc-' + Math.floor(Math.random() * 10000);
-      myCase.relatedCases.push({ id: newId, reference: newVal });
-    }
-  }
-
-  res.redirect('/cases/edit/check-related-cases?ref=' + ref);
+  // Instantly return to hub
+  res.redirect(`/cases/related-cases/hub?ref=${ref}`);
 });
 
-// 5. REMOVE
+// ==============================================
+// REMOVE RELATED CASE (From Draft)
+// ==============================================
 router.get('/cases/related-cases/remove', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
+  res.render('cases/edit/remove-related-cases', { 
+    ref: ref, id: id, backUrl: `/cases/related-cases/hub?ref=${ref}`, actionUrl: `/cases/related-cases/remove?id=${id}&ref=${ref}`
+  });
+});
 
-  var cases = req.session.data['cases'];
-  var myCase = cases.find(c => c.reference === ref);
-  
-  if (myCase && myCase.relatedCases) {
-    myCase.relatedCases = myCase.relatedCases.filter(i => i.id !== id);
+router.post('/cases/related-cases/remove', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.relatedCaseRemove;
+
+  if (!confirm) {
+    return res.render('cases/edit/remove-related-cases', { 
+      ref: ref, id: id, error: true, backUrl: `/cases/related-cases/hub?ref=${ref}`, actionUrl: `/cases/related-cases/remove?id=${id}&ref=${ref}`
+    });
   }
 
-  res.redirect('/cases/edit/check-related-cases?ref=' + ref);
+  if (confirm === 'yes') {
+    if (req.session.data['tempRelatedCasesList']) {
+      req.session.data['tempRelatedCasesList'] = req.session.data['tempRelatedCasesList'].filter(i => i.id !== id);
+    }
+  }
+  res.redirect(`/cases/related-cases/hub?ref=${ref}`);
 });
 
-// 6. Return to Case Details (From Related Cases Hub)
-router.get('/cases/related-cases/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "overview"; 
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
 
-addAuditLog(req, req.query.ref, "Related cases updated");
+// COMMIT DRAFT: Final Save to Case Details
+router.post('/cases/related-cases/commit', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  if (myCase) {
+    myCase.relatedCases = req.session.data['tempRelatedCasesList'] || [];
+  }
   
-  // 2. Send them back to the main Case Details page
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+  req.session.data['tempRelatedCasesList'] = null;
+  req.session.flashSection = "overview"; 
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// CANCEL DRAFT: Smart Check
+router.get('/cases/related-cases/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  var originalRelated = myCase.relatedCases || [];
+  var draftRelated = req.session.data['tempRelatedCasesList'] || [];
+
+  if (JSON.stringify(originalRelated) === JSON.stringify(draftRelated)) {
+    req.session.data['tempRelatedCasesList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  res.render('cases/edit/cancel-related-cases', { ref: ref });
+});
+
+// CANCEL DRAFT: Process Warning Page
+router.post('/cases/related-cases/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelRelatedCases;
+
+  if (!confirm) {
+    return res.render('cases/edit/cancel-related-cases', { ref: ref, error: true });
+  }
+
+  if (confirm === 'yes') {
+    req.session.data['tempRelatedCasesList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    res.redirect('/cases/related-cases/hub?ref=' + ref);
+  }
 });
 
 
 
 
-// --- LINKED CASES LOGIC (2-Step Flow with Validation) ---
+// ==============================================
+// LINKED CASES LOGIC (Working Draft Pattern)
+// ==============================================
 
-// 1. SHOW THE LIST PAGE
-router.get('/cases/edit/check-linked-cases', function (req, res) {
-  res.render('cases/edit/check-linked-cases', { ref: req.query.ref });
+// 0. Empty State Page: Check First
+router.get('/cases/linked-cases/start', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase) return res.redirect('/cases/all-cases');
+
+  // Initialize a blank draft
+  req.session.data['tempLinkedCasesList'] = [];
+
+  res.render('cases/edit/check-linked-cases-first', { ref: ref });
+});
+
+// 1. SHOW THE LIST PAGE (Hub)
+router.get('/cases/linked-cases/hub', function (req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase.linkedCases) { myCase.linkedCases = []; }
+
+  // Clone real data to start working if no draft exists
+  if (!req.session.data['tempLinkedCasesList']) {
+    req.session.data['tempLinkedCasesList'] = JSON.parse(JSON.stringify(myCase.linkedCases));
+  }
+
+  // Clear single-item temp variables
+  delete req.session.data['tempLinkedRef'];
+
+  res.render('cases/edit/check-linked-cases', { 
+    ref: ref,
+    linkedCases: req.session.data['tempLinkedCasesList'] // Pass the DRAFT
+  });
 });
 
 // 2. STEP 1: SHOW INPUT (Reference)
 router.get('/cases/linked-cases/step-1', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
+  var draftList = req.session.data['tempLinkedCasesList'] || [];
   var value = "";
 
-  // If editing, find the existing value
   if (id) {
-    var myCase = req.session.data['cases'].find(c => c.reference === ref);
-    var item = myCase.linkedCases ? myCase.linkedCases.find(i => i.id === id) : null;
+    var item = draftList.find(i => i.id === id);
     if (item) value = item.reference;
   }
+
+  // Calculate dynamic back link
+  var backUrl = (draftList.length > 0) 
+    ? `/cases/linked-cases/hub?ref=${ref}` 
+    : `/cases/linked-cases/start?ref=${ref}`;
 
   res.render('cases/edit/linked-case-input', { 
     ref: ref, 
     id: id, 
-    value: value,
-    error: false // No error initially
+    value: req.session.data['tempLinkedRef'] || value, 
+    error: false,
+    backUrl: backUrl // Pass the dynamic URL to the template
   });
 });
 
@@ -12737,115 +12835,157 @@ router.post('/cases/linked-cases/step-1', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
   var val = req.body.linkedCaseRef;
+  
+  // Recalculate dynamic back link for the error state
+  var draftList = req.session.data['tempLinkedCasesList'] || [];
+  var backUrl = (draftList.length > 0) 
+    ? `/cases/linked-cases/hub?ref=${ref}` 
+    : `/cases/linked-cases/start?ref=${ref}`;
 
-  // VALIDATION: Check if empty
   if (!val || val.trim() === "") {
     return res.render('cases/edit/linked-case-input', {
-      ref: ref,
-      id: id,
-      value: val,
-      error: true, // Trigger error state
-      errorMessage: { text: "Enter linked case reference" }
+      ref: ref, 
+      id: id, 
+      value: val, 
+      error: true, 
+      errorMessage: { text: "Enter linked case reference" },
+      backUrl: backUrl // Ensure the back button still works if validation fails!
     });
   }
 
-  // Success: Store in session temporarily and go to Step 2
   req.session.data['tempLinkedRef'] = val;
-  res.redirect(`/cases/linked-cases/step-2?ref=${ref}&id=${id}`);
+  res.redirect(`/cases/linked-cases/step-2?ref=${ref}&id=${id || ''}`);
 });
 
 // 4. STEP 2: SHOW RADIOS (Is Lead?)
 router.get('/cases/linked-cases/step-2', function (req, res) {
-  var ref = req.query.ref;
   var id = req.query.id;
+  var draftList = req.session.data['tempLinkedCasesList'] || [];
   var isLead = "";
 
-  // If editing, find existing value
   if (id) {
-    var myCase = req.session.data['cases'].find(c => c.reference === ref);
-    var item = myCase.linkedCases ? myCase.linkedCases.find(i => i.id === id) : null;
+    var item = draftList.find(i => i.id === id);
     if (item) isLead = item.isLead;
   }
 
   res.render('cases/edit/linked-case-lead', { 
-    ref: ref, 
-    id: id, 
-    isLead: isLead,
-    error: false 
+    ref: req.query.ref, id: id, isLead: isLead, error: false 
   });
 });
 
-// 5. STEP 2: VALIDATE & SAVE
-router.post('/cases/linked-cases/save', function (req, res) {
+// 5. STEP 2: VALIDATE & SAVE TO DRAFT
+router.post('/cases/linked-cases/step-2', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
   var isLead = req.body.isLead;
 
-  // VALIDATION: Check if empty
   if (!isLead) {
     return res.render('cases/edit/linked-case-lead', {
-      ref: ref,
-      id: id,
-      isLead: isLead,
-      error: true,
-      errorMessage: { text: "Select yes if this is the lead case" }
+      ref: ref, id: id, isLead: isLead, error: true, errorMessage: { text: "Select yes if this is the lead case" }
     });
   }
 
-  // SUCCESS: Save everything
-  var cases = req.session.data['cases'];
-  var myCase = cases.find(c => c.reference === ref);
-  var refVal = req.session.data['tempLinkedRef']; // Retrieve from temp session
+  var draftList = req.session.data['tempLinkedCasesList'] || [];
+  var refVal = req.session.data['tempLinkedRef']; 
+  var existingItem = {};
 
-  if (myCase) {
-    if (!myCase.linkedCases) { myCase.linkedCases = []; }
+  if (id) { existingItem = draftList.find(i => i.id === id) || {}; }
 
-    if (id) {
-      // Edit existing
-      var item = myCase.linkedCases.find(i => i.id === id);
-      if (item) {
-        // If we came from Step 1, update ref. If we jumped straight here (unlikely), keep old ref.
-        if(refVal) item.reference = refVal; 
-        item.isLead = isLead;
-      }
-    } else {
-      // Add new
-      var newId = 'lc-' + Math.floor(Math.random() * 10000);
-      myCase.linkedCases.push({ 
-        id: newId, 
-        reference: refVal, 
-        isLead: isLead 
-      });
-    }
-  }
+  var newItem = {
+    id: id || 'lc-' + Math.floor(Math.random() * 10000),
+    reference: refVal || existingItem.reference, 
+    isLead: isLead 
+  };
 
-  // Clear temp data
-  delete req.session.data['tempLinkedRef'];
+  var idx = draftList.findIndex(i => i.id === id);
+  if (idx >= 0) draftList[idx] = newItem;
+  else draftList.push(newItem);
+
+  req.session.data['tempLinkedCasesList'] = draftList;
+  delete req.session.data['tempLinkedRef']; 
   
-  res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
+  res.redirect('/cases/linked-cases/hub?ref=' + ref);
 });
 
-// 6. REMOVE LINKED CASE
+// ==============================================
+// REMOVE LINKED CASE (From Draft)
+// ==============================================
 router.get('/cases/linked-cases/remove', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
-  
-  if (myCase && myCase.linkedCases) {
-    myCase.linkedCases = myCase.linkedCases.filter(i => i.id !== id);
-  }
-  res.redirect('/cases/edit/check-linked-cases?ref=' + ref);
+  res.render('cases/edit/remove-linked-cases', { 
+    ref: ref, id: id, backUrl: `/cases/linked-cases/hub?ref=${ref}`, actionUrl: `/cases/linked-cases/remove?id=${id}&ref=${ref}`
+  });
 });
 
-// 7. Return to Case Details (From Linked Cases Hub)
-router.get('/cases/linked-cases/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "overview"; 
+router.post('/cases/linked-cases/remove', function (req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.linkedCaseRemove;
 
-addAuditLog(req, req.query.ref, "Linked cases updated");
+  if (!confirm) {
+    return res.render('cases/edit/remove-linked-cases', { 
+      ref: ref, id: id, error: true, backUrl: `/cases/linked-cases/hub?ref=${ref}`, actionUrl: `/cases/linked-cases/remove?id=${id}&ref=${ref}`
+    });
+  }
+
+  if (confirm === 'yes') {
+    if (req.session.data['tempLinkedCasesList']) {
+      req.session.data['tempLinkedCasesList'] = req.session.data['tempLinkedCasesList'].filter(i => i.id !== id);
+    }
+  }
+  res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
+});
+
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
+
+// COMMIT DRAFT: Final Save to Case Details
+router.post('/cases/linked-cases/commit', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  if (myCase) {
+    myCase.linkedCases = req.session.data['tempLinkedCasesList'] || [];
+  }
   
-  // 2. Send them back to the main Case Details page
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+  req.session.data['tempLinkedCasesList'] = null;
+  req.session.flashSection = "overview"; 
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// CANCEL DRAFT: Smart Check
+router.get('/cases/linked-cases/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  var originalLinked = myCase.linkedCases || [];
+  var draftLinked = req.session.data['tempLinkedCasesList'] || [];
+
+  if (JSON.stringify(originalLinked) === JSON.stringify(draftLinked)) {
+    req.session.data['tempLinkedCasesList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  res.render('cases/edit/cancel-linked-cases', { ref: ref });
+});
+
+// CANCEL DRAFT: Process Warning Page
+router.post('/cases/linked-cases/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelLinkedCases;
+
+  if (!confirm) {
+    return res.render('cases/edit/cancel-linked-cases', { ref: ref, error: true });
+  }
+
+  if (confirm === 'yes') {
+    req.session.data['tempLinkedCasesList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    res.redirect('/cases/linked-cases/hub?ref=' + ref);
+  }
 });
 
 

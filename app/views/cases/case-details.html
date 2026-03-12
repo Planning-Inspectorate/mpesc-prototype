@@ -332,20 +332,23 @@
           { 
   key: { text: "Related case(s)" }, 
   value: { html: relatedCasesHtml }, 
-  actions: { items: [{ 
-    href: "/cases/edit/check-related-cases?ref=" + currentCase.reference, 
-    text: "Change" if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "Add", 
-    visuallyHiddenText: "related cases" 
-  }] } 
-},
+  actions: { 
+    items: [{ 
+      href: "/cases/related-cases/hub?ref=" + currentCase.reference if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "/cases/related-cases/start?ref=" + currentCase.reference, 
+      text: "Change" if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "Add", 
+      visuallyHiddenText: "related cases" 
+    }] }
+  },
           { 
   key: { text: "Linked case(s)" }, 
   value: { html: linkedCasesHtml }, 
-  actions: { items: [{ 
-    href: "/cases/edit/check-linked-cases?ref=" + currentCase.reference, 
-    text: "Change" if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "Add", 
-    visuallyHiddenText: "linked cases" 
-  }] } 
+  actions: { 
+    items: [{ 
+      href: "/cases/linked-cases/hub?ref=" + currentCase.reference if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "/cases/linked-cases/start?ref=" + currentCase.reference, 
+      text: "Change" if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "Add", 
+      visuallyHiddenText: "linked cases" 
+    }] 
+  }
           }
 ]
       }) }}
