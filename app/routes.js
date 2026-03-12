@@ -1565,9 +1565,26 @@ router.post('/cases/edit/check-inspectors/save', function(req, res) {
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
-// CANCEL DRAFT: View Warning Page
+// CANCEL DRAFT: View Warning Page (Smart Check - INSPECTORS)
 router.get('/cases/edit/check-inspectors/cancel', function(req, res) {
-  res.redirect(`/cases/edit/cancel-inspectors?ref=${req.query.ref}`);
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  var originalInspectors = c.inspectors || [];
+  var draftInspectors = req.session.data['tempInspectorsList'] || [];
+
+  var isUnchanged = JSON.stringify(originalInspectors) === JSON.stringify(draftInspectors);
+
+  if (isUnchanged) {
+    // NO CHANGES: Silently clear the draft and go straight to case details
+    req.session.data['tempInspectorsList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  // CHANGES DETECTED: Render the warning page
+  res.render('cases/edit/cancel-inspectors', { 
+    ref: ref 
+  });
 });
 
 // CANCEL DRAFT: Process Warning Page
@@ -13111,25 +13128,40 @@ router.get('/cases/case-details', function (req, res) {
 });
 
 
-// --- KEY CONTACTS: OBJECTORS ---
+// ==============================================
+// KEY CONTACTS: OBJECTORS (Working Draft Pattern)
+// ==============================================
 
 // 0. Empty State Page: Objectors First
 router.get('/cases/key-contacts/objectors/first', function(req, res) {
   var c = getCase(req);
   if (!c) return res.redirect('/cases/case-details?ref=' + req.query.ref);
 
+  // Initialize a blank draft if starting from empty
+  req.session.data['tempObjectorsList'] = [];
+
   res.render('cases/key-contacts/objectors/objector-first', {
     ref: c.reference
   });
 });
 
-// 1. LIST VIEW
+// 1. HUB PAGE: Check Objectors
 router.get('/cases/key-contacts/objectors', function(req, res) {
   var c = getCase(req);
-  c.objectors = c.objectors || [];
+  if (!c.objectors) { c.objectors = []; }
+
+  // Clone real data to start working if no draft exists
+  if (!req.session.data['tempObjectorsList']) {
+    req.session.data['tempObjectorsList'] = JSON.parse(JSON.stringify(c.objectors));
+  }
+
+  // Clear single-objector multi-step temp variables
+  var keysToClear = ['temp_obj_fname', 'temp_obj_lname', 'temp_obj_org', 'temp_obj_address1', 'temp_obj_address2', 'temp_obj_town', 'temp_obj_county', 'temp_obj_postcode', 'temp_obj_email', 'temp_obj_phone', 'temp_obj_status'];
+  keysToClear.forEach(key => delete req.session.data[key]);
+
   res.render('cases/key-contacts/objectors/check', {
     ref: c.reference,
-    objectors: c.objectors
+    objectors: req.session.data['tempObjectorsList'] // Pass the DRAFT
   });
 });
 
@@ -13137,22 +13169,20 @@ router.get('/cases/key-contacts/objectors', function(req, res) {
 
 // STEP 1: Who is the objector?
 router.get('/cases/key-contacts/objectors/step-1', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempObjectorsList'] || [];
   var objector = {};
 
-  // Find existing if editing
-  if (id && c.objectors) {
-    objector = c.objectors.find(x => x.id == id) || {};
+  if (id) {
+    objector = draftList.find(x => x.id == id) || {};
   }
 
   res.render('cases/key-contacts/objectors/step-1', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
-    // Use session (if user hit back) OR existing DB value
     fname: req.session.data['temp_obj_fname'] || objector.fname,
     lname: req.session.data['temp_obj_lname'] || objector.lname,
-    org: req.session.data['temp_obj_org']     || objector.org
+    org:   req.session.data['temp_obj_org']   || objector.org
   });
 });
 
@@ -13164,7 +13194,6 @@ router.post('/cases/key-contacts/objectors/step-1', function(req, res) {
   let errors = {};
   let errorList = [];
 
-  // Validation
   if (!first && !last && !org) {
     let err = { text: "Enter at least one of first name, last name or organisation", href: "#obj-fname" };
     errors.general = err;
@@ -13188,13 +13217,7 @@ router.post('/cases/key-contacts/objectors/step-1', function(req, res) {
 
   if (errorList.length > 0) {
     return res.render('cases/key-contacts/objectors/step-1', {
-      ref: req.query.ref,
-      id: req.query.id,
-      fname: first,
-      lname: last,
-      org: org,
-      errors: errors,
-      errorList: errorList
+      ref: req.query.ref, id: req.query.id, fname: first, lname: last, org: org, errors: errors, errorList: errorList
     });
   }
 
@@ -13205,21 +13228,19 @@ router.post('/cases/key-contacts/objectors/step-1', function(req, res) {
   res.redirect(`/cases/key-contacts/objectors/step-2?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-
 // STEP 2: Address
 router.get('/cases/key-contacts/objectors/step-2', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempObjectorsList'] || [];
   var objector = {};
 
-  if (id && c.objectors) {
-    objector = c.objectors.find(x => x.id == id) || {};
+  if (id) {
+    objector = draftList.find(x => x.id == id) || {};
   }
 
   res.render('cases/key-contacts/objectors/step-2', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
-    // PRE-FILL LOGIC: Session -> DB -> Empty
     address1: req.session.data['temp_obj_address1'] || objector.address1,
     address2: req.session.data['temp_obj_address2'] || objector.address2,
     town:     req.session.data['temp_obj_town']     || objector.town,
@@ -13238,7 +13259,6 @@ router.post('/cases/key-contacts/objectors/step-2', function(req, res) {
   let errors = {};
   let errorList = [];
 
-  // Postcode Validation (Strict UK)
   if (postcode && postcode.trim() !== "") {
     var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
     var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
@@ -13257,15 +13277,7 @@ router.post('/cases/key-contacts/objectors/step-2', function(req, res) {
 
   if (errorList.length > 0) {
     return res.render('cases/key-contacts/objectors/step-2', {
-      ref: req.query.ref,
-      id: req.query.id,
-      address1: line1,
-      address2: line2,
-      town: town,
-      county: county,
-      postcode: postcode,
-      errors: errors,
-      errorList: errorList
+      ref: req.query.ref, id: req.query.id, address1: line1, address2: line2, town: town, county: county, postcode: postcode, errors: errors, errorList: errorList
     });
   }
 
@@ -13278,21 +13290,19 @@ router.post('/cases/key-contacts/objectors/step-2', function(req, res) {
   res.redirect(`/cases/key-contacts/objectors/step-3?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-
 // STEP 3: Contact Details
 router.get('/cases/key-contacts/objectors/step-3', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempObjectorsList'] || [];
   var objector = {};
 
-  if (id && c.objectors) {
-    objector = c.objectors.find(x => x.id == id) || {};
+  if (id) {
+    objector = draftList.find(x => x.id == id) || {};
   }
 
   res.render('cases/key-contacts/objectors/step-3', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
-    // PRE-FILL LOGIC: Session -> DB -> Empty
     email: req.session.data['temp_obj_email'] || objector.email,
     phone: req.session.data['temp_obj_phone'] || objector.phone
   });
@@ -13305,7 +13315,6 @@ router.post('/cases/key-contacts/objectors/step-3', function(req, res) {
   let errors = {};
   let errorList = [];
 
-  // Validation
   if (email.length > 250) {
     let err = { text: "Email must be less than 250 characters", href: "#obj-email" };
     errors.email = err;
@@ -13319,12 +13328,7 @@ router.post('/cases/key-contacts/objectors/step-3', function(req, res) {
 
   if (errorList.length > 0) {
     return res.render('cases/key-contacts/objectors/step-3', {
-      ref: req.query.ref,
-      id: req.query.id,
-      email: email,
-      phone: phone,
-      errors: errors,
-      errorList: errorList
+      ref: req.query.ref, id: req.query.id, email: email, phone: phone, errors: errors, errorList: errorList
     });
   }
 
@@ -13334,19 +13338,18 @@ router.post('/cases/key-contacts/objectors/step-3', function(req, res) {
   res.redirect(`/cases/key-contacts/objectors/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-
-// STEP 4: Status (Final Save)
+// STEP 4: Status + SAVE TO DRAFT
 router.get('/cases/key-contacts/objectors/step-4', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempObjectorsList'] || [];
   var objector = {};
 
-  if (id && c.objectors) {
-    objector = c.objectors.find(x => x.id == id) || {};
+  if (id) {
+    objector = draftList.find(x => x.id == id) || {};
   }
 
   res.render('cases/key-contacts/objectors/step-4', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
     status: req.session.data['temp_obj_status'] || objector.status
   });
@@ -13355,162 +13358,181 @@ router.get('/cases/key-contacts/objectors/step-4', function(req, res) {
 router.post('/cases/key-contacts/objectors/step-4', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
   var status = req.body['obj-status'];
 
-  // 1. Validation
   if (!status) {
     return res.render('cases/key-contacts/objectors/step-4', {
-      ref: ref,
-      id: id,
-      errorList: [{ text: "Select the status of the objector", href: "#obj-status" }]
+      ref: ref, id: id, errorList: [{ text: "Select the status of the objector", href: "#obj-status" }]
     });
   }
 
-  // 2. Find existing data (if editing) so we don't lose it
-  var existingObjector = {};
-  if (id && c.objectors) {
-    existingObjector = c.objectors.find(x => x.id == id) || {};
+  // Find existing data in DRAFT
+  var draftList = req.session.data['tempObjectorsList'] || [];
+  var existing = {};
+  if (id) {
+    existing = draftList.find(x => x.id == id) || {};
   }
 
-  // 3. Helper function: Use New Data if it exists, otherwise keep Old Data
-  // This prevents overwriting data with 'undefined' if you skipped a step
-  function getVal(sessionName, dbName) {
-    if (req.session.data[sessionName] !== undefined) {
-      return req.session.data[sessionName];
-    }
-    return dbName;
-  }
+  function getVal(sess, db) { return (req.session.data[sess] !== undefined) ? req.session.data[sess] : db; }
 
-  // 4. Build the final object
+  // Build Object
   var newObjector = {
     id: id || Date.now().toString(),
-    
-    // Step 1 Fields
-    fname: getVal('temp_obj_fname', existingObjector.fname),
-    lname: getVal('temp_obj_lname', existingObjector.lname),
-    org:   getVal('temp_obj_org',   existingObjector.org),
-    
-    // Step 2 Fields
-    address1: getVal('temp_obj_address1', existingObjector.address1),
-    address2: getVal('temp_obj_address2', existingObjector.address2),
-    town:     getVal('temp_obj_town',     existingObjector.town),
-    county:   getVal('temp_obj_county',   existingObjector.county), // NEW
-    postcode: getVal('temp_obj_postcode', existingObjector.postcode),
-    
-    // Step 3 Fields
-    email: getVal('temp_obj_email', existingObjector.email),
-    phone: getVal('temp_obj_phone', existingObjector.phone),
-    
-    // Step 4 Field (We just got this from body)
+    fname: getVal('temp_obj_fname', existing.fname),
+    lname: getVal('temp_obj_lname', existing.lname),
+    org:   getVal('temp_obj_org',   existing.org),
+    address1: getVal('temp_obj_address1', existing.address1),
+    address2: getVal('temp_obj_address2', existing.address2),
+    town:     getVal('temp_obj_town',     existing.town),
+    county:   getVal('temp_obj_county',   existing.county),
+    postcode: getVal('temp_obj_postcode', existing.postcode),
+    email: getVal('temp_obj_email', existing.email),
+    phone: getVal('temp_obj_phone', existing.phone),
     status: status
   };
 
-  // 5. Save to Array
-  c.objectors = c.objectors || [];
-  var existingIndex = c.objectors.findIndex(x => x.id == id);
-  
-  if (existingIndex >= 0) {
-    c.objectors[existingIndex] = newObjector; // Update
-  } else {
-    c.objectors.push(newObjector); // Add New
-  }
+  // Save to DRAFT List
+  var idx = draftList.findIndex(x => x.id == id);
+  if (idx >= 0) draftList[idx] = newObjector;
+  else draftList.push(newObjector);
 
-  // 6. Clear temp session data
-  delete req.session.data['temp_obj_fname'];
-  delete req.session.data['temp_obj_lname'];
-  delete req.session.data['temp_obj_org'];
-  delete req.session.data['temp_obj_address1'];
-  delete req.session.data['temp_obj_address2'];
-  delete req.session.data['temp_obj_town'];
-  delete req.session.data['temp_obj_county'];
-  delete req.session.data['temp_obj_postcode'];
-  delete req.session.data['temp_obj_email'];
-  delete req.session.data['temp_obj_phone'];
-  delete req.session.data['temp_obj_status'];
+  req.session.data['tempObjectorsList'] = draftList;
+
+  // Cleanup session
+  var keysToClear = ['temp_obj_fname', 'temp_obj_lname', 'temp_obj_org', 'temp_obj_address1', 'temp_obj_address2', 'temp_obj_town', 'temp_obj_county', 'temp_obj_postcode', 'temp_obj_email', 'temp_obj_phone', 'temp_obj_status'];
+  keysToClear.forEach(key => delete req.session.data[key]);
 
   res.redirect('/cases/key-contacts/objectors?ref=' + ref);
 });
 
 // ==============================================
-// REMOVE OBJECTOR CONFIRMATION
+// REMOVE OBJECTOR (From Draft)
 // ==============================================
 
-// 1. View Confirmation Page
 router.get('/cases/key-contacts/objectors/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  
   res.render('cases/key-contacts/objectors/objector-remove', { 
-    ref: ref,
-    id: id,
-    backUrl: `/cases/key-contacts/objectors?ref=${ref}`,
-    actionUrl: `/cases/key-contacts/objectors/remove?id=${id}&ref=${ref}`
+    ref: ref, id: id, backUrl: `/cases/key-contacts/objectors?ref=${ref}`, actionUrl: `/cases/key-contacts/objectors/remove?id=${id}&ref=${ref}`
   });
 });
 
-// 2. Submit Confirmation
 router.post('/cases/key-contacts/objectors/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var confirm = req.body.objectorRemove; // Matches the name attribute in the radios
+  var confirm = req.body.objectorRemove;
 
-  // Validation: If they clicked submit without picking Yes or No
   if (!confirm) {
     return res.render('cases/key-contacts/objectors/objector-remove', { 
-      ref: ref,
-      id: id, 
-      error: true,
-      backUrl: `/cases/key-contacts/objectors?ref=${ref}`,
-      actionUrl: `/cases/key-contacts/objectors/remove?id=${id}&ref=${ref}`
+      ref: ref, id: id, error: true, backUrl: `/cases/key-contacts/objectors?ref=${ref}`, actionUrl: `/cases/key-contacts/objectors/remove?id=${id}&ref=${ref}`
     });
   }
 
-  // If Yes, delete the objector from the array
   if (confirm === 'yes') {
-    var c = getCase(req);
-    if (c && c.objectors) {
-      c.objectors = c.objectors.filter(x => x.id !== id);
+    if (req.session.data['tempObjectorsList']) {
+      req.session.data['tempObjectorsList'] = req.session.data['tempObjectorsList'].filter(x => x.id !== id);
     }
   }
   
-  // Redirect back to the objectors list
   res.redirect(`/cases/key-contacts/objectors?ref=${ref}`);
 });
 
-// STEP 5. Return to Case Details
-router.get('/cases/objectors/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Key Contacts' card
-  req.session.flashSection = "key-contacts"; 
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
 
-  addAuditLog(req, req.query.ref, "Objectors updated");
-  
-  // 2. Send them back to the main Case Details page
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+// COMMIT DRAFT: User clicked "Save and continue" / Empty "Return"
+router.post('/cases/key-contacts/objectors/save', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Overwrite database with working draft
+  c.objectors = req.session.data['tempObjectorsList'] || [];
+  req.session.data['tempObjectorsList'] = null;
+
+  req.session.flashSection = "key-contacts"; 
+  addAuditLog(req, ref, "Objectors updated");
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// CANCEL DRAFT: Smart Check
+router.get('/cases/key-contacts/objectors/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  var originalObjectors = c.objectors || [];
+  var draftObjectors = req.session.data['tempObjectorsList'] || [];
+
+  var isUnchanged = JSON.stringify(originalObjectors) === JSON.stringify(draftObjectors);
+
+  if (isUnchanged) {
+    // NO CHANGES: Silently clear draft and exit
+    req.session.data['tempObjectorsList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  // CHANGES DETECTED: Render warning page
+  res.render('cases/key-contacts/objectors/cancel-objectors', { 
+    ref: ref 
+  });
+});
+
+// CANCEL DRAFT: Process Warning Page
+router.post('/cases/key-contacts/objectors/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelObjectors;
+
+  if (!confirm) {
+    return res.render('cases/key-contacts/objectors/cancel-objectors', { ref: ref, error: true });
+  }
+
+  if (confirm === 'yes') {
+    // Toss draft in trash
+    req.session.data['tempObjectorsList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    // Return to working list
+    res.redirect('/cases/key-contacts/objectors?ref=' + ref);
+  }
 });
 
 
 
 
-// --- KEY CONTACTS: CONTACTS ---
+// ==============================================
+// KEY CONTACTS: CONTACTS (Working Draft Pattern)
+// ==============================================
 
 // 0. Empty State Page: Key Contacts First
 router.get('/cases/key-contacts/contacts/first', function(req, res) {
   var c = getCase(req);
   if (!c) return res.redirect('/cases/case-details?ref=' + req.query.ref);
 
+  // Initialize a blank draft if starting from empty
+  req.session.data['tempContactsList'] = [];
+
   res.render('cases/key-contacts/contacts/contact-first', {
     ref: c.reference
   });
 });
 
-// 1. LIST VIEW
+// 1. HUB PAGE: Check Contacts
 router.get('/cases/key-contacts/contacts', function(req, res) {
   var c = getCase(req);
-  c.contacts = c.contacts || [];
+  if (!c.contacts) { c.contacts = []; }
+
+  // If there is no draft list yet, clone the real data to start working
+  if (!req.session.data['tempContactsList']) {
+    req.session.data['tempContactsList'] = JSON.parse(JSON.stringify(c.contacts));
+  }
+
+  // Clear single-contact multi-step temp variables so "Add details" starts fresh
+  var keysToClear = ['temp_con_type', 'temp_con_fname', 'temp_con_lname', 'temp_con_org', 'temp_con_address1', 'temp_con_address2', 'temp_con_town', 'temp_con_county', 'temp_con_postcode', 'temp_con_email', 'temp_con_phone'];
+  keysToClear.forEach(key => delete req.session.data[key]);
+
   res.render('cases/key-contacts/contacts/check', {
     ref: c.reference,
-    contacts: c.contacts
+    contacts: req.session.data['tempContactsList'] // Pass the DRAFT
   });
 });
 
@@ -13518,18 +13540,17 @@ router.get('/cases/key-contacts/contacts', function(req, res) {
 
 // STEP 1: Contact Type
 router.get('/cases/key-contacts/contacts/step-1', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempContactsList'] || [];
   var contact = {};
 
-  if (id && c.contacts) {
-    contact = c.contacts.find(x => x.id == id) || {};
+  if (id) {
+    contact = draftList.find(x => x.id == id) || {};
   }
 
   res.render('cases/key-contacts/contacts/step-1', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
-    // PRE-FILL: Session -> DB
     type: req.session.data['temp_con_type'] || contact.type
   });
 });
@@ -13537,7 +13558,6 @@ router.get('/cases/key-contacts/contacts/step-1', function(req, res) {
 router.post('/cases/key-contacts/contacts/step-1', function(req, res) {
   var type = req.body['con-type'];
   
-  // Validation
   if (!type) {
     return res.render('cases/key-contacts/contacts/step-1', {
       ref: req.query.ref,
@@ -13552,13 +13572,13 @@ router.post('/cases/key-contacts/contacts/step-1', function(req, res) {
 
 // STEP 2: Who is the contact?
 router.get('/cases/key-contacts/contacts/step-2', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempContactsList'] || [];
   var contact = {};
-  if (id && c.contacts) contact = c.contacts.find(x => x.id == id) || {};
+  if (id) contact = draftList.find(x => x.id == id) || {};
 
   res.render('cases/key-contacts/contacts/step-2', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
     fname: req.session.data['temp_con_fname'] || contact.fname,
     lname: req.session.data['temp_con_lname'] || contact.lname,
@@ -13574,7 +13594,6 @@ router.post('/cases/key-contacts/contacts/step-2', function(req, res) {
   let errors = {};
   let errorList = [];
 
-  // Validation
   if (!first && !last && !org) {
     let err = { text: "Enter at least one of first name, last name or organisation", href: "#con-fname" };
     errors.general = err;
@@ -13598,13 +13617,7 @@ router.post('/cases/key-contacts/contacts/step-2', function(req, res) {
 
   if (errorList.length > 0) {
     return res.render('cases/key-contacts/contacts/step-2', {
-      ref: req.query.ref,
-      id: req.query.id,
-      fname: first,
-      lname: last,
-      org: org,
-      errors: errors,
-      errorList: errorList
+      ref: req.query.ref, id: req.query.id, fname: first, lname: last, org: org, errors: errors, errorList: errorList
     });
   }
 
@@ -13617,13 +13630,13 @@ router.post('/cases/key-contacts/contacts/step-2', function(req, res) {
 
 // STEP 3: Address
 router.get('/cases/key-contacts/contacts/step-3', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempContactsList'] || [];
   var contact = {};
-  if (id && c.contacts) contact = c.contacts.find(x => x.id == id) || {};
+  if (id) contact = draftList.find(x => x.id == id) || {};
 
   res.render('cases/key-contacts/contacts/step-3', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
     address1: req.session.data['temp_con_address1'] || contact.address1,
     address2: req.session.data['temp_con_address2'] || contact.address2,
@@ -13643,7 +13656,6 @@ router.post('/cases/key-contacts/contacts/step-3', function(req, res) {
   let errors = {};
   let errorList = [];
 
-  // Postcode Validation (Strict UK)
   if (postcode && postcode.trim() !== "") {
     var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
     var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
@@ -13662,15 +13674,7 @@ router.post('/cases/key-contacts/contacts/step-3', function(req, res) {
 
   if (errorList.length > 0) {
     return res.render('cases/key-contacts/contacts/step-3', {
-      ref: req.query.ref,
-      id: req.query.id,
-      address1: line1,
-      address2: line2,
-      town: town,
-      county: county,
-      postcode: postcode,
-      errors: errors,
-      errorList: errorList
+      ref: req.query.ref, id: req.query.id, address1: line1, address2: line2, town: town, county: county, postcode: postcode, errors: errors, errorList: errorList
     });
   }
 
@@ -13683,15 +13687,15 @@ router.post('/cases/key-contacts/contacts/step-3', function(req, res) {
   res.redirect(`/cases/key-contacts/contacts/step-4?ref=${req.query.ref}&id=${req.query.id || ''}`);
 });
 
-// STEP 4: Contact Details + SAVE
+// STEP 4: Contact Details + SAVE TO DRAFT
 router.get('/cases/key-contacts/contacts/step-4', function(req, res) {
-  var c = getCase(req);
   var id = req.query.id;
+  var draftList = req.session.data['tempContactsList'] || [];
   var contact = {};
-  if (id && c.contacts) contact = c.contacts.find(x => x.id == id) || {};
+  if (id) contact = draftList.find(x => x.id == id) || {};
 
   res.render('cases/key-contacts/contacts/step-4', {
-    ref: c.reference,
+    ref: req.query.ref,
     id: id,
     email: req.session.data['temp_con_email'] || contact.email,
     phone: req.session.data['temp_con_phone'] || contact.phone
@@ -13701,7 +13705,6 @@ router.get('/cases/key-contacts/contacts/step-4', function(req, res) {
 router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
 
   var email = req.body['con-email'] || "";
   var phone = req.body['con-phone'] || "";
@@ -13709,7 +13712,6 @@ router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
   let errors = {};
   let errorList = [];
 
-  // Validation
   if (email.length > 250) {
     let err = { text: "Email must be less than 250 characters", href: "#con-email" };
     errors.email = err;
@@ -13723,19 +13725,15 @@ router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
 
   if (errorList.length > 0) {
     return res.render('cases/key-contacts/contacts/step-4', {
-      ref: req.query.ref,
-      id: req.query.id,
-      email: email,
-      phone: phone,
-      errors: errors,
-      errorList: errorList
+      ref: ref, id: id, email: email, phone: phone, errors: errors, errorList: errorList
     });
   }
 
-  // Find existing data (if editing)
+  // Find existing data in DRAFT
+  var draftList = req.session.data['tempContactsList'] || [];
   var existing = {};
-  if (id && c.contacts) {
-    existing = c.contacts.find(x => x.id == id) || {};
+  if (id) {
+    existing = draftList.find(x => x.id == id) || {};
   }
 
   // Helper to get New Session Data OR Old DB Data
@@ -13744,95 +13742,126 @@ router.post('/cases/key-contacts/contacts/step-4', function(req, res) {
   // Build Object
   var newContact = {
     id: id || Date.now().toString(),
-    
     type: getVal('temp_con_type', existing.type),
-
     fname: getVal('temp_con_fname', existing.fname),
     lname: getVal('temp_con_lname', existing.lname),
     org:   getVal('temp_con_org',   existing.org),
-
     address1: getVal('temp_con_address1', existing.address1),
     address2: getVal('temp_con_address2', existing.address2),
     town:     getVal('temp_con_town',     existing.town),
     county:   getVal('temp_con_county',   existing.county),
     postcode: getVal('temp_con_postcode', existing.postcode),
-
     email: email,
     phone: phone
   };
 
-  // Save
-  c.contacts = c.contacts || [];
-  var idx = c.contacts.findIndex(x => x.id == id);
-  if (idx >= 0) c.contacts[idx] = newContact;
-  else c.contacts.push(newContact);
+  // Save to DRAFT List
+  var idx = draftList.findIndex(x => x.id == id);
+  if (idx >= 0) draftList[idx] = newContact;
+  else draftList.push(newContact);
+  
+  req.session.data['tempContactsList'] = draftList;
 
   // Cleanup
-  delete req.session.data['temp_con_type'];
-  delete req.session.data['temp_con_fname'];
-  delete req.session.data['temp_con_lname'];
-  delete req.session.data['temp_con_org'];
-  delete req.session.data['temp_con_address1'];
-  delete req.session.data['temp_con_address2'];
-  delete req.session.data['temp_con_town'];
-  delete req.session.data['temp_con_county'];
-  delete req.session.data['temp_con_postcode'];
-  delete req.session.data['temp_con_email']; 
+  var keysToClear = ['temp_con_type', 'temp_con_fname', 'temp_con_lname', 'temp_con_org', 'temp_con_address1', 'temp_con_address2', 'temp_con_town', 'temp_con_county', 'temp_con_postcode', 'temp_con_email', 'temp_con_phone'];
+  keysToClear.forEach(key => delete req.session.data[key]);
 
   res.redirect('/cases/key-contacts/contacts?ref=' + ref);
 });
 
 // ==============================================
-// REMOVE KEY CONTACT CONFIRMATION
+// REMOVE KEY CONTACT (From Draft)
 // ==============================================
 
-// 1. View Confirmation Page
 router.get('/cases/key-contacts/contacts/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  
   res.render('cases/key-contacts/contacts/contact-remove', { 
-    ref: ref,
-    id: id,
-    backUrl: `/cases/key-contacts/contacts?ref=${ref}`,
-    actionUrl: `/cases/key-contacts/contacts/remove?id=${id}&ref=${ref}`
+    ref: ref, id: id, backUrl: `/cases/key-contacts/contacts?ref=${ref}`, actionUrl: `/cases/key-contacts/contacts/remove?id=${id}&ref=${ref}`
   });
 });
 
-// 2. Submit Confirmation
 router.post('/cases/key-contacts/contacts/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var confirm = req.body.contactRemove; // Matches the name attribute in the radios
+  var confirm = req.body.contactRemove;
 
-  // Validation: If they clicked submit without picking Yes or No
   if (!confirm) {
     return res.render('cases/key-contacts/contacts/contact-remove', { 
-      ref: ref,
-      id: id, 
-      error: true,
-      backUrl: `/cases/key-contacts/contacts?ref=${ref}`,
-      actionUrl: `/cases/key-contacts/contacts/remove?id=${id}&ref=${ref}`
+      ref: ref, id: id, error: true, backUrl: `/cases/key-contacts/contacts?ref=${ref}`, actionUrl: `/cases/key-contacts/contacts/remove?id=${id}&ref=${ref}`
     });
   }
 
-  // If Yes, delete the contact from the array
   if (confirm === 'yes') {
-    var c = getCase(req);
-    if (c && c.contacts) {
-      c.contacts = c.contacts.filter(x => x.id !== id);
+    if (req.session.data['tempContactsList']) {
+      req.session.data['tempContactsList'] = req.session.data['tempContactsList'].filter(x => x.id !== id);
     }
   }
-  
-  // Redirect back to the key contacts list
   res.redirect(`/cases/key-contacts/contacts?ref=${ref}`);
 });
 
-// STEP 5. Return to Case Details
-router.get('/cases/contacts/return-to-case', function (req, res) {
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
+
+// COMMIT DRAFT: User clicked "Save and continue" / Empty "Return"
+router.post('/cases/key-contacts/contacts/save', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Overwrite the real database with our working draft
+  c.contacts = req.session.data['tempContactsList'] || [];
+  
+  // Clear the draft completely
+  req.session.data['tempContactsList'] = null;
+
+  // Flash banner and redirect
   req.session.flashSection = "key-contacts"; 
-  addAuditLog(req, req.query.ref, "Contacts updated");
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+  addAuditLog(req, ref, "Contacts updated");
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// CANCEL DRAFT: View Warning Page (Smart Check)
+router.get('/cases/key-contacts/contacts/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // 1. Grab both arrays (fallback to empty arrays if they don't exist yet)
+  var originalContacts = c.contacts || [];
+  var draftContacts = req.session.data['tempContactsList'] || [];
+
+  // 2. Compare them! (Turning them into strings makes it a perfect 1-to-1 check)
+  var isUnchanged = JSON.stringify(originalContacts) === JSON.stringify(draftContacts);
+
+  if (isUnchanged) {
+    // NO CHANGES: Silently clear the draft and go straight to case details
+    req.session.data['tempContactsList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  // CHANGES DETECTED: Render the warning page
+  res.render('cases/key-contacts/contacts/cancel-contacts', { 
+    ref: ref 
+  });
+});
+
+// CANCEL DRAFT: Process Warning Page
+router.post('/cases/key-contacts/contacts/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelContacts;
+
+  if (!confirm) {
+    return res.render('cases/key-contacts/contacts/cancel-contacts', { ref: ref, error: true });
+  }
+
+  if (confirm === 'yes') {
+    // Toss the draft in the trash
+    req.session.data['tempContactsList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    // Take them back to the working list
+    res.redirect('/cases/key-contacts/contacts?ref=' + ref);
+  }
 });
 
 
