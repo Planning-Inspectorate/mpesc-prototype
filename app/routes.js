@@ -5977,17 +5977,27 @@ router.post('/cases/overview-procedures/step-1', (req, res) => {
   }
 
   if (!req.session.data['tempProc']) req.session.data['tempProc'] = {};
+  
+  // --- THE NEW LOGIC: DATA WIPE ON TYPE CHANGE ---
+  var oldType = req.session.data['tempProc'].type;
+  
+  // If an old type exists, and it doesn't match the new type they just selected...
+  if (oldType && oldType !== type) {
+    // Wipe the temporary object completely clean, keeping ONLY the ID.
+    // When this saves in step 3, it will obliterate all the old detailed fields!
+    req.session.data['tempProc'] = { id: req.session.data['tempProc'].id };
+  }
+
+  // Save the new type
   req.session.data['tempProc'].type = type;
 
-  // --- THE FIX: Bulletproof Branching Logic ---
-  // We check for both "Admin" and "Admin (In house)" to ensure the route catches it 
-  // regardless of how the radio button value is formatted in step-1-type.html.
+  // --- Branching Logic ---
   if (type === "Admin" || type === "Admin (In house)") {
     res.redirect(`/cases/overview-procedures/step-2a?ref=${ref}&id=${id || ''}`);
   } else if (type === "Site visit") {
     res.redirect(`/cases/overview-procedures/step-2b?ref=${ref}&id=${id || ''}`);
   } else {
-    // Hearing, Inquiry, Proposal, Written reps all go to inspector assignment
+    // Hearing, Inquiry, Proposal, Written reps
     res.redirect(`/cases/overview-procedures/step-2c?ref=${ref}&id=${id || ''}`);
   }
 });
