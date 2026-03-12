@@ -584,180 +584,320 @@ addAuditLog(req, ref, "External reference updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-// --- 3. EDIT/CHECK APPLICANTS HUB (Post-Creation) ---
-// 0. Hub Page: Check Applicants
-router.get('/cases/edit/check-applicants', (req, res) => {
-  let c = getCase(req);
-  if (!c) return res.redirect('/cases/all-cases');
-  
+// ==============================================
+// APPLICANTS LOGIC (Working Draft Pattern)
+// ==============================================
+
+// 0. Empty State Page: Check First
+router.get('/cases/applicants/start', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase) return res.redirect('/cases/all-cases');
+
+  req.session.data['tempApplicantsList'] = [];
+  res.render('cases/edit/check-applicants-first', { ref: ref });
+});
+
+// 1. SHOW THE LIST PAGE (Hub)
+router.get('/cases/applicants/hub', function (req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  if (!myCase.applicants) { myCase.applicants = []; }
+
+  // Clone real data to draft if no draft exists
+  if (!req.session.data['tempApplicantsList']) {
+    req.session.data['tempApplicantsList'] = JSON.parse(JSON.stringify(myCase.applicants));
+  }
+
+  // Clear single-item temp variable
+  delete req.session.data['tempApplicant'];
+
   res.render('cases/edit/check-applicants', { 
-    ref: req.query.ref, 
-    applicants: c.applicants || [] 
+    ref: ref,
+    applicants: req.session.data['tempApplicantsList'] 
   });
 });
 
-// 0a. Empty State Page: Check Applicants First
-router.get('/cases/edit/check-applicants-first', (req, res) => {
-  let c = getCase(req);
-  if (!c) return res.redirect('/cases/all-cases');
-  
-  res.render('cases/edit/check-applicants-first', { 
-    ref: req.query.ref 
-  });
-});
-
-// 1. Applicant Name (Edit Mode)
+// 2. STEP 1: Applicant Name
 router.get('/cases/edit/applicant-name', (req, res) => {
-  let c = getCase(req);
+  let ref = req.query.ref;
   let id = req.query.id;
+  let draftList = req.session.data['tempApplicantsList'] || [];
 
   if (id && (!req.session.data['tempApplicant'] || req.session.data['tempApplicant'].id !== id)) {
-    if (c && c.applicants) {
-      let existingApp = c.applicants.find(a => a.id === id);
-      if (existingApp) {
-        req.session.data['tempApplicant'] = JSON.parse(JSON.stringify(existingApp));
-      }
+    let existingApp = draftList.find(a => a.id === id);
+    if (existingApp) {
+      req.session.data['tempApplicant'] = JSON.parse(JSON.stringify(existingApp));
     }
-  } else if (!id) {
+  } else if (!id && !req.session.data['tempApplicant']) {
     req.session.data['tempApplicant'] = {};
   }
 
+  // Dynamic Back URL
+  let backUrl = (draftList.length > 0) ? `/cases/applicants/hub?ref=${ref}` : `/cases/applicants/start?ref=${ref}`;
+
   res.render('cases/create-a-case/questions/applicant-name', { 
-    ref: req.query.ref, 
-    id: id, 
-    val: req.session.data['tempApplicant'] || {}, 
-    editMode: true 
+    ref: ref, id: id, val: req.session.data['tempApplicant'] || {}, editMode: true, backUrl: backUrl 
   });
 });
 
 router.post('/cases/edit/applicant-name', (req, res) => {
-  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
-  req.session.data['tempApplicant'].firstName = req.body.firstName;
-  req.session.data['tempApplicant'].lastName = req.body.lastName;
-  req.session.data['tempApplicant'].companyName = req.body.companyName;
+  let ref = req.query.ref;
+  let id = req.query.id;
+  
+  let first = req.body.firstName || "";
+  let last = req.body.lastName || "";
+  let company = req.body.companyName || "";
+  
+  let errors = {};
+  let errorList = [];
 
-  res.redirect(`/cases/edit/applicant-address?ref=${req.query.ref}&id=${req.query.id || ''}`);
+  // --- VALIDATION LOGIC ---
+  if (!first && !last && !company) {
+    let err = { text: "Enter at least one of first name, last name or company name", href: "#firstName" };
+    errors.general = err;
+    errorList.push(err);
+  }
+  if (first.length > 250) {
+    let err = { text: "First name must be less than 250 characters", href: "#firstName" };
+    errors.firstName = err;
+    errorList.push(err);
+  }
+  if (last.length > 250) {
+    let err = { text: "Last name must be less than 250 characters", href: "#lastName" };
+    errors.lastName = err;
+    errorList.push(err);
+  }
+  if (company.length > 250) {
+    let err = { text: "Company name must be less than 250 characters", href: "#companyName" };
+    errors.companyName = err;
+    errorList.push(err);
+  }
+
+  // If validation fails, render the page with errors
+  if (errorList.length > 0) {
+    let draftList = req.session.data['tempApplicantsList'] || [];
+    let backUrl = (draftList.length > 0) ? `/cases/applicants/hub?ref=${ref}` : `/cases/applicants/start?ref=${ref}`;
+
+    return res.render('cases/create-a-case/questions/applicant-name', { 
+      ref: ref, 
+      id: id, 
+      val: { firstName: first, lastName: last, companyName: company }, // Preserve what they typed
+      errors: errors, 
+      errorList: errorList,
+      editMode: true, 
+      backUrl: backUrl 
+    });
+  }
+
+  // Success: Save to temp object and proceed
+  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
+  req.session.data['tempApplicant'].firstName = first;
+  req.session.data['tempApplicant'].lastName = last;
+  req.session.data['tempApplicant'].companyName = company;
+
+  res.redirect(`/cases/edit/applicant-address?ref=${ref}&id=${id || ''}`);
 });
 
-// 2. Applicant Address (Edit Mode)
+// 3. STEP 2: Applicant Address
 router.get('/cases/edit/applicant-address', (req, res) => {
+  let ref = req.query.ref;
+  let id = req.query.id || '';
   let temp = req.session.data['tempApplicant'] || {};
+  
   res.render('cases/create-a-case/questions/applicant-address', { 
-    ref: req.query.ref, 
-    id: req.query.id, 
-    val: temp,
-    address: temp.address || {}, 
-    editMode: true 
+    ref: ref, id: id, val: temp, address: temp.address || {}, editMode: true,
+    backUrl: `/cases/edit/applicant-name?ref=${ref}&id=${id}` 
   });
 });
 
 router.post('/cases/edit/applicant-address', (req, res) => {
+  let ref = req.query.ref;
+  let id = req.query.id;
+
+  // Run the validation helper
   var result = validateAndSaveAddress(req, res, 'applicant', 'Applicant address', req.session.data['tempApplicant'], 'address');
 
+  // If validation fails
   if (result.status === "ERROR") {
     return res.render('cases/create-a-case/questions/applicant-address', { 
-      ref: req.query.ref, 
-      id: req.query.id,
+      ref: ref, 
+      id: id, 
       val: req.session.data['tempApplicant'],
       address: {
-        line1: req.body['applicant-line1'],
-        line2: req.body['applicant-line2'],
-        town: req.body['applicant-town'],
-        county: req.body['applicant-county'],
+        line1: req.body['applicant-line1'], 
+        line2: req.body['applicant-line2'], 
+        town: req.body['applicant-town'], 
+        county: req.body['applicant-county'], 
         postcode: req.body['applicant-postcode']
-      },
-      errorList: result.errorList,
-      errorFields: result.errorFields,
-      editMode: true
+      }, // Preserve raw input
+      errorList: result.errorList, 
+      errorFields: result.errorFields, 
+      editMode: true,
+      backUrl: `/cases/edit/applicant-name?ref=${ref}&id=${id || ''}`
     });
   }
-  res.redirect(`/cases/edit/applicant-contact?ref=${req.query.ref}&id=${req.query.id || ''}`);
+
+  // Success: Proceed to next step
+  res.redirect(`/cases/edit/applicant-contact?ref=${ref}&id=${id || ''}`);
 });
 
-// 3. Applicant Contact & Final Save (Edit Mode)
+// 4. STEP 3: Applicant Contact & SAVE TO DRAFT
 router.get('/cases/edit/applicant-contact', (req, res) => {
+  let ref = req.query.ref;
+  let id = req.query.id || '';
+  
   res.render('cases/create-a-case/questions/applicant-contact', { 
-    ref: req.query.ref, 
-    id: req.query.id, 
-    val: req.session.data['tempApplicant'] || {}, 
-    editMode: true 
+    ref: ref, id: id, val: req.session.data['tempApplicant'] || {}, editMode: true,
+    backUrl: `/cases/edit/applicant-address?ref=${ref}&id=${id}` 
   });
 });
 
 router.post('/cases/edit/applicant-contact', (req, res) => {
-  let c = getCase(req);
+  let ref = req.query.ref;
   let id = req.query.id;
   
-  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
-  req.session.data['tempApplicant'].email = req.body.email;
-  req.session.data['tempApplicant'].phone = req.body.phone;
+  let email = req.body.email || "";
+  let phone = req.body.phone || "";
 
-  if (!c.applicants) c.applicants = [];
+  let errors = {};
+  let errorList = [];
+
+  // --- VALIDATION LOGIC ---
+  if (email.length > 250) {
+    let err = { text: "Email must be less than 250 characters", href: "#email" };
+    errors.email = err;
+    errorList.push(err);
+  }
+  if (phone.length > 15) {
+    let err = { text: "Phone number must be less than 15 characters", href: "#phone" };
+    errors.phone = err;
+    errorList.push(err);
+  }
+
+  // If validation fails, render the page with errors
+  if (errorList.length > 0) {
+    return res.render('cases/create-a-case/questions/applicant-contact', { 
+      ref: ref, 
+      id: id, 
+      val: { email: email, phone: phone }, // Preserve what they typed
+      errors: errors, 
+      errorList: errorList,
+      editMode: true,
+      backUrl: `/cases/edit/applicant-address?ref=${ref}&id=${id || ''}`
+    });
+  }
+  
+  // Success: Save to temp object
+  if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
+  req.session.data['tempApplicant'].email = email;
+  req.session.data['tempApplicant'].phone = phone;
+
+  // Save to Draft Array
+  let draftList = req.session.data['tempApplicantsList'] || [];
   let completedApplicant = req.session.data['tempApplicant'];
 
   if (id) {
-    let index = c.applicants.findIndex(a => a.id === id);
-    if (index > -1) c.applicants[index] = { ...completedApplicant };
+    let index = draftList.findIndex(a => a.id === id);
+    if (index > -1) draftList[index] = { ...completedApplicant };
   } else {
-    completedApplicant.id = 'app-' + Date.now();
-    c.applicants.push(completedApplicant);
+    completedApplicant.id = id || 'app-' + Date.now();
+    draftList.push(completedApplicant);
   }
 
-  req.session.data['tempApplicant'] = {}; 
-  res.redirect(`/cases/edit/check-applicants?ref=${req.query.ref}`);
+  req.session.data['tempApplicantsList'] = draftList;
+  req.session.data['tempApplicant'] = null; 
+  
+  res.redirect(`/cases/applicants/hub?ref=${ref}`);
 });
 
-// 4. Remove Applicant Confirmation (Edit Flow)
-router.get('/cases/edit/applicant-remove', (req, res) => {
+// ==============================================
+// REMOVE APPLICANT (From Draft)
+// ==============================================
+router.get('/cases/applicants/remove', (req, res) => {
   let id = req.query.id;
   let ref = req.query.ref;
   
   res.render('cases/create-a-case/questions/applicant-remove', { 
-    id: id, 
-    ref: ref,
-    backUrl: `/cases/edit/check-applicants?ref=${ref}`,
-    actionUrl: `/cases/edit/applicant-remove?id=${id}&ref=${ref}`
+    id: id, ref: ref,
+    backUrl: `/cases/applicants/hub?ref=${ref}`,
+    actionUrl: `/cases/applicants/remove?id=${id}&ref=${ref}`
   });
 });
 
-router.post('/cases/edit/applicant-remove', (req, res) => {
+router.post('/cases/applicants/remove', (req, res) => {
   let id = req.query.id;
   let ref = req.query.ref;
   let confirm = req.body.applicantRemove;
 
-  // Validation: If they clicked submit without picking Yes or No
   if (!confirm) {
     return res.render('cases/create-a-case/questions/applicant-remove', { 
-      id: id, 
-      ref: ref,
-      error: true,
-      backUrl: `/cases/edit/check-applicants?ref=${ref}`,
-      actionUrl: `/cases/edit/applicant-remove?id=${id}&ref=${ref}`
+      id: id, ref: ref, error: true,
+      backUrl: `/cases/applicants/hub?ref=${ref}`,
+      actionUrl: `/cases/applicants/remove?id=${id}&ref=${ref}`
     });
   }
 
-  // If Yes, delete the applicant from the specific case
   if (confirm === 'yes') {
-    let c = getCase(req);
-    if (c && c.applicants) {
-      c.applicants = c.applicants.filter(a => a.id !== id);
+    if (req.session.data['tempApplicantsList']) {
+      req.session.data['tempApplicantsList'] = req.session.data['tempApplicantsList'].filter(a => a.id !== id);
     }
   }
   
-  // Redirect back to the edit hub table
-  res.redirect(`/cases/edit/check-applicants?ref=${ref}`);
+  res.redirect(`/cases/applicants/hub?ref=${ref}`);
 });
 
-// 5. Return to Case Details (From Check Applicants Hub)
-router.get('/cases/applicant-appellant/return-to-case', function (req, res) {
-  // 1. Attach the success banner to jump to the 'Overview' card
-  req.session.flashSection = "case-details"; 
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
 
-addAuditLog(req, req.query.ref, "Applicant details updated");
+// COMMIT DRAFT: Final Save to Case Details
+router.post('/cases/applicants/commit', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  if (myCase) {
+    myCase.applicants = req.session.data['tempApplicantsList'] || [];
+  }
   
-  // 2. Send them back to the main Case Details page
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
+  req.session.data['tempApplicantsList'] = null;
+  req.session.flashSection = "case-details"; 
+  res.redirect('/cases/case-details?ref=' + ref);
 });
+
+// CANCEL DRAFT: Smart Check
+router.get('/cases/applicants/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+
+  var originalApps = myCase.applicants || [];
+  var draftApps = req.session.data['tempApplicantsList'] || [];
+
+  if (JSON.stringify(originalApps) === JSON.stringify(draftApps)) {
+    req.session.data['tempApplicantsList'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  res.render('cases/edit/cancel-applicants', { ref: ref });
+});
+
+// CANCEL DRAFT: Process Warning Page
+router.post('/cases/applicants/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelApplicants;
+
+  if (!confirm) {
+    return res.render('cases/edit/cancel-applicants', { ref: ref, error: true });
+  }
+
+  if (confirm === 'yes') {
+    req.session.data['tempApplicantsList'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    res.redirect('/cases/applicants/hub?ref=' + ref);
+  }
+});
+
 
 // --- 4. EDIT SITE ADDRESS (With Strict Postcode Validation) ---
 router.get('/cases/edit/site-address', function(req, res) {

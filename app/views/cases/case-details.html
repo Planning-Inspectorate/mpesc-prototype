@@ -502,12 +502,11 @@
               html: applicantsHtml
             },
             actions: { 
-              items: [{ 
-                href: "/cases/edit/check-applicants?ref=" + currentCase.reference if currentCase.applicants.length > 0 else "/cases/edit/check-applicants-first?ref=" + currentCase.reference,
-                text: "Change" if currentCase.applicants.length > 0 else "Add",
-                visuallyHiddenText: "applicant or appellant details" 
-              }] 
-            }
+            items: [{ 
+              href: "/cases/applicants/hub?ref=" + currentCase.reference if (currentCase.applicants and currentCase.applicants.length > 0) else "/cases/applicants/start?ref=" + currentCase.reference, 
+              text: "Change" if (currentCase.applicants and currentCase.applicants.length > 0) else "Add", 
+              visuallyHiddenText: "applicant details" 
+            }] }
           },
           { 
             key: { text: "Site address" }, 
