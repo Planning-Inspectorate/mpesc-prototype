@@ -1,0 +1,35 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check inspector details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check inspector details</h1>
+
+      <p class="govuk-body">You will be able to add multiple inspector details.</p>
+ 
+      
+      <div class="govuk-button-group">
+        {{ govukButton({
+        text: "Add details",
+        href: "/cases/edit/inspector-name?ref=" + ref
+      }) }}
+
+       {{ govukButton({
+          text: "Cancel",
+          classes: "govuk-button--secondary",
+          href: "/cases/case-details?ref=" + ref
+        }) }}
+      </div>
+
+ 
+  </div>
+</div>
+{% endblock %}

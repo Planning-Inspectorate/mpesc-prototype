@@ -574,7 +574,7 @@
             key: { text: "Inspector(s)" }, 
             value: { html: inspectorsHtml }, 
             actions: { items: [{ 
-              href: "/cases/edit/check-inspectors?ref=" + currentCase.reference, 
+              href: "/cases/edit/check-inspectors?ref=" + currentCase.reference if currentCase.inspectors.length > 0 else "/cases/edit/check-inspectors-first?ref=" + currentCase.reference, 
               text: "Change" if (currentCase.inspectors and currentCase.inspectors.length > 0) else "Add", 
               visuallyHiddenText: "inspectors" 
             }] } 

@@ -1269,6 +1269,16 @@ addAuditLog(req, ref, "Inspector band updated to '" + val + "'");
 
 // --- INSPECTOR LOGIC (Add, Edit, Delete & Validation) ---
 
+// 0. Empty State Page: Check Inspectors First
+router.get('/cases/edit/check-inspectors-first', function(req, res) {
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases/all-cases');
+
+  res.render('cases/edit/check-inspectors-first', {
+    ref: req.query.ref
+  });
+});
+
 // 1. HUB PAGE: Check Inspectors
 router.get('/cases/edit/check-inspectors', function (req, res) {
   var c = getCase(req);
@@ -1480,20 +1490,53 @@ router.post('/cases/edit/inspector-date', function (req, res) {
   res.redirect('/cases/edit/check-inspectors?ref=' + ref);
 });
 
-// 7. REMOVE ROUTE
-router.get('/cases/edit/inspector-remove', function (req, res) {
+// ==============================================
+// REMOVE INSPECTOR CONFIRMATION
+// ==============================================
+
+// 1. View Confirmation Page
+router.get('/cases/edit/inspector-remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
-
-  if (c.inspectors) {
-    c.inspectors = c.inspectors.filter(i => i.id !== id);
-  }
-
-  res.redirect('/cases/edit/check-inspectors?ref=' + ref);
+  
+  res.render('cases/edit/remove-inspectors', { 
+    ref: ref,
+    id: id,
+    backUrl: `/cases/edit/check-inspectors?ref=${ref}`,
+    actionUrl: `/cases/edit/inspector-remove?id=${id}&ref=${ref}`
+  });
 });
 
-// 7. Return to Case Details (From Linked Cases Hub)
+// 2. Submit Confirmation
+router.post('/cases/edit/inspector-remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.inspectorRemove; // Matches the name attribute in the radios
+
+  // Validation: If they clicked submit without picking Yes or No
+  if (!confirm) {
+    return res.render('cases/edit/remove-inspectors', { 
+      ref: ref,
+      id: id, 
+      error: true,
+      backUrl: `/cases/edit/check-inspectors?ref=${ref}`,
+      actionUrl: `/cases/edit/inspector-remove?id=${id}&ref=${ref}`
+    });
+  }
+
+  // If Yes, delete the inspector from the array
+  if (confirm === 'yes') {
+    var c = getCase(req);
+    if (c && c.inspectors) {
+      c.inspectors = c.inspectors.filter(i => i.id !== id);
+    }
+  }
+  
+  // Redirect back to the inspector list
+  res.redirect(`/cases/edit/check-inspectors?ref=${ref}`);
+});
+
+// 8. Return to Case Details (From Linked Cases Hub)
 router.get('/cases/check-inspectors/return-to-case', function (req, res) {
   // 1. Attach the success banner to jump to the 'Overview' card
   req.session.flashSection = "team"; 
