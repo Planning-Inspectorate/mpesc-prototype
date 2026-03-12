@@ -1,8 +1,6 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}
-Procedure(s) - Planning Inspectorate Portal
-{% endblock %}
+{% block pageTitle %}Procedure(s) - Planning Inspectorate Portal{% endblock %}
 
 {% block beforeContent %}
 {% endblock %}
@@ -12,21 +10,17 @@ Procedure(s) - Planning Inspectorate Portal
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Check procedure details</h1>
 
-    {% set procList = [] %}
-    {% for c in data['cases'] %}
-      {% if c.reference == ref %}
-        {% set procList = c.overviewProcedures or [] %}
-      {% endif %}
-    {% endfor %}
+    {# 1. UNIFIED DATA SOURCE (Bulletproof Fallback) #}
+    {% set list = procList or data['tempOverviewProcsList'] or [] %}
 
-    {% if procList.length > 0 %}
-    <div class="govuk-warning-text">
-  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-  <strong class="govuk-warning-text__text">
-    <span class="govuk-visually-hidden">Warning</span>
-    Changing the procedure type will delete the information you <br> have already entered for an existing procedure.
-  </strong>
-</div>
+    {% if list.length > 0 %}
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">Warning</span>
+          Changing the procedure type will delete the information you <br> have already entered for an existing procedure.
+        </strong>
+      </div>
 
       <table class="govuk-table" data-module="moj-sortable-table">
         <thead class="govuk-table__head">
@@ -38,13 +32,10 @@ Procedure(s) - Planning Inspectorate Portal
           </tr>
         </thead>
         <tbody class="govuk-table__body">
-          {% for item in procList %}
+          {% for item in list %}
             <tr class="govuk-table__row">
               <td class="govuk-table__cell">{{ item.type }}</td>
-              
-              {# Simplified Specific Details - ONLY shows inspector #}
               <td class="govuk-table__cell">{{ item.inspector or "-" }}</td>
-              
               <td class="govuk-table__cell">{{ item.status or "-" }}</td>
               <td class="govuk-table__cell">
                 <ul class="govuk-summary-list__actions-list">
@@ -68,28 +59,33 @@ Procedure(s) - Planning Inspectorate Portal
       <p class="govuk-body">Add one or more procedure details. No procedure details have been added.</p>
     {% endif %}
 
-    {# --- BUTTONS --- #}
-    <div class="govuk-button-group">
-      {{ govukButton({
-        text: "Add details",
-        classes: "govuk-button--secondary",
-        href: "/cases/overview-procedures/step-1?ref=" + ref
-      }) }}
-      </div>
+    {# 2. BUTTONS WRAPPED IN FORM #}
+    <form action="/cases/overview-procedures/commit?ref={{ ref }}" method="post" novalidate>
+      {% set addDetailsClass = "govuk-button" if list.length == 0 else "govuk-button--secondary" %}
 
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Save and continue",
-          href: "/cases/overview-procedures/return-to-case?ref=" + ref
+          text: "Add details",
+          classes: addDetailsClass,
+          href: "/cases/overview-procedures/step-1?ref=" + ref
         }) }}
 
-        {{ govukButton({
-          text: "Cancel",
-          classes: "govuk-button--secondary",
-          href: "/cases/case-details?ref=" + ref
-        }) }}
+        {% if list.length == 0 %}
+          {{ govukButton({ text: "Return to case details", classes: "govuk-button--secondary" }) }}
+        {% endif %}
       </div>
-    </div>
+
+      {% if list.length > 0 %}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save and continue" }) }}
+          {{ govukButton({
+            text: "Cancel",
+            classes: "govuk-button--secondary",
+            href: "/cases/overview-procedures/cancel?ref=" + ref
+          }) }}
+        </div>
+      {% endif %}
+    </form>
 
   </div>
 </div>

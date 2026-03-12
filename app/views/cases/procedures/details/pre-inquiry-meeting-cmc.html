@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Will there be a pre inquiry meeting or a case management conference? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form action="/cases/procedures/{{ index }}/pre-inquiry-meeting-cmc?ref={{ ref }}" method="post" novalidate>
+      
+      <input type="hidden" name="ref" value="{{ ref }}">
+
+      {{ govukRadios({
+        name: "meeting-type",
+        fieldset: {
+          legend: {
+            text: "Will there be a pre inquiry meeting or a case management conference?",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        errorMessage: { text: errorList[0].text } if errorList.length > 0 else null,
+        items: [
+          { value: "Pre inquiry meeting", text: "Pre inquiry meeting", checked: (meetingType == "Pre inquiry meeting") },
+          { value: "Case management conference", text: "Case management conference", checked: (meetingType == "Case management conference") },
+          { value: "Both", text: "Both", checked: (meetingType == "Both") }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save" }) }}
+        {{ govukButton({ text: "Remove and save", classes: "govuk-button--secondary", name: "action", value: "remove" }) }}
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

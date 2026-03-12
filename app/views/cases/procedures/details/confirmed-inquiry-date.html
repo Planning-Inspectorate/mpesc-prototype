@@ -1,0 +1,54 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  What is the inquiry date? (optional) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form action="/cases/procedures/{{ index }}/confirmed-inquiry-date?ref={{ ref }}" method="post" novalidate>
+      <input type="hidden" name="ref" value="{{ ref }}">
+
+      {# --- DATE INPUT --- #}
+      {{ govukDateInput({
+        id: "confirmed-inquiry",
+        namePrefix: "confirmed-inquiry",
+        fieldset: {
+          legend: {
+            text: "What is the hearing date? (optional)",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        hint: {
+          text: "For example, 27 3 2007"
+        },
+        errorMessage: { text: errorList[0].text } if errorList.length > 0 else null,
+        items: [
+          { name: "day", classes: "govuk-input--width-2", value: day },
+          { name: "month", classes: "govuk-input--width-2", value: month },
+          { name: "year", classes: "govuk-input--width-4", value: year }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save" }) }}
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
