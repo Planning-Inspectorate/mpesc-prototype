@@ -5913,6 +5913,50 @@ router.post('/cases/linked-cases/cancel', function(req, res) {
 //  OVERVIEW PROCEDURES FLOW (Working Draft Pattern)
 // =============================================================================
 
+// ==============================================
+// LEAVE TO INSPECTORS (Escape Hatch from Step 2c)
+// ==============================================
+router.get('/cases/overview-procedures/leave-to-inspectors', function(req, res) {
+  res.render('cases/overview-procedures/leave-to-inspectors', { 
+    ref: req.query.ref, 
+    id: req.query.id 
+  });
+});
+
+router.post('/cases/overview-procedures/leave-to-inspectors', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.leaveToInspectors;
+
+  // Validation
+  if (!confirm) {
+    return res.render('cases/overview-procedures/leave-to-inspectors', { 
+      ref: ref, id: id, error: true 
+    });
+  }
+
+  if (confirm === 'yes') {
+    // 1. Trash the unsaved procedure drafts!
+    req.session.data['tempOverviewProcsList'] = null;
+    req.session.data['tempProc'] = null;
+
+    // 2. Check if inspectors exist in the case data
+    var myCase = req.session.data['cases'].find(c => c.reference === ref);
+    var hasInspectors = myCase && myCase.inspectors && myCase.inspectors.length > 0;
+    
+    // 3. Dynamically route to the right inspectors hub/start page
+    // (Note: adjust these URLs if your inspector routes are named differently!)
+    var targetUrl = hasInspectors 
+      ? `/cases/edit/check-inspectors?ref=${ref}` 
+      : `/cases/edit/check-inspectors-first?ref=${ref}`;
+
+    res.redirect(targetUrl);
+  } else {
+    // If they clicked No, bounce them right back to where they were in Step 2c
+    res.redirect(`/cases/overview-procedures/step-2c?ref=${ref}&id=${id}`);
+  }
+});
+
 // 00. CATCH OLD LINKS / AUTO-ROUTER
 router.get('/cases/overview-procedures/check', (req, res) => {
   res.redirect('/cases/overview-procedures/hub?ref=' + req.query.ref);
@@ -5962,8 +6006,11 @@ router.get('/cases/overview-procedures/step-1', (req, res) => {
     req.session.data['tempProc'] = {}; 
   }
   
+  // DYNAMIC BACK LINK LOGIC
+  var backUrl = (draftList.length > 0) ? `/cases/overview-procedures/hub?ref=${ref}` : `/cases/overview-procedures/start?ref=${ref}`;
+
   res.render('cases/overview-procedures/step-1-type', { 
-    ref: ref, id: id || "", value: req.session.data['tempProc'].type || "" 
+    ref: ref, id: id || "", value: req.session.data['tempProc'].type || "", backUrl: backUrl
   });
 });
 
@@ -5972,32 +6019,29 @@ router.post('/cases/overview-procedures/step-1', (req, res) => {
   var ref = req.query.ref;
   var id = req.query.id;
   
+  var draftList = req.session.data['tempOverviewProcsList'] || [];
+  var backUrl = (draftList.length > 0) ? `/cases/overview-procedures/hub?ref=${ref}` : `/cases/overview-procedures/start?ref=${ref}`;
+  
   if (!type) {
-    return res.render('cases/overview-procedures/step-1-type', { ref: ref, id: id, error: true });
+    return res.render('cases/overview-procedures/step-1-type', { ref: ref, id: id, error: true, backUrl: backUrl });
   }
 
   if (!req.session.data['tempProc']) req.session.data['tempProc'] = {};
   
-  // --- THE NEW LOGIC: DATA WIPE ON TYPE CHANGE ---
+  // DATA WIPE ON TYPE CHANGE
   var oldType = req.session.data['tempProc'].type;
-  
-  // If an old type exists, and it doesn't match the new type they just selected...
   if (oldType && oldType !== type) {
-    // Wipe the temporary object completely clean, keeping ONLY the ID.
-    // When this saves in step 3, it will obliterate all the old detailed fields!
     req.session.data['tempProc'] = { id: req.session.data['tempProc'].id };
   }
 
-  // Save the new type
   req.session.data['tempProc'].type = type;
 
-  // --- Branching Logic ---
+  // Branching Logic
   if (type === "Admin" || type === "Admin (In house)") {
     res.redirect(`/cases/overview-procedures/step-2a?ref=${ref}&id=${id || ''}`);
   } else if (type === "Site visit") {
     res.redirect(`/cases/overview-procedures/step-2b?ref=${ref}&id=${id || ''}`);
   } else {
-    // Hearing, Inquiry, Proposal, Written reps
     res.redirect(`/cases/overview-procedures/step-2c?ref=${ref}&id=${id || ''}`);
   }
 });

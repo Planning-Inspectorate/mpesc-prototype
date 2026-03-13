@@ -1,0 +1,42 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Are you sure you want to leave?{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/overview-procedures/step-2c?ref=" + ref + "&id=" + id }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: "Select yes if you want to leave", href: "#leaveToInspectors" }]
+      }) }}
+    {% endif %}
+
+    <form action="/cases/overview-procedures/leave-to-inspectors?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      <h1 class="govuk-heading-l">Are you sure you want to leave?</h1>
+      
+      {{ govukWarningText({
+        text: "Any unsaved procedure data will be deleted and will need to be completed again.",
+        iconFallbackText: "Warning"
+      }) }}
+      
+      {{ govukRadios({
+        classes: "govuk-radios--inline",
+        idPrefix: "leaveToInspectors",
+        name: "leaveToInspectors",
+        errorMessage: { text: "Select yes if you want to leave" } if error else null,
+        items: [
+          { value: "yes", text: "Yes" },
+          { value: "no", text: "No" }
+        ]
+      }) }}
+      
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}
