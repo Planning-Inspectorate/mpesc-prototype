@@ -11,9 +11,24 @@
     {% endif %}
 
     <h1 class="govuk-heading-l">Who is the applicant or appellant?</h1>
-    <p class="govuk-hint">Enter the name of the main party. This could be an applicant,<br> appellant or server. Enter the name of the individual, the<br> company or both.</p>
+    
+    {# --- NEW FORMATTED TEXT BLOCK START --- #}
+    <p class="govuk-body">
+      Enter the name of the main party. This could also be a server. You can enter:
+    </p>
+    
+    <ul class="govuk-list govuk-list--bullet">
+      <li>a person's name</li>
+      <li>a joint party, company or organisation name</li>
+      <li>both a person and a joint party or company name</li>
+    </ul>
+    
+    <p class="govuk-body">
+      Use the 'Joint X or Company name' field to add multiple names at once e.g. Mr and Mrs Smith
+    </p>
+    {# --- NEW FORMATTED TEXT BLOCK END --- #}
 
-<form action="{% if editMode %}/cases/edit/applicant-name?ref={{ ref }}&id={{ id }}{% else %}/cases/create-a-case/questions/applicant-name{% if id %}?id={{ id }}{% endif %}{% endif %}" method="post" novalidate>
+    <form action="{% if editMode %}/cases/edit/applicant-name?ref={{ ref }}&id={{ id }}{% else %}/cases/create-a-case/questions/applicant-name{% if id %}?id={{ id }}{% endif %}{% endif %}" method="post" novalidate>
       
       {# Render general error inline if they left everything blank #}
       {% if errors.general %}
@@ -37,7 +52,7 @@
       }) }}
 
       {{ govukInput({
-        label: { text: "Company or organisation name" },
+        label: { text: "Joint X or Company name" },
         id: "companyName",
         name: "companyName",
         value: val.companyName,
