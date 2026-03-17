@@ -5465,6 +5465,48 @@ router.get('/cases/case-details', function(req, res) {
 });
 
 
+// =============================================================================
+// ASSIGNED TO ME PAGE
+// =============================================================================
+
+// 1. View the Assigned Cases page
+router.get('/assigned-to-me', function (req, res) {
+  var currentStatusFilter = req.session.data['statusFilter'] || 'All';
+  var allCases = req.session.data['cases'] || [];
+  
+  // Filter the cases based on the dropdown
+  var filteredCases = [];
+  if (currentStatusFilter === 'All') {
+    filteredCases = allCases;
+  } else {
+    // Safety check: Looks for both 'status' and 'caseStatus' formatting
+    filteredCases = allCases.filter(c => 
+      c.status === currentStatusFilter || 
+      c.caseStatus === currentStatusFilter || 
+      c['case-status'] === currentStatusFilter
+    );
+  }
+
+  // Render the root file
+  res.render('assigned-to-me', {
+    filteredCases: filteredCases,
+    currentStatusFilter: currentStatusFilter,
+    totalCasesCount: allCases.length
+  });
+});
+
+// 2. Apply the Filter
+router.post('/assigned-to-me/filter', function (req, res) {
+  res.redirect('/assigned-to-me');
+});
+
+// 3. Clear the Filter
+router.get('/assigned-to-me/clear-filter', function (req, res) {
+  req.session.data['statusFilter'] = 'All'; 
+  res.redirect('/assigned-to-me');
+});
+
+
 
 
 // ------------------------------------------------ SMART EDIT ROUTES ---------------------------------------------

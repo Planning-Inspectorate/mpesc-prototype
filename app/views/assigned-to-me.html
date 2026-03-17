@@ -1,65 +1,129 @@
-{% set activePage = "assigned-to-me" %}
-
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  Assigned to me - Planning Inspectorate Portal
+  {% if filteredCases.length == 0 %}You are not assigned to any cases{% else %}Cases assigned to you{% endif %} - Planning Inspectorate
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
 
-<h1 class="govuk-heading-l">Assigned to me cases - WORK IN PROGRESS</h1>
+    {# ========================================================== #}
+    {# EMPTY STATE (No cases at all, or no cases match filter)    #}
+    {# ========================================================== #}
+    {% if filteredCases.length == 0 %}
+      
+      <h1 class="govuk-heading-l">You are not assigned to any cases</h1>
+      
+      {{ govukButton({
+        text: "Search all cases",
+        classes: "govuk-button--secondary",
+        href: "/assigned-to-me/clear-filter"
+      }) }}
 
-<table class="govuk-table">
-  <thead class="govuk-table__head">
-    <tr class="govuk-table__row">
-      <th scope="col" class="govuk-table__header">Reference</th>
-      <th scope="col" class="govuk-table__header">Type</th>
-      <th scope="col" class="govuk-table__header">Status</th>
-    </tr>
-  </thead>
-  <tbody class="govuk-table__body">
-    
-    {# 1. LOOP THROUGH SAVED CASES #}
-    {% for case in data['cases'] %}
-      <tr class="govuk-table__row">
-        
-        {# Reference Number (Link to details) #}
-        <td class="govuk-table__cell">
-          <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">
-            {{ case.reference }}
-          </a>
-        </td>
-
-        {# Case Type #}
-        <td class="govuk-table__cell">
-          {{ case.type }}<br>
-          <span class="govuk-hint" style="margin-bottom: 0">
-            {{ case.subtype }}
-          </span>
-        </td>
-
-        {# Status #}
-        <td class="govuk-table__cell">
-          <strong class="govuk-tag govuk-tag--blue">
-            {{ case.status }}
-          </strong>
-        </td>
-
-      </tr>
+    {# ========================================================== #}
+    {# POPULATED STATE                                            #}
+    {# ========================================================== #}
     {% else %}
       
-      {# Empty State (If no cases exist yet) #}
-      <tr class="govuk-table__row">
-        <td class="govuk-table__cell" colspan="3">
-          No cases found. <a href="/cases/create-a-case/questions/casework-area">Create a new case</a>
-        </td>
-      </tr>
+      <h1 class="govuk-heading-l">Cases assigned to you</h1>
 
-    {% endfor %}
+      {# --- FILTER ACCORDION (Details Component) --- #}
+      <form action="/assigned-to-me/filter" method="post" novalidate>
+        <details class="govuk-details" data-module="govuk-details" open>
+          <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">Filters</span>
+          </summary>
+          <div class="govuk-details__text govuk-!-padding-bottom-2">
+            
+            {{ govukSelect({
+              id: "statusFilter",
+              name: "statusFilter",
+              label: {
+                text: "Show cases with status"
+              },
+              value: currentStatusFilter,
+              items: [
+                { value: "All", text: "All" },
+                { value: "Ready to start", text: "Ready to start" },
+                { value: "LPA questionnaire", text: "LPA questionnaire" },
+                { value: "New case", text: "New case" },
+                { value: "Validated", text: "Validated" },
+                { value: "Invalid", text: "Invalid" },
+                { value: "Rejected", text: "Rejected" },
+                { value: "Inform parties", text: "Inform parties" },
+                { value: "Allocate inspector", text: "Allocate inspector" },
+                { value: "In progress", text: "In progress" },
+                { value: "Ready for inspector", text: "Ready for inspector" },
+                { value: "Decision/recommendation issued", text: "Decision/recommendation issued" },
+                { value: "Despatch", text: "Despatch" },
+                { value: "Final check", text: "Final check" },
+                { value: "Closed", text: "Closed" },
+                { value: "Cancelled", text: "Cancelled" },
+                { value: "Paused/on hold", text: "Paused/on hold" },
+                { value: "Withdrawn", text: "Withdrawn" },
+                { value: "In abeyance", text: "In abeyance" },
+                { value: "Closed - opened in error", text: "Closed - opened in error" }
+              ]
+            }) }}
 
-  </tbody>
-</table>
+            <div class="govuk-button-group">
+              {{ govukButton({
+                text: "Apply",
+                classes: "govuk-!-margin-bottom-0"
+              }) }}
+              <a class="govuk-link" href="/assigned-to-me/clear-filter">Clear filter</a>
+            </div>
 
+          </div>
+        </details>
+      </form>
+
+      {# --- CASES TABLE --- #}
+      <table class="govuk-table" data-module="moj-sortable-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" aria-sort="none">Case ref</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Case officer</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Inspector</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Case status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for case in filteredCases %}
+            <tr class="govuk-table__row">
+              
+              {# 1. Reference #}
+              <td class="govuk-table__cell">
+                <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a>
+              </td>
+              
+              {# 2. Case Officer (checks for multiple JSON formats) #}
+              <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
+              
+              {# 3. Inspector (Handles arrays or single strings) #}
+              <td class="govuk-table__cell">
+                {% if case.inspectors and case.inspectors.length > 0 %}
+                  {% for insp in case.inspectors %}
+                    {{ insp.name }}{% if not loop.last %}<br>{% endif %}
+                  {% endfor %}
+                {% elseif case.inspector %}
+                  {{ case.inspector }}
+                {% else %}
+                  Unassigned
+                {% endif %}
+              </td>
+              
+              {# 4. Status (checks for multiple JSON formats) #}
+              <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
+              
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    {% endif %}
+
+  </div>
+</div>
 {% endblock %}
-

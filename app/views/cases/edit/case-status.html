@@ -10,17 +10,21 @@
       {% endif %}
       
       <form action="/cases/edit/case-status?ref={{ ref }}" method="post" novalidate>
+        
+        {# --- UPDATED STATUS LIST --- #}
         {{ govukRadios({
           name: "caseStatus",
           fieldset: { legend: { text: "What is the case status?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },
           items: [
+            { value: "Ready to start", text: "Ready to start" },
+            { value: "LPA questionnaire", text: "LPA questionnaire" },
             { value: "New case", text: "New case" },
-            { value: "Initial checks or validation", text: "Initial checks or validation" },
+            { value: "Validated", text: "Validated" },
+            { value: "Invalid", text: "Invalid" },
             { value: "Rejected", text: "Rejected" },
             { value: "Inform parties", text: "Inform parties" },
             { value: "Allocate inspector", text: "Allocate inspector" },
-            { value: "Arrange event", text: "Arrange event" },
-            { value: "Exchange correspondence", text: "Exchange correspondence" },
+            { value: "In progress", text: "In progress" },
             { value: "Ready for inspector", text: "Ready for inspector" },
             { value: "Decision/recommendation issued", text: "Decision/recommendation issued" },
             { value: "Despatch", text: "Despatch" },
@@ -29,7 +33,8 @@
             { value: "Cancelled", text: "Cancelled" },
             { value: "Paused/on hold", text: "Paused/on hold" },
             { value: "Withdrawn", text: "Withdrawn" },
-            { value: "In abeyance", text: "In abeyance" }
+            { value: "In abeyance", text: "In abeyance" },
+            { value: "Closed - opened in error", text: "Closed - opened in error" }
           ],
           value: value,
           errorMessage: errorMessage if error else null
