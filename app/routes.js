@@ -196,17 +196,35 @@ router.post('/case-officer-answer', function (req, res) {
   var selectedOfficer = req.session.data['caseOfficer']
 
   var allowedOfficers = [
-    "Kieran De La Cruz",
-    "Edward Mitchell",
-    "Sarah Tudor",
-    "Steve Waterfield",
-    "Alex Hudd",
-    "Harry Wood",
-    "Rob Davis",
-    "Deborah Board",
-    "(Service Account) Automated Tester",
-    "Owen Woodwards"
-  ]
+      // Original Officers
+      "Kieran De La Cruz",
+      "Edward Mitchell",
+      "Sarah Tudor",
+      "Steve Waterfield",
+      "Alex Hudd",
+      "Harry Wood",
+      "Rob Davis",
+      "Deborah Board",
+      "(Service Account) Automated Tester",
+      "Owen Woodwards",
+      
+      // Marvel Officers
+      "Tony Stark",
+      "Steve Rogers",
+      "Natasha Romanoff",
+      "Bruce Banner",
+      "Thor Odinson",
+      "Wanda Maximoff",
+      "Peter Parker",
+      "Carol Danvers",
+      "Stephen Strange",
+      "T'Challa",
+      "Clint Barton",
+      "Sam Wilson",
+      "Bucky Barnes",
+      "Scott Lang",
+      "Hope van Dyne"
+    ];
 
 
   if (selectedOfficer == "") {
@@ -1306,7 +1324,21 @@ addAuditLog(req, req.query.ref, "Case officer removed");
   var officers = [
     "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
     "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
-    "(Service Account) Automated Tester", "Owen Woodwards"
+    "(Service Account) Automated Tester", "Owen Woodwards", "Tony Stark",
+    "Steve Rogers",
+    "Natasha Romanoff",
+    "Bruce Banner",
+    "Thor Odinson",
+    "Wanda Maximoff",
+    "Peter Parker",
+    "Carol Danvers",
+    "Stephen Strange",
+    "T'Challa",
+    "Clint Barton",
+    "Sam Wilson",
+    "Bucky Barnes",
+    "Scott Lang",
+    "Hope van Dyne"
   ];
   
   if (!officers.includes(val)) {
