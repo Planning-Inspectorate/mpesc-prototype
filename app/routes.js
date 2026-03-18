@@ -5471,27 +5471,31 @@ router.get('/cases/case-details', function(req, res) {
 
 // 1. View the Assigned Cases page
 router.get('/assigned-to-me', function (req, res) {
-  var currentStatusFilter = req.session.data['statusFilter'] || 'All';
   var allCases = req.session.data['cases'] || [];
   
-  // Filter the cases based on the dropdown
-  var filteredCases = [];
-  if (currentStatusFilter === 'All') {
-    filteredCases = allCases;
-  } else {
-    // Safety check: Looks for both 'status' and 'caseStatus' formatting
-    filteredCases = allCases.filter(c => 
-      c.status === currentStatusFilter || 
-      c.caseStatus === currentStatusFilter || 
-      c['case-status'] === currentStatusFilter
-    );
+  // Get the filter array from the session
+  var statusFilter = req.session.data['statusFilter'];
+  
+  // Safety check: Ensure it's always an array (Express sends strings if only 1 box is checked)
+  if (statusFilter && typeof statusFilter === 'string') {
+    statusFilter = [statusFilter];
+  } else if (!statusFilter) {
+    statusFilter = [];
   }
 
-  // Render the root file
+  // Apply the filter (If array is empty, show all cases)
+  var filteredCases = allCases;
+  if (statusFilter.length > 0) {
+    filteredCases = allCases.filter(c => {
+      var cStat = c.status || c.caseStatus || c['case-status'];
+      return statusFilter.includes(cStat);
+    });
+  }
+
   res.render('assigned-to-me', {
     filteredCases: filteredCases,
-    currentStatusFilter: currentStatusFilter,
-    totalCasesCount: allCases.length
+    currentStatusFilter: statusFilter,
+    totalCasesCount: allCases.length // We use this to check if the DB is entirely empty
   });
 });
 
@@ -5502,7 +5506,16 @@ router.post('/assigned-to-me/filter', function (req, res) {
 
 // 3. Clear the Filter
 router.get('/assigned-to-me/clear-filter', function (req, res) {
-  req.session.data['statusFilter'] = 'All'; 
+  req.session.data['statusFilter'] = null; // Wipe the array clean
+  res.redirect('/assigned-to-me');
+});
+
+// Remove single pill on Assigned To Me
+router.get('/assigned-to-me/remove-filter/status/:value', function (req, res) {
+  var valueToRemove = req.params.value;
+  if (Array.isArray(req.session.data['statusFilter'])) {
+    req.session.data['statusFilter'] = req.session.data['statusFilter'].filter(item => item !== valueToRemove);
+  }
   res.redirect('/assigned-to-me');
 });
 
