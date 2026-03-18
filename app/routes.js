@@ -5505,20 +5505,37 @@ router.get('/cases/case-details', function(req, res) {
 router.get('/assigned-to-me', function (req, res) {
   var allCases = req.session.data['cases'] || [];
   
-  // Get the filter array from the session
-  var statusFilter = req.session.data['statusFilter'];
+  // Who are we viewing? (If null, it assumes "You")
+  var viewingUser = req.session.data['viewingUser'];
   
-  // Safety check: Ensure it's always an array (Express sends strings if only 1 box is checked)
+  // Filter by the selected user (Case Officer OR Inspector)
+  var userCases = allCases;
+  if (viewingUser) {
+    userCases = allCases.filter(c => {
+      var cOfficer = c.caseOfficer || c['case-officer'];
+      if (cOfficer === viewingUser) return true;
+      
+      if (c.inspectors && c.inspectors.length > 0) {
+         return c.inspectors.some(i => i.name === viewingUser);
+      } else if (c.inspector === viewingUser) {
+         return true;
+      }
+      return false;
+    });
+  }
+
+  // Get the Status filter array
+  var statusFilter = req.session.data['statusFilter'];
   if (statusFilter && typeof statusFilter === 'string') {
     statusFilter = [statusFilter];
   } else if (!statusFilter) {
     statusFilter = [];
   }
 
-  // Apply the filter (If array is empty, show all cases)
-  var filteredCases = allCases;
+  // Apply the Status filter
+  var filteredCases = userCases;
   if (statusFilter.length > 0) {
-    filteredCases = allCases.filter(c => {
+    filteredCases = userCases.filter(c => {
       var cStat = c.status || c.caseStatus || c['case-status'];
       return statusFilter.includes(cStat);
     });
@@ -5527,27 +5544,75 @@ router.get('/assigned-to-me', function (req, res) {
   res.render('assigned-to-me', {
     filteredCases: filteredCases,
     currentStatusFilter: statusFilter,
-    totalCasesCount: allCases.length // We use this to check if the DB is entirely empty
+    totalCasesCount: userCases.length, // Checked against the USER'S total, not the whole DB
+    viewingUser: viewingUser // Passed to the frontend to change the H1
   });
 });
 
-// 2. Apply the Filter
+// 2. Apply the Status Filter
 router.post('/assigned-to-me/filter', function (req, res) {
   res.redirect('/assigned-to-me');
 });
 
-// 3. Clear the Filter
+// 3. Clear the Status Filter
 router.get('/assigned-to-me/clear-filter', function (req, res) {
-  req.session.data['statusFilter'] = null; // Wipe the array clean
+  req.session.data['statusFilter'] = null;
   res.redirect('/assigned-to-me');
 });
 
-// Remove single pill on Assigned To Me
+// 4. Remove single pill on Assigned To Me
 router.get('/assigned-to-me/remove-filter/status/:value', function (req, res) {
   var valueToRemove = req.params.value;
   if (Array.isArray(req.session.data['statusFilter'])) {
     req.session.data['statusFilter'] = req.session.data['statusFilter'].filter(item => item !== valueToRemove);
   }
+  res.redirect('/assigned-to-me');
+});
+
+// 5. GET Search User Page
+router.get('/assigned-to-me/search-user', function (req, res) {
+  res.render('assigned-to-me-search');
+});
+
+// 6. POST Search User Page (Validation)
+router.post('/assigned-to-me/search-user', function (req, res) {
+  var val = req.body.assignedUser;
+  
+  if (!val || val.trim() === "") {
+    return res.render('assigned-to-me-search', {
+      error: true,
+      errorMessage: { text: "Select a case officer or inspector" }
+    });
+  }
+
+  var officers = [
+    "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
+    "(Service Account) Automated Tester", "Owen Woodwards", 
+    "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner",
+    "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers",
+    "Stephen Strange", "T'Challa", "Clint Barton", "Sam Wilson",
+    "Bucky Barnes", "Scott Lang", "Hope van Dyne"
+  ];
+  
+  if (!officers.includes(val)) {
+     return res.render('assigned-to-me-search', {
+      value: val,
+      error: true,
+      errorMessage: { text: "Select a case officer or inspector" }
+    });   
+  }
+
+  // Save the selected user and wipe any existing status filters to show a fresh list
+  req.session.data['viewingUser'] = val;
+  req.session.data['statusFilter'] = [];
+  res.redirect('/assigned-to-me');
+});
+
+// 7. Reset back to "My Cases"
+router.get('/assigned-to-me/my-cases', function (req, res) {
+  req.session.data['viewingUser'] = null;
+  req.session.data['statusFilter'] = [];
   res.redirect('/assigned-to-me');
 });
 

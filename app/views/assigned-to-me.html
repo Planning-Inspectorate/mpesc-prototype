@@ -1,7 +1,13 @@
+{% set activePage = "assigned-to-me" %}
+
 {% extends "layouts/main.html" %}
 
+{# --- Dynamic Text Setup --- #}
+{% set headerText = "Cases assigned to " + viewingUser if viewingUser else "Cases assigned to you" %}
+{% set emptyText = viewingUser + " is not assigned to any cases" if viewingUser else "You are not assigned to any cases" %}
+
 {% block pageTitle %}
-  {% if totalCasesCount == 0 %}You are not assigned to any cases{% else %}Cases assigned to you{% endif %} - Planning Inspectorate
+  {% if totalCasesCount == 0 %}{{ emptyText }}{% else %}{{ headerText }}{% endif %} - Planning Inspectorate
 {% endblock %}
 
 {% block content %}
@@ -99,23 +105,47 @@
   <div class="govuk-grid-column-full">
 
     {# ========================================================== #}
-    {# TRUE EMPTY STATE (No cases exist in the database at all)   #}
+    {# TRUE EMPTY STATE (No cases assigned to this user at all)   #}
     {# ========================================================== #}
     {% if totalCasesCount == 0 %}
-      <h1 class="govuk-heading-l">You are not assigned to any cases</h1>
-      {{ govukButton({
-        text: "Search all cases",
-        classes: "govuk-button--secondary",
-        href: "/assigned-to-me/clear-filter"
-      }) }}
+      <h1 class="govuk-heading-l">{{ emptyText }}</h1>
+      
+      <p class="govuk-body govuk-!-margin-bottom-6">
+        <a class="govuk-link" href="/assigned-to-me/search-user" data-cy="change-case-officer">View another case officer or inspector’s cases</a>
+      </p>
+
+      <br>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Search all cases",
+          href: "/cases-page"
+        }) }}
+        {% if viewingUser %}
+          {{ govukButton({
+            text: "Return to your cases",
+            classes: "govuk-button--secondary",
+            href: "/assigned-to-me/my-cases"
+          }) }}
+        {% endif %}
+      </div>
       
     {# ========================================================== #}
     {# POPULATED STATE                                            #}
     {# ========================================================== #}
     {% else %}
       
-      {# --- H1 MOVED ABOVE BOTH COLUMNS --- #}
-      <h1 class="govuk-heading-l govuk-!-margin-bottom-6">Cases assigned to you</h1>
+      <h1 class="govuk-heading-l govuk-!-margin-bottom-2">{{ headerText }}</h1>
+      
+      {# --- NEW LINK SITUATED PERFECTLY BETWEEN H1 AND FILTER LAYOUT --- #}
+      <p class="govuk-body govuk-!-margin-bottom-6">
+
+        <br>
+        <a class="govuk-link" href="/assigned-to-me/search-user" data-cy="change-case-officer">View another case officer or inspector’s appeals</a>
+        {% if viewingUser %}
+          &nbsp;|&nbsp; <a class="govuk-link" href="/assigned-to-me/my-cases">Return to your cases</a>
+        {% endif %}
+      </p>
 
       <form action="/assigned-to-me/filter" method="post" novalidate>
         <div class="moj-filter-layout custom-filter-layout">
@@ -128,7 +158,7 @@
               {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
               
               <div class="govuk-!-margin-bottom-0">
-                <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion" open>
+                <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion">
                   <summary class="govuk-details__summary custom-details-summary">
                     <span class="govuk-details__summary-text filtersText">Status</span>
                   </summary>
@@ -226,8 +256,8 @@
                   <tr class="govuk-table__row">
                     <td class="govuk-table__cell" colspan="4">
                       <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-                        <h2 class="govuk-heading-m">You are not assigned to any cases with this status</h2>
-                        <p class="govuk-body">Clear your filter to <a href="/assigned-to-me/clear-filter" class="govuk-link">search for all cases</a>.</p>
+                        <h2 class="govuk-heading-m">No results found</h2>
+                        <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
                       </div>
                     </td>
                   </tr>

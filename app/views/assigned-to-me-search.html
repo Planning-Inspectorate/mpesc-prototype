@@ -1,0 +1,101 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if error %}Error: {% endif %}Search for a case officer or inspector - Planning Inspectorate
+{% endblock %}
+
+{% block beforeContent %}
+
+<a href="/assigned-to-me" class="govuk-back-link">Back</a>
+
+{% endblock %}
+
+{% block content %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: errorMessage.text, href: "#assignedUser" }
+        ]
+      }) }}
+    {% endif %}
+
+    <form action="/assigned-to-me/search-user" method="post" novalidate>
+      
+      <div class="govuk-form-group {% if error %}govuk-form-group--error{% endif %}">
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--l" for="assignedUser">
+            Case officer or inspector name
+          </label>
+        </h1>
+        
+        {% if error %}
+          <p id="assignedUser-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ errorMessage.text }}
+          </p>
+        {% endif %}
+
+        {# --- AUTOCOMPLETE CONTAINER --- #}
+        <div id="assignedUser-container"></div>
+
+      </div>
+
+      {{ govukButton({ text: "View" }) }}
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  
+  const officers = [
+    "Kieran De La Cruz",
+    "Edward Mitchell",
+    "Sarah Tudor",
+    "Steve Waterfield",
+    "Alex Hudd",
+    "Harry Wood",
+    "Rob Davis",
+    "Deborah Board",
+    "(Service Account) Automated Tester",
+    "Owen Woodwards",
+    "Tony Stark",
+    "Steve Rogers",
+    "Natasha Romanoff",
+    "Bruce Banner",
+    "Thor Odinson",
+    "Wanda Maximoff",
+    "Peter Parker",
+    "Carol Danvers",
+    "Stephen Strange",
+    "T'Challa",
+    "Clint Barton",
+    "Sam Wilson",
+    "Bucky Barnes",
+    "Scott Lang",
+    "Hope van Dyne"
+  ]
+
+  accessibleAutocomplete({
+    element: document.querySelector('#assignedUser-container'),
+    id: 'assignedUser', 
+    name: 'assignedUser', // Important: Matches req.body.assignedUser in the backend route
+    source: officers,
+    defaultValue: "{{ value | default('') }}", // Preserves what they typed if there is an error
+    showAllValues: false,
+    confirmOnBlur: false, 
+    autoselect: true
+  })
+</script>
+{% endblock %}
