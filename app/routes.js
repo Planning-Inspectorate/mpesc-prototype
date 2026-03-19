@@ -315,16 +315,11 @@ const validAuthorities = [
   "York City Council"
 ];
 
+
 // =========================================================
 // CREATE A CASE: AUTHORITY
 // =========================================================
-router.get('/cases/create-a-case/questions/authority', function(req, res) {
-  res.render('cases/create-a-case/questions/authority', {
-    authorityName: req.session.data['authorityName']
-  });
-});
-
-router.post('/cases/create-a-case/questions/authority', function(req, res) {
+router.post('/authority-answer', function(req, res) {
   let val = req.body.authorityName;
 
   // Validation: Only throw error if they typed something AND it's not in the list
@@ -339,7 +334,6 @@ router.post('/cases/create-a-case/questions/authority', function(req, res) {
   req.session.data['authorityName'] = val;
   res.redirect('/cases/create-a-case/questions/case-officer');
 });
-
 
 
 //Reference Number Validation
@@ -8260,7 +8254,7 @@ router.get('/cases/manage-folders/search-results', function(req, res) {
   });
 });
 
-// ROUTE: View Inside a Specific Folder
+// ROUTE: View Inside a Specific Folder (With Filtering)
 router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res) {
   var ref = req.query.ref;
   var folderId = req.params.folderId;
@@ -8275,6 +8269,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   var activeFolder = foundFolder.target;
   var parentFolder = foundFolder.parent;
 
+  // Banner handling
   var successBanner = req.session.data['folderCreated'];
   var renameBanner = req.session.data['folderRenamed'];
   var deleteBanner = req.session.data['folderDeleted'];
@@ -8298,9 +8293,39 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     delete req.session.data['moveFileError'];
   }
 
+  // --- FILTERING LOGIC ---
+  const isFormSubmit = req.query.isFilterSubmit === 'true';
+  if (isFormSubmit) {
+    req.session.data['fileReadStatus'] = req.query.fileReadStatus;
+    req.session.data['fileFlaggedStatus'] = req.query.fileFlaggedStatus;
+  }
+
+  const cleanArray = (categoryName) => {
+    let val = req.session.data[categoryName];
+    if (val && typeof val === 'object' && !Array.isArray(val)) val = Object.values(val);
+    return [].concat(val || []).filter(item => item && item !== '_unchecked');
+  };
+
+  const readFilters = cleanArray('fileReadStatus');
+  const flagFilters = cleanArray('fileFlaggedStatus');
+
   var documents = activeFolder.documents || [];
+
+  if (readFilters.length > 0 || flagFilters.length > 0) {
+    documents = documents.filter(doc => {
+      let docReadStatus = doc.readStatus || "Unread";
+      let docFlagStatus = doc.isFlagged ? "Flagged" : "Unflagged";
+      
+      let matchesRead = readFilters.length === 0 || readFilters.includes(docReadStatus);
+      let matchesFlag = flagFilters.length === 0 || flagFilters.includes(docFlagStatus);
+
+      // Must match BOTH categories if BOTH have selections
+      return matchesRead && matchesFlag; 
+    });
+  }
+
+  // --- PAGINATION LOGIC ---
   const totalDocsCount = documents.length; 
-  
   let rawItems = req.query.itemsPerPage || req.session.data['folderItemsPerPage'];
   let itemsPerPage = parseInt(rawItems, 10);
   if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25;
@@ -8354,6 +8379,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     bulkDeleteBanner: bulkDeleteBanner,
     paginatedDocuments: paginatedDocuments, 
     totalDocs: totalDocsCount,
+    folderTotalDocs: (activeFolder.documents || []).length, // Absolute total for the text above table
     itemsPerPage: itemsPerPage,
     startItem: totalDocsCount === 0 ? 0 : startIndex + 1,
     endItem: Math.min(endIndex, totalDocsCount),
@@ -8361,6 +8387,37 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     prevLink: currentPage > 1 ? `${baseUrl}&page=${currentPage - 1}` : null, 
     nextLink: currentPage < totalPages ? `${baseUrl}&page=${currentPage + 1}` : null 
   });
+});
+
+// ROUTE: Remove individual file filters
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/remove-filter/:filterCategory/:filterValue', function(req, res) {
+  let ref = req.query.ref;
+  let folderId = req.params.folderId;
+  let folderSlug = req.params.folderSlug;
+  let category = req.params.filterCategory;
+  let valueToRemove = req.params.filterValue; 
+
+  let currentFilters = req.session.data[category];
+  if (currentFilters) {
+    if (Array.isArray(currentFilters)) {
+      req.session.data[category] = currentFilters.filter(item => item !== valueToRemove);
+    } else if (currentFilters === valueToRemove) {
+      req.session.data[category] = null;
+    }
+  }
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`); 
+});
+
+// ROUTE: Clear all file filters
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/clear-filters', function (req, res) {
+  let ref = req.query.ref;
+  let folderId = req.params.folderId;
+  let folderSlug = req.params.folderSlug;
+  
+  req.session.data['fileReadStatus'] = "";
+  req.session.data['fileFlaggedStatus'] = "";
+  
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`);
 });
 
 // ==============================================
@@ -9081,6 +9138,31 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/file-deleted', func
     folder: activeFolder
   });
 });
+
+// ==============================================
+// TOGGLE READ/FLAG STATUS (SILENT POST)
+// ==============================================
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/:docId/toggle-status', function(req, res) {
+  var ref = req.body.ref;
+  var actionType = req.body.actionType; // 'readStatus' or 'isFlagged'
+  var newValue = req.body.newValue;
+  
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  
+  if (currentCase) {
+    var foundFolder = findFolderDeep(currentCase.folders, req.params.folderId);
+    if (foundFolder) {
+      var activeDoc = (foundFolder.target.documents || []).find(d => d.id === req.params.docId);
+      if (activeDoc) {
+         if (actionType === 'readStatus') activeDoc.readStatus = newValue;
+         if (actionType === 'isFlagged') activeDoc.isFlagged = newValue;
+      }
+    }
+  }
+  res.json({ success: true });
+});
+
 
 module.exports = router;
 
