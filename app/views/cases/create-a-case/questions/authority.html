@@ -1,49 +1,94 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  Who is the authority? - Planning Inspectorate Portal
+  {% if errorAuthority %}Error: {% endif %}Who is the authority? - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({
-  text: "Back",
-  href: "javascript:window.history.back()"
-}) }}
+    text: "Back",
+    href: "javascript:window.history.back()"
+  }) }}
 {% endblock %}
 
 {% block content %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <form class="form" action="/cases/create-a-case/questions/case-officer" method="post">
-
-       {% from "govuk/components/input/macro.njk" import govukInput %}
-
-{{ govukInput({
-  label: {
-    text: "Who is the authority? (optional)",
-    classes: "govuk-label--l",
-    isPageHeading: true
-  },
-  hint: {
-    text: "Enter the Local Planning Authority or Common Registration Authority"
-
-  },
-  id: "authority-name",
-  name: "authorityName",
-  value: authorityName or data['authorityName']
-}) }}
-
-<p class="govuk-body">To add a new authority to the list or to add multiple authorities to your case <br> contact <a href="mailto:data_architects@planninginspectorate.gov.uk">data_architects@planninginspectorate.gov.uk</a></p>
-
-        {{ govukButton({
-          text: "Continue"
+      {% if errorAuthority %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            { text: errorAuthority, href: "#authorityName" }
+          ]
         }) }}
+      {% endif %}
+
+      <form class="form" action="/cases/create-a-case/questions/authority" method="post" novalidate>
+
+        <div class="govuk-form-group {% if errorAuthority %}govuk-form-group--error{% endif %}">
+          
+          <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--l" for="authorityName">
+              Who is the authority? (optional)
+            </label>
+          </h1>
+          
+          <div id="authorityName-hint" class="govuk-hint">
+            Enter the Local Planning Authority or Common Registration Authority
+          </div>
+
+          {% if errorAuthority %}
+            <p id="authorityName-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ errorAuthority }}
+            </p>
+          {% endif %}
+
+          {# --- AUTOCOMPLETE CONTAINER --- #}
+          <div id="authority-container"></div>
+
+        </div>
+
+        <p class="govuk-body">To add a new authority to the list or to add multiple authorities to your case <br> contact <a class="govuk-link" href="mailto:data_architects@planninginspectorate.gov.uk">data_architects@planninginspectorate.gov.uk</a></p>
+
+        {{ govukButton({ text: "Continue" }) }}
 
       </form>
 
     </div>
   </div>
 
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  const authorities = [
+    "Bristol City Council",
+    "Camden London Borough Council",
+    "Cornwall Council",
+    "Manchester City Council",
+    "Nottingham City Council",
+    "Sheffield City Council",
+    "Southwark Council",
+    "Wandsworth Borough Council",
+    "Westminster City Council",
+    "York City Council"
+  ];
+
+  accessibleAutocomplete({
+    element: document.querySelector('#authority-container'),
+    id: 'authorityName', 
+    name: 'authorityName',
+    source: authorities,
+    defaultValue: "{{ authorityName or data['authorityName'] | default('') }}",
+    showAllValues: false,
+    confirmOnBlur: false, 
+    autoselect: true
+  });
+</script>
 {% endblock %}

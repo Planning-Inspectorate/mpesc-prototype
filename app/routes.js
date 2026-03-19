@@ -301,6 +301,44 @@ router.post('/site-address-answer', function(req, res) {
   res.redirect('/cases/create-a-case/questions/location'); // or whatever your next step is
 });
 
+// --- SHARED DUMMY AUTHORITIES LIST ---
+const validAuthorities = [
+  "Bristol City Council",
+  "Camden London Borough Council",
+  "Cornwall Council",
+  "Manchester City Council",
+  "Nottingham City Council",
+  "Sheffield City Council",
+  "Southwark Council",
+  "Wandsworth Borough Council",
+  "Westminster City Council",
+  "York City Council"
+];
+
+// =========================================================
+// CREATE A CASE: AUTHORITY
+// =========================================================
+router.get('/cases/create-a-case/questions/authority', function(req, res) {
+  res.render('cases/create-a-case/questions/authority', {
+    authorityName: req.session.data['authorityName']
+  });
+});
+
+router.post('/cases/create-a-case/questions/authority', function(req, res) {
+  let val = req.body.authorityName;
+
+  // Validation: Only throw error if they typed something AND it's not in the list
+  if (val && val.trim() !== "" && !validAuthorities.includes(val)) {
+    return res.render('cases/create-a-case/questions/authority', {
+      authorityName: val,
+      errorAuthority: "Select an authority from the list"
+    });
+  }
+
+  // Save to session and move to the next question
+  req.session.data['authorityName'] = val;
+  res.redirect('/cases/create-a-case/questions/case-officer');
+});
 
 
 
@@ -1034,7 +1072,7 @@ addAuditLog(req, ref, "Site location updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-// --- 6. AUTHORITY (No validation, migrate to authorityName) ---
+// --- 6. AUTHORITY (Migrate to authorityName) ---
 router.get('/cases/edit/authority', function(req, res) {
   var c = getCase(req);
   var val = c.authorityName || c['authority'];
@@ -1046,13 +1084,21 @@ router.post('/cases/edit/authority', function(req, res) {
   var val = req.body.authorityName;
   var c = getCase(req);
   
+  // Validation
+  if (val && val.trim() !== "" && !validAuthorities.includes(val)) {
+    return res.render('cases/edit/authority', {
+      ref: ref,
+      value: val, // keep what they typed so they can fix it
+      errorAuthority: "Select an authority from the list"
+    });
+  }
+
   c.authorityName = val;
   delete c['authority'];
 
   req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Authority updated to '" + val + "'");
-
+  addAuditLog(req, ref, "Authority updated to '" + (val || 'None') + "'");
+  
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
@@ -7948,6 +7994,7 @@ router.get('/cases/generate-dummy', function (req, res) {
       subtypeValue: "drought-permits",
       caseStatus: "New case",
       authorityName: "Waterways Authority",
+      caseOfficer: "Kieran De La Cruz",
       applicants: [{ firstName: "John", lastName: "Doe " + i, companyName: "Aqua Corp" }]
     });
   }
@@ -7962,6 +8009,7 @@ router.get('/cases/generate-dummy', function (req, res) {
       subtypeValue: "schedule-14-appeal",
       caseStatus: "New case",
       authorityName: "Ramblers Council",
+      caseOfficer: "Edward Mitchell",
       applicants: [{ firstName: "Jane", lastName: "Smith " + i, companyName: "Pathways Ltd" }]
     });
   }
