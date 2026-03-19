@@ -59,6 +59,10 @@
   .custom-filter-layout { display: flex; gap: 0; }
   .custom-filter-column { flex: 0 0 31%; max-width: 31%; padding-right: 0; }
   .custom-content-column { flex: 0 0 69%; max-width: 69%; padding-left: 30px; }
+  
+  /* Dynamic class to stretch the content column to 100% when filters are hidden */
+  .custom-content-column--full-width { flex: 0 0 100%; max-width: 100%; padding-left: 0; }
+
   .moj-filter { width: 100%; }
   .moj-filter-layout__filter { border: none !important; }
   .moj-filter__options { margin-top: -1px; padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6 }
@@ -180,19 +184,11 @@
         .hide-controls .govuk-accordion__section-heading-text { display: none !important; }
         .hide-controls .govuk-accordion__section-button { padding-top: 10px; padding-bottom: 10px; }
       </style>
-      
-      {# We use data-i18n attributes here to override the default "Show/Hide" Javascript text #}
-      <div class="govuk-accordion hide-controls" data-module="govuk-accordion" id="sub-folders-accordion" 
-           data-i18n.show-section="Show subfolders list" 
-           data-i18n.hide-section="Hide subfolders list">
-        
+      <div class="govuk-accordion hide-controls" data-module="govuk-accordion" id="sub-folders-accordion" data-i18n.hide-section="Show subfolders list" data-i18n.show-section="Show subfolders list">
         <div class="govuk-accordion__section">
           <div class="govuk-accordion__section-header">
             <h2 class="govuk-accordion__section-heading">
-              
-              {# This MUST be left completely empty so the JS can inject the text from the data attributes above #}
               <span class="govuk-accordion__section-button" id="sub-folders-accordion-heading-1"></span>
-              
             </h2>
           </div>
           <div id="sub-folders-accordion-content-1" class="govuk-accordion__section-content">
@@ -221,8 +217,10 @@
 <div class="moj-filter-layout custom-filter-layout">
 
   {# ========================================================== #}
-  {# LEFT COLUMN: THE FILTER (31% width)                        #}
+  {# LEFT COLUMN: THE FILTER (Hides if no documents exist)      #}
   {# ========================================================== #}
+  
+  {% if folder.documents and folder.documents.length > 0 %}
   <div class="custom-filter-column">
 
     {%- set filterOptionsHtml %}
@@ -300,13 +298,15 @@
       optionsHtml: filterOptionsHtml
     }) }}
   </div>
+  {% endif %}
 
 </form>
 
   {# ========================================================== #}
-  {# RIGHT COLUMN: RESULTS TABLE (69% width)                    #}
+  {# RIGHT COLUMN: RESULTS TABLE                                #}
+  {# Changes to 100% width if filters are hidden!               #}
   {# ========================================================== #}
-  <div class="custom-content-column">
+  <div class="custom-content-column {% if not folder.documents or folder.documents.length === 0 %}custom-content-column--full-width{% endif %}">
       
     {# --- FILES SECTION --- #}
     <div id="pagination" class="govuk-body">
@@ -365,17 +365,15 @@
           0 file(s) on this page selected.
         </p>
 
-  
-
         <p class="govuk-body govuk-!-margin-bottom">
-          Select 'All' checkbox to select all the files.
+          Check the box below to select all files.
         </p>
 
           <table class="govuk-table" data-module="moj-sortable-table" data-cy="documents-table">
             <thead class="govuk-table__head">
               <tr class="govuk-table__row">
                 
-                {# PERFECTLY ALIGNED HEADER: Select text side-by-side with checkbox #}
+                {# Restored Select All Checkbox back inside the Table Header #}
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 12%;">
                   <div class="govuk-checkboxes__item govuk-checkboxes--small" style="margin-bottom: 0;">
                     <input type="checkbox" class="govuk-checkboxes__input" id="checkboxes-all" name="checkboxes-all" value="all">
@@ -430,25 +428,30 @@
                       <strong class="govuk-tag govuk-tag--blue" id="status-tag-read-{{ doc.id }}">Unread</strong>
                     {% endif %}
 
-                    {# INVISIBLE PLACEHOLDER FIX: This prevents row height from changing #}
-                    <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}" style="{% if not doc.isFlagged %}visibility: hidden;{% endif %}">Flagged</strong>
+                    {# FIX: If/Else block avoids Nunjucks inside HTML style tag #}
+                    {% if doc.isFlagged %}
+                      <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}">Flagged</strong>
+                    {% else %}
+                      <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}" style="visibility: hidden;">Flagged</strong>
+                    {% endif %}
+                    
                   </div>
                 </td>
                 
                 <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
                   <ul class="govuk-list govuk-!-margin-bottom-0">
                     <li class="govuk-!-margin-bottom-2">
-                      <a class="govuk-link js-read-toggle" href="#" data-doc-id="{{ doc.id }}">
+                      <a class="govuk-link govuk-link--no-visited-state js-read-toggle" href="#" data-doc-id="{{ doc.id }}">
                         {% if readStat == "Read" %}Unread{% else %}Read{% endif %}
                       </a>
                     </li>
                     <li class="govuk-!-margin-bottom-2">
-                      <a class="govuk-link js-flag-toggle" href="#" data-doc-id="{{ doc.id }}">
+                      <a class="govuk-link govuk-link--no-visited-state js-flag-toggle" href="#" data-doc-id="{{ doc.id }}">
                         {% if doc.isFlagged %}Unflag{% else %}Flag{% endif %}
                       </a>
                     </li>
                     <li>
-                      <a class="govuk-link" href="#">Download</a>
+                      <a class="govuk-link govuk-link--no-visited-state" href="#">Download</a>
                     </li>
                   </ul>
                 </td>
