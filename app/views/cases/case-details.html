@@ -897,11 +897,18 @@
                 key: { text: "Type of decision or report" }, 
                 value: { html: outcomeListHtml }, 
                 actions: { 
-                  items: [{ 
-                    href: "/cases/outcomes/hub?ref=" + currentCase.reference, 
-                    text: "Change",
-                    visuallyHiddenText: "type of decision or report"
-                  }] 
+                  items: [
+                    { 
+                      href: "/cases/outcomes/hub?ref=" + currentCase.reference, 
+                      text: "Add",
+                      visuallyHiddenText: "type of decision or report"
+                    },
+                    { 
+                      href: "/cases/outcomes/hub?ref=" + currentCase.reference, 
+                      text: "Change",
+                      visuallyHiddenText: "type of decision or report"
+                    }
+                  ] 
                 } 
               },
               {
