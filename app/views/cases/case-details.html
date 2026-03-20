@@ -333,6 +333,11 @@
     visuallyHiddenText: "consent sought" 
   }] } 
 },
+{ 
+  key: { text: "Priority" }, 
+  value: { text: currentCase['priority'] or "-" }, 
+  actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
+},
           { 
   key: { text: "Inspector band" }, 
   value: { text: currentCase['inspector-band'] or "-" }, 
@@ -557,11 +562,6 @@
               text: "Change" if (currentCase.authorityName or currentCase['authority']) else "Add", 
               visuallyHiddenText: "authority" 
             }] } 
-          },
-          { 
-            key: { text: "Priority" }, 
-            value: { text: currentCase['priority'] or "-" }, 
-            actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
           }
         ]
       }) }}

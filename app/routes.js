@@ -1234,7 +1234,7 @@ addAuditLog(req, ref, "Priority removed");
 
   c.priority = val;
 
-  req.session.flashSection = "case-details"; 
+  req.session.flashSection = "overview"; 
 
 addAuditLog(req, ref, "Priority updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
