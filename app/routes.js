@@ -428,7 +428,7 @@ router.post('/create-case-submit', function (req, res) {
     },
     "Common Land": {
       "Commons for Ecclesiastical Purposes": ["COM", "ECC"], "Commons in Greater London": ["COM", "LDN"], 
-      "Compulsory Purchase of Common Land": ["COM", "PCL"], "Correction of the Common Land or Village Green Registers": ["COM", "COR"], 
+      "Compulsory Purchase of Common Land": ["COM", "PCL"], "Referred applications from Commons Registration Authorities": ["COM", "REF"], 
       "Deregistration & Exchange": ["COM", "DRE"], "Inclosure": ["COM", "INC"], 
       "Inclosure : obsolescent functions": ["COM", "OBS"], "Land Exchange": ["COM", "LEX"], 
       "Local Acts and Provisional Order Confirmation Acts": ["COM", "LCA"], "Public Access to Commons - limitations and restrictions": ["COM", "PAC"], 
@@ -445,8 +445,8 @@ router.post('/create-case-submit', function (req, res) {
 
 
   // --- 5. GENERATE REFERENCE ---
-  var finalRef = "ERROR/REF/000"; 
-  var seq = "000" + Math.floor(1 + Math.random() * 99); 
+  var finalRef = "ERROR/REF/100"; 
+  var seq = "100" + Math.floor(1 + Math.random() * 99); 
 
   if (caseType == "Purchase Notices") {
     finalRef = `PUR/${seq}`;
