@@ -94,13 +94,19 @@
         <li><a href="#team" class="govuk-link govuk-link--no-visited-state">Team</a></li>
       </ul>
 
-      {# 2. The Custom Toggle Button (Matches your image) #}
-      <a href="#" id="toggle-summary-cards" class="govuk-link govuk-link--no-visited-state govuk-!-margin-bottom-4" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <svg id="toggle-icon" class="govuk-!-margin-right-1" width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="8" cy="8" r="7.5" stroke="#1d70b8"/>
-          <path d="M5 6.5L8 9.5L11 6.5" stroke="#1d70b8" stroke-width="1.5"/>
-        </svg>
-        <span id="toggle-text" style="text-decoration: underline; font-family: Helvetica, Arial, sans-serif; font-size: 16px;">Show more</span>
+      {# --- CALCULATE HIDDEN SECTIONS DYNAMICALLY --- #}
+      {% set procCount = currentCase.overviewProcedures | length if currentCase.overviewProcedures else 0 %}
+      {% set outcomeCount = currentCase.outcomes | length if currentCase.outcomes else 0 %}
+      {% set hiddenCount = 6 + procCount + outcomeCount %}
+
+      {# 2. The Custom Toggle Button (Matches Dev Environment) #}
+      <a href="#" id="toggle-summary-cards" data-hidden-count="{{ hiddenCount }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-bottom-4 govuk-!-display-inline-block" style="text-decoration: none;">
+        <span class="govuk-accordion__section-toggle" data-nosnippet="">
+          <span class="govuk-accordion__section-toggle-focus">
+            <span id="toggle-chevron" class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span>
+            <span id="toggle-text" class="govuk-accordion__section-toggle-text" style="text-decoration: underline;">Show {{ hiddenCount }} more sections</span>
+          </span>
+        </span>
       </a>
 
       {# 3. Hidden Links Container #}
@@ -203,22 +209,27 @@
       const toggleBtn = document.getElementById('toggle-summary-cards');
       const extraCards = document.getElementById('extra-summary-cards');
       const toggleText = document.getElementById('toggle-text');
-      const toggleIcon = document.getElementById('toggle-icon');
+      const toggleChevron = document.getElementById('toggle-chevron');
 
       if(toggleBtn) {
+        // Read the dynamic count cleanly from the HTML data attribute!
+        const hiddenCount = toggleBtn.getAttribute('data-hidden-count');
+
         toggleBtn.addEventListener('click', function(e) {
           e.preventDefault(); // Prevents the page from jumping when clicked
           
           if(extraCards.style.display === 'none') {
             // SHOW THE LINKS: Change text to "Hide" and point arrow UP
             extraCards.style.display = 'block';
-            toggleText.textContent = 'Hide';
-            toggleIcon.innerHTML = '<circle cx="8" cy="8" r="7.5" stroke="#1d70b8"/><path d="M11 9.5L8 6.5L5 9.5" stroke="#1d70b8" stroke-width="1.5"/>';
+            toggleText.textContent = 'Hide ' + hiddenCount + ' sections';
+            toggleChevron.classList.remove('govuk-accordion-nav__chevron--down');
+            toggleChevron.classList.add('govuk-accordion-nav__chevron--up');
           } else {
             // HIDE THE LINKS: Change text back and point arrow DOWN
             extraCards.style.display = 'none';
-            toggleText.textContent = 'Show more';
-            toggleIcon.innerHTML = '<circle cx="8" cy="8" r="7.5" stroke="#1d70b8"/><path d="M5 6.5L8 9.5L11 6.5" stroke="#1d70b8" stroke-width="1.5"/>';
+            toggleText.textContent = 'Show ' + hiddenCount + ' more sections';
+            toggleChevron.classList.remove('govuk-accordion-nav__chevron--up');
+            toggleChevron.classList.add('govuk-accordion-nav__chevron--down');
           }
         });
       }
