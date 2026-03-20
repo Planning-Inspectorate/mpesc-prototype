@@ -1,0 +1,40 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  What are the relevant website links? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {# Back to case details instead of the previous question #}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <form action="/cases/edit/relevant-website-links?ref={{ ref }}" method="post" novalidate>
+
+      {{ govukCharacterCount({
+        name: "relevantWebsiteLinks",
+        id: "relevant-website-links",
+        maxlength: 100,
+        label: {
+          text: "What are the relevant website links?",
+          classes: "govuk-label--l",
+          isPageHeading: true
+        },
+        hint: {
+          text: "e.g. third party website for deposited documents"
+        },
+        value: value
+      }) }}
+
+      {{ govukButton({
+        text: "Save"
+      }) }}
+
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -5455,37 +5455,69 @@ router.post('/cases/create-a-case/questions/applicant-remove', (req, res) => {
 
 
 // =========================================================
-// DOCUMENTS: File Location (Independent Edit)
+// Additional Resource Locations: Offline File Location (Independent Edit)
 // =========================================================
 
 // GET: Independent edit for file location
-router.get('/cases/edit/file-location', function(req, res) {
+router.get('/cases/edit/offline-document-location', function(req, res) {
   var c = getCase(req);
   if (!c) return res.redirect('/cases');
 
-  res.render('cases/edit/file-location', { 
+  res.render('cases/edit/offline-document-location', { 
     ref: c.reference, 
-    value: c.fileLocation || "",
+    value: c.offlineDocLocation || "",
     editMode: true 
   });
 });
 
 // POST: Save and return directly to case details
-router.post('/cases/edit/file-location', function(req, res) {
+router.post('/cases/edit/offline-document-location', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
 
   // Save directly to the case
-  c.fileLocation = req.body.fileLocation;
+  c.offlineDocLocation = req.body.offlineDocLocation;
 
-  req.session.flashSection = "documents"; 
+  req.session.flashSection = "additionalResourceLocations"; 
 
-addAuditLog(req, ref, "Document file location updated to: " + (c.fileLocation || "N/A"));
+addAuditLog(req, ref, "Offline file location updated to: " + (c.offlineDocLocation || "N/A"));
   
   // Redirect back to the main case view with a success flag
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
+
+// =========================================================
+// Additional Resource Locations: Relevant website links (Independent Edit)
+// =========================================================
+
+// GET: Independent edit for website links
+router.get('/cases/edit/relevant-website-links', function(req, res) {
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases');
+
+  res.render('cases/edit/relevant-website-links', { 
+    ref: c.reference, 
+    value: c.relevantWebsiteLinks || "",
+    editMode: true 
+  });
+});
+
+// POST: Save and return directly to case details
+router.post('/cases/edit/relevant-website-links', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Save directly to the case
+  c.relevantWebsiteLinks = req.body.relevantWebsiteLinks;
+
+  req.session.flashSection = "additionalResourceLocations"; 
+
+addAuditLog(req, ref, "Relevant website links updated to: " + (c.relevantWebsiteLinks || "N/A"));
+  
+  // Redirect back to the main case view with a success flag
+  res.redirect('/cases/case-details?ref=' + ref);
+});
 
 
 // ========================================================= ALL CASES ==========================================================

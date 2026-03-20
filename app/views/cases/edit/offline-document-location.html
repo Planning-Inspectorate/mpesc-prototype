@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  Where are files physically located? - Planning Inspectorate Portal
+  Where are the paper documents relating to the case stored? - Planning Inspectorate Portal
 {% endblock %}
 
 {% block beforeContent %}
@@ -13,25 +13,25 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <form action="/cases/edit/file-location?ref={{ ref }}" method="post" novalidate>
+    <form action="/cases/edit/offline-document-location?ref={{ ref }}" method="post" novalidate>
 
       {{ govukCharacterCount({
-        name: "fileLocation",
-        id: "file-location",
+        name: "offlineDocLocation",
+        id: "offline-doc-location",
         maxlength: 100,
         label: {
-          text: "Where are files physically located?",
+          text: "Where are the paper documents relating to the case stored?",
           classes: "govuk-label--l",
           isPageHeading: true
         },
         hint: {
-          text: "For example, 'Stored in Room 302, Temple Quay House' or a specific archive reference."
+          text: "e.g. Sealed orders, paper letters"
         },
         value: value
       }) }}
 
       {{ govukButton({
-        text: "Save and return"
+        text: "Save"
       }) }}
 
     </form>

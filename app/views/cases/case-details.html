@@ -133,7 +133,7 @@
             {% endfor %}
           {% endif %}
 
-          <li><a href="#documents" class="govuk-link govuk-link--no-visited-state">Documents</a></li>
+          <li><a href="#additionalResourceLocations" class="govuk-link govuk-link--no-visited-state">Additional resource locations</a></li>
           <li><a href="#invoicing" class="govuk-link govuk-link--no-visited-state">Invoicing</a></li>
           <li><a href="#case-history" class="govuk-link govuk-link--no-visited-state">Case audit log</a></li>
         </ul>
@@ -1033,27 +1033,40 @@
       {% endif %}
 
 
-      {# 10. DOCUMENTS #}
+      {# 10. Additional resource locations #}
       {{ govukSummaryList({
-  attributes: { id: "documents" },
+  attributes: { id: "additionalResourceLocations" },
   card: { 
-    title: { text: "Documents" } 
+    title: { text: "Additional resource locations" } 
   },
   rows: [
     { 
-      key: { text: "Files location" }, 
+      key: { text: "Offline document location" }, 
       value: { 
-        html: currentCase.fileLocation | nl2br if currentCase.fileLocation else "-" 
+        html: currentCase.offlineDocLocation | nl2br if currentCase.offlineDocLocation else "-" 
       }, 
       actions: { 
         items: [{ 
-          href: "/cases/edit/file-location?ref=" + currentCase.reference, 
-          text: ("Change" if currentCase.fileLocation else "Add"), 
-          visuallyHiddenText: "physical file location" 
+          href: "/cases/edit/offline-document-location?ref=" + currentCase.reference, 
+          text: ("Change" if currentCase.offlineDocLocation else "Add"), 
+          visuallyHiddenText: "offline document location" 
+        }] 
+      }
+    },
+
+    { 
+      key: { text: "Relevant website links" }, 
+      value: { 
+        html: currentCase.relevantWebsiteLinks | nl2br if currentCase.relevantWebsiteLinks else "-" 
+      }, 
+      actions: { 
+        items: [{ 
+          href: "/cases/edit/relevant-website-links?ref=" + currentCase.reference, 
+          text: ("Change" if currentCase.relevantWebsiteLinks else "Add"), 
+          visuallyHiddenText: "relevant website links" 
         }] 
       } 
-    }
-  ]
+  ]}
 }) }}
 
       {# 11. INVOICING #}
