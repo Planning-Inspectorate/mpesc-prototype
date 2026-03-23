@@ -5577,24 +5577,31 @@ router.get('/cases/case-details', function(req, res) {
 router.get('/assigned-to-me', function (req, res) {
   var allCases = req.session.data['cases'] || [];
   
-  // Who are we viewing? (If null, it assumes "You")
-  var viewingUser = req.session.data['viewingUser'];
+  // --- SIMULATED LOGIN WORKAROUND ---
+  // Hardcode the "logged in" user here. 
+  var loggedInUser = "Carol Danvers";
   
-  // Filter by the selected user (Case Officer OR Inspector)
-  var userCases = allCases;
-  if (viewingUser) {
-    userCases = allCases.filter(c => {
-      var cOfficer = c.caseOfficer || c['case-officer'];
-      if (cOfficer === viewingUser) return true;
-      
-      if (c.inspectors && c.inspectors.length > 0) {
-         return c.inspectors.some(i => i.name === viewingUser);
-      } else if (c.inspector === viewingUser) {
-         return true;
-      }
-      return false;
-    });
-  }
+  // Check if they explicitly searched for someone else
+  var searchedUser = req.session.data['viewingUser'];
+  
+  // If they didn't search for anyone, default to the logged-in user
+  var activeUser = searchedUser || loggedInUser;
+  
+  // Boolean to tell the frontend if we are looking at our own queue
+  var isViewingOwnCases = (!searchedUser || searchedUser === loggedInUser);
+
+  // Filter by the active user (Case Officer OR Inspector)
+  var userCases = allCases.filter(c => {
+    var cOfficer = c.caseOfficer || c['case-officer'];
+    if (cOfficer === activeUser) return true;
+    
+    if (c.inspectors && c.inspectors.length > 0) {
+       return c.inspectors.some(i => i.name === activeUser);
+    } else if (c.inspector === activeUser) {
+       return true;
+    }
+    return false;
+  });
 
   // Get the Status filter array
   var statusFilter = req.session.data['statusFilter'];
@@ -5616,8 +5623,9 @@ router.get('/assigned-to-me', function (req, res) {
   res.render('assigned-to-me', {
     filteredCases: filteredCases,
     currentStatusFilter: statusFilter,
-    totalCasesCount: userCases.length, // Checked against the USER'S total, not the whole DB
-    viewingUser: viewingUser // Passed to the frontend to change the H1
+    totalCasesCount: userCases.length, 
+    activeUserName: activeUser, // Passed to the frontend to inject the name
+    isViewingOwnCases: isViewingOwnCases // Used to toggle "Return to my cases" buttons
   });
 });
 

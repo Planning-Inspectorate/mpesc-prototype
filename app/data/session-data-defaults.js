@@ -286,6 +286,237 @@ module.exports = {
 
       lastModified: "23 March 2026",
       lastModifiedBy: "System"
+    },
+
+    // =======================================================================
+    // CAROL DANVERS' CASELOAD (5 CASES)
+    // =======================================================================
+    {
+      reference: "WAY/LIN/10051",
+      caseName: "National Grid Expansion - Peak District",
+      caseStatus: "In progress",
+      "casework-area": "Planning, Environmental and Applications",
+      areaValue: "planning-environmental-and-applications",
+      typeValue: "wayleaves",
+      subtypeValue: "new-lines",
+      type: "Wayleaves",
+      subtype: "New lines",
+      authorityName: "Sheffield City Council",
+      caseOfficer: "Carol Danvers",
+      inspectors: [{ id: "insp-2", name: "Tony Stark", date: "15 April 2026", rawDay: "15", rawMonth: "4", rawYear: "2026" }],
+      applicants: [{ id: "app-4", firstName: "Pepper", lastName: "Potts", companyName: "Stark Industries Energy" }],
+      objectors: [{ id: "obj-3", fname: "Peak District Heritage Trust" }],
+      contacts: [], relatedCases: [], linkedCases: [],
+      
+      expectedSubmissionDate: { day: "10", month: "5", year: "2026", formatted: "10 May 2026" },
+      startDate: { day: "1", month: "4", year: "2026", formatted: "1 April 2026" },
+      
+      overviewProcedures: [
+        { id: "proc-3", type: "Hearing", status: "Scheduled", inspector: "Tony Stark", earliestHearingDate: { day: "20", month: "5", year: "2026", formatted: "20 May 2026" } }
+      ],
+      outcomeOverview: {}, outcomes: [], invoicing: { rechargeable: "Yes" },
+      
+      caseNotes: [{ text: "Hearing scheduled, waiting on venue confirmation.", meta: "10:00am on Monday 20 April 2026 by Carol Danvers", tableDate: "20 April 2026", tableTime: "10:00am", tableUser: "Carol Danvers" }],
+      
+      folders: [
+        { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
+          { id: "doc-w1", name: "Route_Proposal.pdf", type: "PDF document", size: "12 MB", date: "01 Apr 2026", dateTimestamp: 1743465600, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
+        { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
+          { id: "f3-sub1", name: "Statements of case", slug: "statements-of-case", subfolders: [], documents: [] },
+          { id: "f3-sub2", name: "Final comments", slug: "final-comments", subfolders: [], documents: [] }
+        ]},
+        { id: "f4", name: "Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)", slug: "proofs-of-evidence-rebuttals-and-statement-of-common-ground-if-inquiry-", subfolders: [], documents: [] },
+        { id: "f5", name: "Start Date Letters", slug: "start-date-letters", subfolders: [], documents: [] },
+        { id: "f6", name: "Events information and notifications", slug: "events-information-and-notifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Pre-inquiry meeting or Case management conference", slug: "pre-inquiry-meeting-or-case-management-conference", subfolders: [], documents: [] },
+          { id: "f6-sub2", name: "Site Visit information (if written reps)", slug: "site-visit-information-if-written-reps-", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [] },
+        { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
+        { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
+        { id: "f10", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      lastModified: "20 April 2026", lastModifiedBy: "Carol Danvers"
+    },
+
+    {
+      reference: "MCA/OBJ/10052",
+      caseName: "South West Coast Path Objection",
+      caseStatus: "Ready for inspector",
+      "casework-area": "Rights of Way and Common Land",
+      areaValue: "rights-of-way-and-common-land",
+      typeValue: "coastal-access",
+      subtypeValue: "objection",
+      type: "Coastal Access",
+      subtype: "Objection",
+      authorityName: "Cornwall Council",
+      caseOfficer: "Carol Danvers",
+      inspectors: [], // Waiting for inspector allocation
+      applicants: [{ id: "app-5", firstName: "Arthur", lastName: "Pendragon", companyName: "Tintagel Estates" }],
+      objectors: [], contacts: [], relatedCases: [], linkedCases: [],
+      
+      caseReceivedDate: { day: "14", month: "4", year: "2026", formatted: "14 April 2026" },
+      startDate: { day: "18", month: "4", year: "2026", formatted: "18 April 2026" },
+      overviewProcedures: [], outcomeOverview: {}, outcomes: [], invoicing: { rechargeable: "No" },
+      
+      caseNotes: [{ text: "File prepared and ready for inspector allocation.", meta: "11:15am on Friday 24 April 2026 by Carol Danvers", tableDate: "24 April 2026", tableTime: "11:15am", tableUser: "Carol Danvers" }],
+      
+      // COASTAL ACCESS FOLDERS
+      folders: [
+        { id: "f1", name: "Letters", slug: "letters", subfolders: [], documents: [] },
+        { id: "f2", name: "Internal correspondence", slug: "internal-correspondence", subfolders: [], documents: [] },
+        { id: "f3", name: "Submissions", slug: "submissions", subfolders: [], documents: [
+          { id: "doc-ca1", name: "Objection_Form_Final.pdf", type: "PDF document", size: "1.2 MB", date: "14 Apr 2026", dateTimestamp: 1744588800, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f4", name: "Notices and order documents", slug: "notices-and-order-documents", subfolders: [], documents: [] },
+        { id: "f5", name: "Decision", slug: "decision", subfolders: [], documents: [] },
+        { id: "f6", name: "Advertised modifications", slug: "advertised-modifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Communications", slug: "communications", subfolders: [], documents: [] },
+          { id: "f6-sub2", name: "Representations", slug: "representations", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "New Decision", slug: "new-decision", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      lastModified: "24 April 2026", lastModifiedBy: "Carol Danvers"
+    },
+
+    {
+      reference: "SOS/ENV/10053",
+      caseName: "Greenfield Farm DEFRA CPO",
+      caseStatus: "Closed",
+      "casework-area": "Planning, Environmental and Applications",
+      areaValue: "planning-environmental-and-applications",
+      typeValue: "other-secretary-of-state-casework",
+      subtypeValue: "defra-cpo",
+      type: "Other Secretary of State casework",
+      subtype: "DEFRA CPO",
+      authorityName: "York City Council",
+      caseOfficer: "Carol Danvers",
+      inspectors: [{ id: "insp-3", name: "Bruce Banner", date: "10 January 2026", rawDay: "10", rawMonth: "1", rawYear: "2026" }],
+      applicants: [{ id: "app-6", firstName: "Emily", lastName: "Stone", companyName: "DEFRA" }],
+      objectors: [], contacts: [], relatedCases: [], linkedCases: [],
+      
+      startDate: { day: "5", month: "1", year: "2026", formatted: "5 January 2026" },
+      
+      overviewProcedures: [
+        { id: "proc-4", type: "Inquiry", status: "Completed", inspector: "Bruce Banner", inquiryClosed: { day: "28", month: "2", year: "2026", formatted: "28 February 2026" } }
+      ],
+      outcomeOverview: { decisionPublishedDate: { day: "15", month: "3", year: "2026", formatted: "15 March 2026" } },
+      outcomes: [
+        { id: "out-2", type: "Decision", originator: "Secretary of State", decisionOutcome: "Confirmed with modifications", outcomeDate: { day: "10", month: "3", year: "2026", formatted: "10 March 2026" } }
+      ],
+      invoicing: { rechargeable: "Yes", finalCost: "4500.00", invoiceSent: "Yes", feeReceived: "Yes" },
+      
+      caseNotes: [{ text: "Case closed. All files archived.", meta: "4:45pm on Monday 16 March 2026 by Carol Danvers", tableDate: "16 March 2026", tableTime: "4:45pm", tableUser: "Carol Danvers" }],
+      
+      folders: [
+        { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [] },
+        { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
+        { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
+          { id: "f3-sub1", name: "Statements of case", slug: "statements-of-case", subfolders: [], documents: [] },
+          { id: "f3-sub2", name: "Final comments", slug: "final-comments", subfolders: [], documents: [] }
+        ]},
+        { id: "f4", name: "Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)", slug: "proofs-of-evidence-rebuttals-and-statement-of-common-ground-if-inquiry-", subfolders: [], documents: [] },
+        { id: "f5", name: "Start Date Letters", slug: "start-date-letters", subfolders: [], documents: [] },
+        { id: "f6", name: "Events information and notifications", slug: "events-information-and-notifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Pre-inquiry meeting or Case management conference", slug: "pre-inquiry-meeting-or-case-management-conference", subfolders: [], documents: [] },
+          { id: "f6-sub2", name: "Site Visit information (if written reps)", slug: "site-visit-information-if-written-reps-", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [
+          { id: "doc-def1", name: "Final_Decision_Notice.pdf", type: "PDF document", size: "2.4 MB", date: "15 Mar 2026", dateTimestamp: 1742083200, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
+        { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
+        { id: "f10", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      lastModified: "16 March 2026", lastModifiedBy: "Carol Danvers"
+    },
+
+    {
+      reference: "CPO/ADH/10054",
+      caseName: "Wandsworth High Street Regeneration",
+      caseStatus: "New case",
+      "casework-area": "Planning, Environmental and Applications",
+      areaValue: "planning-environmental-and-applications",
+      typeValue: "housing-and-planning-cpos",
+      subtypeValue: "ad-hoc",
+      type: "Housing and Planning CPOs",
+      subtype: "Ad hoc",
+      authorityName: "Wandsworth Borough Council",
+      caseOfficer: "Carol Danvers",
+      inspectors: [], applicants: [], objectors: [], contacts: [], relatedCases: [], linkedCases: [],
+      
+      caseReceivedDate: { day: "1", month: "5", year: "2026", formatted: "1 May 2026" },
+      overviewProcedures: [], outcomeOverview: {}, outcomes: [], invoicing: {}, caseNotes: [],
+      
+      folders: [
+        { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
+          { id: "doc-ad1", name: "Application_Form.pdf", type: "PDF document", size: "1.1 MB", date: "01 May 2026", dateTimestamp: 1746057600, readStatus: "Unread", isFlagged: false }
+        ]},
+        { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
+        { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
+          { id: "f3-sub1", name: "Statements of case", slug: "statements-of-case", subfolders: [], documents: [] },
+          { id: "f3-sub2", name: "Final comments", slug: "final-comments", subfolders: [], documents: [] }
+        ]},
+        { id: "f4", name: "Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)", slug: "proofs-of-evidence-rebuttals-and-statement-of-common-ground-if-inquiry-", subfolders: [], documents: [] },
+        { id: "f5", name: "Start Date Letters", slug: "start-date-letters", subfolders: [], documents: [] },
+        { id: "f6", name: "Events information and notifications", slug: "events-information-and-notifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Pre-inquiry meeting or Case management conference", slug: "pre-inquiry-meeting-or-case-management-conference", subfolders: [], documents: [] },
+          { id: "f6-sub2", name: "Site Visit information (if written reps)", slug: "site-visit-information-if-written-reps-", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [] },
+        { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
+        { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
+        { id: "f10", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      lastModified: "1 May 2026", lastModifiedBy: "Carol Danvers"
+    },
+
+    {
+      reference: "ROW/DMM/10055",
+      caseName: "Camden Lock Path Modification",
+      caseStatus: "LPA questionnaire",
+      "casework-area": "Rights of Way and Common Land",
+      areaValue: "rights-of-way-and-common-land",
+      typeValue: "rights-of-way",
+      subtypeValue: "opposed-definitive-map-modification-order-dmmo-",
+      type: "Rights of Way",
+      subtype: "Opposed Definitive Map Modification Order (DMMO)",
+      authorityName: "Camden London Borough Council",
+      caseOfficer: "Carol Danvers",
+      inspectors: [], 
+      applicants: [{ id: "app-7", firstName: "Sam", lastName: "Wilson", companyName: "London Walkers Association" }],
+      objectors: [{ id: "obj-4", fname: "Camden Market Traders" }], 
+      contacts: [], relatedCases: [], linkedCases: [],
+      
+      startDate: { day: "10", month: "4", year: "2026", formatted: "10 April 2026" },
+      
+      overviewProcedures: [], outcomeOverview: {}, outcomes: [], invoicing: {},
+      
+      caseNotes: [{ text: "LPA Questionnaire sent. Awaiting response.", meta: "9:30am on Monday 13 April 2026 by Carol Danvers", tableDate: "13 April 2026", tableTime: "9:30am", tableUser: "Carol Danvers" }],
+      
+      // ROW FOLDERS
+      folders: [
+        { id: "f1", name: "Letters", slug: "letters", subfolders: [], documents: [
+          { id: "doc-rw1", name: "Questionnaire_Request.pdf", type: "PDF document", size: "150 KB", date: "13 Apr 2026", dateTimestamp: 1744502400, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f2", name: "Internal correspondence", slug: "internal-correspondence", subfolders: [], documents: [] },
+        { id: "f3", name: "Submissions", slug: "submissions", subfolders: [], documents: [] },
+        { id: "f4", name: "Notices and order documents", slug: "notices-and-order-documents", subfolders: [], documents: [] },
+        { id: "f5", name: "Decision", slug: "decision", subfolders: [], documents: [] },
+        { id: "f6", name: "Advertised modifications", slug: "advertised-modifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Communications", slug: "communications", subfolders: [], documents: [] },
+          { id: "f6-sub2", name: "Representations", slug: "representations", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "New Decision", slug: "new-decision", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      lastModified: "13 April 2026", lastModifiedBy: "Carol Danvers"
     }
   ]
 }

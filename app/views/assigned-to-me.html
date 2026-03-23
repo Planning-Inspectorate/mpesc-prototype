@@ -2,9 +2,9 @@
 
 {% extends "layouts/main.html" %}
 
-{# --- Dynamic Text Setup --- #}
-{% set headerText = "Cases assigned to " + viewingUser if viewingUser else "Cases assigned to you" %}
-{% set emptyText = viewingUser + " is not assigned to any cases" if viewingUser else "You are not assigned to any cases" %}
+{# --- Dynamic Text Setup (Using the new Simulated Login Logic) --- #}
+{% set headerText = "Cases assigned to you" if isViewingOwnCases else "Cases assigned to " + activeUserName %}
+{% set emptyText = "You are not assigned to any cases" if isViewingOwnCases else activeUserName + " is not assigned to any cases" %}
 
 {% block pageTitle %}
   {% if totalCasesCount == 0 %}{{ emptyText }}{% else %}{{ headerText }}{% endif %} - Planning Inspectorate
@@ -118,7 +118,7 @@
 
       <div class="govuk-button-group">
 
-        {% if viewingUser %}
+        {% if not isViewingOwnCases %}
           {{ govukButton({
             text: "Return to your cases",
             classes: "govuk-button",
@@ -146,7 +146,8 @@
 
         <br>
         <a class="govuk-link" href="/assigned-to-me/search-user" data-cy="change-case-officer">View another case officer's or inspector’s cases</a>
-        {% if viewingUser %}
+        
+        {% if not isViewingOwnCases %}
           &nbsp;|&nbsp; <a class="govuk-link" href="/assigned-to-me/my-cases">Return to my case list</a>
         {% endif %}
       </p>

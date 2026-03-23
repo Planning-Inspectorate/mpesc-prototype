@@ -232,15 +232,15 @@
               <div class="govuk-task-list__name-and-hint">
                 <a class="govuk-link govuk-task-list__link" href="/cases-page">Search and filter all cases</a>
                 <div class="govuk-task-list__hint">
-                  View the master list of cases. Includes dynamic filtering by Area, Type, and Subtype, plus pagination.
+                  View the master list of cases. Includes dynamic filtering by case work area, case type and subtype, plus pagination.
                 </div>
               </div>
             </li>
             <li class="govuk-task-list__item govuk-task-list__item--with-link">
               <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/assigned-to-me">View 'Assigned to me' queue</a>
+                <a class="govuk-link govuk-task-list__link" href="/assigned-to-me">View 'assigned to me' cases</a>
                 <div class="govuk-task-list__hint">
-                  Simulate logging in as a specific Case Officer or Inspector to see only the cases assigned to them.
+                   View cases assigned only to you or see cases assigned to another case officer or inspector.
                 </div>
               </div>
             </li>
@@ -340,19 +340,23 @@
           items: [
             {
               heading: { text: "1. Jump straight into a case" },
-              content: { html: section1Html }
+              content: { html: section1Html },
+              expanded: false
             },
             {
               heading: { text: "2. Core workflows" },
-              content: { html: section2Html }
+              content: { html: section2Html },
+              expanded: false
             },
             {
               heading: { text: "3. Specific add to list journeys" },
-              content: { html: section3Html }
+              content: { html: section3Html },
+              expanded: false
             },
             {
               heading: { text: "4. Prototype utilities" },
-              content: { html: section4Html }
+              content: { html: section4Html },
+              expanded: false
             }
           ]
         }) }}
@@ -371,7 +375,7 @@
             <ul class="govuk-task-list">
               <li class="govuk-task-list__item govuk-task-list__item--with-link">
                 <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Smart Evidence Tracking</a>
+                  <a class="govuk-link govuk-task-list__link" href="#">Smart Evidence Marking</a>
                   <div class="govuk-task-list__hint">Flag and unflag, read and unread, specific files and filter by them.</div>
                 </div>
                 <div class="govuk-task-list__status">
