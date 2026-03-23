@@ -11,9 +11,7 @@ module.exports = {
       reference: "PUR/10045",
       externalReference: "MAN-APP-2026-001",
       historicalReference: "HIST-9901-A",
-      caseName: "Land at 14 High Street, Manchester",
-      
-      // UPDATED: Matches exact string in your case-status radios
+      caseName: "Land at 14 High Street, Manchester (Generated)",
       caseStatus: "In progress",
       
       "casework-area": "Planning, Environmental and Applications",
@@ -23,21 +21,13 @@ module.exports = {
       
       type: "Purchase Notices",
       subtype: "",
-      
-      // UPDATED: Matches exact string in your consent-sought autocomplete array
       act: "Town and Country Planning Act 1990, 78", 
       "consent-sought": "Town and Country Planning Act 1990, 78",
-      
-      // UPDATED: Matches exact string in your priority radios
       priority: "High",
       "inspector-band": "Band 2",
-      
-      // UPDATED: Matches exact string in your modification-status radios
       modificationStatus: "Advertised modification 1",
       
-      // UPDATED: Matches exact string in your authority autocomplete array
       authorityName: "Manchester City Council",
-      
       siteAddress: "14 High Street<br>Manchester<br>Greater Manchester<br>M1 1DZ",
       addressLine1: "14 High Street",
       addressLine2: "",
@@ -48,9 +38,7 @@ module.exports = {
       offlineDocLocation: "Filing Cabinet 4, Floor 2\nTemple Quay House",
       relevantWebsiteLinks: "https://planning.manchester.gov.uk/portal/14-high-street",
 
-      // UPDATED: Matches exact string in your officers autocomplete array
       caseOfficer: "Kieran De La Cruz",
-      
       inspectors: [
         { id: "insp-1", name: "Sarah Tudor", date: "12 February 2026", rawDay: "12", rawMonth: "2", rawYear: "2026" }
       ],
@@ -96,7 +84,6 @@ module.exports = {
       outcomeOverview: {},
       outcomes: [],
       
-      // UPDATED: Matches exact strings in your invoicing radios ("Yes", "No", "Interim invoice sent")
       invoicing: { rechargeable: "Yes", finalCost: "1250.00", invoiceSent: "Interim invoice sent", feeReceived: "No" },
 
       caseNotes: [
@@ -151,8 +138,8 @@ module.exports = {
     {
       // Generated using: COM + WCL + 100xx
       reference: "COM/WCL/10088",
-      caseName: "Cornwall Coastal Preservation Works",
-      caseStatus: "Closed", // Allowed in caseStatus list
+      caseName: "Cornwall Coastal Preservation Works (Generated)",
+      caseStatus: "Closed", 
       
       "casework-area": "Rights of Way and Common Land",
       areaValue: "rights-of-way-and-common-land",
@@ -162,14 +149,14 @@ module.exports = {
       type: "Common Land",
       subtype: "Works on Common Land",
       act: "Commons Act 2006, 38",
-      "consent-sought": "Commons Act 2006, 38", // Must match consent autocomplete
-      priority: "Medium", // Allowed in priority list
+      "consent-sought": "Commons Act 2006, 38", 
+      priority: "Medium", 
       "inspector-band": "Band 1",
       
-      authorityName: "Cornwall Council", // Matches validAuthorities
+      authorityName: "Cornwall Council", 
       siteAddress: "Cornwall Coast<br>Cornwall",
       
-      caseOfficer: "Steve Waterfield", // Matches officers list
+      caseOfficer: "Steve Waterfield", 
       inspectors: [{ id: "insp-1", name: "Alex Hudd", date: "5 November 2025", rawDay: "5", rawMonth: "11", rawYear: "2025" }],
       applicants: [{ id: "app-1", firstName: "David", lastName: "Attenborough", companyName: "National Trust" }],
       objectors: [], contacts: [], relatedCases: [], linkedCases: [],
@@ -196,7 +183,7 @@ module.exports = {
         { id: "out-1", type: "Decision", originator: "Inspector", inspectorName: "Alex Hudd", decisionOutcome: "Allowed", decisionOutcomeDetails: "Consent granted with standard conditions", outcomeDate: { day: "10", month: "12", year: "2025", formatted: "10 December 2025" } }
       ],
 
-      invoicing: { rechargeable: "No" }, // Matches radio
+      invoicing: { rechargeable: "No" }, 
 
       caseNotes: [
         { text: "Case closed and archived.", meta: "9:00am on Monday 15 December 2025 by Steve Waterfield", tableDate: "15 December 2025", tableTime: "9:00am", tableUser: "Steve Waterfield" },
@@ -234,8 +221,8 @@ module.exports = {
     {
       // Generated using: CPO + HOU + 100xx
       reference: "CPO/HOU/10012",
-      caseName: "Bristol City Centre Housing CPO",
-      caseStatus: "New case", // Matches status radio list
+      caseName: "Bristol City Centre Housing CPO (Generated)",
+      caseStatus: "New case", 
       
       "casework-area": "Planning, Environmental and Applications",
       areaValue: "planning-environmental-and-applications",
@@ -245,8 +232,8 @@ module.exports = {
       type: "Housing and Planning CPOs",
       subtype: "Housing",
       
-      authorityName: "Bristol City Council", // Matches validAuthorities
-      caseOfficer: "Edward Mitchell", // Matches officers list
+      authorityName: "Bristol City Council", 
+      caseOfficer: "Edward Mitchell", 
       
       applicants: [{ id: "app-1", firstName: "Sarah", lastName: "Connor", companyName: "Bristol City Council" }],
       inspectors: [], objectors: [], contacts: [], relatedCases: [], linkedCases: [],
@@ -293,7 +280,7 @@ module.exports = {
     // =======================================================================
     {
       reference: "WAY/LIN/10051",
-      caseName: "National Grid Expansion - Peak District",
+      caseName: "National Grid Expansion - Peak District (Generated)",
       caseStatus: "In progress",
       "casework-area": "Planning, Environmental and Applications",
       areaValue: "planning-environmental-and-applications",
@@ -344,7 +331,7 @@ module.exports = {
 
     {
       reference: "MCA/OBJ/10052",
-      caseName: "South West Coast Path Objection",
+      caseName: "South West Coast Path Objection (Generated)",
       caseStatus: "Ready for inspector",
       "casework-area": "Rights of Way and Common Land",
       areaValue: "rights-of-way-and-common-land",
@@ -354,7 +341,7 @@ module.exports = {
       subtype: "Objection",
       authorityName: "Cornwall Council",
       caseOfficer: "Carol Danvers",
-      inspectors: [], // Waiting for inspector allocation
+      inspectors: [], 
       applicants: [{ id: "app-5", firstName: "Arthur", lastName: "Pendragon", companyName: "Tintagel Estates" }],
       objectors: [], contacts: [], relatedCases: [], linkedCases: [],
       
@@ -385,7 +372,7 @@ module.exports = {
 
     {
       reference: "SOS/ENV/10053",
-      caseName: "Greenfield Farm DEFRA CPO",
+      caseName: "Greenfield Farm DEFRA CPO (Generated)",
       caseStatus: "Closed",
       "casework-area": "Planning, Environmental and Applications",
       areaValue: "planning-environmental-and-applications",
@@ -438,7 +425,7 @@ module.exports = {
 
     {
       reference: "CPO/ADH/10054",
-      caseName: "Wandsworth High Street Regeneration",
+      caseName: "Wandsworth High Street Regeneration (Generated)",
       caseStatus: "New case",
       "casework-area": "Planning, Environmental and Applications",
       areaValue: "planning-environmental-and-applications",
@@ -479,7 +466,7 @@ module.exports = {
 
     {
       reference: "ROW/DMM/10055",
-      caseName: "Camden Lock Path Modification",
+      caseName: "Camden Lock Path Modification (Generated)",
       caseStatus: "LPA questionnaire",
       "casework-area": "Rights of Way and Common Land",
       areaValue: "rights-of-way-and-common-land",
