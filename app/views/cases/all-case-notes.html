@@ -1,0 +1,65 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Case notes - {{ currentCase.reference }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back to case details",
+    href: "/cases/case-details?ref=" + currentCase.reference
+  }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    
+    <span class="govuk-caption-m" data-cy="page-caption">
+        {{ currentCase.reference }}
+    </span>
+    <h1 class="govuk-heading-l" data-cy="page-heading">
+        Case notes
+    </h1>
+
+    <table class="govuk-table" data-cy="case-notes-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Date and time</th>
+          <th scope="col" class="govuk-table__header">Details</th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">User</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        
+        {% if currentCase.caseNotes and currentCase.caseNotes.length > 0 %}
+          {% for note in currentCase.caseNotes %}
+          <tr class="govuk-table__row">
+            
+            <td class="govuk-table__cell">
+              {# Uses the clean structured strings we made in the backend #}
+              {{ note.tableDate | default("23 March 2026") }}<br>
+              {{ note.tableTime | default("9:57am") }}
+            </td>
+            
+            <td class="govuk-table__cell govuk-!-text-break-word">
+              {{ note.text }}
+            </td>
+            
+            <td class="govuk-table__cell">
+              {{ note.tableUser | default("User Account") }}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" colspan="3">No case notes found.</td>
+          </tr>
+        {% endif %}
+
+      </tbody>
+    </table>
+
+  </div>
+</div>
+{% endblock %}

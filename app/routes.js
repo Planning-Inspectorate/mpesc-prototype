@@ -8061,26 +8061,47 @@ router.post('/cases/add-case-note', function(req, res) {
   // Only save if they actually typed something!
   if (comment && comment.trim() !== "") {
     
-    // Create the caseNotes array if it doesn't exist yet
     if (!c.caseNotes) c.caseNotes = [];
 
     // Generate the specific date & time format
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-    const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    
+    // The Summary Card uses the weekday (e.g. Monday 23 March)
+    const metaDateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    
+    // The Table does NOT use the weekday (e.g. 23 March)
+    const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    
+    const userStr = "Kieran De La Kruz"; // Matches your design mock!
 
-    // Add the new note to the TOP of the list
+    // Add the new note to the TOP of the list with structured table data
     c.caseNotes.unshift({
       text: comment,
-      meta: `${timeStr} on ${dateStr} by User Account`
+      meta: `${timeStr} on ${metaDateStr} by ${userStr}`,
+      tableDate: tableDateStr,
+      tableTime: timeStr,
+      tableUser: userStr
     });
 
-    // Add a record to Case Audit Log too!
     addAuditLog(req, ref, "Case note added");
   }
 
-  // Redirect back to the case details page
   res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// ==============================================
+// VIEW ALL CASE NOTES (GET)
+// ==============================================
+router.get('/cases/all-case-notes', function(req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  if (!currentCase) return res.redirect('/');
+
+  res.render('cases/all-case-notes', {
+    currentCase: currentCase
+  });
 });
 
 

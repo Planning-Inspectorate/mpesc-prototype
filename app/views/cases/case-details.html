@@ -145,7 +145,7 @@
         </ul>
       </div>
 
-      {# 4. Case Notes Section #}
+    {# 4. Case Notes Section #}
       <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Case note actions</h2>
 
       {% set caseNotesHtml %}
@@ -171,21 +171,34 @@
           }) }}
         </form>
 
-        {# 2. Loop through and display the saved notes (if any exist) #}
+        {# 2. Loop through and display the saved notes (MAX 4) #}
         {% if currentCase.caseNotes and currentCase.caseNotes.length > 0 %}
           <div>
             <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            
             {% for note in currentCase.caseNotes %}
-              <section>
-                <p class="govuk-body govuk-!-margin-bottom-1 govuk-!-text-break-word">
-                  {{ note.text }}
-                </p>
-                <p class="govuk-hint govuk-!-margin-bottom-6">
-                  {{ note.meta }}
-                </p>
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-              </section>
+              {% if loop.index <= 4 %}
+                <section>
+                  <p class="govuk-body govuk-!-margin-bottom-1 govuk-!-text-break-word">
+                    {{ note.text }}
+                  </p>
+                  <p class="govuk-hint govuk-!-margin-bottom-6">
+                    {{ note.meta }}
+                  </p>
+                  <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                </section>
+              {% endif %}
             {% endfor %}
+
+            {# 3. Show "Show all notes" link if there are more than 4 #}
+            {% if currentCase.caseNotes.length > 4 %}
+              <p class="govuk-body govuk-!-text-align-centre">
+                <a class="govuk-link govuk-link--no-visited-state" href="/cases/all-case-notes?ref={{ currentCase.reference }}" data-cy="show-all-notes-link">
+                  Show all notes
+                </a>
+              </p>
+            {% endif %}
+
           </div>
         {% endif %}
       {% endset %}
