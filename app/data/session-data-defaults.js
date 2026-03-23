@@ -1,5 +1,291 @@
 module.exports = {
 
-  // Insert values here
+  // Default Pagination Settings
+  itemsPerPage: 25,
+  folderItemsPerPage: 25,
 
+  // --- SEED DATA: REALISTIC CASE LIST ---
+  cases: [
+    {
+      // Generated using: PUR + 100xx
+      reference: "PUR/10045",
+      externalReference: "MAN-APP-2026-001",
+      historicalReference: "HIST-9901-A",
+      caseName: "Land at 14 High Street, Manchester",
+      
+      // UPDATED: Matches exact string in your case-status radios
+      caseStatus: "In progress",
+      
+      "casework-area": "Planning, Environmental and Applications",
+      areaValue: "planning-environmental-and-applications",
+      typeValue: "purchase-notices",
+      subtypeValue: "", 
+      
+      type: "Purchase Notices",
+      subtype: "",
+      
+      // UPDATED: Matches exact string in your consent-sought autocomplete array
+      act: "Town and Country Planning Act 1990, 78", 
+      "consent-sought": "Town and Country Planning Act 1990, 78",
+      
+      // UPDATED: Matches exact string in your priority radios
+      priority: "High",
+      "inspector-band": "Band 2",
+      
+      // UPDATED: Matches exact string in your modification-status radios
+      modificationStatus: "Advertised modification 1",
+      
+      // UPDATED: Matches exact string in your authority autocomplete array
+      authorityName: "Manchester City Council",
+      
+      siteAddress: "14 High Street<br>Manchester<br>Greater Manchester<br>M1 1DZ",
+      addressLine1: "14 High Street",
+      addressLine2: "",
+      addressTown: "Manchester",
+      addressCounty: "Greater Manchester",
+      addressPostcode: "M1 1DZ",
+      siteLocation: "Grid Ref: SJ 839 983",
+      offlineDocLocation: "Filing Cabinet 4, Floor 2\nTemple Quay House",
+      relevantWebsiteLinks: "https://planning.manchester.gov.uk/portal/14-high-street",
+
+      // UPDATED: Matches exact string in your officers autocomplete array
+      caseOfficer: "Kieran De La Cruz",
+      
+      inspectors: [
+        { id: "insp-1", name: "Sarah Tudor", date: "12 February 2026", rawDay: "12", rawMonth: "2", rawYear: "2026" }
+      ],
+      
+      applicants: [
+        { id: "app-1", firstName: "Michael", lastName: "Chang", companyName: "High Street Retail Ltd", address: { line1: "1 Corporate Way", town: "London", postcode: "WC1X 8JZ", formatted: "1 Corporate Way<br>London<br>WC1X 8JZ" }, email: "m.chang@highstreetretail.co.uk", phone: "07700 900 123" },
+        { id: "app-2", firstName: "Elena", lastName: "Rostova", companyName: "High Street Retail Ltd", email: "e.rostova@highstreetretail.co.uk" },
+        { id: "app-3", firstName: "David", lastName: "Smith", companyName: "Smith & Sons Legal Reps" }
+      ],
+      objectors: [{ id: "obj-1", fname: "Local Residents Association" }, { id: "obj-2", fname: "Mr. T. Barnaby" }],
+      contacts: [{ id: "con-1", fname: "Jane Doe", org: "Manchester Planning Dept" }],
+
+      relatedCases: [{ id: "rc-1", reference: "PUR/10044" }],
+      linkedCases: [],
+
+      expectedSubmissionDate: { day: "1", month: "5", year: "2026", formatted: "1 May 2026" },
+      caseReceivedDate: { day: "15", month: "1", year: "2026", formatted: "15 January 2026" },
+      targetDecisionDate: { day: "30", month: "9", year: "2026", formatted: "30 September 2026" },
+      startDate: { day: "20", month: "1", year: "2026", formatted: "20 January 2026" },
+      objectionPeriodEndDate: { day: "28", month: "2", year: "2026", formatted: "28 February 2026" },
+      decisionNotificationDate: { day: "1", month: "9", year: "2026", formatted: "1 September 2026" },
+      decisionIssuedByDate: { day: "15", month: "10", year: "2026", formatted: "15 October 2026" },
+
+      overviewProcedures: [
+        {
+          id: "proc-1", type: "Hearing", status: "Scheduled", inspector: "Sarah Tudor", 
+          siteVisit: { day: "10", month: "4", year: "2026", formatted: "10 April 2026" }, 
+          siteVisitType: "Accompanied", 
+          cmcDate: { day: "20", month: "4", year: "2026", hour: "10", minute: "00", ampm: "am", formattedDate: "20 April 2026", formattedTime: "10:00am" }, 
+          cmcType: "Virtual", 
+          cmcVenue: { line1: "Microsoft Teams", formatted: "Microsoft Teams" }, 
+          confirmedHearing: { day: "15", month: "5", year: "2026", hour: "9", minute: "30", ampm: "am", formattedDate: "15 May 2026", formattedTime: "9:30am" }, 
+          hearingType: "In-person", 
+          hearingVenue: { line1: "Manchester Civic Centre", line2: "Committee Room 1", formatted: "Manchester Civic Centre<br>Committee Room 1" },
+          hearingPrepTime: "2", hearingTravelTime: "1", hearingSittingTime: "2", hearingReportingTime: "3"
+        },
+        {
+          id: "proc-2", type: "Site visit", status: "Completed", siteVisitType: "Access required", inspector: "Sarah Tudor", 
+          siteVisit: { day: "10", month: "2", year: "2026", formatted: "10 February 2026" }
+        }
+      ],
+
+      outcomeOverview: {},
+      outcomes: [],
+      
+      // UPDATED: Matches exact strings in your invoicing radios ("Yes", "No", "Interim invoice sent")
+      invoicing: { rechargeable: "Yes", finalCost: "1250.00", invoiceSent: "Interim invoice sent", feeReceived: "No" },
+
+      caseNotes: [
+        { text: "Hearing venue confirmed with Manchester council.", meta: "2:15pm on Thursday 19 March 2026 by Steve Waterfield", tableDate: "19 March 2026", tableTime: "2:15pm", tableUser: "Steve Waterfield" },
+        { text: "Appellant requested an extension for submitting proofs of evidence.", meta: "11:30am on Tuesday 17 March 2026 by Kieran De La Cruz", tableDate: "17 March 2026", tableTime: "11:30am", tableUser: "Kieran De La Cruz" },
+        { text: "Site visit completed. Access was granted without issue.", meta: "4:00pm on Tuesday 10 February 2026 by Sarah Tudor", tableDate: "10 February 2026", tableTime: "4:00pm", tableUser: "Sarah Tudor" },
+        { text: "Case officer assigned and initial validation passed.", meta: "9:15am on Tuesday 20 January 2026 by System", tableDate: "20 January 2026", tableTime: "9:15am", tableUser: "System" },
+        { text: "Purchase notice application received via portal.", meta: "10:00am on Thursday 15 January 2026 by System", tableDate: "15 January 2026", tableTime: "10:00am", tableUser: "System" }
+      ],
+
+      folders: [
+        { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
+          { id: "doc-1", name: "Valuation_Report.pdf", type: "PDF document", size: "2.1 MB", date: "15 Jan 2026", dateTimestamp: 1736937600, readStatus: "Read", isFlagged: false },
+          { id: "doc-1a", name: "Application_Form_Final.pdf", type: "PDF document", size: "450 KB", date: "15 Jan 2026", dateTimestamp: 1736940000, readStatus: "Read", isFlagged: false },
+          { id: "doc-1b", name: "Site_Plan_Detailed.png", type: "Image", size: "4.8 MB", date: "16 Jan 2026", dateTimestamp: 1737024000, readStatus: "Unread", isFlagged: true }
+        ]},
+        { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [
+          { id: "doc-2a", name: "Inspector_Allocation_Notice.pdf", type: "PDF document", size: "120 KB", date: "12 Feb 2026", dateTimestamp: 1739356800, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
+          { id: "f3-sub1", name: "Statements of case", slug: "statements-of-case", subfolders: [], documents: [
+            { id: "doc-3a", name: "Appellant_Statement_Of_Case.docx", type: "Word document", size: "1.4 MB", date: "05 Mar 2026", dateTimestamp: 1741171200, readStatus: "Unread", isFlagged: false },
+            { id: "doc-3b", name: "LPA_Statement_Of_Case.pdf", type: "PDF document", size: "890 KB", date: "07 Mar 2026", dateTimestamp: 1741344000, readStatus: "Unread", isFlagged: false }
+          ]},
+          { id: "f3-sub2", name: "Final comments", slug: "final-comments", subfolders: [], documents: [
+            { id: "doc-3c", name: "Appellant_Final_Comments.pdf", type: "PDF document", size: "300 KB", date: "18 Mar 2026", dateTimestamp: 1742294400, readStatus: "Unread", isFlagged: true }
+          ]}
+        ]},
+        { id: "f4", name: "Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)", slug: "proofs-of-evidence-rebuttals-and-statement-of-common-ground-if-inquiry-", subfolders: [], documents: [
+          { id: "doc-4a", name: "Proof_of_Evidence_Town_Planning.pdf", type: "PDF document", size: "3.5 MB", date: "10 Apr 2026", dateTimestamp: 1744281600, readStatus: "Unread", isFlagged: false }
+        ]},
+        { id: "f5", name: "Start Date Letters", slug: "start-date-letters", subfolders: [], documents: [] },
+        { id: "f6", name: "Events information and notifications", slug: "events-information-and-notifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Pre-inquiry meeting or Case management conference", slug: "pre-inquiry-meeting-or-case-management-conference", subfolders: [], documents: [
+            { id: "doc-6a", name: "CMC_Notes_Draft.docx", type: "Word document", size: "22 KB", date: "22 Apr 2026", dateTimestamp: 1745318400, readStatus: "Read", isFlagged: false }
+          ]},
+          { id: "f6-sub2", name: "Site Visit information (if written reps)", slug: "site-visit-information-if-written-reps-", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [
+          { id: "doc-7a", name: "Draft_Inspector_Report.docx", type: "Word document", size: "55 KB", date: "20 Mar 2026", dateTimestamp: 1742467200, readStatus: "Unread", isFlagged: true }
+        ]},
+        { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
+        { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
+        { id: "f10", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      
+      lastModified: "19 March 2026",
+      lastModifiedBy: "Steve Waterfield"
+    },
+    
+    {
+      // Generated using: COM + WCL + 100xx
+      reference: "COM/WCL/10088",
+      caseName: "Cornwall Coastal Preservation Works",
+      caseStatus: "Closed", // Allowed in caseStatus list
+      
+      "casework-area": "Rights of Way and Common Land",
+      areaValue: "rights-of-way-and-common-land",
+      typeValue: "common-land",
+      subtypeValue: "works-on-common-land",
+      
+      type: "Common Land",
+      subtype: "Works on Common Land",
+      act: "Commons Act 2006, 38",
+      "consent-sought": "Commons Act 2006, 38", // Must match consent autocomplete
+      priority: "Medium", // Allowed in priority list
+      "inspector-band": "Band 1",
+      
+      authorityName: "Cornwall Council", // Matches validAuthorities
+      siteAddress: "Cornwall Coast<br>Cornwall",
+      
+      caseOfficer: "Steve Waterfield", // Matches officers list
+      inspectors: [{ id: "insp-1", name: "Alex Hudd", date: "5 November 2025", rawDay: "5", rawMonth: "11", rawYear: "2025" }],
+      applicants: [{ id: "app-1", firstName: "David", lastName: "Attenborough", companyName: "National Trust" }],
+      objectors: [], contacts: [], relatedCases: [], linkedCases: [],
+      
+      caseReceivedDate: { day: "1", month: "10", year: "2025", formatted: "1 October 2025" },
+      targetDecisionDate: { day: "10", month: "12", year: "2025", formatted: "10 December 2025" },
+      startDate: { day: "5", month: "10", year: "2025", formatted: "5 October 2025" },
+
+      overviewProcedures: [
+        {
+          id: "proc-1", type: "Written representations", status: "Completed", inspector: "Alex Hudd", 
+          siteVisit: { day: "20", month: "11", year: "2025", formatted: "20 November 2025" }, 
+          siteVisitType: "Unaccompanied",
+          writtenRepsDate: { day: "1", month: "11", year: "2025", formatted: "1 November 2025" }
+        }
+      ],
+
+      outcomeOverview: {
+        partiesNotifiedDate: { day: "12", month: "12", year: "2025", formatted: "12 December 2025" },
+        orderDispatchDate: { day: "13", month: "12", year: "2025", formatted: "13 December 2025" },
+        decisionPublishedDate: { day: "15", month: "12", year: "2025", formatted: "15 December 2025" }
+      },
+      outcomes: [
+        { id: "out-1", type: "Decision", originator: "Inspector", inspectorName: "Alex Hudd", decisionOutcome: "Allowed", decisionOutcomeDetails: "Consent granted with standard conditions", outcomeDate: { day: "10", month: "12", year: "2025", formatted: "10 December 2025" } }
+      ],
+
+      invoicing: { rechargeable: "No" }, // Matches radio
+
+      caseNotes: [
+        { text: "Case closed and archived.", meta: "9:00am on Monday 15 December 2025 by Steve Waterfield", tableDate: "15 December 2025", tableTime: "9:00am", tableUser: "Steve Waterfield" },
+        { text: "Decision issued to all parties.", meta: "3:30pm on Friday 12 December 2025 by System", tableDate: "12 December 2025", tableTime: "3:30pm", tableUser: "System" }
+      ],
+
+      folders: [
+        { id: "f1", name: "Application documents", slug: "application-documents", subfolders: [], documents: [
+          { id: "doc-cl-1", name: "Section_38_Application_Form.pdf", type: "PDF document", size: "650 KB", date: "01 Oct 2025", dateTimestamp: 1727740800, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-2", name: "Environmental_Impact_Assessment.pdf", type: "PDF document", size: "8.4 MB", date: "01 Oct 2025", dateTimestamp: 1727741800, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-3", name: "Proposed_Works_Diagram.jpg", type: "Image", size: "3.1 MB", date: "01 Oct 2025", dateTimestamp: 1727742800, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f2", name: "Public representations", slug: "public-representations", subfolders: [], documents: [
+          { id: "doc-cl-4", name: "Representation_001_Smith.pdf", type: "PDF document", size: "110 KB", date: "20 Oct 2025", dateTimestamp: 1729382400, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-5", name: "Representation_002_Ramblers.pdf", type: "PDF document", size: "225 KB", date: "25 Oct 2025", dateTimestamp: 1729814400, readStatus: "Unread", isFlagged: true }
+        ]},
+        { id: "f3", name: "Applicant response to representations", slug: "applicant-response-to-representations", subfolders: [], documents: [
+          { id: "doc-cl-6", name: "Applicant_Response_to_Ramblers.docx", type: "Word document", size: "45 KB", date: "02 Nov 2025", dateTimestamp: 1730505600, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f4", name: "Correspondence with applicant, representations parties, other parties, registration authority & internal/inspector", slug: "correspondence-with-applicant-representations-parties-other-parties-registration-authority-internal-inspector", subfolders: [], documents: [
+          { id: "doc-cl-7", name: "Email_to_Registration_Authority.pdf", type: "PDF document", size: "80 KB", date: "15 Nov 2025", dateTimestamp: 1731628800, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f5", name: "Hearing documents", slug: "hearing-documents", subfolders: [], documents: [] },
+        { id: "f6", name: "Decision", slug: "decision", subfolders: [], documents: [
+          { id: "doc-2", name: "Final_Decision_COM_10088.pdf", type: "PDF document", size: "450 KB", date: "10 Dec 2025", dateTimestamp: 1733788800, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-8", name: "Sealed_Order_Copy.pdf", type: "PDF document", size: "1.1 MB", date: "12 Dec 2025", dateTimestamp: 1733961600, readStatus: "Read", isFlagged: false }
+        ]},
+        { id: "f7", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+      
+      lastModified: "15 December 2025",
+      lastModifiedBy: "Steve Waterfield"
+    },
+
+    {
+      // Generated using: CPO + HOU + 100xx
+      reference: "CPO/HOU/10012",
+      caseName: "Bristol City Centre Housing CPO",
+      caseStatus: "New case", // Matches status radio list
+      
+      "casework-area": "Planning, Environmental and Applications",
+      areaValue: "planning-environmental-and-applications",
+      typeValue: "housing-and-planning-cpos",
+      subtypeValue: "housing",
+      
+      type: "Housing and Planning CPOs",
+      subtype: "Housing",
+      
+      authorityName: "Bristol City Council", // Matches validAuthorities
+      caseOfficer: "Edward Mitchell", // Matches officers list
+      
+      applicants: [{ id: "app-1", firstName: "Sarah", lastName: "Connor", companyName: "Bristol City Council" }],
+      inspectors: [], objectors: [], contacts: [], relatedCases: [], linkedCases: [],
+      
+      caseReceivedDate: { day: "23", month: "3", year: "2026", formatted: "23 March 2026" },
+      overviewProcedures: [],
+      outcomeOverview: {},
+      outcomes: [],
+      invoicing: {},
+      
+      caseNotes: [
+        { text: "New CPO application submitted. Validation required.", meta: "9:05am on Monday 23 March 2026 by System", tableDate: "23 March 2026", tableTime: "9:05am", tableUser: "System" }
+      ],
+
+      folders: [
+        { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
+          { id: "doc-3", name: "Draft_CPO_Order.docx", type: "Word document", size: "1.2 MB", date: "23 Mar 2026", dateTimestamp: 1742720400, readStatus: "Unread", isFlagged: false },
+          { id: "doc-cpo-1", name: "Statement_of_Reasons.pdf", type: "PDF document", size: "3.4 MB", date: "23 Mar 2026", dateTimestamp: 1742721400, readStatus: "Unread", isFlagged: true }
+        ]},
+        { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
+        { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
+          { id: "f3-sub1", name: "Statements of case", slug: "statements-of-case", subfolders: [], documents: [] },
+          { id: "f3-sub2", name: "Final comments", slug: "final-comments", subfolders: [], documents: [] }
+        ]},
+        { id: "f4", name: "Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)", slug: "proofs-of-evidence-rebuttals-and-statement-of-common-ground-if-inquiry-", subfolders: [], documents: [] },
+        { id: "f5", name: "Start Date Letters", slug: "start-date-letters", subfolders: [], documents: [] },
+        { id: "f6", name: "Events information and notifications", slug: "events-information-and-notifications", documents: [], subfolders: [
+          { id: "f6-sub1", name: "Pre-inquiry meeting or Case management conference", slug: "pre-inquiry-meeting-or-case-management-conference", subfolders: [], documents: [] },
+          { id: "f6-sub2", name: "Site Visit information (if written reps)", slug: "site-visit-information-if-written-reps-", subfolders: [], documents: [] },
+          { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
+        ]},
+        { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [] },
+        { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
+        { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
+        { id: "f10", name: "Other", slug: "other", subfolders: [], documents: [] }
+      ],
+
+      lastModified: "23 March 2026",
+      lastModifiedBy: "System"
+    }
+  ]
 }
