@@ -23,6 +23,7 @@
 
     <form action="/cases/outcomes/remove?ref={{ ref }}&id={{ id }}" method="post" novalidate>
       {{ govukRadios({
+        classes: "govuk-radios--inline",
         name: "confirmRemove",
         fieldset: {
           legend: { text: "Are you sure you want to remove this outcome?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }

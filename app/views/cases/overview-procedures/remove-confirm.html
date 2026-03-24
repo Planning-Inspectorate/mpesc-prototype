@@ -21,6 +21,7 @@
 
     <form action="/cases/overview-procedures/remove?ref={{ ref }}&id={{ id }}" method="post">
       {{ govukRadios({
+        classes: "govuk-radios--inline",
         name: "confirmRemove",
         fieldset: {
           legend: { text: "Are you sure you want to remove this procedure?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
