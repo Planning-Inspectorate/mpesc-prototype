@@ -8583,15 +8583,35 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/generate-dummy', fu
   if (!activeFolder.documents) activeFolder.documents = [];
 
   var fileTypes = ["PDF", "DOCX", "XLSX", "JPG", "PNG"];
+  
+  // Use the EXACT same array of names from your upload logic!
+  var randomNames = [
+    "Site-inspection-report",
+    "Appellant-costs-application",
+    "LPA-questionnaire-response",
+    "Interested-party-comments",
+    "Hearing-attendance-sheet",
+    "Decision-draft-v2",
+    "Ecological-survey-results",
+    "Transport-assessment-summary",
+    "Planning-obligation-draft",
+    "Officer-delegated-report"
+  ];
 
   for (let i = 1; i <= 65; i++) {
     var type = fileTypes[Math.floor(Math.random() * fileTypes.length)];
+    
+    // Grab a random name and append a random 4 digit suffix, joined by HYPHENS
+    var randomBaseName = randomNames[Math.floor(Math.random() * randomNames.length)];
+    var randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    var generatedName = `${randomBaseName}-${randomSuffix}.${type.toLowerCase()}`;
+    
     var randomSizeNum = Math.floor(Math.random() * 5000) + 50; 
     var sizeLabel = randomSizeNum > 1000 ? (randomSizeNum / 1000).toFixed(1) + "MB" : randomSizeNum + "KB";
 
     activeFolder.documents.push({
       id: 'dummy-doc-' + Date.now() + '-' + i,
-      name: `Generated Test File ${i}.${type.toLowerCase()}`,
+      name: generatedName, // Use our newly generated hyphenated name
       type: type,
       sizeNum: randomSizeNum,
       size: sizeLabel,

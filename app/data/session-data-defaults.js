@@ -96,35 +96,35 @@ module.exports = {
 
       folders: [
         { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
-          { id: "doc-1", name: "Valuation_Report.pdf", type: "PDF document", size: "2.1 MB", date: "15 Jan 2026", dateTimestamp: 1736937600, readStatus: "Read", isFlagged: false },
-          { id: "doc-1a", name: "Application_Form_Final.pdf", type: "PDF document", size: "450 KB", date: "15 Jan 2026", dateTimestamp: 1736940000, readStatus: "Read", isFlagged: false },
-          { id: "doc-1b", name: "Site_Plan_Detailed.png", type: "Image", size: "4.8 MB", date: "16 Jan 2026", dateTimestamp: 1737024000, readStatus: "Unread", isFlagged: true }
+          { id: "doc-1", name: "Valuation-Report.pdf", type: "PDF", size: "2.1 MB", date: "15 Jan 2026", dateTimestamp: 1736937600, readStatus: "Read", isFlagged: false },
+          { id: "doc-1a", name: "Application-Form-Final.pdf", type: "PDF", size: "450 KB", date: "15 Jan 2026", dateTimestamp: 1736940000, readStatus: "Read", isFlagged: false },
+          { id: "doc-1b", name: "Site-Plan-Detailed.png", type: "PNG", size: "4.8 MB", date: "16 Jan 2026", dateTimestamp: 1737024000, readStatus: "Unread", isFlagged: true }
         ]},
         { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [
-          { id: "doc-2a", name: "Inspector_Allocation_Notice.pdf", type: "PDF document", size: "120 KB", date: "12 Feb 2026", dateTimestamp: 1739356800, readStatus: "Read", isFlagged: false }
+          { id: "doc-2a", name: "Inspector-Allocation-Notice.pdf", type: "PDF", size: "120 KB", date: "12 Feb 2026", dateTimestamp: 1739356800, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
           { id: "f3-sub1", name: "Statements of case", slug: "statements-of-case", subfolders: [], documents: [
-            { id: "doc-3a", name: "Appellant_Statement_Of_Case.docx", type: "Word document", size: "1.4 MB", date: "05 Mar 2026", dateTimestamp: 1741171200, readStatus: "Unread", isFlagged: false },
-            { id: "doc-3b", name: "LPA_Statement_Of_Case.pdf", type: "PDF document", size: "890 KB", date: "07 Mar 2026", dateTimestamp: 1741344000, readStatus: "Unread", isFlagged: false }
+            { id: "doc-3a", name: "Appellant-Statement-Of-Case.docx", type: "DOCX", size: "1.4 MB", date: "05 Mar 2026", dateTimestamp: 1741171200, readStatus: "Unread", isFlagged: false },
+            { id: "doc-3b", name: "LPA-Statement-Of-Case.pdf", type: "PDF", size: "890 KB", date: "07 Mar 2026", dateTimestamp: 1741344000, readStatus: "Unread", isFlagged: false }
           ]},
           { id: "f3-sub2", name: "Final comments", slug: "final-comments", subfolders: [], documents: [
-            { id: "doc-3c", name: "Appellant_Final_Comments.pdf", type: "PDF document", size: "300 KB", date: "18 Mar 2026", dateTimestamp: 1742294400, readStatus: "Unread", isFlagged: true }
+            { id: "doc-3c", name: "Appellant-Final-Comments.pdf", type: "PDF", size: "300 KB", date: "18 Mar 2026", dateTimestamp: 1742294400, readStatus: "Unread", isFlagged: true }
           ]}
         ]},
         { id: "f4", name: "Proofs of evidence, Rebuttals and Statement of Common Ground (if inquiry)", slug: "proofs-of-evidence-rebuttals-and-statement-of-common-ground-if-inquiry-", subfolders: [], documents: [
-          { id: "doc-4a", name: "Proof_of_Evidence_Town_Planning.pdf", type: "PDF document", size: "3.5 MB", date: "10 Apr 2026", dateTimestamp: 1744281600, readStatus: "Unread", isFlagged: false }
+          { id: "doc-4a", name: "Proof-of-Evidence-Town-Planning.pdf", type: "PDF", size: "3.5 MB", date: "10 Apr 2026", dateTimestamp: 1744281600, readStatus: "Unread", isFlagged: false }
         ]},
         { id: "f5", name: "Start Date Letters", slug: "start-date-letters", subfolders: [], documents: [] },
         { id: "f6", name: "Events information and notifications", slug: "events-information-and-notifications", documents: [], subfolders: [
           { id: "f6-sub1", name: "Pre-inquiry meeting or Case management conference", slug: "pre-inquiry-meeting-or-case-management-conference", subfolders: [], documents: [
-            { id: "doc-6a", name: "CMC_Notes_Draft.docx", type: "Word document", size: "22 KB", date: "22 Apr 2026", dateTimestamp: 1745318400, readStatus: "Read", isFlagged: false }
+            { id: "doc-6a", name: "CMC-Notes-Draft.docx", type: "DOCX", size: "22 KB", date: "22 Apr 2026", dateTimestamp: 1745318400, readStatus: "Read", isFlagged: false }
           ]},
           { id: "f6-sub2", name: "Site Visit information (if written reps)", slug: "site-visit-information-if-written-reps-", subfolders: [], documents: [] },
           { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
         ]},
         { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [
-          { id: "doc-7a", name: "Draft_Inspector_Report.docx", type: "Word document", size: "55 KB", date: "20 Mar 2026", dateTimestamp: 1742467200, readStatus: "Unread", isFlagged: true }
+          { id: "doc-7a", name: "Draft-Inspector-Report.docx", type: "DOCX", size: "55 KB", date: "20 Mar 2026", dateTimestamp: 1742467200, readStatus: "Unread", isFlagged: true }
         ]},
         { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
         { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
@@ -140,7 +140,7 @@ module.exports = {
       reference: "COM/WCL/10088",
       caseName: "Cornwall Coastal Preservation Works (Generated)",
       caseStatus: "Closed", 
-      caseClosedDate: "15 December 2025 at 9:00am", // ADDED
+      caseClosedDate: "15 December 2025 at 9:00am", 
       
       "casework-area": "Rights of Way and Common Land",
       areaValue: "rights-of-way-and-common-land",
@@ -193,24 +193,24 @@ module.exports = {
 
       folders: [
         { id: "f1", name: "Application documents", slug: "application-documents", subfolders: [], documents: [
-          { id: "doc-cl-1", name: "Section_38_Application_Form.pdf", type: "PDF document", size: "650 KB", date: "01 Oct 2025", dateTimestamp: 1727740800, readStatus: "Read", isFlagged: false },
-          { id: "doc-cl-2", name: "Environmental_Impact_Assessment.pdf", type: "PDF document", size: "8.4 MB", date: "01 Oct 2025", dateTimestamp: 1727741800, readStatus: "Read", isFlagged: false },
-          { id: "doc-cl-3", name: "Proposed_Works_Diagram.jpg", type: "Image", size: "3.1 MB", date: "01 Oct 2025", dateTimestamp: 1727742800, readStatus: "Read", isFlagged: false }
+          { id: "doc-cl-1", name: "Section-38-Application-Form.pdf", type: "PDF", size: "650 KB", date: "01 Oct 2025", dateTimestamp: 1727740800, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-2", name: "Environmental-Impact-Assessment.pdf", type: "PDF", size: "8.4 MB", date: "01 Oct 2025", dateTimestamp: 1727741800, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-3", name: "Proposed-Works-Diagram.jpg", type: "JPG", size: "3.1 MB", date: "01 Oct 2025", dateTimestamp: 1727742800, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f2", name: "Public representations", slug: "public-representations", subfolders: [], documents: [
-          { id: "doc-cl-4", name: "Representation_001_Smith.pdf", type: "PDF document", size: "110 KB", date: "20 Oct 2025", dateTimestamp: 1729382400, readStatus: "Read", isFlagged: false },
-          { id: "doc-cl-5", name: "Representation_002_Ramblers.pdf", type: "PDF document", size: "225 KB", date: "25 Oct 2025", dateTimestamp: 1729814400, readStatus: "Unread", isFlagged: true }
+          { id: "doc-cl-4", name: "Representation-001-Smith.pdf", type: "PDF", size: "110 KB", date: "20 Oct 2025", dateTimestamp: 1729382400, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-5", name: "Representation-002-Ramblers.pdf", type: "PDF", size: "225 KB", date: "25 Oct 2025", dateTimestamp: 1729814400, readStatus: "Unread", isFlagged: true }
         ]},
         { id: "f3", name: "Applicant response to representations", slug: "applicant-response-to-representations", subfolders: [], documents: [
-          { id: "doc-cl-6", name: "Applicant_Response_to_Ramblers.docx", type: "Word document", size: "45 KB", date: "02 Nov 2025", dateTimestamp: 1730505600, readStatus: "Read", isFlagged: false }
+          { id: "doc-cl-6", name: "Applicant-Response-to-Ramblers.docx", type: "DOCX", size: "45 KB", date: "02 Nov 2025", dateTimestamp: 1730505600, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f4", name: "Correspondence with applicant, representations parties, other parties, registration authority & internal/inspector", slug: "correspondence-with-applicant-representations-parties-other-parties-registration-authority-internal-inspector", subfolders: [], documents: [
-          { id: "doc-cl-7", name: "Email_to_Registration_Authority.pdf", type: "PDF document", size: "80 KB", date: "15 Nov 2025", dateTimestamp: 1731628800, readStatus: "Read", isFlagged: false }
+          { id: "doc-cl-7", name: "Email-to-Registration-Authority.pdf", type: "PDF", size: "80 KB", date: "15 Nov 2025", dateTimestamp: 1731628800, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f5", name: "Hearing documents", slug: "hearing-documents", subfolders: [], documents: [] },
         { id: "f6", name: "Decision", slug: "decision", subfolders: [], documents: [
-          { id: "doc-2", name: "Final_Decision_COM_10088.pdf", type: "PDF document", size: "450 KB", date: "10 Dec 2025", dateTimestamp: 1733788800, readStatus: "Read", isFlagged: false },
-          { id: "doc-cl-8", name: "Sealed_Order_Copy.pdf", type: "PDF document", size: "1.1 MB", date: "12 Dec 2025", dateTimestamp: 1733961600, readStatus: "Read", isFlagged: false }
+          { id: "doc-2", name: "Final-Decision-COM-10088.pdf", type: "PDF", size: "450 KB", date: "10 Dec 2025", dateTimestamp: 1733788800, readStatus: "Read", isFlagged: false },
+          { id: "doc-cl-8", name: "Sealed-Order-Copy.pdf", type: "PDF", size: "1.1 MB", date: "12 Dec 2025", dateTimestamp: 1733961600, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f7", name: "Other", slug: "other", subfolders: [], documents: [] }
       ],
@@ -251,8 +251,8 @@ module.exports = {
 
       folders: [
         { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
-          { id: "doc-3", name: "Draft_CPO_Order.docx", type: "Word document", size: "1.2 MB", date: "23 Mar 2026", dateTimestamp: 1742720400, readStatus: "Unread", isFlagged: false },
-          { id: "doc-cpo-1", name: "Statement_of_Reasons.pdf", type: "PDF document", size: "3.4 MB", date: "23 Mar 2026", dateTimestamp: 1742721400, readStatus: "Unread", isFlagged: true }
+          { id: "doc-3", name: "Draft-CPO-Order.docx", type: "DOCX", size: "1.2 MB", date: "23 Mar 2026", dateTimestamp: 1742720400, readStatus: "Unread", isFlagged: false },
+          { id: "doc-cpo-1", name: "Statement-of-Reasons.pdf", type: "PDF", size: "3.4 MB", date: "23 Mar 2026", dateTimestamp: 1742721400, readStatus: "Unread", isFlagged: true }
         ]},
         { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
         { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
@@ -308,7 +308,7 @@ module.exports = {
       
       folders: [
         { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
-          { id: "doc-w1", name: "Route_Proposal.pdf", type: "PDF document", size: "12 MB", date: "01 Apr 2026", dateTimestamp: 1743465600, readStatus: "Read", isFlagged: false }
+          { id: "doc-w1", name: "Route-Proposal.pdf", type: "PDF", size: "12 MB", date: "01 Apr 2026", dateTimestamp: 1743465600, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
         { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
@@ -357,7 +357,7 @@ module.exports = {
         { id: "f1", name: "Letters", slug: "letters", subfolders: [], documents: [] },
         { id: "f2", name: "Internal correspondence", slug: "internal-correspondence", subfolders: [], documents: [] },
         { id: "f3", name: "Submissions", slug: "submissions", subfolders: [], documents: [
-          { id: "doc-ca1", name: "Objection_Form_Final.pdf", type: "PDF document", size: "1.2 MB", date: "14 Apr 2026", dateTimestamp: 1744588800, readStatus: "Read", isFlagged: false }
+          { id: "doc-ca1", name: "Objection-Form-Final.pdf", type: "PDF", size: "1.2 MB", date: "14 Apr 2026", dateTimestamp: 1744588800, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f4", name: "Notices and order documents", slug: "notices-and-order-documents", subfolders: [], documents: [] },
         { id: "f5", name: "Decision", slug: "decision", subfolders: [], documents: [] },
@@ -375,7 +375,7 @@ module.exports = {
       reference: "SOS/ENV/10053",
       caseName: "Greenfield Farm DEFRA CPO (Generated)",
       caseStatus: "Closed",
-      caseClosedDate: "16 March 2026 at 4:45pm", // ADDED
+      caseClosedDate: "16 March 2026 at 4:45pm", 
       
       "casework-area": "Planning, Environmental and Applications",
       areaValue: "planning-environmental-and-applications",
@@ -417,7 +417,7 @@ module.exports = {
           { id: "f6-sub3", name: "Inquiry notice", slug: "inquiry-notice", subfolders: [], documents: [] }
         ]},
         { id: "f7", name: "Decision / report", slug: "decision-report", subfolders: [], documents: [
-          { id: "doc-def1", name: "Final_Decision_Notice.pdf", type: "PDF document", size: "2.4 MB", date: "15 Mar 2026", dateTimestamp: 1742083200, readStatus: "Read", isFlagged: false }
+          { id: "doc-def1", name: "Final-Decision-Notice.pdf", type: "PDF", size: "2.4 MB", date: "15 Mar 2026", dateTimestamp: 1742083200, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f8", name: "Invoice", slug: "invoice", subfolders: [], documents: [] },
         { id: "f9", name: "Costs", slug: "costs", subfolders: [], documents: [] },
@@ -445,7 +445,7 @@ module.exports = {
       
       folders: [
         { id: "f1", name: "Initial documentation", slug: "initial-documentation", subfolders: [], documents: [
-          { id: "doc-ad1", name: "Application_Form.pdf", type: "PDF document", size: "1.1 MB", date: "01 May 2026", dateTimestamp: 1746057600, readStatus: "Unread", isFlagged: false }
+          { id: "doc-ad1", name: "Application-Form.pdf", type: "PDF", size: "1.1 MB", date: "01 May 2026", dateTimestamp: 1746057600, readStatus: "Unread", isFlagged: false }
         ]},
         { id: "f2", name: "Procedure", slug: "procedure", subfolders: [], documents: [] },
         { id: "f3", name: "Statements of case / final comments", slug: "statements-of-case-final-comments", documents: [], subfolders: [
@@ -493,7 +493,7 @@ module.exports = {
       // ROW FOLDERS
       folders: [
         { id: "f1", name: "Letters", slug: "letters", subfolders: [], documents: [
-          { id: "doc-rw1", name: "Questionnaire_Request.pdf", type: "PDF document", size: "150 KB", date: "13 Apr 2026", dateTimestamp: 1744502400, readStatus: "Read", isFlagged: false }
+          { id: "doc-rw1", name: "Questionnaire-Request.pdf", type: "PDF", size: "150 KB", date: "13 Apr 2026", dateTimestamp: 1744502400, readStatus: "Read", isFlagged: false }
         ]},
         { id: "f2", name: "Internal correspondence", slug: "internal-correspondence", subfolders: [], documents: [] },
         { id: "f3", name: "Submissions", slug: "submissions", subfolders: [], documents: [] },
