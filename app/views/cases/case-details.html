@@ -1146,6 +1146,10 @@
         value: { text: currentCase.lastModifiedBy if currentCase.lastModifiedBy else "N/A" }
       },
       { 
+        key: { text: "Case closed date" }, 
+        value: { text: currentCase.caseClosedDate if currentCase.caseClosedDate else "-" }
+      },
+      { 
         key: { text: "Case history" }, 
         actions: { items: [{ href: "/cases/edit/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
       }

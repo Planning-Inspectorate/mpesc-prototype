@@ -140,6 +140,7 @@ module.exports = {
       reference: "COM/WCL/10088",
       caseName: "Cornwall Coastal Preservation Works (Generated)",
       caseStatus: "Closed", 
+      caseClosedDate: "15 December 2025 at 9:00am", // ADDED
       
       "casework-area": "Rights of Way and Common Land",
       areaValue: "rights-of-way-and-common-land",
@@ -374,6 +375,8 @@ module.exports = {
       reference: "SOS/ENV/10053",
       caseName: "Greenfield Farm DEFRA CPO (Generated)",
       caseStatus: "Closed",
+      caseClosedDate: "16 March 2026 at 4:45pm", // ADDED
+      
       "casework-area": "Planning, Environmental and Applications",
       areaValue: "planning-environmental-and-applications",
       typeValue: "other-secretary-of-state-casework",

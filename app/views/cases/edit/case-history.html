@@ -36,9 +36,16 @@
       <table class="govuk-table" data-cy="case-history-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Date and time</th>
+            
+            {# 1. Date column: locked width with a 60px gap on the right #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 60px;">Date and time</th>
+            
+            {# 2. Details column stretches to fill the middle #}
             <th scope="col" class="govuk-table__header">Details</th>
-            <th scope="col" class="govuk-table__header">User</th>
+            
+            {# 3. User column: locked width, 50px gap on the left, 20px gap on the right #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-left: 50px; padding-right: 120px;">User</th>
+            
           </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -48,9 +55,14 @@
             {# Loop through the dynamic log #}
             {% for log in currentCase.auditLog %}
               <tr class="govuk-table__row">
-                <td class="govuk-table__cell" data-cy="history-date-{{ loop.index0 }}">{{ log.date | safe }}</td>
+                
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 60px;" data-cy="history-date-{{ loop.index0 }}">{{ log.date | safe }}</td>
+                
                 <td class="govuk-table__cell" data-cy="history-details-{{ loop.index0 }}">{{ log.details }}</td>
-                <td class="govuk-table__cell" data-cy="history-user-{{ loop.index0 }}">{{ log.user }}</td>
+                
+                {# Apply the matching padding to the user cells #}
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-left: 50px; padding-right: 20px;" data-cy="history-user-{{ loop.index0 }}">{{ log.user }}</td>
+                
               </tr>
             {% endfor %}
 

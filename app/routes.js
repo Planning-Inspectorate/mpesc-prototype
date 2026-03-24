@@ -1119,12 +1119,6 @@ addAuditLog(req, ref, "Historical reference updated to '" + c.historicalReferenc
 });
 
 // --- 8. CASE STATUS (12 Radios + Remove logic) ---
-router.get('/cases/edit/case-status', function(req, res) {
-  var c = getCase(req);
-  var val = c.caseStatus || c['case-status'];
-  res.render('cases/edit/case-status', { ref: c.reference, value: val });
-});
-
 router.post('/cases/edit/case-status', function(req, res) {
   var ref = req.query.ref;
   var action = req.body.action; // Check if "Remove" was clicked
@@ -1135,10 +1129,10 @@ router.post('/cases/edit/case-status', function(req, res) {
   if (action === 'remove') {
     delete c.caseStatus;
     delete c['case-status'];
+    delete c.caseClosedDate; // Clear the closed date if status is removed
 
     req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Case status removed");
+    addAuditLog(req, ref, "Case status removed");
 
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
   }
@@ -1152,13 +1146,25 @@ addAuditLog(req, ref, "Case status removed");
     });
   }
 
-  // 3. Save
+  // 3. Save Normal Status
   c.caseStatus = val;
   delete c['case-status'];
 
-  req.session.flashSection = "case-details"; 
+  // --- 4. NEW LOGIC: SAVE CASE CLOSED DATE ---
+  if (val === 'Closed' || val === 'Closed - opened in error') {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+    
+    // Save it looking exactly like your audit log (e.g. "24 March 2026 at 10:30am")
+    c.caseClosedDate = `${dateStr} at ${timeStr}`;
+  } else {
+    // If the case is reopened to "In progress" or anything else, wipe the closed date!
+    delete c.caseClosedDate;
+  }
 
-addAuditLog(req, ref, "Case status updated to '" + val + "'");
+  req.session.flashSection = "case-details"; 
+  addAuditLog(req, ref, "Case status updated to '" + val + "'");
 
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
