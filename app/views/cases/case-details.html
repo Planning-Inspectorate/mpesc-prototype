@@ -736,7 +736,7 @@
             value: { text: (currentCase.objectors.length + " Objector(s)") if (currentCase.objectors and currentCase.objectors.length > 0) else "-" },
             actions: { items: [{ 
               href: "/cases/key-contacts/objectors?ref=" + currentCase.reference if currentCase.objectors.length > 0 else "/cases/key-contacts/objectors/first?ref=" + currentCase.reference,
-              text: "View/edit", 
+              text: "Change" if currentCase.objectors.length else "Add", 
               visuallyHiddenText: "objectors" 
             }] }
           },
@@ -745,7 +745,7 @@
             value: { text: (currentCase.contacts.length + " Contact(s)") if (currentCase.contacts and currentCase.contacts.length > 0) else "-" },
             actions: { items: [{ 
               href: "/cases/key-contacts/contacts?ref=" + currentCase.reference if currentCase.contacts.length > 0 else "/cases/key-contacts/contacts/first?ref=" + currentCase.reference,
-              text: "View/edit", 
+              text: "Change" if currentCase.contacts.length else "Add", 
               visuallyHiddenText: "contacts" 
             }] }
           }
