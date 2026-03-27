@@ -17,9 +17,9 @@
         },
         errorMessage: { text: errorList[0].text } if errorList.length > 0 else null,
         items: [
-          { value: "Active", text: "Active", checked: (status == "Active") },
+          { value: "Admissible", text: "Admissible", checked: (status == "Admissible") },
+          { value: "Upheld", text: "Upheld", checked: (status == "Upheld") },
           { value: "Withdrawn", text: "Withdrawn", checked: (status == "Withdrawn") },
-          { value: "Resolved", text: "Resolved", checked: (status == "Resolved") },
           { divider: "or" },
           { value: "Not applicable", text: "Not applicable", checked: (status == "Not applicable") }
         ]
