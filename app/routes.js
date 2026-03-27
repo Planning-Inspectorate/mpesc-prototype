@@ -8080,6 +8080,12 @@ router.get('/cases/clear-filters', function (req, res) {
   res.redirect('/cases-filter');
 });
 
+// --- CLEAR ONLY THE SEARCH BAR ---
+router.get('/cases/clear-search', function (req, res) {
+  req.session.data['searchCriteria'] = "";
+  res.redirect('/cases-filter');
+});
+
 // --- SECRET ROUTE: GENERATE 130 MIXED DUMMY CASES ---
 router.get('/cases/generate-dummy', function (req, res) {
   if (!req.session.data['cases']) {
