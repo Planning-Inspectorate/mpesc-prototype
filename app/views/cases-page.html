@@ -497,11 +497,14 @@
     <tbody class="govuk-table__body">
       {% for c in cases %}
         <tr class="govuk-table__row">
-          <td class="govuk-table__cell">
+          
+          {# ADDED: word-break properties to force long references to wrap on small screens #}
+          <td class="govuk-table__cell" style="word-wrap: break-word; word-break: break-all;">
             <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
               {{ c.reference }}
             </a>
           </td>
+          
           <td class="govuk-table__cell">{{ c.subtype or c.type }}</td>
           <td class="govuk-table__cell">{{ c.caseName }}</td>
           <td class="govuk-table__cell">{{ c.caseStatus if c.caseStatus else "" }}</td>

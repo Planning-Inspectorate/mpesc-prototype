@@ -373,20 +373,19 @@
             <thead class="govuk-table__head">
               <tr class="govuk-table__row">
                 
-                {# Restored Select All Checkbox back inside the Table Header #}
-                <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 12%;">
+                {# 1. Min-width acts as a shield, ensuring the "All" checkbox never gets squished #}
+                <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 10%; min-width: 75px;">
                   <div class="govuk-checkboxes__item govuk-checkboxes--small" style="margin-bottom: 0;">
                     <input type="checkbox" class="govuk-checkboxes__input" id="checkboxes-all" name="checkboxes-all" value="all">
                     <label class="govuk-label govuk-checkboxes__label govuk-!-font-weight-bold" for="checkboxes-all">All</label>
                   </div>
                 </th>
                 
-                {# Explicit column percentages adding up to 100% exactly (12+43+15+15+15) #}
-                <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 43%;" aria-sort="none"><button type="button" data-index="1">File name</button></th>
+                {# 2. Natural widths for the rest of the headers #}
+                <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 40%;" aria-sort="none"><button type="button" data-index="1">File name</button></th>
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;" aria-sort="descending"><button type="button" data-index="2">Uploaded</button></th>
-                
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;">Status</th>
-                <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;">Actions</th>
+                <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 20%;">Actions</th>
               </tr>
             </thead>
             <tbody class="govuk-table__body">
@@ -400,11 +399,12 @@
                   </div>
                 </td>
                 
-                <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}" style="vertical-align: top; padding-top: 15px; padding-bottom: 15px;">
+                {# 3. Smart wrapping: ONLY wraps if the screen is too small to fit the unbroken word #}
+                <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}" style="vertical-align: top; padding-top: 15px; padding-bottom: 15px; word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word;">
                   
                   {# Conditional logic for file linking (pdf/img = link) #}
                   {% set fileExt = doc.type | lower %}
-                  {% if fileExt in ['pdf', 'jpg', 'jpeg', 'png', 'gif'] %}
+                  {% if ('pdf' in fileExt) or ('image' in fileExt) or ('jpg' in fileExt) or ('png' in fileExt) %}
                     <a class="govuk-link govuk-!-font-weight-bold" href="#" target="_blank">{{ doc.name }}</a>
                   {% else %}
                     <span class="govuk-!-font-weight-bold" style="color: #0b0c0c;">{{ doc.name }}</span>
