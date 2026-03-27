@@ -8089,11 +8089,13 @@ router.get('/cases/generate-dummy', function (req, res) {
   // 1. Generate 65 Planning, Environmental and Applications Cases
   for (let i = 1; i <= 65; i++) {
     req.session.data['cases'].push({
-      reference: "PLAN/2026/" + i.toString().padStart(4, '0'),
+      reference: "DRO/PER/" + i.toString().padStart(4, '0'),
       caseName: "Planning Dummy Case " + i,
       areaValue: "planning-environmental-and-applications",
       typeValue: "drought",
       subtypeValue: "drought-permits",
+      type: "Drought",
+      subtype: "Drought Permits",
       caseStatus: "New case",
       authorityName: "Waterways Authority",
       caseOfficer: "Kieran De La Cruz",
@@ -8104,12 +8106,14 @@ router.get('/cases/generate-dummy', function (req, res) {
   // 2. Generate 65 Rights of Way and Common Land Cases
   for (let i = 1; i <= 65; i++) {
     req.session.data['cases'].push({
-      reference: "ROW/2026/" + i.toString().padStart(4, '0'),
+      reference: "ROW/S14A/" + i.toString().padStart(4, '0'),
       caseName: "Rights of Way Dummy Case " + i,
       areaValue: "rights-of-way-and-common-land",
       typeValue: "rights-of-way",
       subtypeValue: "schedule-14-appeal",
       caseStatus: "New case",
+      type: "Rights of Way",
+      subtype: "Schedule 14 Appeal",
       authorityName: "Ramblers Council",
       caseOfficer: "Edward Mitchell",
       applicants: [{ firstName: "Jane", lastName: "Smith " + i, companyName: "Pathways Ltd" }]
