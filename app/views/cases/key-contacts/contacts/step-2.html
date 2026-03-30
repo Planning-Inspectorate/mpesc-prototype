@@ -24,8 +24,24 @@
       {% call govukFieldset({
         legend: { text: "Who is the contact?", classes: "govuk-fieldset__legend--l", isPageHeading: true }
       }) %}
-      
-      <div class="govuk-hint">Enter the name of the individual, the organisation, or both.</div>
+
+       {# --- NEW FORMATTED TEXT BLOCK START --- #}
+    <p class="govuk-body">
+      Enter the name of the individual, the organisation, or both. You can enter:
+    </p>
+    
+    <ul class="govuk-list govuk-list--bullet">
+      <li>a person's name</li>
+      <li>a joint party, company or organisation name</li>
+      <li>both a person and a joint party or company name</li>
+    </ul>
+    
+    <p class="govuk-body">
+      Use the 'Joint contacts or company name' field to add multiple names at once e.g. Mr and Mrs Smith
+    </p>
+
+    <br>
+    {# --- NEW FORMATTED TEXT BLOCK END --- #}
 
       {% if errors.general %}
         <p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errors.general.text }}</p>

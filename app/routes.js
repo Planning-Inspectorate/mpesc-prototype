@@ -9323,6 +9323,56 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/:docId/toggle-stat
 });
 
 
+// ==============================================
+// DOWNLOAD ALL CONTACTS AS CSV
+// ==============================================
+router.get('/cases/download-contacts', function (req, res) {
+  var ref = req.query.ref;
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(c => c.reference === ref);
+
+  if (!currentCase) {
+    return res.redirect('/cases-page');
+  }
+
+  // 1. Set up the CSV Headers (Includes the Type/Status column!)
+  let csvContent = "Role,Type / Status,First Name,Last Name,Company / Organisation,Email,Phone\n";
+
+  // 2. Helper function to safely escape commas in CSV data
+  const escapeCSV = (str) => {
+    if (!str) return "";
+    let safeStr = str.toString().replace(/"/g, '""'); // Escape double quotes
+    return `"${safeStr}"`; // Wrap in quotes to protect inner commas
+  };
+
+  // 3. Process Applicants (Maps to: firstName, lastName, companyName)
+  if (currentCase.applicants && currentCase.applicants.length > 0) {
+    currentCase.applicants.forEach(app => {
+      csvContent += `Applicant,,${escapeCSV(app.firstName)},${escapeCSV(app.lastName)},${escapeCSV(app.companyName)},${escapeCSV(app.email)},${escapeCSV(app.phone)}\n`;
+    });
+  }
+
+  // 4. Process Objectors (Maps to: status, fname, lname, org)
+  if (currentCase.objectors && currentCase.objectors.length > 0) {
+    currentCase.objectors.forEach(obj => {
+      csvContent += `Objector,${escapeCSV(obj.status)},${escapeCSV(obj.fname)},${escapeCSV(obj.lname)},${escapeCSV(obj.org)},${escapeCSV(obj.email)},${escapeCSV(obj.phone)}\n`;
+    });
+  }
+
+  // 5. Process Contacts (Maps to: type, fname, lname, org)
+  if (currentCase.contacts && currentCase.contacts.length > 0) {
+    currentCase.contacts.forEach(con => {
+      csvContent += `Contact,${escapeCSV(con.type)},${escapeCSV(con.fname)},${escapeCSV(con.lname)},${escapeCSV(con.org)},${escapeCSV(con.email)},${escapeCSV(con.phone)}\n`;
+    });
+  }
+
+  // 6. Tell the browser to download this as a CSV file natively
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="contacts-${ref.replace(/\//g, '-')}.csv"`);
+  res.send(csvContent);
+});
+
+
 module.exports = router;
 
 

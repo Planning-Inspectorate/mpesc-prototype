@@ -60,6 +60,12 @@
         {{ currentCase.caseName }}
       </h1>
 
+      {# --- LOGIC: Check if ANY contact arrays have data --- #}
+      {% set hasApplicants = currentCase.applicants and currentCase.applicants.length > 0 %}
+      {% set hasObjectors = currentCase.objectors and currentCase.objectors.length > 0 %}
+      {% set hasOtherContacts = currentCase.contacts and currentCase.contacts.length > 0 %}
+      {% set hasAnyContacts = hasApplicants or hasObjectors or hasOtherContacts %}
+
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Manage case files",
@@ -72,6 +78,15 @@
           classes: "govuk-button--secondary",
           href: "#"
         }) }}
+
+        {# --- NEW: Conditional Contacts Download Button --- #}
+        {% if hasAnyContacts %}
+          {{ govukButton({
+            text: "Download all contacts",
+            classes: "govuk-button--secondary",
+            href: "/cases/download-contacts?ref=" + currentCase.reference
+          }) }}
+        {% endif %}
       </div>
 
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">

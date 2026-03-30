@@ -10,7 +10,9 @@
       {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
     {% endif %}
 
-    <h1 class="govuk-heading-l">Who is the applicant or appellant?</h1>
+    {% call govukFieldset({
+      legend: { text: "Who is the applicant or appellant?", classes: "govuk-fieldset__legend--l", isPageHeading: true }
+    }) %}
     
     {# --- NEW FORMATTED TEXT BLOCK START --- #}
     <p class="govuk-body">
@@ -26,6 +28,8 @@
     <p class="govuk-body">
       Use the 'Joint applicants, appellants or company name' field to add multiple names at once e.g. Mr and Mrs Smith
     </p>
+
+    <br>
     {# --- NEW FORMATTED TEXT BLOCK END --- #}
 
     <form action="{% if editMode %}/cases/edit/applicant-name?ref={{ ref }}&id={{ id }}{% else %}/cases/create-a-case/questions/applicant-name{% if id %}?id={{ id }}{% endif %}{% endif %}" method="post" novalidate>
@@ -60,6 +64,8 @@
       }) }}
 
       {{ govukButton({ text: "Continue" }) }}
+
+      {% endcall %}
     </form>
   </div>
 </div>
