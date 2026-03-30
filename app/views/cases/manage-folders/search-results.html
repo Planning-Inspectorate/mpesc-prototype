@@ -78,33 +78,71 @@
       <table class="govuk-table" data-module="moj-sortable-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="1">File name</button></th>
-            <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="2">File type</button></th>
-            <th scope="col" class="govuk-table__header" aria-sort="none"><button type="button" data-index="3">File size</button></th>
-            <th scope="col" class="govuk-table__header" aria-sort="descending"><button type="button" data-index="4">Uploaded</button></th>
-            <th scope="col" class="govuk-table__header">Actions</th>
+            
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 45%;" aria-sort="none"><button type="button" data-index="1">File name</button></th>
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 20%;" aria-sort="descending"><button type="button" data-index="2">Uploaded</button></th>
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;">Status</th>
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 20%;">Actions</th>
+            
           </tr>
         </thead>
         <tbody class="govuk-table__body">
           {% for doc in paginatedDocuments %}
           <tr class="govuk-table__row">
             
-            <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}">
-              <a class="govuk-link govuk-!-font-weight-bold" href="#">{{ doc.name }}</a>
-            </td>
-            
-            <td class="govuk-table__cell">{{ doc.type }}</td>
-            <td class="govuk-table__cell" data-sort-value="{{ doc.sizeNum }}">{{ doc.size }}</td>
-            <td class="govuk-table__cell" data-sort-value="{{ doc.dateTimestamp }}">{{ doc.date }}</td>
-            
-            <td class="govuk-table__cell">
-              {# Action Line 1 #}
-              <a class="govuk-link" href="#">Download</a> <span class="govuk-!-margin-left-1 govuk-!-margin-right-1">|</span> 
-              <a class="govuk-link" href="/cases/manage-folders/view/{{ doc.folderId }}/{{ doc.folderSlug }}/{{ doc.id }}/delete?ref={{ currentCase.reference }}">Delete</a><br>
+            {# 1. Merged File Name, Type, and Size #}
+            <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}" style="vertical-align: top; padding-top: 15px; padding-bottom: 15px; word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word;">
               
-              {# Action Line 2: The dynamic View Folder link #}
-              <a class="govuk-link govuk-!-margin-top-1 govuk-!-display-inline-block" href="/cases/manage-folders/view/{{ doc.folderId }}/{{ doc.folderSlug }}?ref={{ currentCase.reference }}">View folder</a>
+              {# Conditional logic for file linking #}
+              {% set fileExt = doc.type | lower %}
+              {% if ('pdf' in fileExt) or ('image' in fileExt) or ('jpg' in fileExt) or ('png' in fileExt) %}
+                <a class="govuk-link govuk-!-font-weight-bold" href="#" target="_blank">{{ doc.name }}</a>
+              {% else %}
+                <span class="govuk-!-font-weight-bold" style="color: #0b0c0c;">{{ doc.name }}</span>
+              {% endif %}
+
+              <span class="govuk-body-s govuk-!-display-block govuk-!-margin-top-2 govuk-!-margin-bottom-0" style="color: #505a5f;">
+                File type and size: {{ doc.type }}, {{ doc.size }}
+              </span>
             </td>
+            
+            {# 2. Uploaded Date #}
+            <td class="govuk-table__cell" data-sort-value="{{ doc.dateTimestamp }}" style="vertical-align: top; padding-top: 15px;">{{ doc.date }}</td>
+            
+            {# 3. Status Tags (Read/Unread and Flagged) #}
+            <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
+              <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
+                
+                {# Read Status #}
+                {% set readStat = doc.readStatus | default("Unread") %}
+                {% if readStat == "Read" %}
+                  <strong class="govuk-tag govuk-tag--green">Read</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--blue">Unread</strong>
+                {% endif %}
+
+                {# Flagged Status (Using hidden to maintain vertical alignment if unflagged) #}
+                {% if doc.isFlagged %}
+                  <strong class="govuk-tag govuk-tag--red">Flagged</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--red" style="visibility: hidden;">Flagged</strong>
+                {% endif %}
+                
+              </div>
+            </td>
+            
+            {# 4. Vertically Stacked Actions #}
+            <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
+              <ul class="govuk-list govuk-!-margin-bottom-0">
+                <li class="govuk-!-margin-bottom-2">
+                  <a class="govuk-link govuk-link--no-visited-state" href="/cases/manage-folders/view/{{ doc.folderId }}/{{ doc.folderSlug }}?ref={{ currentCase.reference }}">View folder</a>
+                </li>
+                <li>
+                  <a class="govuk-link govuk-link--no-visited-state" href="#">Download</a>
+                </li>
+              </ul>
+            </td>
+            
           </tr>
           {% endfor %}
         </tbody>
