@@ -232,7 +232,7 @@
         {# --- SECTION 1: READ STATUS --- #}
         {# Using html property allows us to inject spans with IDs for real-time JS counting! #}
         <div class="govuk-!-margin-bottom-6">
-          <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Read status</h2>
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Select read status</h2>
           {{ govukCheckboxes({
             idPrefix: "fileReadStatus", name: "fileReadStatus", classes: "govuk-checkboxes--small",
             items: [
@@ -244,7 +244,7 @@
 
         {# --- SECTION 2: FLAGGED STATUS --- #}
         <div class="govuk-!-margin-bottom-2">
-          <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Flagged status</h2>
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Select flagged status</h2>
           {{ govukCheckboxes({
             idPrefix: "fileFlaggedStatus", name: "fileFlaggedStatus", classes: "govuk-checkboxes--small",
             items: [
@@ -310,7 +310,7 @@
       
     {# --- FILES SECTION --- #}
     <div id="pagination" class="govuk-body">
-      <p class="govuk-body govuk-!-font-weight-bold">Files</p>
+      <p class="govuk-body govuk-!-font-weight-bold">File actions</p>
       
       <form action="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" method="POST">
 
@@ -366,7 +366,7 @@
         </p>
 
         <p class="govuk-body govuk-!-margin-bottom">
-          Check the box below to select all files.
+          Select 'All' checkbox to select all the files.
         </p>
 
           <table class="govuk-table" data-module="moj-sortable-table" data-cy="documents-table">
