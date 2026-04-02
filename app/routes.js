@@ -9097,21 +9097,32 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/rename', function(
     });
   };
 
+  // 1. Check for empty
   if (!newFolderName || newFolderName.trim() === '') return renderError("Enter a folder name");
   
   var cleanName = newFolderName.trim();
+  
+  // 2. Check length
   if (cleanName.length < 3 || cleanName.length > 255) return renderError("Folder name must be between 3 and 255 characters");
   
+  // 3. Check invalid characters
   var validCharsRegex = /^[a-zA-Z0-9 _\-']+$/;
   if (!validCharsRegex.test(cleanName)) {
     return renderError("Folder name must only include letters a to z, numbers and special characters such as spaces, underscores, hyphens and apostrophes");
   }
 
+  // 4. NEW: Check if the user actually changed the name
+  if (cleanName === activeFolder.name) {
+    return renderError("Choose a new folder name");
+  }
+
+  // 5. Check if another folder already has this name
   var siblingsList = parentFolder ? parentFolder.subfolders : currentCase.folders;
   var isDuplicate = siblingsList.some(f => f.name.toLowerCase() === cleanName.toLowerCase() && f.id !== folderId);
   
   if (isDuplicate) return renderError("A folder with this name already exists");
 
+  // Save the folder
   var oldName = activeFolder.name;
   activeFolder.name = cleanName;
   activeFolder.slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
