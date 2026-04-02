@@ -8828,7 +8828,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files', funct
   }
   
   if (selectedFiles.length === 0) {
-    req.session.data['moveFileError'] = "Select file(s) to move";
+    req.session.data['moveFileError'] = "Select a file or files to move";
     return req.session.save(function() {
       res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`); 
     });
@@ -8953,6 +8953,31 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check',
 });
 
 // ==============================================
+// REMOVE A FILE FROM THE MOVE LIST
+// ==============================================
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/remove', function(req, res) {
+  var ref = req.query.ref;
+  var docId = req.query.docId;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug;
+
+  // Grab the array of files scheduled to be moved
+  if (req.session.data['filesToMove']) {
+    
+    let selected = req.session.data['filesToMove'];
+    if (!Array.isArray(selected)) {
+      selected = [selected];
+    }
+
+    // Filter out the file the user just clicked "Remove" on
+    req.session.data['filesToMove'] = selected.filter(id => id !== docId);
+  }
+
+  // Redirect back to step 1 so the table updates
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/move-files/step-1?ref=${ref}`);
+});
+
+// ==============================================
 // BULK DOWNLOAD (Dummy Mock)
 // ==============================================
 router.post('/cases/manage-folders/view/:folderId/:folderSlug/download-selected', function(req, res) {
@@ -8968,7 +8993,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/download-selected'
   }
 
   if (selectedFiles.length === 0) {
-    req.session.data['moveFileError'] = "Select file(s) to download";
+    req.session.data['moveFileError'] = "Select a file or files to download";
     return req.session.save(() => res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`));
   }
 
@@ -8993,7 +9018,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected', 
   }
 
   if (selectedFiles.length === 0) {
-    req.session.data['moveFileError'] = "Select file(s) to delete";
+    req.session.data['moveFileError'] = "Select a file or files to delete";
     return req.session.save(() => res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}?ref=${ref}`));
   }
 

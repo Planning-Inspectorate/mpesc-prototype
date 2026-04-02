@@ -3,7 +3,10 @@
 {% block pageTitle %}Delete files - Planning Inspectorate Portal{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({ text: "Back", href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "?ref=" + currentCase.reference }) }}
+  {{ govukBackLink({ 
+    text: "Back to " + folder.name + " folder", 
+    href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "?ref=" + currentCase.reference 
+  }) }}
 {% endblock %}
 
 {% block content %}

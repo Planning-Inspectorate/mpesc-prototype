@@ -130,17 +130,25 @@
 {% endif %}
 
 {% if moveBanner %}
+  {% set fileWord = "file" if moveBanner.count == 1 else "files" %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>" + moveBanner.count + " selected file(s) moved to " + moveBanner.destName + " folder</h3>", type: "success" }) }}
+      {{ govukNotificationBanner({ 
+        html: "<h3 class='govuk-notification-banner__heading'>" + moveBanner.count + " selected " + fileWord + " moved to " + moveBanner.destName + " folder</h3>", 
+        type: "success" 
+      }) }}
     </div>
   </div>
 {% endif %}
 
 {% if downloadBanner %}
+  {% set fileWord = "file" if downloadBanner == 1 else "files" %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>" + downloadBanner + " file(s) downloaded securely (mock download)</h3>", type: "success" }) }}
+      {{ govukNotificationBanner({ 
+        html: "<h3 class='govuk-notification-banner__heading'>" + downloadBanner + " selected " + fileWord + " downloaded securely (mock download)</h3>", 
+        type: "success" 
+      }) }}
     </div>
   </div>
 {% endif %}
@@ -546,7 +554,7 @@
                     <h2 class="govuk-error-summary__title">There is a problem</h2>
                     <div class="govuk-error-summary__body">
                       <ul class="govuk-list govuk-error-summary__list">
-                        <li><a href="#checkboxes-all">Select file(s) to ${actionName}</a></li>
+                        <li><a href="#checkboxes-all">Select a file or files to ${actionName}</a></li>
                       </ul>
                     </div>
                   </div>
