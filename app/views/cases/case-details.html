@@ -325,15 +325,27 @@
         {% endif %}
       {% endset %}
 
+      {% set hasLinkedData = currentCase.leadCase or (currentCase.linkedCases and currentCase.linkedCases.length > 0) %}
+
       {% set linkedCasesHtml %}
-        {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
+        {% if hasLinkedData %}
           <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
-            {% for item in currentCase.linkedCases %}
-              <li>
-                {{ item.reference }} 
-                {% if item.isLead == 'Yes' %}(Lead){% endif %}
-              </li>
-            {% endfor %}
+            
+            {# 1. Show the Lead Case first (bolded) #}
+            {% if currentCase.leadCase %}
+              <li><strong>{{ currentCase.leadCase }} (Lead case)</strong></li>
+            {% endif %}
+            
+            {# 2. Loop through the rest of the linked cases #}
+            {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
+              {% for item in currentCase.linkedCases %}
+                {# Ensure we don't accidentally print a reference twice if it's the lead #}
+                {% if item.reference != currentCase.leadCase %}
+                  <li>{{ item.reference }}</li>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
           </ul>
         {% else %}
           -
@@ -406,17 +418,17 @@
       visuallyHiddenText: "related cases" 
     }] }
   },
-          { 
+{ 
   key: { text: "Linked case(s)" }, 
   value: { html: linkedCasesHtml }, 
   actions: { 
     items: [{ 
-      href: "/cases/linked-cases/hub?ref=" + currentCase.reference if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "/cases/linked-cases/start?ref=" + currentCase.reference, 
-      text: "Change" if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "Add", 
+      href: "/cases/linked-cases/hub?ref=" + currentCase.reference if hasLinkedData else "/cases/linked-cases/start?ref=" + currentCase.reference, 
+      text: "Change" if hasLinkedData else "Add", 
       visuallyHiddenText: "linked cases" 
     }] 
   }
-          }
+}
 ]
       }) }}
 

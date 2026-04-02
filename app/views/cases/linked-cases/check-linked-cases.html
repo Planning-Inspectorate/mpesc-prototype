@@ -1,0 +1,145 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check linked case details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      <h1 class="govuk-heading-l">Check linked case details</h1>
+
+      {% set list = linkedCases | default([]) %}
+      {% set isEmpty = (list.length == 0) and (not leadCase) %}
+
+      {# --- INSET TEXT: Alerts the user if they are looking at a Child Case --- #}
+      {% if leadCase and leadCase != ref %}
+        {% set insetTextHtml %}
+          This case is linked to a wider group. The lead case is <strong>{{ leadCase }}</strong>.
+        {% endset %}
+        
+        {{ govukInsetText({
+          html: insetTextHtml
+        }) }}
+      {% endif %}
+
+      <div class="govuk-body">You may only have one lead case. You can change the lead case at any time.</div>
+
+      <dl class="govuk-summary-list govuk-!-margin-bottom-7">
+        
+        {# ========================================== #}
+        {# 1. LEAD CASE ROW                           #}
+        {# ========================================== #}
+        <div class="govuk-summary-list__row {% if not leadCase %}govuk-summary-list__row--no-actions{% endif %}">
+          <dt class="govuk-summary-list__key">
+            Lead case
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {% if leadCase %}
+              <strong>{{ leadCase }}</strong> {% if leadCase == ref %}(Current case){% endif %}
+            {% else %}
+              <a href="/cases/linked-cases/lead-case?ref={{ ref }}" class="govuk-body govuk-link">Enter the lead case</a>
+            {% endif %}
+          </dd>
+          
+          {% if leadCase %}
+            <dd class="govuk-summary-list__actions">
+              <ul class="govuk-summary-list__actions-list">
+                <li class="govuk-summary-list__actions-list-item">
+                  <a class="govuk-link" href="/cases/linked-cases/lead-case?ref={{ ref }}">Change<span class="govuk-visually-hidden"> lead case</span></a>
+                </li>
+                <li class="govuk-summary-list__actions-list-item">
+                  <a class="govuk-link" href="/cases/linked-cases/remove-lead?ref={{ ref }}">Remove<span class="govuk-visually-hidden"> lead case</span></a>
+                </li>
+              </ul>
+            </dd>
+          {% endif %}
+        </div>
+
+        {# ========================================== #}
+        {# 2. LINKED CASES ROWS                       #}
+        {# ========================================== #}
+        {% if list.length > 0 %}
+          {% for item in list %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                {# Only print the label on the very first row to group them visually #}
+                {% if loop.first %}Linked cases{% endif %}
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ item.reference }}
+              </dd>
+              <dd class="govuk-summary-list__actions">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/linked-cases/step-1?ref={{ ref }}&id={{ item.id }}">Change<span class="govuk-visually-hidden"> linked case details</span></a>
+                  </li>
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/linked-cases/remove?ref={{ ref }}&id={{ item.id }}">Remove<span class="govuk-visually-hidden"> linked case details</span></a>
+                  </li>
+                </ul>
+              </dd>
+            </div>
+          {% endfor %}
+        {% else %}
+          {# Empty State for Linked Cases #}
+          <div class="govuk-summary-list__row govuk-summary-list__row--no-actions">
+            <dt class="govuk-summary-list__key">
+              Linked cases
+            </dt>
+            <dd class="govuk-summary-list__value">
+              <span class="govuk-hint govuk-!-margin-bottom-0">No linked cases added</span>
+            </dd>
+          </div>
+        {% endif %}
+
+      </dl>
+
+      {# ========================================== #}
+      {# 3. BUTTONS & ACTIONS                       #}
+      {# ========================================== #}
+      <form action="/cases/linked-cases/commit?ref={{ ref }}" method="post" novalidate>
+        
+        {# Dynamic button styling based on whether the list is empty #}
+        {% set addDetailsClass = "govuk-button" if isEmpty else "govuk-button--secondary" %}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Add details",
+            classes: addDetailsClass,
+            href: "/cases/linked-cases/step-1?ref=" + ref
+          }) }}
+
+          {# If completely empty, offer a safe way to back out #}
+          {% if isEmpty %}
+            {{ govukButton({
+              text: "Return to case details",
+              classes: "govuk-button--secondary"
+            }) }}
+          {% endif %}
+        </div>
+
+        {# Only show Save/Cancel if data has been manipulated #}
+        {% if not isEmpty %}
+          <div class="govuk-button-group">
+            {{ govukButton({ text: "Save and continue" }) }}
+            
+            {{ govukButton({
+              text: "Cancel",
+              classes: "govuk-button--secondary",
+              href: "/cases/linked-cases/cancel?ref=" + ref
+            }) }}
+          </div>
+        {% endif %}
+     
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}

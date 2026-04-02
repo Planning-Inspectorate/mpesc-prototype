@@ -3,7 +3,7 @@
 {% extends "layouts/main.html" %}
 
 {# --- Dynamic Text Setup (Using the new Simulated Login Logic) --- #}
-{% set headerText = "Cases assigned to you" if isViewingOwnCases else "Cases assigned to " + activeUserName %}
+{% set headerText = "My cases" if isViewingOwnCases else "Cases assigned to " + activeUserName %}
 {% set emptyText = "You are not assigned to any cases" if isViewingOwnCases else activeUserName + " is not assigned to any cases" %}
 
 {% block pageTitle %}
@@ -238,7 +238,7 @@
             <table class="govuk-table" data-module="moj-sortable-table">
               <thead class="govuk-table__head">
                 <tr class="govuk-table__row">
-                  <th scope="col" class="govuk-table__header" aria-sort="none">Case ref</th>
+                  <th scope="col" class="govuk-table__header" aria-sort="none">Reference</th>
                   <th scope="col" class="govuk-table__header" aria-sort="none">Case officer</th>
                   <th scope="col" class="govuk-table__header" aria-sort="none">Inspector</th>
                   <th scope="col" class="govuk-table__header" aria-sort="none">Case status</th>

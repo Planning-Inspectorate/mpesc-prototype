@@ -22,9 +22,8 @@
     <form method="post" action="/cases/key-contacts/contacts/step-3?ref={{ ref }}&id={{ id }}" novalidate>
       <fieldset class="govuk-fieldset">
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-          <h1 class="govuk-fieldset__heading">What is the interested person or party address?</h1>
+          <h1 class="govuk-fieldset__heading">Contact address details (optional)</h1>
         </legend>
-        <div class="govuk-hint">Optional</div>
 
         {{ govukInput({ label: { text: "Address line 1 (optional)" }, id: "con-address1", name: "con-address1", value: address1 }) }}
         {{ govukInput({ label: { text: "Address line 2 (optional)" }, id: "con-address2", name: "con-address2", value: address2 }) }}

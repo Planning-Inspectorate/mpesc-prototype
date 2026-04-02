@@ -1,0 +1,110 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check outcome details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check linked cases</h1>
+
+    <div class="govuk-body">You may only have one lead case. You can change the lead case at any time</div>
+
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row govuk-summary-list__row--no-actions">
+    <dt class="govuk-summary-list__key">
+      Lead case
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <a href="#" class="govuk-body">Enter the lead case</a>
+    </dd>
+  </div>
+  
+
+
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Linked cases
+    </dt>
+    <dd class="govuk-summary-list__value">
+      PUR/1000
+    </dd>
+    <dd class="govuk-summary-list__actions">
+      <ul class="govuk-summary-list__actions-list">
+        <li class="govuk-summary-list__actions-list-item">
+          <a class="govuk-link" href="#">Change<span class="govuk-visually-hidden"> contact details</span></a>
+        </li>
+        <li class="govuk-summary-list__actions-list-item">
+          <a class="govuk-link" href="#">Remove<span class="govuk-visually-hidden"> contact details</span></a>
+        </li>
+      </ul>
+    </dd>
+  </div>
+
+
+
+    <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      
+    </dt>
+    <dd class="govuk-summary-list__value">
+      ROW/1000
+    </dd>
+    <dd class="govuk-summary-list__actions">
+      <ul class="govuk-summary-list__actions-list">
+        <li class="govuk-summary-list__actions-list-item">
+          <a class="govuk-link" href="#">Change<span class="govuk-visually-hidden"> contact details</span></a>
+        </li>
+        <li class="govuk-summary-list__actions-list-item">
+          <a class="govuk-link" href="#">Remove<span class="govuk-visually-hidden"> contact details</span></a>
+        </li>
+      </ul>
+    </dd>
+  </div>
+
+
+    <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Current case
+    </dt>
+    <dd class="govuk-summary-list__value">
+      This case is linked to the lead case
+    </dd>
+    <dd class="govuk-summary-list__actions">
+    </dd>
+  </div>
+
+</dl>
+
+    {# --- BUTTONS WRAPPED IN FORM --- #}
+    <form action="/cases/outcomes/commit?ref={{ ref }}" method="post" novalidate>
+      {% set addDetailsClass = "govuk-button" if outcomeList.length == 0 else "govuk-button--secondary" %}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Add details",
+          classes: addDetailsClass,
+          href: ""
+        }) }}
+
+  
+      </div>
+
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Save and continue" }) }}
+          {{ govukButton({
+            text: "Cancel",
+            classes: "govuk-button--secondary",
+            href: ""
+          }) }}
+        </div>
+     
+    </form>
+
+  </div>
+</div>
+{% endblock %}

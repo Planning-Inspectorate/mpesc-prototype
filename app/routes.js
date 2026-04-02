@@ -5995,19 +5995,21 @@ router.post('/cases/related-cases/cancel', function(req, res) {
 // 0. Empty State Page: Check First
 router.get('/cases/linked-cases/start', function(req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  var cases = req.session.data['cases'] || [];
+  var myCase = cases.find(c => c.reference === ref);
   if (!myCase) return res.redirect('/cases/all-cases');
 
-  // Initialize a blank draft
   req.session.data['tempLinkedCasesList'] = [];
+  req.session.data['tempLeadCase'] = null; // Initialize empty lead case
 
-  res.render('cases/edit/check-linked-cases-first', { ref: ref });
+  res.render('cases/linked-cases/check-linked-cases-first', { ref: ref });
 });
 
 // 1. SHOW THE LIST PAGE (Hub)
 router.get('/cases/linked-cases/hub', function (req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  var cases = req.session.data['cases'] || [];
+  var myCase = cases.find(c => c.reference === ref);
   if (!myCase.linkedCases) { myCase.linkedCases = []; }
 
   // Clone real data to start working if no draft exists
@@ -6015,16 +6017,19 @@ router.get('/cases/linked-cases/hub', function (req, res) {
     req.session.data['tempLinkedCasesList'] = JSON.parse(JSON.stringify(myCase.linkedCases));
   }
 
-  // Clear single-item temp variables
-  delete req.session.data['tempLinkedRef'];
+  // Clone the real lead case if no draft exists
+  if (req.session.data['tempLeadCase'] === undefined) {
+    req.session.data['tempLeadCase'] = myCase.leadCase || null;
+  }
 
-  res.render('cases/edit/check-linked-cases', { 
+  res.render('cases/linked-cases/check-linked-cases', { 
     ref: ref,
-    linkedCases: req.session.data['tempLinkedCasesList'] // Pass the DRAFT
+    linkedCases: req.session.data['tempLinkedCasesList'],
+    leadCase: req.session.data['tempLeadCase']
   });
 });
 
-// 2. STEP 1: SHOW INPUT (Reference)
+// 2. ADD / EDIT LINKED CASE (Single Step)
 router.get('/cases/linked-cases/step-1', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
@@ -6036,95 +6041,81 @@ router.get('/cases/linked-cases/step-1', function (req, res) {
     if (item) value = item.reference;
   }
 
-  // Calculate dynamic back link
-  var backUrl = (draftList.length > 0) 
+  var backUrl = (draftList.length > 0 || req.session.data['tempLeadCase']) 
     ? `/cases/linked-cases/hub?ref=${ref}` 
     : `/cases/linked-cases/start?ref=${ref}`;
 
-  res.render('cases/edit/linked-case-input', { 
-    ref: ref, 
-    id: id, 
-    value: req.session.data['tempLinkedRef'] || value, 
-    error: false,
-    backUrl: backUrl // Pass the dynamic URL to the template
+  res.render('cases/linked-cases/linked-case-input', { 
+    ref: ref, id: id, value: value, error: false, backUrl: backUrl
   });
 });
 
-// 3. STEP 1: VALIDATE & POST
 router.post('/cases/linked-cases/step-1', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
   var val = req.body.linkedCaseRef;
   
-  // Recalculate dynamic back link for the error state
   var draftList = req.session.data['tempLinkedCasesList'] || [];
-  var backUrl = (draftList.length > 0) 
+  var backUrl = (draftList.length > 0 || req.session.data['tempLeadCase']) 
     ? `/cases/linked-cases/hub?ref=${ref}` 
     : `/cases/linked-cases/start?ref=${ref}`;
 
   if (!val || val.trim() === "") {
-    return res.render('cases/edit/linked-case-input', {
-      ref: ref, 
-      id: id, 
-      value: val, 
-      error: true, 
-      errorMessage: { text: "Enter linked case reference" },
-      backUrl: backUrl // Ensure the back button still works if validation fails!
+    return res.render('cases/linked-cases/linked-case-input', {
+      ref: ref, id: id, value: val, error: true, errorMessage: { text: "Enter linked case reference" }, backUrl: backUrl
     });
   }
 
-  req.session.data['tempLinkedRef'] = val;
-  res.redirect(`/cases/linked-cases/step-2?ref=${ref}&id=${id || ''}`);
+  // Save directly to the array
+  if (id) {
+    let idx = draftList.findIndex(i => i.id === id);
+    if (idx >= 0) {
+      // --- THE FIX: Update lead case if we just renamed it ---
+      if (req.session.data['tempLeadCase'] === draftList[idx].reference) {
+        req.session.data['tempLeadCase'] = val;
+      }
+      draftList[idx].reference = val;
+    }
+  } else {
+    draftList.push({
+      id: 'lc-' + Math.floor(Math.random() * 10000),
+      reference: val
+    });
+  }
+  
+  req.session.data['tempLinkedCasesList'] = draftList;
+  res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
 });
 
-// 4. STEP 2: SHOW RADIOS (Is Lead?)
-router.get('/cases/linked-cases/step-2', function (req, res) {
-  var id = req.query.id;
-  var draftList = req.session.data['tempLinkedCasesList'] || [];
-  var isLead = "";
-
-  if (id) {
-    var item = draftList.find(i => i.id === id);
-    if (item) isLead = item.isLead;
-  }
-
-  res.render('cases/edit/linked-case-lead', { 
-    ref: req.query.ref, id: id, isLead: isLead, error: false 
+// 3. SELECT LEAD CASE
+router.get('/cases/linked-cases/lead-case', function(req, res) {
+  var ref = req.query.ref;
+  res.render('cases/linked-cases/lead-case-select', {
+    ref: ref,
+    linkedCases: req.session.data['tempLinkedCasesList'] || [],
+    leadCase: req.session.data['tempLeadCase']
   });
 });
 
-// 5. STEP 2: VALIDATE & SAVE TO DRAFT
-router.post('/cases/linked-cases/step-2', function (req, res) {
+router.post('/cases/linked-cases/lead-case', function(req, res) {
   var ref = req.query.ref;
-  var id = req.query.id;
-  var isLead = req.body.isLead;
+  var leadCaseSelection = req.body.leadCaseSelection;
 
-  if (!isLead) {
-    return res.render('cases/edit/linked-case-lead', {
-      ref: ref, id: id, isLead: isLead, error: true, errorMessage: { text: "Select yes if this is the lead case" }
-    });
+  if (!leadCaseSelection) {
+     return res.render('cases/linked-cases/lead-case-select', {
+        ref: ref, linkedCases: req.session.data['tempLinkedCasesList'] || [],
+        error: true, errorMessage: { text: "Select the lead case" }
+     });
   }
 
-  var draftList = req.session.data['tempLinkedCasesList'] || [];
-  var refVal = req.session.data['tempLinkedRef']; 
-  var existingItem = {};
+  req.session.data['tempLeadCase'] = leadCaseSelection;
+  res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
+});
 
-  if (id) { existingItem = draftList.find(i => i.id === id) || {}; }
-
-  var newItem = {
-    id: id || 'lc-' + Math.floor(Math.random() * 10000),
-    reference: refVal || existingItem.reference, 
-    isLead: isLead 
-  };
-
-  var idx = draftList.findIndex(i => i.id === id);
-  if (idx >= 0) draftList[idx] = newItem;
-  else draftList.push(newItem);
-
-  req.session.data['tempLinkedCasesList'] = draftList;
-  delete req.session.data['tempLinkedRef']; 
-  
-  res.redirect('/cases/linked-cases/hub?ref=' + ref);
+router.get('/cases/linked-cases/remove-lead', function(req, res) {
+  // Instantly wipe the lead case and return to hub
+  req.session.data['tempLeadCase'] = null;
+  res.redirect(`/cases/linked-cases/hub?ref=${req.query.ref}`);
 });
 
 // ==============================================
@@ -6133,7 +6124,7 @@ router.post('/cases/linked-cases/step-2', function (req, res) {
 router.get('/cases/linked-cases/remove', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  res.render('cases/edit/remove-linked-cases', { 
+  res.render('cases/linked-cases/remove-linked-cases', { 
     ref: ref, id: id, backUrl: `/cases/linked-cases/hub?ref=${ref}`, actionUrl: `/cases/linked-cases/remove?id=${id}&ref=${ref}`
   });
 });
@@ -6144,15 +6135,19 @@ router.post('/cases/linked-cases/remove', function (req, res) {
   var confirm = req.body.linkedCaseRemove;
 
   if (!confirm) {
-    return res.render('cases/edit/remove-linked-cases', { 
+    return res.render('cases/linked-cases/remove-linked-cases', { 
       ref: ref, id: id, error: true, backUrl: `/cases/linked-cases/hub?ref=${ref}`, actionUrl: `/cases/linked-cases/remove?id=${id}&ref=${ref}`
     });
   }
 
-  if (confirm === 'yes') {
-    if (req.session.data['tempLinkedCasesList']) {
-      req.session.data['tempLinkedCasesList'] = req.session.data['tempLinkedCasesList'].filter(i => i.id !== id);
+  if (confirm === 'yes' && req.session.data['tempLinkedCasesList']) {
+    // If they delete a linked case that happens to be the lead case, wipe the lead case too
+    let itemToRemove = req.session.data['tempLinkedCasesList'].find(i => i.id === id);
+    if (itemToRemove && req.session.data['tempLeadCase'] === itemToRemove.reference) {
+        req.session.data['tempLeadCase'] = null; 
     }
+    
+    req.session.data['tempLinkedCasesList'] = req.session.data['tempLinkedCasesList'].filter(i => i.id !== id);
   }
   res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
 });
@@ -6160,48 +6155,83 @@ router.post('/cases/linked-cases/remove', function (req, res) {
 // ==============================================
 // FINAL COMMIT / CANCEL ACTIONS
 // ==============================================
-
-// COMMIT DRAFT: Final Save to Case Details
 router.post('/cases/linked-cases/commit', function(req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  var cases = req.session.data['cases'] || [];
+  var myCase = cases.find(c => c.reference === ref);
 
   if (myCase) {
-    myCase.linkedCases = req.session.data['tempLinkedCasesList'] || [];
+    let draftLinked = req.session.data['tempLinkedCasesList'] || [];
+    let draftLead = req.session.data['tempLeadCase'] || null;
+
+    // 1. Identify all case references in this new "group" (Current case + Draft cases)
+    let groupReferences = [ref, ...draftLinked.map(lc => lc.reference)];
+
+    // 2. Identify cases that were just REMOVED from the link group (Orphans)
+    let originalLinkedRefs = (myCase.linkedCases || []).map(lc => lc.reference);
+    let removedRefs = originalLinkedRefs.filter(oldRef => !draftLinked.find(newRef => newRef.reference === oldRef));
+
+    // 3. Loop through the master case database and apply the reciprocal updates!
+    cases.forEach(c => {
+      
+      // A. Update the active group members
+      if (groupReferences.includes(c.reference)) {
+        // Set the designated lead case for everyone in the group
+        c.leadCase = draftLead;
+
+        // Populate their linked cases array with everyone in the group EXCEPT themselves
+        c.linkedCases = groupReferences
+          .filter(groupRef => groupRef !== c.reference)
+          .map(groupRef => ({
+            id: 'lc-' + Math.floor(Math.random() * 10000),
+            reference: groupRef
+          }));
+      }
+
+      // B. Wipe the data for any cases that were just removed from the group
+      if (removedRefs.includes(c.reference)) {
+        c.leadCase = null;
+        c.linkedCases = [];
+      }
+      
+    });
   }
   
+  // Clear the draft environment
   req.session.data['tempLinkedCasesList'] = null;
+  req.session.data['tempLeadCase'] = undefined;
+  
+  // Trigger success banner and redirect
   req.session.flashSection = "overview"; 
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
-// CANCEL DRAFT: Smart Check
 router.get('/cases/linked-cases/cancel', function(req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
+  var cases = req.session.data['cases'] || [];
+  var myCase = cases.find(c => c.reference === ref);
 
   var originalLinked = myCase.linkedCases || [];
   var draftLinked = req.session.data['tempLinkedCasesList'] || [];
+  var originalLead = myCase.leadCase || null;
+  var draftLead = req.session.data['tempLeadCase'] || null;
 
-  if (JSON.stringify(originalLinked) === JSON.stringify(draftLinked)) {
+  if (JSON.stringify(originalLinked) === JSON.stringify(draftLinked) && originalLead === draftLead) {
     req.session.data['tempLinkedCasesList'] = null;
+    req.session.data['tempLeadCase'] = undefined;
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  res.render('cases/edit/cancel-linked-cases', { ref: ref });
+  res.render('cases/linked-cases/cancel-linked-cases', { ref: ref });
 });
 
-// CANCEL DRAFT: Process Warning Page
 router.post('/cases/linked-cases/cancel', function(req, res) {
   var ref = req.query.ref;
-  var confirm = req.body.cancelLinkedCases;
+  if (!req.body.cancelLinkedCases) return res.render('cases/linked-cases/cancel-linked-cases', { ref: ref, error: true });
 
-  if (!confirm) {
-    return res.render('cases/edit/cancel-linked-cases', { ref: ref, error: true });
-  }
-
-  if (confirm === 'yes') {
+  if (req.body.cancelLinkedCases === 'yes') {
     req.session.data['tempLinkedCasesList'] = null;
+    req.session.data['tempLeadCase'] = undefined;
     res.redirect('/cases/case-details?ref=' + ref);
   } else {
     res.redirect('/cases/linked-cases/hub?ref=' + ref);

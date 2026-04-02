@@ -1,0 +1,105 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Linked case(s) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      <h1 class="govuk-heading-l">Check linked case details</h1>
+
+      {# 1. UNIFIED DATA SOURCE #}
+      {% set list = linkedCases | default(data['tempLinkedCasesList']) | default([]) %}
+
+      {# 2. THE TABLE: Safely using list.length #}
+      {% if list.length > 0 %}
+        <table class="govuk-table" data-module="moj-sortable-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header" aria-sort="none">Linked case reference</th>
+              <th scope="col" class="govuk-table__header" aria-sort="none">Lead case?</th>
+              <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for item in list %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                  {{ item.reference }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ item.isLead }}
+                </td>
+                <td class="govuk-table__cell">
+                  <ul class="govuk-summary-list__actions-list">
+                    <li class="govuk-summary-list__actions-list-item">
+                      <a class="govuk-link" href="/cases/linked-cases/step-1?ref={{ ref }}&id={{ item.id }}">
+                        Change<span class="govuk-visually-hidden"> row</span>
+                      </a>
+                    </li>
+                    <li class="govuk-summary-list__actions-list-item">
+                      <a class="govuk-link" href="/cases/linked-cases/remove?ref={{ ref }}&id={{ item.id }}">
+                        Remove<span class="govuk-visually-hidden"> row</span>
+                      </a>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="govuk-body">Add one or more linked cases. No linked case details have been added.</p>
+      {% endif %}
+
+      {# 3. THE BUTTONS #}
+      <form action="/cases/linked-cases/commit?ref={{ ref }}" method="post" novalidate>
+        
+        {# Safely calculate the class using standard list.length #}
+        {% set addDetailsClass = "govuk-button" if list.length == 0 else "govuk-button--secondary" %}
+
+        <div class="govuk-button-group">
+          
+          {{ govukButton({
+            text: "Add details",
+            classes: addDetailsClass,
+            href: "/cases/linked-cases/step-1?ref=" + ref
+          }) }}
+
+          {% if list.length == 0 %}
+            {{ govukButton({
+              text: "Return to case details",
+              classes: "govuk-button--secondary"
+            }) }}
+          {% endif %}
+
+        </div>
+
+        {% if list.length > 0 %}
+          <div class="govuk-button-group">
+            
+            {{ govukButton({
+              text: "Save and continue"
+            }) }}
+
+            {{ govukButton({
+              text: "Cancel",
+              classes: "govuk-button--secondary",
+              href: "/cases/linked-cases/cancel?ref=" + ref
+            }) }}
+            
+          </div>
+        {% endif %}
+
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}
