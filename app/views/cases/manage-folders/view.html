@@ -146,9 +146,13 @@
 {% endif %}
 
 {% if bulkDeleteBanner %}
+  {% set fileWord = "file" if bulkDeleteBanner == 1 else "files" %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>" + bulkDeleteBanner + " file(s) deleted</h3>", type: "success" }) }}
+      {{ govukNotificationBanner({ 
+        html: "<h3 class='govuk-notification-banner__heading'>" + bulkDeleteBanner + " selected " + fileWord + " deleted</h3>", 
+        type: "success" 
+      }) }}
     </div>
   </div>
 {% endif %}
