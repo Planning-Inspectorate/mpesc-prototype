@@ -122,9 +122,15 @@
 {% endif %}
 
 {% if updateBanner %}
+  {% set fileWord = "file" if updateBanner.count == 1 else "files" %}
+  {% set haveWord = "has" if updateBanner.count == 1 else "have" %}
+  
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>Folder has been updated</h3>", type: "success" }) }}
+      {{ govukNotificationBanner({ 
+        html: "<h3 class='govuk-notification-banner__heading'>" + updateBanner.count + " " + fileWord + " " + haveWord + " been uploaded to " + updateBanner.folderName + " folder</h3>", 
+        type: "success" 
+      }) }}
     </div>
   </div>
 {% endif %}

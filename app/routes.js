@@ -8442,7 +8442,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   var successBanner = req.session.data['folderCreated'];
   var renameBanner = req.session.data['folderRenamed'];
   var deleteBanner = req.session.data['folderDeleted'];
-  var updateBanner = req.session.data['folderUpdated'];
+  var updateBanner = req.session.data['updateBanner']; 
   var moveBanner = req.session.data['filesMovedBanner'];
   var downloadBanner = req.session.data['filesDownloadedBanner'];
   var bulkDeleteBanner = req.session.data['filesBulkDeletedBanner'];
@@ -8451,7 +8451,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   if (successBanner) delete req.session.data['folderCreated'];
   if (renameBanner) delete req.session.data['folderRenamed'];
   if (deleteBanner) delete req.session.data['folderDeleted'];
-  if (updateBanner) delete req.session.data['folderUpdated'];
+  if (updateBanner) delete req.session.data['updateBanner']; 
   if (moveBanner) delete req.session.data['filesMovedBanner'];
   if (downloadBanner) delete req.session.data['filesDownloadedBanner'];
   if (bulkDeleteBanner) delete req.session.data['filesBulkDeletedBanner'];
@@ -8803,8 +8803,13 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(
       date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     });
   }
+  
   addAuditLog(req, ref, `${uploadedFiles.length} file(s) uploaded to folder: ${activeFolder.name}`);
-  req.session.data['folderUpdated'] = true;
+  
+  req.session.data['updateBanner'] = { 
+    count: uploadedFiles.length, 
+    folderName: activeFolder.name 
+  };
 
   req.session.save(function(err) {
     res.redirect(`/cases/manage-folders/view/${activeFolder.id}/${activeFolder.slug}?ref=${ref}`);
@@ -8948,7 +8953,8 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check',
   req.session.data['filesMovedBanner'] = { count: extractedDocs.length, destName: destFolder.name };
   
   req.session.save(function(err) {
-    res.redirect(`/cases/manage-folders/view/${sourceFolder.id}/${sourceFolder.slug}?ref=${ref}`);
+    // THE FIX: Redirect to the destination folder instead of the source folder
+    res.redirect(`/cases/manage-folders/view/${destFolder.id}/${destFolder.slug}?ref=${ref}`);
   });
 });
 
