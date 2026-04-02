@@ -9048,6 +9048,31 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/co
 });
 
 // ==============================================
+// REMOVE A FILE FROM THE BULK DELETE LIST
+// ==============================================
+router.get('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/remove', function(req, res) {
+  var ref = req.query.ref;
+  var docId = req.query.docId;
+  var folderId = req.params.folderId;
+  var folderSlug = req.params.folderSlug;
+
+  // 1. Grab the array from filesToDelete (which is what your confirm page uses)
+  if (req.session.data['filesToDelete']) {
+    
+    let selected = req.session.data['filesToDelete'];
+    if (!Array.isArray(selected)) {
+      selected = [selected];
+    }
+
+    // 2. Filter out the specific file the user just clicked "Remove" on
+    req.session.data['filesToDelete'] = selected.filter(id => id !== docId);
+  }
+
+  // 3. THE FIX: Redirect back to the correct /confirm page!
+  res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/delete-selected/confirm?ref=${ref}`);
+});
+
+// ==============================================
 // RENAME A FOLDER
 // ==============================================
 
