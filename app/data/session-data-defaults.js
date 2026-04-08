@@ -83,7 +83,6 @@ module.exports = {
 
       outcomeOverview: {},
       outcomes: [],
-      
       invoicing: { rechargeable: "Yes", finalCost: "1250.00", invoiceSent: "Interim invoice sent", feeReceived: "No" },
 
       caseNotes: [
@@ -92,6 +91,56 @@ module.exports = {
         { text: "Site visit completed. Access was granted without issue.", meta: "4:00pm on Tuesday 10 February 2026 by Sarah Tudor", tableDate: "10 February 2026", tableTime: "4:00pm", tableUser: "Sarah Tudor" },
         { text: "Case officer assigned and initial validation passed.", meta: "9:15am on Tuesday 20 January 2026 by System", tableDate: "20 January 2026", tableTime: "9:15am", tableUser: "System" },
         { text: "Purchase notice application received via portal.", meta: "10:00am on Thursday 15 January 2026 by System", tableDate: "15 January 2026", tableTime: "10:00am", tableUser: "System" }
+      ],
+
+      // --- MOCK AUDIT LOG DATA (45 Items for Pagination Testing) ---
+      auditLog: [
+        { date: "19 Mar 2026<br>2:15pm", details: "Case note added: Hearing venue confirmed with Manchester council.", user: "Steve Waterfield" },
+        { date: "18 Mar 2026<br>4:45pm", details: "Folder updated: Final comments", user: "Kieran De La Cruz" },
+        { date: "18 Mar 2026<br>4:44pm", details: "File uploaded: Appellant-Final-Comments.pdf", user: "Kieran De La Cruz" },
+        { date: "17 Mar 2026<br>11:30am", details: "Case note added: Appellant requested an extension for submitting proofs of evidence.", user: "Kieran De La Cruz" },
+        { date: "15 Mar 2026<br>9:00am", details: "Reminder sent to Local Planning Authority regarding Statement of Case.", user: "System" },
+        { date: "12 Mar 2026<br>3:20pm", details: "Procedure updated to Hearing.", user: "Sarah Tudor" },
+        { date: "12 Mar 2026<br>1:15pm", details: "Contact added: Jane Doe (Manchester Planning Dept)", user: "Kieran De La Cruz" },
+        { date: "10 Mar 2026<br>10:05am", details: "Linked case added: PUR/10044", user: "Kieran De La Cruz" },
+        { date: "07 Mar 2026<br>11:45am", details: "File uploaded: LPA-Statement-Of-Case.pdf", user: "System (Portal)" },
+        { date: "05 Mar 2026<br>2:30pm", details: "File uploaded: Appellant-Statement-Of-Case.docx", user: "System (Portal)" },
+        { date: "01 Mar 2026<br>9:00am", details: "Objection period ended.", user: "System" },
+        { date: "28 Feb 2026<br>4:10pm", details: "Objector added: Mr. T. Barnaby", user: "Kieran De La Cruz" },
+        { date: "25 Feb 2026<br>11:25am", details: "Objector added: Local Residents Association", user: "Kieran De La Cruz" },
+        { date: "20 Feb 2026<br>3:15pm", details: "Interim invoice generated.", user: "System" },
+        { date: "20 Feb 2026<br>3:15pm", details: "Invoicing details updated: Rechargeable status set to Yes.", user: "Steve Waterfield" },
+        { date: "12 Feb 2026<br>10:30am", details: "Inspector assigned: Sarah Tudor", user: "Steve Waterfield" },
+        { date: "12 Feb 2026<br>10:25am", details: "File uploaded: Inspector-Allocation-Notice.pdf", user: "Steve Waterfield" },
+        { date: "10 Feb 2026<br>4:00pm", details: "Case note added: Site visit completed. Access was granted without issue.", user: "Sarah Tudor" },
+        { date: "05 Feb 2026<br>9:15am", details: "Site visit scheduled for 10 February 2026.", user: "Kieran De La Cruz" },
+        { date: "01 Feb 2026<br>2:20pm", details: "Target decision date updated to 30 September 2026.", user: "Kieran De La Cruz" },
+        { date: "28 Jan 2026<br>11:10am", details: "Address details updated.", user: "Kieran De La Cruz" },
+        { date: "25 Jan 2026<br>4:05pm", details: "Applicant added: David Smith", user: "Kieran De La Cruz" },
+        { date: "25 Jan 2026<br>4:00pm", details: "Applicant added: Elena Rostova", user: "Kieran De La Cruz" },
+        { date: "22 Jan 2026<br>1:30pm", details: "Priority updated to High.", user: "Steve Waterfield" },
+        { date: "20 Jan 2026<br>9:15am", details: "Case note added: Case officer assigned and initial validation passed.", user: "System" },
+        { date: "20 Jan 2026<br>9:15am", details: "Case officer assigned: Kieran De La Cruz", user: "Steve Waterfield" },
+        { date: "18 Jan 2026<br>11:45am", details: "Status changed to 'In progress'.", user: "System" },
+        { date: "16 Jan 2026<br>2:30pm", details: "File uploaded: Site-Plan-Detailed.png", user: "System (Portal)" },
+        { date: "15 Jan 2026<br>10:05am", details: "File uploaded: Application-Form-Final.pdf", user: "System (Portal)" },
+        { date: "15 Jan 2026<br>10:02am", details: "File uploaded: Valuation-Report.pdf", user: "System (Portal)" },
+        { date: "15 Jan 2026<br>10:00am", details: "Case note added: Purchase notice application received via portal.", user: "System" },
+        { date: "15 Jan 2026<br>10:00am", details: "Applicant added: Michael Chang", user: "System (Portal)" },
+        { date: "15 Jan 2026<br>10:00am", details: "Case received from Portal. Reference: PUR/10045 generated.", user: "System" },
+        { date: "15 Jan 2026<br>9:59am", details: "Portal submission started by Applicant.", user: "System" },
+        // Padding logs to push the count over 25 for pagination
+        { date: "15 Jan 2026<br>9:58am", details: "System verification step 10 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:57am", details: "System verification step 9 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:56am", details: "System verification step 8 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:55am", details: "System verification step 7 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:54am", details: "System verification step 6 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:53am", details: "System verification step 5 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:52am", details: "System verification step 4 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:51am", details: "System verification step 3 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:50am", details: "System verification step 2 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:49am", details: "System verification step 1 completed.", user: "System" },
+        { date: "15 Jan 2026<br>9:48am", details: "Temporary record drafted.", user: "System" }
       ],
 
       folders: [

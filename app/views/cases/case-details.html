@@ -715,6 +715,15 @@
             }] }
           },
           {
+            key: { text: "Date proposed modifications advertised" },
+            value: { text: currentCase.modificationsAdvertisedDate.formatted or "-" },
+            actions: { items: [{ 
+              href: "/cases/edit/modifications-advertised-date?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.modificationsAdvertisedDate else "Add", 
+              visuallyHiddenText: "modifications advertised date" 
+            }] }
+          },
+          {
             key: { text: "Objection period ends" },
             value: { text: currentCase.objectionPeriodEndDate.formatted or "-" },
             actions: { items: [{ 
@@ -739,15 +748,6 @@
               href: "/cases/edit/decision-issued-by-date?ref=" + currentCase.reference, 
               text: "Change" if currentCase.decisionIssuedByDate else "Add", 
               visuallyHiddenText: "decision issued by date" 
-            }] }
-          },
-          {
-            key: { text: "Date proposed modifications advertised" },
-            value: { text: currentCase.modificationsAdvertisedDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/modifications-advertised-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.modificationsAdvertisedDate else "Add", 
-              visuallyHiddenText: "modifications advertised date" 
             }] }
           }
         ]

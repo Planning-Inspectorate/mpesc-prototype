@@ -5272,7 +5272,7 @@ router.post('/cases/edit/invoicing-fee-received', (req, res) => {
   // --- SET FLASH MESSAGE ---
   req.session.flashSection = "invoicing"; 
 
-addAuditLog(req, req.query.ref, "Invoicing fee received value updated to" + val);
+addAuditLog(req, req.query.ref, "Invoicing fee received value updated to " + val);
   res.redirect('/cases/case-details?ref=' + req.query.ref);
 });
 
@@ -8873,11 +8873,14 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/location
 
   var foundFolder = findFolderDeep(currentCase.folders, folderId);
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
+  
   var activeFolder = foundFolder.target;
+  var parentFolder = foundFolder.parent; // <-- Extract the parent folder
 
   res.render('cases/manage-folders/move-2-location', {
     currentCase: currentCase,
     folder: activeFolder,
+    parentFolder: parentFolder, // <-- Pass it to the HTML
     allFolders: currentCase.folders 
   });
 });
