@@ -61,21 +61,16 @@
 
     {# 2. BUTTONS WRAPPED IN FORM #}
     <form action="/cases/overview-procedures/commit?ref={{ ref }}" method="post" novalidate>
-      {% set addDetailsClass = "govuk-button" if list.length == 0 else "govuk-button--secondary" %}
 
       <div class="govuk-button-group">
         {{ govukButton({
           text: "Add details",
-          classes: addDetailsClass,
+          classes: "govuk-button--secondary",
           href: "/cases/overview-procedures/step-1?ref=" + ref
         }) }}
 
-        {% if list.length == 0 %}
-          {{ govukButton({ text: "Return to case details", classes: "govuk-button--secondary" }) }}
-        {% endif %}
-      </div>
+        </div>
 
-      {% if list.length > 0 %}
         <div class="govuk-button-group">
           {{ govukButton({ text: "Save and continue" }) }}
           {{ govukButton({
@@ -84,7 +79,7 @@
             href: "/cases/overview-procedures/cancel?ref=" + ref
           }) }}
         </div>
-      {% endif %}
+
     </form>
 
   </div>

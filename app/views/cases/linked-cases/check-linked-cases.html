@@ -115,28 +115,16 @@ Check linked case details - Planning Inspectorate Portal
       {# ========================================== #}
       <form action="/cases/linked-cases/commit?ref={{ ref }}" method="post" novalidate>
         
-        {# Dynamic button styling based on whether the list is empty #}
-        {% set addDetailsClass = "govuk-button" if isEmpty else "govuk-button--secondary" %}
 
         <div class="govuk-button-group">
           {{ govukButton({
             text: "Add details",
-            classes: addDetailsClass,
+            classes: "govuk-button--secondary",
             href: "/cases/linked-cases/step-1?ref=" + ref
           }) }}
-
-          {# If completely empty, offer a safe way to back out #}
-          {% if isEmpty %}
-            {{ govukButton({
-              text: "Return to case details",
-              classes: "govuk-button--secondary"
-            }) }}
-          {% endif %}
         </div>
 
-        {# Only show Save/Cancel if data has been manipulated #}
-        {% if not isEmpty %}
-          <div class="govuk-button-group">
+        <div class="govuk-button-group">
             {{ govukButton({ text: "Save and continue" }) }}
             
             {{ govukButton({
@@ -144,9 +132,8 @@ Check linked case details - Planning Inspectorate Portal
               classes: "govuk-button--secondary",
               href: "/cases/linked-cases/cancel?ref=" + ref
             }) }}
-          </div>
-        {% endif %}
-     
+        </div>
+
       </form>
 
     </div>
