@@ -5588,7 +5588,29 @@ addAuditLog(req, ref, "Relevant website links updated to: " + (c.relevantWebsite
 });
 
 
-// --- BANNER + LOAD CASE DETAILS PAGE ---
+// ========================================================= ALL CASES ==========================================================
+router.get('/cases', function (req, res) {
+  let cases = req.session.data['cases'] || [];
+  const searchTerm = req.query.search;
+
+  // Simple search logic: filter cases by reference or name
+  if (searchTerm) {
+    cases = cases.filter(c => 
+      c.reference.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      c.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  res.render('cases', { // This assumes your file is app/views/cases/index.html
+    cases: cases,
+    totalCases: cases.length,
+    searchTerm: searchTerm
+  });
+});
+
+
+
+// --- LOAD CASE DETAILS PAGE ---
 router.get('/cases/case-details', function(req, res) {
   let ref = req.query.ref;
   
@@ -7903,24 +7925,16 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
     // Overwrite the session with the live URL data
     req.session.data['area'] = req.query.area;
     req.session.data['type'] = req.query.type;
-    req.session.data['status'] = req.query.status; // <-- Added Status
     req.session.data['searchCriteria'] = req.query.searchCriteria;
 
-    // --- EXPRESS ARRAY LIMIT FIX (Subtype) ---
+    // --- EXPRESS ARRAY LIMIT FIX ---
+    // If the user checks > 20 boxes, Express turns req.query.subtype into an object.
+    // We convert it back to a standard array before saving it to the session.
     let rawSubtypes = req.query.subtype;
     if (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes)) {
       req.session.data['subtype'] = Object.values(rawSubtypes);
     } else {
       req.session.data['subtype'] = rawSubtypes;
-    }
-
-    // --- EXPRESS ARRAY LIMIT FIX (Status) ---
-    // Necessary if user clicks 20+ statuses at once
-    let rawStatuses = req.query.status;
-    if (rawStatuses && typeof rawStatuses === 'object' && !Array.isArray(rawStatuses)) {
-      req.session.data['status'] = Object.values(rawStatuses);
-    } else {
-      req.session.data['status'] = rawStatuses;
     }
   }
 
@@ -7941,23 +7955,18 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   const areas = cleanArray('area');
   const types = cleanArray('type');
   const subtypes = cleanArray('subtype');
-  const statuses = cleanArray('status'); // <-- Added Status
   const search = req.session.data['searchCriteria'] || "";
 
-  // 3. The Filter Logic (Using "OR" Logic across active categories)
-  if (areas.length > 0 || types.length > 0 || subtypes.length > 0 || statuses.length > 0) {
+  // 3. The Filter Logic (Using "OR" Logic)
+  if (areas.length > 0 || types.length > 0 || subtypes.length > 0) {
     cases = cases.filter(c => {
       // Check if the case matches any explicitly checked boxes
       const matchesArea = areas.includes(c.areaValue);
       const matchesType = types.includes(c.typeValue);
       const matchesSubtype = subtypes.includes(c.subtypeValue);
-      
-      // Pull the status safely (accounts for differently named keys in seed data)
-      const cStat = c.caseStatus || c.status || c['case-status'];
-      const matchesStatus = statuses.includes(cStat);
 
       // If the case hits ANY of the active filters, keep it in the list!
-      return matchesArea || matchesType || matchesSubtype || matchesStatus;
+      return matchesArea || matchesType || matchesSubtype;
     });
   }
 
@@ -7986,7 +7995,7 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   }
   
 
-  // --- 5. PAGINATION LOGIC ---
+// --- 5. PAGINATION LOGIC ---
   const totalCasesCount = cases.length; 
   
   // 1. Bulletproof Items Per Page
@@ -8070,8 +8079,8 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
 // REMOVE INDIVIDUAL FILTER TAGS
 // =========================================================
 router.get('/cases/remove-filter/:filterCategory/:filterValue', function(req, res) {
-  let category = req.params.filterCategory; // e.g., 'area', 'type', 'subtype' or 'status'
-  let valueToRemove = req.params.filterValue; // e.g., 'housing' or 'Ready to start'
+  let category = req.params.filterCategory; // e.g., 'area', 'type', or 'subtype'
+  let valueToRemove = req.params.filterValue; // e.g., 'housing'
 
   // Look up the current array of filters in the session
   let currentFilters = req.session.data[category];
@@ -8097,7 +8106,6 @@ router.get('/cases/clear-filters', function (req, res) {
   req.session.data['area'] = "";
   req.session.data['type'] = "";
   req.session.data['subtype'] = "";
-  req.session.data['status'] = ""; // <-- Added Status clear
   req.session.data['searchCriteria'] = "";
   res.redirect('/cases-filter');
 });
