@@ -2,7 +2,7 @@
 
 {% extends "layouts/main.html" %}
 
-{# --- Dynamic Text Setup (Using the new Simulated Login Logic) --- #}
+{# --- Dynamic Text Setup --- #}
 {% set headerText = "My cases" if isViewingOwnCases else "Cases assigned to " + activeUserName %}
 {% set emptyText = "You are not assigned to any cases" if isViewingOwnCases else activeUserName + " is not assigned to any cases" %}
 
@@ -30,63 +30,48 @@
 {% endmacro %}
 
 <style>
-  /* --- MOJ FILTER & LAYOUT STYLES --- */
+  /* --- MOJ FILTER STYLES --- */
   .moj-filter__header { background-color: #b1b4b6; }
-  .moj-filter__selected { background-color: #f3f2f1; }
+  .moj-filter__selected { background-color: #f3f2f1; padding: 20px; }
   .moj-filter__heading-action a { font-size: 16px !important; font-weight: normal; }
-  .custom-filter-layout { display: flex; gap: 0; }
-  .custom-filter-column { flex: 0 0 31%; max-width: 31%; padding-right: 0; }
-  .custom-content-column { flex: 0 0 69%; max-width: 69%; padding-left: 30px; }
-  .moj-filter { width: 100%; }
-  .moj-filter-layout__filter { border: none !important; }
-  .moj-filter__options { margin-top: -1px; padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6 }
+  .moj-filter { width: 100%; margin-bottom: 30px; }
+  .moj-filter__options { padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6; background: #fff; }
 
   /* HIDE THE HARDCODED MOJ BUTTON AT THE TOP */
   .moj-filter__options > .govuk-button:first-child { display: none !important; }
 
-  /* --- ACCORDION STYLES --- */
-  .govuk-details__summary::before {
-      clip-path: polygon(6.38% 22.63%, 49.5% 65.75%, 92.63% 22.63%, 100% 30%, 50% 80%, 0% 30%);
-      background-color: black;
-      color: black;
-      width: 3px;
-      height: 3px;
+  /* --- FIX: FORCE CLEAR FILTERS TO SIT INLINE WITHOUT WRAPPING --- */
+  .moj-filter__selected-heading {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: baseline !important;
+    gap: 15px !important;
+    margin-bottom: 15px;
   }
+  .moj-filter__heading-title { margin: 0 !important; width: auto !important; flex-shrink: 0; }
+  .moj-filter__heading-title h2 { margin: 0 !important; padding: 0 !important; white-space: nowrap !important; }
+  .moj-filter__heading-action { margin: 0 !important; width: auto !important; flex-shrink: 0; }
+  .moj-filter__heading-action p { margin: 0 !important; white-space: nowrap !important; }
 
-  .govuk-details[open] > .govuk-details__summary::before {
-      clip-path: polygon(0% 71.88%, 49.5% 22.63%, 98.5% 71.88%, 91.63% 78.71%, 50% 36.88%, 7.37% 79.29%);
-      width: 3px;
-      height: 3px;
-  }
-
-  .custom-details-summary { 
-      padding: 15px 10px 15px 35px; 
-      width: 100%; 
-      box-sizing: border-box;
+  /* --- 3 COLUMN CHECKBOX GRID --- */
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 20px;
   }
   
-  .filtersText { 
-      font-weight: normal; 
-      color: #1d70b8; 
-      text-decoration: none; 
-  }
-  .filtersText:hover { 
-      color: #003078; 
-      text-decoration: underline; 
-      text-decoration-thickness: 2px; 
+  /* Add the bottom border to mimic the reference image */
+  .checkbox-grid .govuk-checkboxes__item {
+    border-bottom: 1px solid #b1b4b6;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
   }
 
-  .filters-accordion { border-top: 1px solid #b1b4b6; border-bottom: 1px solid #b1b4b6; }
-  .govuk-details { border-left: none; padding-left: 0; }
-  
-  .govuk-details__text {
-      border-left: none !important;
-      padding-left: 0 !important;
-      margin-left: 0 !important;
-      padding-bottom: 10px !important;
+  /* Make sure it drops to 1 column on mobile */
+  @media (max-width: 768px) {
+    .checkbox-grid { grid-template-columns: 1fr; }
   }
-
-  .app-list-filter__container { width: 100%; margin-top: 15px; }
 
   /* Pill Icons */
   .moj-filter__tag::after {
@@ -117,21 +102,10 @@
       <br>
 
       <div class="govuk-button-group">
-
         {% if not isViewingOwnCases %}
-          {{ govukButton({
-            text: "Return to your cases",
-            classes: "govuk-button",
-            href: "/assigned-to-me/my-cases"
-          }) }}
+          {{ govukButton({ text: "Return to your cases", href: "/assigned-to-me/my-cases" }) }}
         {% endif %}
-        
-        {{ govukButton({
-          text: "Search all cases",
-          classes: "govuk-button--secondary",
-          href: "/cases-page"
-        }) }}
-        
+        {{ govukButton({ text: "Search all cases", classes: "govuk-button--secondary", href: "/cases-page" }) }}
       </div>
       
     {# ========================================================== #}
@@ -141,138 +115,165 @@
       
       <h1 class="govuk-heading-l govuk-!-margin-bottom-2">{{ headerText }}</h1>
       
-      {# --- NEW LINK SITUATED PERFECTLY BETWEEN H1 AND FILTER LAYOUT --- #}
       <p class="govuk-body govuk-!-margin-bottom-6">
-
         <br>
         <a class="govuk-link" href="/assigned-to-me/search-user" data-cy="change-case-officer">View another case officer's or inspector’s cases</a>
-        
         {% if not isViewingOwnCases %}
           &nbsp;|&nbsp; <a class="govuk-link" href="/assigned-to-me/my-cases">Return to my case list</a>
         {% endif %}
       </p>
 
-      <form action="/assigned-to-me/filter" method="post" novalidate>
-        <div class="moj-filter-layout custom-filter-layout">
+      {# --- TOGGLE BUTTON --- #}
+      <button type="button" id="toggle-filter-btn" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-4">Show status filter</button>
 
-          {# --- LEFT COLUMN: THE FILTER (31% width) --- #}
-          <div class="custom-filter-column">
+      {# --- FILTER PANEL (Hidden by default) --- #}
+      <div id="filter-panel" style="display: none;">
+        <form action="/assigned-to-me/filter" method="post" novalidate>
+          
+          {%- set filterOptionsHtml %}
             
-            {%- set filterOptionsHtml %}
-              
-              {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
-              
-              <div class="govuk-!-margin-bottom-0">
-                <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion">
-                  <summary class="govuk-details__summary custom-details-summary">
-                    <span class="govuk-details__summary-text filtersText">Status</span>
-                  </summary>
-                  <div class="govuk-details__text">
-                    
-                    {# Local Keyword Search #}
-                    <label for="status-filter" class="govuk-visually-hidden">Find status</label>
-                    <input id="status-filter" class="app-list-filter__filter-input govuk-input govuk-!-margin-bottom-0" type="text" placeholder="Find status..." aria-controls="status-container" onkeydown="return event.key != 'Enter';" style="width: 100%;">
-
-                    <div class="app-list-filter__container" id="status-container">
-                      {{ govukCheckboxes({
-                        idPrefix: "statusFilter", name: "statusFilter", classes: "govuk-checkboxes--small",
-                        items: [
-                          { value: "Ready to start", text: "Ready to start " + getCount(allCases, 'Ready to start'), checked: true if currentStatusFilter and ("Ready to start" in currentStatusFilter) },
-                          { value: "LPA questionnaire", text: "LPA questionnaire " + getCount(allCases, 'LPA questionnaire'), checked: true if currentStatusFilter and ("LPA questionnaire" in currentStatusFilter) },
-                          { value: "New case", text: "New case " + getCount(allCases, 'New case'), checked: true if currentStatusFilter and ("New case" in currentStatusFilter) },
-                          { value: "Validated", text: "Validated " + getCount(allCases, 'Validated'), checked: true if currentStatusFilter and ("Validated" in currentStatusFilter) },
-                          { value: "Invalid", text: "Invalid " + getCount(allCases, 'Invalid'), checked: true if currentStatusFilter and ("Invalid" in currentStatusFilter) },
-                          { value: "Rejected", text: "Rejected " + getCount(allCases, 'Rejected'), checked: true if currentStatusFilter and ("Rejected" in currentStatusFilter) },
-                          { value: "Inform parties", text: "Inform parties " + getCount(allCases, 'Inform parties'), checked: true if currentStatusFilter and ("Inform parties" in currentStatusFilter) },
-                          { value: "Allocate inspector", text: "Allocate inspector " + getCount(allCases, 'Allocate inspector'), checked: true if currentStatusFilter and ("Allocate inspector" in currentStatusFilter) },
-                          { value: "In progress", text: "In progress " + getCount(allCases, 'In progress'), checked: true if currentStatusFilter and ("In progress" in currentStatusFilter) },
-                          { value: "Ready for inspector", text: "Ready for inspector " + getCount(allCases, 'Ready for inspector'), checked: true if currentStatusFilter and ("Ready for inspector" in currentStatusFilter) },
-                          { value: "Decision/recommendation issued", text: "Decision/recommendation issued " + getCount(allCases, 'Decision/recommendation issued'), checked: true if currentStatusFilter and ("Decision/recommendation issued" in currentStatusFilter) },
-                          { value: "Despatch", text: "Despatch " + getCount(allCases, 'Despatch'), checked: true if currentStatusFilter and ("Despatch" in currentStatusFilter) },
-                          { value: "Final check", text: "Final check " + getCount(allCases, 'Final check'), checked: true if currentStatusFilter and ("Final check" in currentStatusFilter) },
-                          { value: "Closed", text: "Closed " + getCount(allCases, 'Closed'), checked: true if currentStatusFilter and ("Closed" in currentStatusFilter) },
-                          { value: "Cancelled", text: "Cancelled " + getCount(allCases, 'Cancelled'), checked: true if currentStatusFilter and ("Cancelled" in currentStatusFilter) },
-                          { value: "Paused/on hold", text: "Paused/on hold " + getCount(allCases, 'Paused/on hold'), checked: true if currentStatusFilter and ("Paused/on hold" in currentStatusFilter) },
-                          { value: "Withdrawn", text: "Withdrawn " + getCount(allCases, 'Withdrawn'), checked: true if currentStatusFilter and ("Withdrawn" in currentStatusFilter) },
-                          { value: "In abeyance", text: "In abeyance " + getCount(allCases, 'In abeyance'), checked: true if currentStatusFilter and ("In abeyance" in currentStatusFilter) },
-                          { value: "Closed - opened in error", text: "Closed - opened in error " + getCount(allCases, 'Closed - opened in error'), checked: true if currentStatusFilter and ("Closed - opened in error" in currentStatusFilter) }
-                        ]
-                      }) }}
-                    </div>
-                  </div>
-                </details>
-              </div>
-            {% endset -%}
-
-            {# --- GENERATE THE SELECTED PILLS --- #}
-            {% set filterCategories = [] %}
-            {% if currentStatusFilter and currentStatusFilter.length > 0 %}
-              {% set statItems = [] %}
-              {% for item in currentStatusFilter %}
-                {% if item and item != "_unchecked" %}
-                  {% set statItems = (statItems.push({ text: item, href: "/assigned-to-me/remove-filter/status/" + item }), statItems) %}
-                {% endif %}
-              {% endfor %}
-              {% if statItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Status" }, items: statItems }), filterCategories) %}{% endif %}
-            {% endif %}
-
-            {{ mojFilter({
-              heading: { text: "Filter" },
-              selectedFilters: {
-                heading: { text: "Selected filters" },
-                clearLink: {
-                  text: "Clear filters",
-                  href: "/assigned-to-me/clear-filter",
-                  classes: "govuk-!-font-size-16"
-                },
-                categories: filterCategories
-              },
-              optionsHtml: filterOptionsHtml
+            {# --- Apply Button constrained to original width (31%) --- #}
+            {{ govukButton({ 
+              text: "Apply filters", 
+              classes: "govuk-!-margin-bottom-6 govuk-!-margin-top-2",
+              attributes: { style: "width: 31%; min-width: 200px;" }
             }) }}
-
-          </div>
-
-          {# --- RIGHT COLUMN: RESULTS TABLE (69% width) --- #}
-          <div class="custom-content-column">
             
-            <table class="govuk-table" data-module="moj-sortable-table">
-              <thead class="govuk-table__head">
-                <tr class="govuk-table__row">
-                  <th scope="col" class="govuk-table__header" aria-sort="none">Reference</th>
-                  <th scope="col" class="govuk-table__header" aria-sort="none">Case officer</th>
-                  <th scope="col" class="govuk-table__header" aria-sort="none">Inspector</th>
-                  <th scope="col" class="govuk-table__header" aria-sort="none">Case status</th>
-                </tr>
-              </thead>
-              <tbody class="govuk-table__body">
-                {% for case in filteredCases %}
-                  <tr class="govuk-table__row">
-                    <td class="govuk-table__cell"><a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a></td>
-                    <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
-                    <td class="govuk-table__cell">
-                      {% if case.inspectors and case.inspectors.length > 0 %}{% for insp in case.inspectors %}{{ insp.name }}{% if not loop.last %}<br>{% endif %}{% endfor %}
-                      {% elseif case.inspector %}{{ case.inspector }}
-                      {% else %}Unassigned{% endif %}
-                    </td>
-                    <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
-                  </tr>
-                {% else %}
-                  {# Zero Matches State #}
-                  <tr class="govuk-table__row">
-                    <td class="govuk-table__cell" colspan="4">
-                      <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-                        <h2 class="govuk-heading-m">No results found</h2>
-                        <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
-                      </div>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+            <div class="govuk-form-group govuk-!-margin-bottom-4">
+              <label class="govuk-label govuk-!-font-weight-bold" for="status-filter">Search status</label>
+              <input id="status-filter" class="app-list-filter__filter-input govuk-input govuk-!-width-one-half" type="text" aria-controls="status-container" onkeydown="return event.key != 'Enter';">
+            </div>
 
-        </div>
-      </form>
+            <div class="app-list-filter__container" id="status-container">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Select status</legend>
+              
+              {{ govukCheckboxes({
+                idPrefix: "statusFilter", name: "statusFilter", 
+                classes: "govuk-checkboxes--small checkbox-grid",
+                items: [
+                  { value: "Ready to start", text: "Ready to start " + getCount(allCases, 'Ready to start'), checked: true if currentStatusFilter and ("Ready to start" in currentStatusFilter) },
+                  { value: "LPA questionnaire", text: "LPA questionnaire " + getCount(allCases, 'LPA questionnaire'), checked: true if currentStatusFilter and ("LPA questionnaire" in currentStatusFilter) },
+                  { value: "New case", text: "New case " + getCount(allCases, 'New case'), checked: true if currentStatusFilter and ("New case" in currentStatusFilter) },
+                  { value: "Validated", text: "Validated " + getCount(allCases, 'Validated'), checked: true if currentStatusFilter and ("Validated" in currentStatusFilter) },
+                  { value: "Invalid", text: "Invalid " + getCount(allCases, 'Invalid'), checked: true if currentStatusFilter and ("Invalid" in currentStatusFilter) },
+                  { value: "Rejected", text: "Rejected " + getCount(allCases, 'Rejected'), checked: true if currentStatusFilter and ("Rejected" in currentStatusFilter) },
+                  { value: "Inform parties", text: "Inform parties " + getCount(allCases, 'Inform parties'), checked: true if currentStatusFilter and ("Inform parties" in currentStatusFilter) },
+                  { value: "Allocate inspector", text: "Allocate inspector " + getCount(allCases, 'Allocate inspector'), checked: true if currentStatusFilter and ("Allocate inspector" in currentStatusFilter) },
+                  { value: "In progress", text: "In progress " + getCount(allCases, 'In progress'), checked: true if currentStatusFilter and ("In progress" in currentStatusFilter) },
+                  { value: "Ready for inspector", text: "Ready for inspector " + getCount(allCases, 'Ready for inspector'), checked: true if currentStatusFilter and ("Ready for inspector" in currentStatusFilter) },
+                  { value: "Decision/recommendation issued", text: "Decision/recommendation issued " + getCount(allCases, 'Decision/recommendation issued'), checked: true if currentStatusFilter and ("Decision/recommendation issued" in currentStatusFilter) },
+                  { value: "Despatch", text: "Despatch " + getCount(allCases, 'Despatch'), checked: true if currentStatusFilter and ("Despatch" in currentStatusFilter) },
+                  { value: "Final check", text: "Final check " + getCount(allCases, 'Final check'), checked: true if currentStatusFilter and ("Final check" in currentStatusFilter) },
+                  { value: "Closed", text: "Closed " + getCount(allCases, 'Closed'), checked: true if currentStatusFilter and ("Closed" in currentStatusFilter) },
+                  { value: "Cancelled", text: "Cancelled " + getCount(allCases, 'Cancelled'), checked: true if currentStatusFilter and ("Cancelled" in currentStatusFilter) },
+                  { value: "Paused/on hold", text: "Paused/on hold " + getCount(allCases, 'Paused/on hold'), checked: true if currentStatusFilter and ("Paused/on hold" in currentStatusFilter) },
+                  { value: "Withdrawn", text: "Withdrawn " + getCount(allCases, 'Withdrawn'), checked: true if currentStatusFilter and ("Withdrawn" in currentStatusFilter) },
+                  { value: "In abeyance", text: "In abeyance " + getCount(allCases, 'In abeyance'), checked: true if currentStatusFilter and ("In abeyance" in currentStatusFilter) },
+                  { value: "Closed - opened in error", text: "Closed - opened in error " + getCount(allCases, 'Closed - opened in error'), checked: true if currentStatusFilter and ("Closed - opened in error" in currentStatusFilter) }
+                ]
+              }) }}
+            </div>
+          {% endset -%}
+
+          {# --- GENERATE THE SELECTED PILLS --- #}
+          {% set filterCategories = [] %}
+          {% if currentStatusFilter and currentStatusFilter.length > 0 %}
+            {% set statItems = [] %}
+            {% for item in currentStatusFilter %}
+              {% if item and item != "_unchecked" %}
+                {% set statItems = (statItems.push({ text: item, href: "/assigned-to-me/remove-filter/status/" + item }), statItems) %}
+              {% endif %}
+            {% endfor %}
+            {% if statItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Status" }, items: statItems }), filterCategories) %}{% endif %}
+          {% endif %}
+
+          {{ mojFilter({
+            heading: { text: "Filter" },
+            selectedFilters: {
+              heading: { text: "Selected filters" },
+              clearLink: {
+                text: "Clear filters",
+                href: "/assigned-to-me/clear-filter",
+                classes: "govuk-!-font-size-16"
+              },
+              categories: filterCategories
+            },
+            optionsHtml: filterOptionsHtml
+          }) }}
+
+        </form>
+      </div>
+
+     {# --- RESULTS TABLE (Full Width) --- #}
+      <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            {# 1. Reference: Locked width, no wrapping #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
+            
+            {# 2. Case name: Restricted to 30% to free up space for names #}
+            <th scope="col" class="govuk-table__header" style="width: 30%;" aria-sort="none">Case name</th>
+            
+            {# 3. Case officer: Given more space, and header forced to a single line #}
+            <th scope="col" class="govuk-table__header" style="width: 18%; white-space: nowrap;" aria-sort="none">Case officer</th>
+            
+            {# 4. Inspector: Given more space #}
+            <th scope="col" class="govuk-table__header" style="width: 18%;" aria-sort="none">Inspector</th>
+            
+            {# 5. Received date: Locked width, no wrapping #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
+            
+            {# 6. Status: Fixed smaller width #}
+            <th scope="col" class="govuk-table__header" style="width: 12%;" aria-sort="none">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for case in filteredCases %}
+            <tr class="govuk-table__row">
+              
+              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a>
+              </td>
+              
+              <td class="govuk-table__cell">{{ case.caseName }}</td>
+              
+              <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
+              
+              <td class="govuk-table__cell">
+                {% if case.inspectors and case.inspectors.length > 0 %}
+                  {% for insp in case.inspectors %}{{ insp.name }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+                {% elseif case.inspector %}
+                  {{ case.inspector }}
+                {% else %}
+                  Unassigned
+                {% endif %}
+              </td>
+              
+              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                {% if case.caseReceivedDate and case.caseReceivedDate.formatted %}
+                  {{ case.caseReceivedDate.formatted }}
+                {% elif case.receivedDay and case.receivedMonth and case.receivedYear %}
+                  {{ case.receivedDay }}/{{ case.receivedMonth }}/{{ case.receivedYear }}
+                {% elif case['case-received-date-day'] %}
+                  {{ case['case-received-date-day'] }}/{{ case['case-received-date-month'] }}/{{ case['case-received-date-year'] }}
+                {% endif %}
+              </td>
+              
+              <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
+            </tr>
+          {% else %}
+            {# Zero Matches State #}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell" colspan="6">
+                <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
+                  <h2 class="govuk-heading-m">No results found</h2>
+                  <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
     {% endif %}
 
@@ -280,7 +281,7 @@
 </div>
 
 {# ========================================================== #}
-{# LOCAL JAVASCRIPT: LOCAL SEARCH                             #}
+{# LOCAL JAVASCRIPT: LOCAL SEARCH & TOGGLE                    #}
 {# ========================================================== #}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -306,6 +307,25 @@
         }
       });
     });
+
+    // --- 2. HIDE/SHOW FILTER TOGGLE ---
+    const toggleBtn = document.getElementById('toggle-filter-btn');
+    const filterPanel = document.getElementById('filter-panel');
+    
+    if (toggleBtn && filterPanel) {
+      toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Check if it's currently hidden or has an empty string
+        if (filterPanel.style.display === 'none' || filterPanel.style.display === '') {
+          filterPanel.style.display = 'block';
+          toggleBtn.textContent = 'Hide status filter';
+        } else {
+          filterPanel.style.display = 'none';
+          toggleBtn.textContent = 'Show status filter';
+        }
+      });
+    }
 
   });
 </script>
