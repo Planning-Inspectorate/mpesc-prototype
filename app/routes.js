@@ -7902,10 +7902,10 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
     // Overwrite the session with the live URL data
     req.session.data['area'] = req.query.area;
     req.session.data['type'] = req.query.type;
-    req.session.data['status'] = req.query.status; // <-- Added Status
+    req.session.data['status'] = req.query.status; 
     req.session.data['searchCriteria'] = req.query.searchCriteria;
 
-    // --- EXPRESS ARRAY LIMIT FIX (Subtype) ---
+    // --- EXPRESS ARRAY LIMIT FIX ---
     let rawSubtypes = req.query.subtype;
     if (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes)) {
       req.session.data['subtype'] = Object.values(rawSubtypes);
@@ -7913,8 +7913,6 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
       req.session.data['subtype'] = rawSubtypes;
     }
 
-    // --- EXPRESS ARRAY LIMIT FIX (Status) ---
-    // Necessary if user clicks 20+ statuses at once
     let rawStatuses = req.query.status;
     if (rawStatuses && typeof rawStatuses === 'object' && !Array.isArray(rawStatuses)) {
       req.session.data['status'] = Object.values(rawStatuses);
@@ -7927,7 +7925,6 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   const cleanArray = (categoryName) => {
     let val = req.session.data[categoryName];
     
-    // Auto-heal the session if it somehow got stuck as an object from an older refresh
     if (val && typeof val === 'object' && !Array.isArray(val)) {
       val = Object.values(val);
       req.session.data[categoryName] = val; 
@@ -7940,23 +7937,35 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   const areas = cleanArray('area');
   const types = cleanArray('type');
   const subtypes = cleanArray('subtype');
-  const statuses = cleanArray('status'); // <-- Added Status
+  const statuses = cleanArray('status'); 
   const search = req.session.data['searchCriteria'] || "";
 
-  // 3. The Filter Logic (Using "OR" Logic across active categories)
-  if (areas.length > 0 || types.length > 0 || subtypes.length > 0 || statuses.length > 0) {
-    cases = cases.filter(c => {
-      // Check if the case matches any explicitly checked boxes
-      const matchesArea = areas.includes(c.areaValue);
-      const matchesType = types.includes(c.typeValue);
-      const matchesSubtype = subtypes.includes(c.subtypeValue);
-      
-      // Pull the status safely (accounts for differently named keys in seed data)
-      const cStat = c.caseStatus || c.status || c['case-status'];
-      const matchesStatus = statuses.includes(cStat);
+  // ====================================================================
+  // 3. THE FILTER LOGIC: Strict "AND" logic across categories
+  // ====================================================================
+  const hasAreaFilters = areas.length > 0;
+  const hasTypeFilters = types.length > 0;
+  const hasSubtypeFilters = subtypes.length > 0;
+  const hasStatusFilters = statuses.length > 0;
 
-      // If the case hits ANY of the active filters, keep it in the list!
-      return matchesArea || matchesType || matchesSubtype || matchesStatus;
+  if (hasAreaFilters || hasTypeFilters || hasSubtypeFilters || hasStatusFilters) {
+    cases = cases.filter(c => {
+      
+      // Check Area: Passes if NO areas are checked, OR if the case matches a checked area
+      const passesArea = !hasAreaFilters || areas.includes(c.areaValue);
+      
+      // Check Type: Passes if NO types are checked, OR if the case matches a checked type
+      const passesType = !hasTypeFilters || types.includes(c.typeValue);
+      
+      // Check Subtype: Passes if NO subtypes are checked, OR if the case matches a checked subtype
+      const passesSubtype = !hasSubtypeFilters || subtypes.includes(c.subtypeValue);
+      
+      // Check Status: Passes if NO statuses are checked, OR if the case matches a checked status
+      const cStat = c.caseStatus || c.status || c['case-status'];
+      const passesStatus = !hasStatusFilters || statuses.includes(cStat);
+
+      // FINAL RESULT: The case MUST pass ALL active category checks (AND logic)
+      return passesArea && passesType && passesSubtype && passesStatus;
     });
   }
 
@@ -7977,7 +7986,7 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
         (c.caseName || "") + 
         (c.caseStatus || "") + 
         (c.authorityName || "") + 
-        (applicantsString)            // Our newly extracted names!
+        (applicantsString)
       ).toLowerCase();
       
       return content.includes(search.toLowerCase());
@@ -7988,58 +7997,49 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   // --- 5. PAGINATION LOGIC ---
   const totalCasesCount = cases.length; 
   
-  // 1. Bulletproof Items Per Page
   let rawItems = req.query.itemsPerPage || req.session.data['itemsPerPage'];
   let itemsPerPage = parseInt(rawItems, 10);
   if (isNaN(itemsPerPage) || itemsPerPage <= 0) {
-    itemsPerPage = 25; // Fallback to 25 if corrupted
+    itemsPerPage = 25; 
   }
   req.session.data['itemsPerPage'] = itemsPerPage; 
 
-  // 2. Bulletproof Current Page
   let rawPage = req.query.page || 1;
   let currentPage = parseInt(rawPage, 10);
   if (isNaN(currentPage) || currentPage <= 0) {
     currentPage = 1;
   }
 
-  // Calculate pages
   const totalPages = Math.ceil(totalCasesCount / itemsPerPage) || 1;
   if (currentPage > totalPages) currentPage = totalPages;
 
-  // Slice the array
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedCases = cases.slice(startIndex, endIndex);
 
-  // Generate smart pagination links for the GOV.UK Macro
   let paginationItems = [];
-  
-  // 1. Identify which page numbers we actually want to show
   let pagesToShow = [];
+  
   for (let i = 1; i <= totalPages; i++) {
     if (
-      i === 1 ||                   // Always show first page
-      i === totalPages ||          // Always show last page
-      i === currentPage ||         // Always show current page
-      i === currentPage - 1 ||     // Show page immediately before current
-      i === currentPage + 1        // Show page immediately after current
+      i === 1 ||                   
+      i === totalPages ||          
+      i === currentPage ||         
+      i === currentPage - 1 ||     
+      i === currentPage + 1        
     ) {
       pagesToShow.push(i);
     }
   }
 
-  // 2. Build the array with ellipses in the gaps
   let previousPage = null;
   for (let i of pagesToShow) {
     if (previousPage) {
-      // If there is a jump between numbers (e.g., from 3 to 5), insert an ellipsis
       if (i - previousPage > 1) {
         paginationItems.push({ ellipsis: true });
       }
     }
     
-    // Add the actual page number
     paginationItems.push({
       number: i,
       current: (i === currentPage),
