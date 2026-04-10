@@ -348,50 +348,52 @@
 
         <p class="govuk-body govuk-clearfix"></p>
         
-        {# Results Text #}
-        <p class="govuk-body govuk-!-margin-bottom-2" data-cy="pagination-results-text">
-          This folder contains {{ folderTotalDocs }} file(s). Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalDocs }}</strong> files.
-        </p>
+        {# --- HIDE EVERYTHING EXCEPT THE UPLOAD BUTTON IF FILTER RESULTS = 0 --- #}
+        {% if paginatedDocuments and paginatedDocuments.length > 0 %}
+          
+          {# Results Text #}
+          <p class="govuk-body govuk-!-margin-bottom-2" data-cy="pagination-results-text">
+            This folder contains {{ folderTotalDocs }} file(s). Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalDocs }}</strong> files.
+          </p>
 
-        {# Results per page #}
-        <p class="pins-pagination-options govuk-!-margin-bottom-4 govuk-!-margin-top-1">
-          <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+          {# Results per page #}
+          <p class="pins-pagination-options govuk-!-margin-bottom-4 govuk-!-margin-top-1">
+            <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
 
-          {% if itemsPerPage == 25 %}<span class="govuk-body">25</span>{% else %}<a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=25" data-pagination="25">25</a>{% endif %}&nbsp;&nbsp;|&nbsp;&nbsp;
-          {% if itemsPerPage == 50 %}<span class="govuk-body">50</span>{% else %}<a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=50" data-pagination="50">50</a>{% endif %}&nbsp;&nbsp;|&nbsp;&nbsp;
-          {% if itemsPerPage == 100 %}<span class="govuk-body">100</span>{% else %}<a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=100" data-pagination="100">100</a>{% endif %}
-        </p>
+            {% if itemsPerPage == 25 %}<span class="govuk-body">25</span>{% else %}<a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=25" data-pagination="25">25</a>{% endif %}&nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 50 %}<span class="govuk-body">50</span>{% else %}<a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=50" data-pagination="50">50</a>{% endif %}&nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 100 %}<span class="govuk-body">100</span>{% else %}<a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=100" data-pagination="100">100</a>{% endif %}
+          </p>
 
-        {# Buttons group #}
-        <div class="govuk-button-group govuk-!-margin-bottom-4">
-            <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/upload?ref={{ currentCase.reference }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-              Upload files
-            </a>
-            <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" data-module="govuk-button">
-              Move selected
-            </button>
-            <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/download-selected?ref={{ currentCase.reference }}" data-module="govuk-button">
-              Download selected
-            </button>
-            <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/delete-selected?ref={{ currentCase.reference }}" data-module="govuk-button">
-              Delete selected
-            </button>
-        </div>
+          {# Buttons group #}
+          <div class="govuk-button-group govuk-!-margin-bottom-4">
+              <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/upload?ref={{ currentCase.reference }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                Upload files
+              </a>
+              <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" data-module="govuk-button">
+                Move selected
+              </button>
+              <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/download-selected?ref={{ currentCase.reference }}" data-module="govuk-button">
+                Download selected
+              </button>
+              <button type="submit" class="govuk-button govuk-button--secondary" formaction="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/delete-selected?ref={{ currentCase.reference }}" data-module="govuk-button">
+                Delete selected
+              </button>
+          </div>
 
-        {# Files selected dynamic counter #}
-        <p class="govuk-body govuk-!-margin-bottom-4" id="selected-files-count">
-          0 file(s) on this page selected.
-        </p>
+          {# Files selected dynamic counter #}
+          <p class="govuk-body govuk-!-margin-bottom-4" id="selected-files-count">
+            0 file(s) on this page selected.
+          </p>
 
-        <p class="govuk-body govuk-!-margin-bottom">
-          Select 'All' checkbox to select all the files.
-        </p>
+          <p class="govuk-body govuk-!-margin-bottom">
+            Select 'All' checkbox to select all the files.
+          </p>
 
           <table class="govuk-table" data-module="moj-sortable-table" data-cy="documents-table">
             <thead class="govuk-table__head">
               <tr class="govuk-table__row">
                 
-                {# 1. Min-width acts as a shield, ensuring the "All" checkbox never gets squished #}
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 10%; min-width: 75px;">
                   <div class="govuk-checkboxes__item govuk-checkboxes--small" style="margin-bottom: 0;">
                     <input type="checkbox" class="govuk-checkboxes__input" id="checkboxes-all" name="checkboxes-all" value="all">
@@ -399,7 +401,6 @@
                   </div>
                 </th>
                 
-                {# 2. Natural widths for the rest of the headers #}
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 40%;" aria-sort="none"><button type="button" data-index="1">File name</button></th>
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;" aria-sort="descending"><button type="button" data-index="2">Uploaded</button></th>
                 <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;">Status</th>
@@ -417,10 +418,7 @@
                   </div>
                 </td>
                 
-                {# 3. Smart wrapping: ONLY wraps if the screen is too small to fit the unbroken word #}
                 <td class="govuk-table__cell" data-sort-value="{{ doc.name | lower }}" style="vertical-align: top; padding-top: 15px; padding-bottom: 15px; word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word;">
-                  
-                  {# Conditional logic for file linking (pdf/img = link) #}
                   {% set fileExt = doc.type | lower %}
                   {% if ('pdf' in fileExt) or ('image' in fileExt) or ('jpg' in fileExt) or ('png' in fileExt) %}
                     <a class="govuk-link govuk-!-font-weight-bold" href="#" target="_blank">{{ doc.name }}</a>
@@ -438,7 +436,6 @@
                 <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
                   <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;" id="status-container-{{ doc.id }}">
                     
-                    {# Read Status #}
                     {% set readStat = doc.readStatus | default("Unread") %}
                     {% if readStat == "Read" %}
                       <strong class="govuk-tag govuk-tag--green" id="status-tag-read-{{ doc.id }}">Read</strong>
@@ -446,7 +443,6 @@
                       <strong class="govuk-tag govuk-tag--blue" id="status-tag-read-{{ doc.id }}">Unread</strong>
                     {% endif %}
 
-                    {# FIX: If/Else block avoids Nunjucks inside HTML style tag #}
                     {% if doc.isFlagged %}
                       <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}">Flagged</strong>
                     {% else %}
@@ -474,20 +470,31 @@
                   </ul>
                 </td>
               </tr>
-              {% else %}
-              {# No files found state (filtered) #}
-              <tr class="govuk-table__row">
-                <td class="govuk-table__cell" colspan="5">
-                  <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-                    <h2 class="govuk-heading-m">No files found</h2>
-                    <p class="govuk-body">No files match your selected filters. Try <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/clear-filters?ref={{ currentCase.reference }}" class="govuk-link">clearing your filters</a>.</p>
-                  </div>
-                </td>
-              </tr>
               {% endfor %}
 
             </tbody>
           </table>
+        
+        {# IF FILTER RETURNS 0 RESULTS: SHOW THE CLEAN EMPTY STATE #}
+        {% else %}
+          
+          <div class="govuk-button-group govuk-!-margin-bottom-6">
+            <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/upload?ref={{ currentCase.reference }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+              Upload files
+            </a>
+          </div>
+
+          <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
+            <h2 class="govuk-heading-m">No files found</h2>
+            <p class="govuk-body">No files match your selected filters. Try <a href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/clear-filters?ref={{ currentCase.reference }}" class="govuk-link">clearing your filters</a>.</p>
+          </div>
+
+        {% endif %}
+
+       {% endif %}
+      </form>
+    </div>
+  </div>
 
           {# Dynamic GOV.UK Pagination Macro #}
           {% if pageItems.length > 1 %}
@@ -497,8 +504,6 @@
               items: pageItems
             }) }}
           {% endif %}
-
-        {% endif %}
 
       </form>
     </div>

@@ -204,76 +204,78 @@
         </form>
       </div>
 
-     {# --- RESULTS TABLE (Full Width) --- #}
-      <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
-        <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            {# 1. Reference: Locked width, no wrapping #}
-            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
-            
-            {# 2. Case name: Restricted to 30% to free up space for names #}
-            <th scope="col" class="govuk-table__header" style="width: 30%;" aria-sort="none">Case name</th>
-            
-            {# 3. Case officer: Given more space, and header forced to a single line #}
-            <th scope="col" class="govuk-table__header" style="width: 18%; white-space: nowrap;" aria-sort="none">Case officer</th>
-            
-            {# 4. Inspector: Given more space #}
-            <th scope="col" class="govuk-table__header" style="width: 18%;" aria-sort="none">Inspector</th>
-            
-            {# 5. Received date: Locked width, no wrapping #}
-            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
-            
-            {# 6. Status: Fixed smaller width #}
-            <th scope="col" class="govuk-table__header" style="width: 12%;" aria-sort="none">Status</th>
-          </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-          {% for case in filteredCases %}
+     {# --- RESULTS SECTION --- #}
+      {% if filteredCases and filteredCases.length > 0 %}
+        
+        <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
+          <thead class="govuk-table__head">
             <tr class="govuk-table__row">
+              {# 1. Reference: Locked width, no wrapping #}
+              <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
               
-              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
-                <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a>
-              </td>
+              {# 2. Case name: Restricted to 30% to free up space for names #}
+              <th scope="col" class="govuk-table__header" style="width: 30%;" aria-sort="none">Case name</th>
               
-              <td class="govuk-table__cell">{{ case.caseName }}</td>
+              {# 3. Case officer: Given more space, and header forced to a single line #}
+              <th scope="col" class="govuk-table__header" style="width: 18%; white-space: nowrap;" aria-sort="none">Case officer</th>
               
-              <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
+              {# 4. Inspector: Given more space #}
+              <th scope="col" class="govuk-table__header" style="width: 18%;" aria-sort="none">Inspector</th>
               
-              <td class="govuk-table__cell">
-                {% if case.inspectors and case.inspectors.length > 0 %}
-                  {% for insp in case.inspectors %}{{ insp.name }}{% if not loop.last %}<br>{% endif %}{% endfor %}
-                {% elseif case.inspector %}
-                  {{ case.inspector }}
-                {% else %}
-                  Unassigned
-                {% endif %}
-              </td>
+              {# 5. Received date: Locked width, no wrapping #}
+              <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
               
-              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
-                {% if case.caseReceivedDate and case.caseReceivedDate.formatted %}
-                  {{ case.caseReceivedDate.formatted }}
-                {% elif case.receivedDay and case.receivedMonth and case.receivedYear %}
-                  {{ case.receivedDay }}/{{ case.receivedMonth }}/{{ case.receivedYear }}
-                {% elif case['case-received-date-day'] %}
-                  {{ case['case-received-date-day'] }}/{{ case['case-received-date-month'] }}/{{ case['case-received-date-year'] }}
-                {% endif %}
-              </td>
-              
-              <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
+              {# 6. Status: Fixed smaller width #}
+              <th scope="col" class="govuk-table__header" style="width: 12%;" aria-sort="none">Status</th>
             </tr>
-          {% else %}
-            {# Zero Matches State #}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell" colspan="6">
-                <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-                  <h2 class="govuk-heading-m">No results found</h2>
-                  <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
-                </div>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for case in filteredCases %}
+              <tr class="govuk-table__row">
+                
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                  <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a>
+                </td>
+                
+                <td class="govuk-table__cell">{{ case.caseName }}</td>
+                
+                <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
+                
+                <td class="govuk-table__cell">
+                  {% if case.inspectors and case.inspectors.length > 0 %}
+                    {% for insp in case.inspectors %}{{ insp.name }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+                  {% elseif case.inspector %}
+                    {{ case.inspector }}
+                  {% else %}
+                    Unassigned
+                  {% endif %}
+                </td>
+                
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                  {% if case.caseReceivedDate and case.caseReceivedDate.formatted %}
+                    {{ case.caseReceivedDate.formatted }}
+                  {% elif case.receivedDay and case.receivedMonth and case.receivedYear %}
+                    {{ case.receivedDay }}/{{ case.receivedMonth }}/{{ case.receivedYear }}
+                  {% elif case['case-received-date-day'] %}
+                    {{ case['case-received-date-day'] }}/{{ case['case-received-date-month'] }}/{{ case['case-received-date-year'] }}
+                  {% endif %}
+                </td>
+                
+                <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      {% else %}
+        
+        {# --- ZERO MATCHES STATE (Table Completely Hidden) --- #}
+        <div class="govuk-!-margin-top-6 govuk-!-margin-bottom-6">
+          <h2 class="govuk-heading-m">No results found</h2>
+          <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
+        </div>
+
+      {% endif %}
 
     {% endif %}
 

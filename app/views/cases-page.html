@@ -503,14 +503,16 @@
 
     <br>
 
-    {# Results Header - Dynamic Counts #}
-    <div id="pagination-header" class="govuk-!-margin-bottom-6">
+    {% if cases and cases.length > 0 %}
       
-      <p class="govuk-body govuk-!-margin-bottom-2">
-        Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalCases }}</strong> results
-      </p>
+      {# --- RESULTS HEADER & PAGINATION --- #}
+      <div id="pagination-header" class="govuk-!-margin-bottom-6">
 
-      {% if totalCases > 0 %}
+
+        <p class="govuk-body govuk-!-margin-bottom-2">
+          Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalCases }}</strong> results
+        </p>
+
         <p class="pins-pagination-options govuk-!-margin-bottom-0">
             <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
 
@@ -532,76 +534,68 @@
                 <a class="govuk-link--no-visited-state" href="/cases-filter?itemsPerPage=100" data-pagination="100">100</a>
             {% endif %}
         </p>
-      {% endif %}
+        
+      </div>
       
-    </div>
-    
-    {# The Data Table #}
-    <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
-      <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          {# 1. Reference: Locked width, no wrapping #}
-          <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
-          
-          {# 2. Case name: Auto-stretches to fill all available remaining space #}
-          <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
-          
-          {# 3. Received date: Locked width, no wrapping #}
-          <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
-          
-          {# 4. Status: Fixed smaller width to free up space #}
-          <th scope="col" class="govuk-table__header" style="width: 15%;" aria-sort="none">Status</th>
-        </tr>
-      </thead>
-    <tbody class="govuk-table__body">
-      {% for c in cases %}
-        <tr class="govuk-table__row">
-          
-          {# REMOVED word-break classes, ADDED white-space: nowrap #}
-          <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
-            <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
-              {{ c.reference }}
-            </a>
-          </td>
-          
-          <td class="govuk-table__cell">{{ c.caseName }}</td>
-          
-          {# ADDED white-space: nowrap #}
-          <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
-            {% if c.caseReceivedDate and c.caseReceivedDate.formatted %}
-              {{ c.caseReceivedDate.formatted }}
-            {% elif c.receivedDay and c.receivedMonth and c.receivedYear %}
-              {{ c.receivedDay }}/{{ c.receivedMonth }}/{{ c.receivedYear }}
-            {% elif c['case-received-date-day'] %}
-              {{ c['case-received-date-day'] }}/{{ c['case-received-date-month'] }}/{{ c['case-received-date-year'] }}
-            {% endif %}
-          </td>
+      {# --- THE DATA TABLE --- #}
+      <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            {# 1. Reference: Locked width, no wrapping #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
+            
+            {# 2. Case name: Auto-stretches to fill all available remaining space #}
+            <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
+            
+            {# 3. Received date: Locked width, no wrapping #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
+            
+            {# 4. Status: Fixed smaller width to free up space #}
+            <th scope="col" class="govuk-table__header" style="width: 15%;" aria-sort="none">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for c in cases %}
+            <tr class="govuk-table__row">
+              
+              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
+                  {{ c.reference }}
+                </a>
+              </td>
+              
+              <td class="govuk-table__cell">{{ c.caseName }}</td>
+              
+              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                {% if c.caseReceivedDate and c.caseReceivedDate.formatted %}
+                  {{ c.caseReceivedDate.formatted }}
+                {% elif c.receivedDay and c.receivedMonth and c.receivedYear %}
+                  {{ c.receivedDay }}/{{ c.receivedMonth }}/{{ c.receivedYear }}
+                {% elif c['case-received-date-day'] %}
+                  {{ c['case-received-date-day'] }}/{{ c['case-received-date-month'] }}/{{ c['case-received-date-year'] }}
+                {% endif %}
+              </td>
 
-          <td class="govuk-table__cell">{{ c.caseStatus if c.caseStatus else "" }}</td>
-        </tr>
-      {% else %}
+              <td class="govuk-table__cell">{{ c.caseStatus if c.caseStatus else "" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    {% else %}
+      
+      {# --- ZERO MATCHES STATE (Table and Pagination Completely Hidden) --- #}
+      <div class="govuk-!-margin-bottom-6">
         {% if data['area'] or data['type'] or data['subtype'] or data['status'] or data['searchCriteria'] %}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" colspan="4">
-              <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-                <h2 class="govuk-heading-m">No results found</h2>
-                <p class="govuk-body">No cases match your selected filters. Try <a href="/cases/clear-filters" class="govuk-link">clearing your filters</a> or changing your search criteria.</p>
-              </div>
-            </td>
-          </tr>
+          <h2 class="govuk-heading-m">No results found</h2>
+          <p class="govuk-body">No cases match your selected filters. Try <a href="/cases/clear-filters" class="govuk-link">clearing your filters</a> or changing your search criteria.</p>
         {% else %}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell" colspan="4">
-              <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-                <h2 class="govuk-heading-m">No cases found</h2>
-                <p class="govuk-body">There are currently no cases in the database.</p>
-              </div>
-            </td>
-          </tr>
+          <h2 class="govuk-heading-m">No cases found</h2>
+          <p class="govuk-body">There are currently no cases in the database.</p>
         {% endif %}
-      {% endfor %}
-    </tbody>
-    </table>
+      </div>
+
+    {% endif %}
 
     {# Footer Pagination #}
     {% if pageItems.length > 1 %}
