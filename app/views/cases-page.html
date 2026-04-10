@@ -176,14 +176,13 @@
           </div>
         </details>
 
-        {# --- ACCORDION 3: SUBTYPE (With Search) --- #}
+        {# --- ACCORDION 3: SUBTYPE --- #}
         <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion">
           <summary class="govuk-details__summary custom-details-summary">
             <span class="govuk-details__summary-text filtersText">Subtype</span>
           </summary>
           <div class="govuk-details__text">
             
-            {# Local Keyword Search #}
             <label for="subtype-filter" class="govuk-visually-hidden">Find subtype</label>
             <input id="subtype-filter" class="app-list-filter__filter-input govuk-input govuk-!-margin-bottom-3" type="text" placeholder="Find subtype..." aria-controls="subtype-container" onkeydown="return event.key != 'Enter';" style="width: 100%;">
 
@@ -297,6 +296,46 @@
             </div>
           </div>
         </details>
+
+        {# --- ACCORDION 4: STATUS (NEW) --- #}
+        <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion">
+          <summary class="govuk-details__summary custom-details-summary">
+            <span class="govuk-details__summary-text filtersText">Status</span>
+          </summary>
+          <div class="govuk-details__text">
+            
+            <label for="status-filter" class="govuk-visually-hidden">Find status</label>
+            <input id="status-filter" class="app-list-filter__filter-input govuk-input govuk-!-margin-bottom-3" type="text" placeholder="Find status..." aria-controls="status-container" onkeydown="return event.key != 'Enter';" style="width: 100%;">
+
+            <div class="app-list-filter__container" id="status-container" style="margin-top: 0;">
+              {{ govukCheckboxes({
+                idPrefix: "status", name: "status", classes: "govuk-checkboxes--small",
+                items: [
+                  { value: "Ready to start", text: "Ready to start " + getCount(allCases, 'caseStatus', 'Ready to start'), checked: true if data['status'] and ("Ready to start" in data['status']) },
+                  { value: "LPA questionnaire", text: "LPA questionnaire " + getCount(allCases, 'caseStatus', 'LPA questionnaire'), checked: true if data['status'] and ("LPA questionnaire" in data['status']) },
+                  { value: "New case", text: "New case " + getCount(allCases, 'caseStatus', 'New case'), checked: true if data['status'] and ("New case" in data['status']) },
+                  { value: "Validated", text: "Validated " + getCount(allCases, 'caseStatus', 'Validated'), checked: true if data['status'] and ("Validated" in data['status']) },
+                  { value: "Invalid", text: "Invalid " + getCount(allCases, 'caseStatus', 'Invalid'), checked: true if data['status'] and ("Invalid" in data['status']) },
+                  { value: "Rejected", text: "Rejected " + getCount(allCases, 'caseStatus', 'Rejected'), checked: true if data['status'] and ("Rejected" in data['status']) },
+                  { value: "Inform parties", text: "Inform parties " + getCount(allCases, 'caseStatus', 'Inform parties'), checked: true if data['status'] and ("Inform parties" in data['status']) },
+                  { value: "Allocate inspector", text: "Allocate inspector " + getCount(allCases, 'caseStatus', 'Allocate inspector'), checked: true if data['status'] and ("Allocate inspector" in data['status']) },
+                  { value: "In progress", text: "In progress " + getCount(allCases, 'caseStatus', 'In progress'), checked: true if data['status'] and ("In progress" in data['status']) },
+                  { value: "Ready for inspector", text: "Ready for inspector " + getCount(allCases, 'caseStatus', 'Ready for inspector'), checked: true if data['status'] and ("Ready for inspector" in data['status']) },
+                  { value: "Decision/recommendation issued", text: "Decision/recommendation issued " + getCount(allCases, 'caseStatus', 'Decision/recommendation issued'), checked: true if data['status'] and ("Decision/recommendation issued" in data['status']) },
+                  { value: "Despatch", text: "Despatch " + getCount(allCases, 'caseStatus', 'Despatch'), checked: true if data['status'] and ("Despatch" in data['status']) },
+                  { value: "Final check", text: "Final check " + getCount(allCases, 'caseStatus', 'Final check'), checked: true if data['status'] and ("Final check" in data['status']) },
+                  { value: "Closed", text: "Closed " + getCount(allCases, 'caseStatus', 'Closed'), checked: true if data['status'] and ("Closed" in data['status']) },
+                  { value: "Cancelled", text: "Cancelled " + getCount(allCases, 'caseStatus', 'Cancelled'), checked: true if data['status'] and ("Cancelled" in data['status']) },
+                  { value: "Paused/on hold", text: "Paused/on hold " + getCount(allCases, 'caseStatus', 'Paused/on hold'), checked: true if data['status'] and ("Paused/on hold" in data['status']) },
+                  { value: "Withdrawn", text: "Withdrawn " + getCount(allCases, 'caseStatus', 'Withdrawn'), checked: true if data['status'] and ("Withdrawn" in data['status']) },
+                  { value: "In abeyance", text: "In abeyance " + getCount(allCases, 'caseStatus', 'In abeyance'), checked: true if data['status'] and ("In abeyance" in data['status']) },
+                  { value: "Closed - opened in error", text: "Closed - opened in error " + getCount(allCases, 'caseStatus', 'Closed - opened in error'), checked: true if data['status'] and ("Closed - opened in error" in data['status']) }
+                ]
+              }) }}
+            </div>
+          </div>
+        </details>
+
       </div>
 
     {% endset -%}
@@ -398,6 +437,19 @@
       {% endfor %}
       {% if subtypeItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Subtype" }, items: subtypeItems }), filterCategories) %}{% endif %}
     {% endif %}
+
+    {# Status Tags (NEW) #}
+    {% if data['status'] %}
+      {% set statItems = [] %}
+      {% set statList = data['status'] if data['status'] | is_array else [data['status']] %}
+      {% for item in statList %}
+        {% if item and item != "_unchecked" %}
+          {# Using urlencode to safely handle statuses with slashes or spaces in the link #}
+          {% set statItems = (statItems.push({ text: item, href: "/cases/remove-filter/status/" + (item | urlencode) }), statItems) %}
+        {% endif %}
+      {% endfor %}
+      {% if statItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Status" }, items: statItems }), filterCategories) %}{% endif %}
+    {% endif %}
     
     {{ mojFilter({
       heading: { text: "Filter" },
@@ -440,7 +492,7 @@
         }) }}
       </div>
 
-      {# --- NEW: CONDITIONAL CLEAR SEARCH LINK --- #}
+      {# --- CONDITIONAL CLEAR SEARCH LINK --- #}
       {% if searchTerm %}
         <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
           <a href="/cases/clear-search" class="govuk-!-font-size-16">Clear search</a>
@@ -485,32 +537,50 @@
     </div>
     
     {# The Data Table #}
-    <table class="govuk-table" data-module="moj-sortable-table" style="table-layout: fixed; width: 100%;">
+    <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Reference</th>
-          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Subtype</th>
-          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Case name</th>
-          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">Status</th>
+          {# 1. Reference: Locked width, no wrapping #}
+          <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
+          
+          {# 2. Case name: Auto-stretches to fill all available remaining space #}
+          <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
+          
+          {# 3. Received date: Locked width, no wrapping #}
+          <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
+          
+          {# 4. Status: Fixed smaller width to free up space #}
+          <th scope="col" class="govuk-table__header" style="width: 15%;" aria-sort="none">Status</th>
         </tr>
       </thead>
     <tbody class="govuk-table__body">
       {% for c in cases %}
         <tr class="govuk-table__row">
           
-          {# ADDED: word-break properties to force long references to wrap on small screens #}
-          <td class="govuk-table__cell" style="word-wrap: break-word; word-break: break-all;">
+          {# REMOVED word-break classes, ADDED white-space: nowrap #}
+          <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
             <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
               {{ c.reference }}
             </a>
           </td>
           
-          <td class="govuk-table__cell">{{ c.subtype or c.type }}</td>
           <td class="govuk-table__cell">{{ c.caseName }}</td>
+          
+          {# ADDED white-space: nowrap #}
+          <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+            {% if c.caseReceivedDate and c.caseReceivedDate.formatted %}
+              {{ c.caseReceivedDate.formatted }}
+            {% elif c.receivedDay and c.receivedMonth and c.receivedYear %}
+              {{ c.receivedDay }}/{{ c.receivedMonth }}/{{ c.receivedYear }}
+            {% elif c['case-received-date-day'] %}
+              {{ c['case-received-date-day'] }}/{{ c['case-received-date-month'] }}/{{ c['case-received-date-year'] }}
+            {% endif %}
+          </td>
+
           <td class="govuk-table__cell">{{ c.caseStatus if c.caseStatus else "" }}</td>
         </tr>
       {% else %}
-        {% if data['area'] or data['type'] or data['subtype'] or data['searchCriteria'] %}
+        {% if data['area'] or data['type'] or data['subtype'] or data['status'] or data['searchCriteria'] %}
           <tr class="govuk-table__row">
             <td class="govuk-table__cell" colspan="4">
               <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
@@ -527,6 +597,7 @@
                 <p class="govuk-body">There are currently no cases in the database.</p>
               </div>
             </td>
+          </tr>
         {% endif %}
       {% endfor %}
     </tbody>
