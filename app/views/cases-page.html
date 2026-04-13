@@ -224,7 +224,8 @@
                   { value: "discontinuance-notice", text: "Discontinuance notice " + getCount(allCases, 'subtypeValue', 'discontinuance-notice'), checked: true if data['subtype'] and ("discontinuance-notice" in data['subtype']) },
                   { value: "modification-to-planning-permission", text: "Modification to planning permission " + getCount(allCases, 'subtypeValue', 'modification-to-planning-permission'), checked: true if data['subtype'] and ("modification-to-planning-permission" in data['subtype']) },
                   { value: "review-of-mineral-permission", text: "Review of mineral permission " + getCount(allCases, 'subtypeValue', 'review-of-mineral-permission'), checked: true if data['subtype'] and ("review-of-mineral-permission" in data['subtype']) },
-                  { value: "revocation-of-planning-permission", text: "Revocation of planning permission " + getCount(allCases, 'subtypeValue', 'revocation-of-planning-permission'), checked: true if data['subtype'] and ("revocation-of-planning-permission" in data['subtype']) }
+                  { value: "revocation-of-planning-permission", text: "Revocation of planning permission " + getCount(allCases, 'subtypeValue', 'revocation-of-planning-permission'), checked: true if data['subtype'] and ("revocation-of-planning-permission" in data['subtype']) },
+                  { value: "other", text: "Other " + getCount(allCases, 'subtypeValue', 'other'), checked: true if data['subtype'] and ("other" in data['subtype']) }
                 ]
               }) }}
 
@@ -400,6 +401,7 @@
         {% elif item == "modification-to-planning-permission" %}{% set label = "Modification to planning permission" %}
         {% elif item == "review-of-mineral-permission" %}{% set label = "Review of mineral permission" %}
         {% elif item == "revocation-of-planning-permission" %}{% set label = "Revocation of planning permission" %}
+        {% elif item == "other" %}{% set label = "Other" %}
         {% elif item == "new-lines" %}{% set label = "New lines" %}
         {% elif item == "tree-lopping" %}{% set label = "Tree lopping" %}
         {% elif item == "wayleaves" %}{% set label = "Wayleaves" %}
