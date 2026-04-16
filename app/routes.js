@@ -949,100 +949,222 @@ router.post('/cases/applicants/cancel', function(req, res) {
 });
 
 
-// --- 4. EDIT SITE ADDRESS (With Strict Postcode Validation) ---
+// ==============================================
+// SITE ADDRESS: ADD TO LIST (Working Draft Pattern)
+// ==============================================
+
+// Helper: Get Site Addresses Array (Auto-migrates legacy string addresses)
+function getSiteAddresses(c) {
+  if (c.siteAddresses) return c.siteAddresses;
+  
+  // Migrate legacy data on the fly
+  if (c.addressLine1 || c.siteAddress || c['site-address']) {
+    return [{
+      id: 'sa-1',
+      addressLine1: c.addressLine1 || c.siteAddress || c['site-address'], 
+      addressLine2: c.addressLine2 || "",
+      addressTown: c.addressTown || "",
+      addressCounty: c.addressCounty || "",
+      addressPostcode: c.addressPostcode || ""
+    }];
+  }
+  return [];
+}
+
+// 0. Empty State Page: Site Address First
+router.get('/cases/edit/site-address/first', function(req, res) {
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases/case-details?ref=' + req.query.ref);
+
+  req.session.data['tempSiteAddresses'] = [];
+  res.render('cases/site-address/site-address-first', { ref: c.reference });
+});
+
+// 1. HUB PAGE: Check Site Addresses
 router.get('/cases/edit/site-address', function(req, res) {
   var c = getCase(req);
-  var ref = req.query.ref;
+  var original = getSiteAddresses(c);
 
-  // 1. Still re-hydrate for subsequent form logic
-  req.session.data['addressLine1'] = c.addressLine1;
-  req.session.data['addressLine2'] = c.addressLine2;
-  req.session.data['addressTown'] = c.addressTown;
-  req.session.data['addressCounty'] = c.addressCounty;
-  req.session.data['addressPostcode'] = c.addressPostcode;
+  if (!req.session.data['tempSiteAddresses']) {
+    req.session.data['tempSiteAddresses'] = JSON.parse(JSON.stringify(original));
+  }
 
-  // 2. Pass values DIRECTLY to the template to fix the "refresh bug"
-  res.render('cases/edit/site-address', { 
-    ref: ref,
-    addressLine1: c.addressLine1,
-    addressLine2: c.addressLine2,
-    addressTown: c.addressTown,
-    addressCounty: c.addressCounty,
-    addressPostcode: c.addressPostcode
+  var keysToClear = ['temp_sa_line1', 'temp_sa_line2', 'temp_sa_town', 'temp_sa_county', 'temp_sa_postcode'];
+  keysToClear.forEach(key => delete req.session.data[key]);
+
+  res.render('cases/site-address/check', {
+    ref: c.reference,
+    addresses: req.session.data['tempSiteAddresses'] 
   });
 });
 
-router.post('/cases/edit/site-address', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
+// --- ADD / EDIT FLOW ---
 
-  // Get values
+router.get('/cases/edit/site-address/step-1', function(req, res) {
+  var id = req.query.id;
+  var draftList = req.session.data['tempSiteAddresses'] || [];
+  var address = id ? (draftList.find(x => x.id == id) || {}) : {};
+
+  res.render('cases/site-address/site-address-question', {
+    ref: req.query.ref,
+    id: id,
+    addressLine1: req.session.data['temp_sa_line1'] || address.addressLine1,
+    addressLine2: req.session.data['temp_sa_line2'] || address.addressLine2,
+    addressTown: req.session.data['temp_sa_town'] || address.addressTown,
+    addressCounty: req.session.data['temp_sa_county'] || address.addressCounty,
+    addressPostcode: req.session.data['temp_sa_postcode'] || address.addressPostcode
+  });
+});
+
+router.post('/cases/edit/site-address/step-1', function(req, res) {
   var line1 = req.body['addressLine1'];
   var line2 = req.body['addressLine2'];
   var town = req.body['addressTown'];
   var county = req.body['addressCounty'];
   var postcode = req.body['addressPostcode'];
 
-  // --- VALIDATION LOGIC ---
   var error = false;
   var errorMsg = "";
 
+  // Strict UK Postcode Regex (Matching your original code)
   if (postcode && postcode.trim() !== "") {
-    // 1. Clean up the input (remove spaces to check pattern easier)
     var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
-
-    // 2. Strict UK Postcode Regex
-    // Breakdown:
-    // ^[A-Z]{1,2}    -> Starts with 1 or 2 letters
-    // [0-9][A-Z0-9]? -> Followed by a number (and optionally another number or letter)
-    // [0-9][A-Z]{2}$ -> Ends with a number and 2 letters
     var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
 
     if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
       error = true;
       errorMsg = "Postcode must be between 5 and 7 characters (excluding spaces)";
-    } 
-    else if (!postcodeRegex.test(cleanPostcode)) {
+    } else if (!postcodeRegex.test(cleanPostcode)) {
       error = true;
       errorMsg = "Enter a real postcode";
     }
   }
 
-  // IF ERROR: Re-render
   if (error) {
-    return res.render('cases/edit/site-address', {
-      ref: ref,
-      addressLine1: line1,
-      addressLine2: line2,
-      addressTown: town,
-      addressCounty: county,
-      addressPostcode: postcode,
-      error: true,
-      errorMessage: { text: errorMsg }
+    return res.render('cases/site-address/site-address-question', {
+      ref: req.query.ref, id: req.query.id,
+      addressLine1: line1, addressLine2: line2, addressTown: town, addressCounty: county, addressPostcode: postcode,
+      error: true, errorMessage: { text: errorMsg }
     });
   }
 
-  // --- SUCCESS ---
-  c.addressLine1 = line1;
-  c.addressLine2 = line2;
-  c.addressTown = town;
-  c.addressCounty = county;
-  c.addressPostcode = postcode;
-
-  // Join by newline, filter empty lines
-  var fullAddress = [line1, line2, town, county, postcode]
-    .filter(Boolean)
-    .join('\n');
+  var draftList = req.session.data['tempSiteAddresses'] || [];
+  var id = req.query.id || Date.now().toString();
   
-  c.siteAddress = fullAddress; 
-  delete c['site-address']; 
+  var newAddress = { id: id, addressLine1: line1, addressLine2: line2, addressTown: town, addressCounty: county, addressPostcode: postcode };
 
+  var idx = draftList.findIndex(x => x.id == id);
+  if (idx >= 0) draftList[idx] = newAddress;
+  else draftList.push(newAddress);
+
+  req.session.data['tempSiteAddresses'] = draftList;
+  
+  var keysToClear = ['temp_sa_line1', 'temp_sa_line2', 'temp_sa_town', 'temp_sa_county', 'temp_sa_postcode'];
+  keysToClear.forEach(key => delete req.session.data[key]);
+
+  res.redirect(`/cases/edit/site-address?ref=${req.query.ref}`);
+});
+
+// ==============================================
+// REMOVE SITE ADDRESS (From Draft)
+// ==============================================
+
+router.get('/cases/edit/site-address/remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  res.render('cases/site-address/site-address-remove', { 
+    ref: ref, id: id, 
+    backUrl: `/cases/edit/site-address?ref=${ref}`, actionUrl: `/cases/edit/site-address/remove?id=${id}&ref=${ref}`
+  });
+});
+
+router.post('/cases/edit/site-address/remove', function(req, res) {
+  var ref = req.query.ref;
+  var id = req.query.id;
+  var confirm = req.body.contactRemove; 
+
+  if (!confirm) {
+    return res.render('cases/site-address/site-address-remove', { 
+      ref: ref, id: id, error: true, 
+      backUrl: `/cases/edit/site-address?ref=${ref}`, actionUrl: `/cases/edit/site-address/remove?id=${id}&ref=${ref}`
+    });
+  }
+
+  if (confirm === 'yes' && req.session.data['tempSiteAddresses']) {
+    req.session.data['tempSiteAddresses'] = req.session.data['tempSiteAddresses'].filter(x => x.id !== id);
+  }
+  res.redirect(`/cases/edit/site-address?ref=${ref}`);
+});
+
+// ==============================================
+// FINAL COMMIT / CANCEL ACTIONS
+// ==============================================
+
+// COMMIT DRAFT: Save and continue
+router.post('/cases/edit/site-address/save', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  var draft = req.session.data['tempSiteAddresses'] || [];
+  
+  // 1. UPDATE THE NEW ARRAY
+  c.siteAddresses = draft;
+  
+  // 2. CLEAN UP OLD VARIABLES (Enforcing "One Way" data structure)
+  delete c['siteAddress'];
+  delete c['site-address'];
+  delete c['addressLine1'];
+  delete c['addressLine2'];
+  delete c['addressTown'];
+  delete c['addressCounty'];
+  delete c['addressPostcode'];
+
+  req.session.data['tempSiteAddresses'] = null; // wipe draft
+  
+  // 3. GENERATE AUDIT LOG STRING
+  var auditStrings = draft.map(function(addr, index) {
+    var parts = [addr.addressLine1, addr.addressLine2, addr.addressTown, addr.addressCounty, addr.addressPostcode].filter(Boolean);
+    var prefix = draft.length > 1 ? ("Plot " + (index + 1) + ": ") : "";
+    return prefix + parts.join(', ');
+  });
+  var finalAuditText = auditStrings.length > 0 ? auditStrings.join(' | ') : "All site addresses removed";
+
+  // 4. TRIGGER BANNER AND LOG (Matching your original code exactly)
   req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Site address updated to '" + fullAddress.replace(/\n/g, ', ') + "'");
-
+  if (typeof addAuditLog === "function") {
+    addAuditLog(req, ref, "Site address updated to '" + finalAuditText + "'");
+  }
+  
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
+
+// CANCEL DRAFT
+router.get('/cases/edit/site-address/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  var original = getSiteAddresses(c);
+  var draft = req.session.data['tempSiteAddresses'] || [];
+
+  if (JSON.stringify(original) === JSON.stringify(draft)) {
+    req.session.data['tempSiteAddresses'] = null;
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+  res.render('cases/site-address/cancel-site-address', { ref: ref });
+});
+
+router.post('/cases/edit/site-address/cancel', function(req, res) {
+  var ref = req.query.ref;
+  var confirm = req.body.cancelContacts; 
+
+  if (!confirm) return res.render('cases/site-address/cancel-site-address', { ref: ref, error: true });
+  
+  if (confirm === 'yes') {
+    req.session.data['tempSiteAddresses'] = null;
+    res.redirect('/cases/case-details?ref=' + ref);
+  } else {
+    res.redirect('/cases/edit/site-address?ref=' + ref);
+  }
+});
+
 
 // --- 5. SITE LOCATION (No validation, migrate to siteLocation) ---
 router.get('/cases/edit/site-location', function(req, res) {

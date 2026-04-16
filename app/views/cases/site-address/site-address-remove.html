@@ -1,0 +1,35 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}Remove address?{% endblock %}
+
+{% block beforeContent %}
+    {{ govukBackLink({ text: "Back", href: backUrl }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if error %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: "Select yes if you want to remove this address", href: "#contactRemove" }]
+      }) }}
+    {% endif %}
+
+    <form action="{{ actionUrl }}" method="post" novalidate>
+      {{ govukRadios({
+        classes: "govuk-radios--inline",
+        idPrefix: "contactRemove",
+        name: "contactRemove",
+        fieldset: {
+          legend: { text: "Are you sure you want to remove this address?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: "Select yes if you want to remove this address" } if error else null,
+        items: [{ value: "yes", text: "Yes" }, { value: "no", text: "No" }]
+      }) }}
+      
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

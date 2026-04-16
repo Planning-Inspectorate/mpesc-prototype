@@ -1,0 +1,63 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}Site address(es) - Planning Inspectorate Portal{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Check site address details</h1>
+
+    {% if addresses and addresses.length > 0 %}
+      <table class="govuk-table" data-module="moj-sortable-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" aria-sort="none">Plot</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Site Address</th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in addresses %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell"><strong>Plot {{ loop.index }}</strong></td>
+              <td class="govuk-table__cell">
+                {{ item.addressLine1 }}{% if item.addressLine1 %}<br>{% endif %}
+                {{ item.addressLine2 }}{% if item.addressLine2 %}<br>{% endif %}
+                {{ item.addressTown }}{% if item.addressTown %}<br>{% endif %}
+                {{ item.addressCounty }}{% if item.addressCounty %}<br>{% endif %}
+                {{ item.addressPostcode }}
+              </td>
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="/cases/edit/site-address/step-1?ref={{ ref }}&id={{ item.id }}">Change</a></li>
+                  <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="/cases/edit/site-address/remove?ref={{ ref }}&id={{ item.id }}">Remove</a></li>
+                </ul>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">Add one or more site addresses. No site addresses have been added.</p>
+    {% endif %}
+
+    <form action="/cases/edit/site-address/save?ref={{ ref }}" method="post" novalidate>
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Add details",
+          classes: "govuk-button--secondary",
+          href: "/cases/edit/site-address/step-1?ref=" + ref
+        }) }}
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: "Save and continue" }) }}
+        {{ govukButton({
+          text: "Cancel",
+          classes: "govuk-button--secondary",
+          href: "/cases/edit/site-address/cancel?ref=" + ref
+        }) }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
