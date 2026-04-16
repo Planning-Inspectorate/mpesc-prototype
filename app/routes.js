@@ -1390,6 +1390,7 @@ router.post('/cases/edit/act', function(req, res) {
   const legislationList = [
     "Acquisition of Land Act 1981, 32",
     "Acquisition of Land Act 1981, 19 and Schedule 3, para 6",
+    "Town and Country Planning Act 1990, 137",
     "Commons Act 2006, 16",
     "Commons Act 2006, 38",
     "Commons Act 2006, Part 1 Schedule 6",
