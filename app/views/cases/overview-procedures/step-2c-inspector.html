@@ -41,6 +41,7 @@
         {% for insp in inspectors %}
           {% set radioItems = (radioItems.push({ value: insp.name, text: insp.name, checked: (value == insp.name) }), radioItems) %}
         {% endfor %}
+        {% set radioItems = (radioItems.push({ divider: "or" }), radioItems) %}
       {% endif %}
       
       {# Always append 'Not yet allocated' #}
