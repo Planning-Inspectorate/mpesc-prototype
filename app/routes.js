@@ -1845,73 +1845,12 @@ router.post('/cases/edit/inspector-date', function (req, res) {
 // REMOVE INSPECTOR CONFIRMATION (From Draft)
 // ==============================================
 
-// 1. View Confirmation Page (WITH SMART INTERCEPT)
+// 1. View Confirmation Page (No interception here anymore)
 router.get('/cases/edit/inspector-remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  var c = getCase(req);
   
-  // Find out who they are trying to remove
-  var draftList = req.session.data['tempInspectorsList'] || [];
-  var targetInspector = draftList.find(i => i.id === id);
-  var inspName = targetInspector ? targetInspector.name : "";
-
-  // --- SMART INTERCEPT: Check for dependencies ---
-  // (Using the exact keys from your procedure/outcome routing)
-  var attachedProcs = (c.overviewProcedures || []).filter(p => p.inspector === inspName);
-  var attachedOutcomes = (c.outcomes || []).filter(o => o.inspectorName === inspName);
-
-  // If the inspector is attached to anything, block the removal!
-  if (attachedProcs.length > 0 || attachedOutcomes.length > 0) {
-    var errorList = [];
-    
-    var hasProc = attachedProcs.length > 0;
-    var hasOut = attachedOutcomes.length > 0;
-
-    // 1. Loop through ALL attached procedures and list them
-    if (hasProc) {
-      attachedProcs.forEach(proc => {
-        // Lowercase the whole string first, then capitalize just the first letter
-        let rawType = proc.type ? proc.type.toLowerCase() : "procedure";
-        let pType = rawType.charAt(0).toUpperCase() + rawType.slice(1);
-        
-        let pStat = proc.status ? proc.status.toLowerCase() : "unknown status";
-        errorList.push({ text: `Inspector is assigned to ${pType} (${pStat}) so cannot be removed.`, href: "#" });
-      });
-    }
-
-    // 2. Loop through ALL attached outcomes and list them
-    if (hasOut) {
-      attachedOutcomes.forEach(out => {
-        // Lowercase the whole string first, then capitalize just the first letter
-        let rawType = out.type ? out.type.toLowerCase() : "outcome";
-        let oType = rawType.charAt(0).toUpperCase() + rawType.slice(1);
-        
-        errorList.push({ text: `Inspector is assigned to ${oType} so cannot be removed.`, href: "#" });
-      });
-    }
-
-    // 3. Build the final instruction line (with dynamic grammar!)
-    var procText = attachedProcs.length > 1 ? "procedures" : "procedure";
-    var outText = attachedOutcomes.length > 1 ? "outcomes" : "outcome";
-
-    if (hasProc && !hasOut) {
-      errorList.push({ text: `You must assign a different inspector to the ${procText} before you can remove them from the case.`, href: "#" });
-    } else if (!hasProc && hasOut) {
-      errorList.push({ text: `You must assign a different inspector to the ${outText} before you can remove them from the case.`, href: "#" });
-    } else if (hasProc && hasOut) {
-      errorList.push({ text: `You must assign a different inspector to the ${procText} and ${outText} before you can remove them from the case.`, href: "#" });
-    }
-
-    // Render the check-inspectors Hub page instantly with the generated error messages
-    return res.render('cases/edit/check-inspectors', {
-      ref: ref,
-      inspectors: draftList,
-      errorList: errorList
-    });
-  }
-
-  // --- IF CLEAN, PROCEED TO CONFIRMATION PAGE NORMALLY ---
+  // Proceed directly to the confirmation page
   res.render('cases/edit/remove-inspectors', { 
     ref: ref,
     id: id,
@@ -1920,12 +1859,14 @@ router.get('/cases/edit/inspector-remove', function(req, res) {
   });
 });
 
-// 2. Submit Confirmation
+// 2. Submit Confirmation (WITH SMART INTERCEPT ON 'YES')
 router.post('/cases/edit/inspector-remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
   var confirm = req.body.inspectorRemove; 
+  var c = getCase(req);
 
+  // Validation: Did they select a radio option?
   if (!confirm) {
     return res.render('cases/edit/remove-inspectors', { 
       ref: ref,
@@ -1936,13 +1877,71 @@ router.post('/cases/edit/inspector-remove', function(req, res) {
     });
   }
 
+  // If they selected YES, run the dependency check
   if (confirm === 'yes') {
-    // Delete from the DRAFT array
+    
+    // Find out who they are trying to remove
+    var draftList = req.session.data['tempInspectorsList'] || [];
+    var targetInspector = draftList.find(i => i.id === id);
+    var inspName = targetInspector ? targetInspector.name : "";
+
+    // --- SMART INTERCEPT: Check for dependencies ---
+    var attachedProcs = (c.overviewProcedures || []).filter(p => p.inspector === inspName);
+    var attachedOutcomes = (c.outcomes || []).filter(o => o.inspectorName === inspName);
+
+    // If the inspector is attached to anything, block the removal!
+    if (attachedProcs.length > 0 || attachedOutcomes.length > 0) {
+      var errorList = [];
+      
+      var hasProc = attachedProcs.length > 0;
+      var hasOut = attachedOutcomes.length > 0;
+
+      // 1. Loop through ALL attached procedures and list them
+      if (hasProc) {
+        attachedProcs.forEach(proc => {
+          let rawType = proc.type ? proc.type.toLowerCase() : "procedure";
+          let pType = rawType.charAt(0).toUpperCase() + rawType.slice(1);
+          let pStat = proc.status ? proc.status.toLowerCase() : "unknown status";
+          errorList.push({ text: `Inspector is assigned to ${pType} (${pStat}) so cannot be removed.`, href: "#" });
+        });
+      }
+
+      // 2. Loop through ALL attached outcomes and list them
+      if (hasOut) {
+        attachedOutcomes.forEach(out => {
+          let rawType = out.type ? out.type.toLowerCase() : "outcome";
+          let oType = rawType.charAt(0).toUpperCase() + rawType.slice(1);
+          errorList.push({ text: `Inspector is assigned to ${oType} so cannot be removed.`, href: "#" });
+        });
+      }
+
+      // 3. Build the final instruction line (with dynamic grammar)
+      var procText = attachedProcs.length > 1 ? "procedures" : "procedure";
+      var outText = attachedOutcomes.length > 1 ? "outcomes" : "outcome";
+
+      if (hasProc && !hasOut) {
+        errorList.push({ text: `You must assign a different inspector to the ${procText} before you can remove them from the case.`, href: "#" });
+      } else if (!hasProc && hasOut) {
+        errorList.push({ text: `You must assign a different inspector to the ${outText} before you can remove them from the case.`, href: "#" });
+      } else if (hasProc && hasOut) {
+        errorList.push({ text: `You must assign a different inspector to the ${procText} and ${outText} before you can remove them from the case.`, href: "#" });
+      }
+
+      // Render the check-inspectors Hub page instantly with the generated error messages
+      return res.render('cases/edit/check-inspectors', {
+        ref: ref,
+        inspectors: draftList,
+        errorList: errorList
+      });
+    }
+
+    // --- NO DEPENDENCIES: Delete from the DRAFT array ---
     if (req.session.data['tempInspectorsList']) {
       req.session.data['tempInspectorsList'] = req.session.data['tempInspectorsList'].filter(i => i.id !== id);
     }
   }
   
+  // Redirect back to hub page
   res.redirect(`/cases/edit/check-inspectors?ref=${ref}`);
 });
 
