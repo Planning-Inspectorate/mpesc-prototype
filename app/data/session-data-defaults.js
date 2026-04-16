@@ -230,7 +230,7 @@ module.exports = {
         decisionPublishedDate: { day: "15", month: "12", year: "2025", formatted: "15 December 2025" }
       },
       outcomes: [
-        { id: "out-1", type: "Decision", originator: "Inspector", inspectorName: "Alex Hudd", decisionOutcome: "Allowed", decisionOutcomeDetails: "Consent granted with standard conditions", outcomeDate: { day: "10", month: "12", year: "2025", formatted: "10 December 2025" } }
+        { id: "out-1", type: "Decision", originator: "Inspector", inspectorName: "Alex Hudd", outcomeDate: { day: "10", month: "12", year: "2025", formatted: "10 December 2025" } }
       ],
 
       invoicing: { rechargeable: "No" }, 

@@ -68,8 +68,9 @@
           { value: "Order made with modifications", text: "Order made with modifications", checked: (value == "Order made with modifications") },
           { value: "Propose to confirm", text: "Propose to confirm", checked: (value == "Propose to confirm") },
           { value: "Propose not to confirm", text: "Propose not to confirm", checked: (value == "Propose not to confirm") },
-          { value: "Other", text: "Other", checked: (value == "Other"), conditional: { html: otherHtml } }
-        ]
+          { value: "Other", text: "Other", checked: (value == "Other"), conditional: { html: otherHtml } },
+          { value: "Not applicable", text: "Not applicable", checked: (value == "Not applicable") }
+          ]
       }) }}
 
       {{ govukButton({ text: "Continue" }) }}
