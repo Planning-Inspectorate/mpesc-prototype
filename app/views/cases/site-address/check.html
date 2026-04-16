@@ -18,7 +18,7 @@
         <tbody class="govuk-table__body">
           {% for item in addresses %}
             <tr class="govuk-table__row">
-              <td class="govuk-table__cell"><strong>Plot {{ loop.index }}</strong></td>
+              <td class="govuk-table__cell">Plot {{ loop.index }}</td>
               <td class="govuk-table__cell">
                 {{ item.addressLine1 }}{% if item.addressLine1 %}<br>{% endif %}
                 {{ item.addressLine2 }}{% if item.addressLine2 %}<br>{% endif %}
