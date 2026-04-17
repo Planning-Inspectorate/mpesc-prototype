@@ -192,56 +192,40 @@ router.post('/case-received-date-answer', function (req, res) {
 
 
 router.post('/case-officer-answer', function (req, res) {
-
-  var selectedOfficer = req.session.data['caseOfficer']
-
+  var selectedOfficer = req.session.data['caseOfficer'];
   var allowedOfficers = [
-      // Original Officers
-      "Kieran De La Cruz",
-      "Edward Mitchell",
-      "Sarah Tudor",
-      "Steve Waterfield",
-      "Alex Hudd",
-      "Harry Wood",
-      "Rob Davis",
-      "Deborah Board",
-      "(Service Account) Automated Tester",
-      "Owen Woodwards",
-      
-      // Marvel Officers
-      "Tony Stark",
-      "Steve Rogers",
-      "Natasha Romanoff",
-      "Bruce Banner",
-      "Thor Odinson",
-      "Wanda Maximoff",
-      "Peter Parker",
-      "Carol Danvers",
-      "Stephen Strange",
-      "T'Challa",
-      "Clint Barton",
-      "Sam Wilson",
-      "Bucky Barnes",
-      "Scott Lang",
-      "Hope van Dyne"
-    ];
+      "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield", "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", "Owen Woodwards",
+      "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner", "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange", "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
+  ];
 
+  if (selectedOfficer == "" || !allowedOfficers.includes(selectedOfficer)) {
+    res.render('cases/create-a-case/questions/case-officer', {
+      errorCaseOfficer: "Select a case officer"
+    });
+  } else {
+    // UPDATED: Now points to the new Linked Case question
+    res.redirect('/cases/create-a-case/questions/linked-case');
+  }
+});
 
-  if (selectedOfficer == "") {
-    res.render('/cases/create-a-case/questions/case-officer', {
-      errorCaseOfficer: "Select a case officer"
-    })
-  } 
-  else if (!allowedOfficers.includes(selectedOfficer)) {
-    res.render('/cases/create-a-case/questions/case-officer', {
-      errorCaseOfficer: "Select a case officer"
-    })
-  } 
-  else {
-    res.redirect('/cases/create-a-case/check-your-answers')
+// NEW ROUTE: Linked Case Question
+router.post('/linked-case-answer', function(req, res) {
+  var isLinked = req.body['isLinkedCase'];
+
+  if (!isLinked) {
+    return res.render('cases/create-a-case/questions/linked-case', {
+      errorLinkedCase: "Select yes if this is a linked case"
+    });
   }
 
-})
+  // Save selection
+  req.session.data['isLinkedCase'] = isLinked;
+  
+  // Proceed to Check Your Answers
+  res.redirect('/cases/create-a-case/check-your-answers');
+});
+
+
 
 router.post('/site-address-answer', function(req, res) {
   
@@ -495,6 +479,12 @@ var areaSelection = req.session.data['casework-area'];
     
     // Status: Take from the radio selection, fallback to "New case" if empty
     "caseStatus": "",
+
+    // --- NEW: LINKED CASE VARIABLES ---
+    // If they said yes, set the flag. We leave leadCase blank so the banner triggers later.
+    "isLinked": req.session.data['isLinkedCase'] === 'yes',
+    "linkedCases": [],
+    "leadCase": null,
     
     // Display Labels (for the table)
     "type": caseType,
@@ -6086,9 +6076,83 @@ router.post('/cases/related-cases/cancel', function(req, res) {
 
 
 
+// ==============================================
+// LEAD CASE SELECTION (Overview Card Flow)
+// ==============================================
+
+router.get('/cases/linked-cases/lead-case-question', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Figure out what should be pre-selected
+  var leadCaseType = "";
+  var leadCaseSelection = "";
+
+  if (c.isLinked === false) {
+    leadCaseType = "not-linked";
+  } else if (c.leadCase === ref) {
+    leadCaseType = "current-case";
+  } else if (c.leadCase) {
+    leadCaseType = "linked-case";
+    leadCaseSelection = c.leadCase;
+  }
+
+  res.render('cases/linked-cases/lead-case-question', {
+    ref: ref,
+    linkedCases: c.linkedCases || [],
+    leadCaseType: leadCaseType,
+    leadCaseSelection: leadCaseSelection
+  });
+});
+
+router.post('/cases/linked-cases/lead-case-question', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  
+  var leadCaseType = req.body.leadCaseType;
+  var leadCaseSelection = req.body.leadCaseSelection;
+
+  // --- VALIDATION ---
+  if (!leadCaseType) {
+    return res.render('cases/linked-cases/lead-case-question', {
+      ref: ref, linkedCases: c.linkedCases || [],
+      errorLeadCase: "Select which is the lead case"
+    });
+  }
+
+  if (leadCaseType === 'linked-case' && !leadCaseSelection) {
+    return res.render('cases/linked-cases/lead-case-question', {
+      ref: ref, linkedCases: c.linkedCases || [], leadCaseType: leadCaseType,
+      errorLeadCaseSelection: "Select the lead case reference from the list"
+    });
+  }
+
+  // --- SAVE THE DATA ---
+  if (leadCaseType === 'not-linked') {
+    c.isLinked = false;
+    c.leadCase = null;
+  } 
+  else if (leadCaseType === 'current-case') {
+    c.isLinked = true;
+    c.leadCase = ref;
+  } 
+  else if (leadCaseType === 'linked-case') {
+    c.isLinked = true;
+    c.leadCase = leadCaseSelection;
+  }
+
+  // Trigger the green success banner on case details
+  req.session.flashSection = "overview"; 
+  if (typeof addAuditLog === "function") {
+    addAuditLog(req, ref, "Lead case updated");
+  }
+
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
 
 // ==============================================
-// LINKED CASES LOGIC (Working Draft Pattern)
+// LINKED CASES LIST (Working Draft Pattern)
 // ==============================================
 
 // 0. Empty State Page: Check First
@@ -6098,8 +6162,8 @@ router.get('/cases/linked-cases/start', function(req, res) {
   var myCase = cases.find(c => c.reference === ref);
   if (!myCase) return res.redirect('/cases/all-cases');
 
+  // Initialize empty draft
   req.session.data['tempLinkedCasesList'] = [];
-  req.session.data['tempLeadCase'] = null; // Initialize empty lead case
 
   res.render('cases/linked-cases/check-linked-cases-first', { ref: ref });
 });
@@ -6116,15 +6180,9 @@ router.get('/cases/linked-cases/hub', function (req, res) {
     req.session.data['tempLinkedCasesList'] = JSON.parse(JSON.stringify(myCase.linkedCases));
   }
 
-  // Clone the real lead case if no draft exists
-  if (req.session.data['tempLeadCase'] === undefined) {
-    req.session.data['tempLeadCase'] = myCase.leadCase || null;
-  }
-
   res.render('cases/linked-cases/check-linked-cases', { 
     ref: ref,
-    linkedCases: req.session.data['tempLinkedCasesList'],
-    leadCase: req.session.data['tempLeadCase']
+    linkedCases: req.session.data['tempLinkedCasesList']
   });
 });
 
@@ -6140,7 +6198,7 @@ router.get('/cases/linked-cases/step-1', function (req, res) {
     if (item) value = item.reference;
   }
 
-  var backUrl = (draftList.length > 0 || req.session.data['tempLeadCase']) 
+  var backUrl = (draftList.length > 0) 
     ? `/cases/linked-cases/hub?ref=${ref}` 
     : `/cases/linked-cases/start?ref=${ref}`;
 
@@ -6155,7 +6213,7 @@ router.post('/cases/linked-cases/step-1', function (req, res) {
   var val = req.body.linkedCaseRef;
   
   var draftList = req.session.data['tempLinkedCasesList'] || [];
-  var backUrl = (draftList.length > 0 || req.session.data['tempLeadCase']) 
+  var backUrl = (draftList.length > 0) 
     ? `/cases/linked-cases/hub?ref=${ref}` 
     : `/cases/linked-cases/start?ref=${ref}`;
 
@@ -6168,13 +6226,7 @@ router.post('/cases/linked-cases/step-1', function (req, res) {
   // Save directly to the array
   if (id) {
     let idx = draftList.findIndex(i => i.id === id);
-    if (idx >= 0) {
-      // --- THE FIX: Update lead case if we just renamed it ---
-      if (req.session.data['tempLeadCase'] === draftList[idx].reference) {
-        req.session.data['tempLeadCase'] = val;
-      }
-      draftList[idx].reference = val;
-    }
+    if (idx >= 0) draftList[idx].reference = val;
   } else {
     draftList.push({
       id: 'lc-' + Math.floor(Math.random() * 10000),
@@ -6186,36 +6238,6 @@ router.post('/cases/linked-cases/step-1', function (req, res) {
   res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
 });
 
-// 3. SELECT LEAD CASE
-router.get('/cases/linked-cases/lead-case', function(req, res) {
-  var ref = req.query.ref;
-  res.render('cases/linked-cases/lead-case-select', {
-    ref: ref,
-    linkedCases: req.session.data['tempLinkedCasesList'] || [],
-    leadCase: req.session.data['tempLeadCase']
-  });
-});
-
-router.post('/cases/linked-cases/lead-case', function(req, res) {
-  var ref = req.query.ref;
-  var leadCaseSelection = req.body.leadCaseSelection;
-
-  if (!leadCaseSelection) {
-     return res.render('cases/linked-cases/lead-case-select', {
-        ref: ref, linkedCases: req.session.data['tempLinkedCasesList'] || [],
-        error: true, errorMessage: { text: "Select the lead case" }
-     });
-  }
-
-  req.session.data['tempLeadCase'] = leadCaseSelection;
-  res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
-});
-
-router.get('/cases/linked-cases/remove-lead', function(req, res) {
-  // Instantly wipe the lead case and return to hub
-  req.session.data['tempLeadCase'] = null;
-  res.redirect(`/cases/linked-cases/hub?ref=${req.query.ref}`);
-});
 
 // ==============================================
 // REMOVE LINKED CASE (From Draft)
@@ -6240,16 +6262,11 @@ router.post('/cases/linked-cases/remove', function (req, res) {
   }
 
   if (confirm === 'yes' && req.session.data['tempLinkedCasesList']) {
-    // If they delete a linked case that happens to be the lead case, wipe the lead case too
-    let itemToRemove = req.session.data['tempLinkedCasesList'].find(i => i.id === id);
-    if (itemToRemove && req.session.data['tempLeadCase'] === itemToRemove.reference) {
-        req.session.data['tempLeadCase'] = null; 
-    }
-    
     req.session.data['tempLinkedCasesList'] = req.session.data['tempLinkedCasesList'].filter(i => i.id !== id);
   }
   res.redirect(`/cases/linked-cases/hub?ref=${ref}`);
 });
+
 
 // ==============================================
 // FINAL COMMIT / CANCEL ACTIONS
@@ -6261,7 +6278,7 @@ router.post('/cases/linked-cases/commit', function(req, res) {
 
   if (myCase) {
     let draftLinked = req.session.data['tempLinkedCasesList'] || [];
-    let draftLead = req.session.data['tempLeadCase'] || null;
+    let currentLead = myCase.leadCase || null; // Carry over the active lead case
 
     // 1. Identify all case references in this new "group" (Current case + Draft cases)
     let groupReferences = [ref, ...draftLinked.map(lc => lc.reference)];
@@ -6275,8 +6292,8 @@ router.post('/cases/linked-cases/commit', function(req, res) {
       
       // A. Update the active group members
       if (groupReferences.includes(c.reference)) {
-        // Set the designated lead case for everyone in the group
-        c.leadCase = draftLead;
+        // Share the lead case across the whole group
+        c.leadCase = currentLead;
 
         // Populate their linked cases array with everyone in the group EXCEPT themselves
         c.linkedCases = groupReferences
@@ -6298,10 +6315,12 @@ router.post('/cases/linked-cases/commit', function(req, res) {
   
   // Clear the draft environment
   req.session.data['tempLinkedCasesList'] = null;
-  req.session.data['tempLeadCase'] = undefined;
   
   // Trigger success banner and redirect
   req.session.flashSection = "overview"; 
+  if (typeof addAuditLog === "function") {
+    addAuditLog(req, ref, "Linked cases updated");
+  }
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
@@ -6312,12 +6331,10 @@ router.get('/cases/linked-cases/cancel', function(req, res) {
 
   var originalLinked = myCase.linkedCases || [];
   var draftLinked = req.session.data['tempLinkedCasesList'] || [];
-  var originalLead = myCase.leadCase || null;
-  var draftLead = req.session.data['tempLeadCase'] || null;
 
-  if (JSON.stringify(originalLinked) === JSON.stringify(draftLinked) && originalLead === draftLead) {
+  // Check if they changed the array
+  if (JSON.stringify(originalLinked) === JSON.stringify(draftLinked)) {
     req.session.data['tempLinkedCasesList'] = null;
-    req.session.data['tempLeadCase'] = undefined;
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
@@ -6330,7 +6347,6 @@ router.post('/cases/linked-cases/cancel', function(req, res) {
 
   if (req.body.cancelLinkedCases === 'yes') {
     req.session.data['tempLinkedCasesList'] = null;
-    req.session.data['tempLeadCase'] = undefined;
     res.redirect('/cases/case-details?ref=' + ref);
   } else {
     res.redirect('/cases/linked-cases/hub?ref=' + ref);

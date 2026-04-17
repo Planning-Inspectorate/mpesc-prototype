@@ -1,0 +1,44 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Is this a linked case? - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:window.history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorLinkedCase %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorLinkedCase, href: "#isLinkedCase" }]
+      }) }}
+    {% endif %}
+
+    <form action="/linked-case-answer" method="post" novalidate>
+      {{ govukRadios({
+        classes: "govuk-radios--inline",
+        idPrefix: "isLinkedCase",
+        name: "isLinkedCase",
+        fieldset: {
+          legend: { 
+            text: "Is this a linked case?", 
+            isPageHeading: true, 
+            classes: "govuk-fieldset__legend--l" 
+          }
+        },
+        errorMessage: { text: errorLinkedCase } if errorLinkedCase else null,
+        items: [
+          { value: "yes", text: "Yes", checked: data['isLinkedCase'] == 'yes' },
+          { value: "no", text: "No", checked: data['isLinkedCase'] == 'no' }
+        ]
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

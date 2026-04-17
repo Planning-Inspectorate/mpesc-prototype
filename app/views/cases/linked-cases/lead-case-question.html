@@ -1,0 +1,97 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Which is the lead case? - Planning Inspectorate Portal{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorLeadCase or errorLeadCaseSelection %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: errorLeadCase, href: "#leadCaseType" } if errorLeadCase,
+          { text: errorLeadCaseSelection, href: "#leadCaseSelection" } if errorLeadCaseSelection
+        ] | reject("undefined")
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Which is the lead case?</h1>
+
+    {# The smart escape hatch link #}
+    <p class="govuk-body">
+      If no linked cases are available, add them on the <a class="govuk-link" href="/cases/linked-cases/hub?ref={{ ref }}">linked cases page</a>.
+    </p>
+
+    <form action="/cases/linked-cases/lead-case-question?ref={{ ref }}" method="post" novalidate>
+
+      {# --- 1. BUILD THE NESTED RADIOS FOR LINKED CASES --- #}
+      {% set linkedCasesHtml %}
+        {% if linkedCases and linkedCases.length > 0 %}
+          
+          {# Build the radio array for the nested list #}
+          {% set childRadios = [] %}
+          {% for lc in linkedCases %}
+            {% set childRadios = (childRadios.push({ 
+              value: lc.reference, 
+              text: lc.reference, 
+              checked: leadCaseSelection == lc.reference 
+            }), childRadios) %}
+          {% endfor %}
+
+          {{ govukRadios({
+            idPrefix: "leadCaseSelection",
+            name: "leadCaseSelection",
+            fieldset: {
+              legend: { text: "Select the lead case", classes: "govuk-visually-hidden" }
+            },
+            errorMessage: { text: errorLeadCaseSelection } if errorLeadCaseSelection else null,
+            items: childRadios
+          }) }}
+
+        {% else %}
+          {# Fallback if they select 'Linked cases' but haven't added any yet #}
+          <p class="govuk-body govuk-!-margin-bottom-0">You have not added any linked cases to this case yet.</p>
+        {% endif %}
+      {% endset %}
+
+
+      {# --- 2. BUILD THE PARENT RADIOS --- #}
+      {{ govukRadios({
+        idPrefix: "leadCaseType",
+        name: "leadCaseType",
+        fieldset: {
+          legend: { text: "Which is the lead case?", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorLeadCase } if errorLeadCase else null,
+        items: [
+          {
+            value: "linked-case",
+            text: "Linked case",
+            checked: leadCaseType == 'linked-case',
+            conditional: {
+              html: linkedCasesHtml
+            }
+          },
+          {
+            value: "current-case",
+            text: ref + " (Current case)",
+            checked: leadCaseType == 'current-case'
+          },
+          {
+            value: "not-linked",
+            text: "This is not a linked case",
+            checked: leadCaseType == 'not-linked'
+          }
+        ]
+      }) }}
+      
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

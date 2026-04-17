@@ -276,6 +276,12 @@
   actions: { items: [{ href: "/cases/create-a-case/questions/case-officer", text: "Change", visuallyHiddenText: "Who is the assigned case officer?" }] }
 }) %}
 
+{% set _ = rows.push({
+  key: { text: "Is this a linked case?" },
+  value: { text: "Yes" if data['isLinkedCase'] == 'yes' else "No" },
+  actions: { items: [{ href: "/cases/create-a-case/questions/linked-case", text: "Change", visuallyHiddenText: "Is this a linked case?" }] }
+}) %}
+
 {# RENDER THE COMPONENT #}
 {{ govukSummaryList({
   rows: rows

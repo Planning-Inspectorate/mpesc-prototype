@@ -48,6 +48,22 @@
 
   {% endif %}
 
+  {# --- LINKED CASE NOTIFICATION BANNER --- #}
+    {% if currentCase.isLinked and not currentCase.leadCase %}
+      <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            Important
+          </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">
+            You must <a class="govuk-notification-banner__link" href="#overview">add a lead case</a> to this linked case.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+
 
 {# ========================================== #}
   {# --- ROW 1: HEADER & BUTTONS ---            #}
@@ -313,6 +329,7 @@
   {% endif %}
 {% endset %}
 
+      {# --- RELATED CASES HTML --- #}
       {% set relatedCasesHtml %}
         {% if currentCase.relatedCases and currentCase.relatedCases.length > 0 %}
          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
@@ -325,28 +342,29 @@
         {% endif %}
       {% endset %}
 
-      {% set hasLinkedData = currentCase.leadCase or (currentCase.linkedCases and currentCase.linkedCases.length > 0) %}
-
+      {# --- LINKED CASES HTML (Now strictly just the array) --- #}
       {% set linkedCasesHtml %}
-        {% if hasLinkedData %}
+        {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
           <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
-            
-            {# 1. Show the Lead Case first (bolded) #}
-            {% if currentCase.leadCase %}
-              <li><strong>{{ currentCase.leadCase }} (Lead case)</strong></li>
-            {% endif %}
-            
-            {# 2. Loop through the rest of the linked cases #}
-            {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
-              {% for item in currentCase.linkedCases %}
-                {# Ensure we don't accidentally print a reference twice if it's the lead #}
-                {% if item.reference != currentCase.leadCase %}
-                  <li>{{ item.reference }}</li>
-                {% endif %}
-              {% endfor %}
-            {% endif %}
-
+            {% for item in currentCase.linkedCases %}
+              <li>{{ item.reference }}</li>
+            {% endfor %}
           </ul>
+        {% else %}
+          -
+        {% endif %}
+      {% endset %}
+
+      {# --- LEAD CASE LOGIC --- #}
+      {% set leadCaseText %}
+        {% if currentCase.isLinked == false %}
+          This case is not linked
+        {% elif currentCase.leadCase %}
+          {% if currentCase.leadCase == currentCase.reference %}
+            {{ currentCase.leadCase }} (Current case)
+          {% else %}
+            {{ currentCase.leadCase }}
+          {% endif %}
         {% else %}
           -
         {% endif %}
@@ -357,79 +375,88 @@
         card: { title: { text: "Overview" } },
         rows: [
           { 
-  key: { text: "Case type" }, value: { text: currentCase.type or "-" }, actions: { items: [{ visuallyHiddenText: "case type" }] } 
-},
+            key: { text: "Case type" }, value: { text: currentCase.type or "-" }, actions: { items: [{ visuallyHiddenText: "case type" }] } 
+          },
           { 
-  key: { text: "Subtype" }, 
-  value: { text: "-" if (currentCase.subtype == "NONE" or not currentCase.subtype) else currentCase.subtype }, 
-  actions: { items: [{ 
-    visuallyHiddenText: "subtype" 
-  }] } 
-},
+            key: { text: "Subtype" }, 
+            value: { text: "-" if (currentCase.subtype == "NONE" or not currentCase.subtype) else currentCase.subtype }, 
+            actions: { items: [{ visuallyHiddenText: "subtype" }] } 
+          },
           { 
-  key: { text: "Act" }, 
-  value: { text: currentCase.act or "-" }, 
-  actions: { items: [{ 
-    href: "/cases/edit/act?ref=" + currentCase.reference, 
-    text: "Change" if currentCase.act else "Add", 
-    visuallyHiddenText: "act" 
-  }] } 
-},
-         { 
-  key: { text: "Consent sought" }, 
-  value: { text: currentCase['consent-sought'] or "-" }, 
-  actions: { items: [{ 
-    href: "/cases/edit/consent-sought?ref=" + currentCase.reference, 
-    text: "Change" if currentCase['consent-sought'] else "Add", 
-    visuallyHiddenText: "consent sought" 
-  }] } 
-},
-{ 
-  key: { text: "Priority" }, 
-  value: { text: currentCase['priority'] or "-" }, 
-  actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
-},
+            key: { text: "Act" }, 
+            value: { text: currentCase.act or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/act?ref=" + currentCase.reference, 
+              text: "Change" if currentCase.act else "Add", 
+              visuallyHiddenText: "act" 
+            }] } 
+          },
           { 
-  key: { text: "Inspector band" }, 
-  value: { text: currentCase['inspector-band'] or "-" }, 
-  actions: { items: [{ 
-    href: "/cases/edit/inspector-band?ref=" + currentCase.reference, 
-    text: "Change" if currentCase['inspector-band'] else "Add", 
-    visuallyHiddenText: "inspector band" 
-  }] } 
-},
-{ 
-  key: { text: "Procedure" }, 
-  value: { html: procedureListHtml }, 
-  actions: { 
-    items: [{ 
-      href: "/cases/overview-procedures/hub?ref=" + currentCase.reference if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "/cases/overview-procedures/start?ref=" + currentCase.reference, 
-      text: "Change" if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "Add",
-      visuallyHiddenText: "procedure"
-    }] }
-},
+            key: { text: "Consent sought" }, 
+            value: { text: currentCase['consent-sought'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/consent-sought?ref=" + currentCase.reference, 
+              text: "Change" if currentCase['consent-sought'] else "Add", 
+              visuallyHiddenText: "consent sought" 
+            }] } 
+          },
           { 
-  key: { text: "Related case(s)" }, 
-  value: { html: relatedCasesHtml }, 
-  actions: { 
-    items: [{ 
-      href: "/cases/related-cases/hub?ref=" + currentCase.reference if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "/cases/related-cases/start?ref=" + currentCase.reference, 
-      text: "Change" if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "Add", 
-      visuallyHiddenText: "related cases" 
-    }] }
-  },
-{ 
-  key: { text: "Linked case(s)" }, 
-  value: { html: linkedCasesHtml }, 
-  actions: { 
-    items: [{ 
-      href: "/cases/linked-cases/hub?ref=" + currentCase.reference if hasLinkedData else "/cases/linked-cases/start?ref=" + currentCase.reference, 
-      text: "Change" if hasLinkedData else "Add", 
-      visuallyHiddenText: "linked cases" 
-    }] 
-  }
-}
-]
+            key: { text: "Priority" }, 
+            value: { text: currentCase['priority'] or "-" }, 
+            actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
+          },
+          { 
+            key: { text: "Inspector band" }, 
+            value: { text: currentCase['inspector-band'] or "-" }, 
+            actions: { items: [{ 
+              href: "/cases/edit/inspector-band?ref=" + currentCase.reference, 
+              text: "Change" if currentCase['inspector-band'] else "Add", 
+              visuallyHiddenText: "inspector band" 
+            }] } 
+          },
+          { 
+            key: { text: "Procedure" }, 
+            value: { html: procedureListHtml }, 
+            actions: { 
+              items: [{ 
+                href: "/cases/overview-procedures/hub?ref=" + currentCase.reference if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "/cases/overview-procedures/start?ref=" + currentCase.reference, 
+                text: "Change" if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "Add",
+                visuallyHiddenText: "procedure"
+              }] }
+          },
+          { 
+            key: { text: "Related case(s)" }, 
+            value: { html: relatedCasesHtml }, 
+            actions: { 
+              items: [{ 
+                href: "/cases/related-cases/hub?ref=" + currentCase.reference if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "/cases/related-cases/start?ref=" + currentCase.reference, 
+                text: "Change" if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "Add", 
+                visuallyHiddenText: "related cases" 
+              }] }
+          },
+          { 
+            key: { html: "Lead case <span id='lead-case-row'></span>" }, 
+            value: { text: leadCaseText }, 
+            actions: { 
+              items: [{ 
+                href: "/cases/linked-cases/lead-case-question?ref=" + currentCase.reference, 
+                text: "Change" if (currentCase.leadCase or currentCase.isLinked == false) else "Add", 
+                visuallyHiddenText: "lead case" 
+              }] 
+            }
+          },
+          { 
+            key: { text: "Linked case(s)" }, 
+            value: { html: linkedCasesHtml }, 
+            actions: { 
+              items: [{ 
+                href: "/cases/linked-cases/hub?ref=" + currentCase.reference if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "/cases/linked-cases/start?ref=" + currentCase.reference, 
+                text: "Change" if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "Add", 
+                visuallyHiddenText: "linked cases" 
+              }] 
+            }
+          }
+        ]
       }) }}
 
 {# --- 2. CASE DETAILS --- #}
