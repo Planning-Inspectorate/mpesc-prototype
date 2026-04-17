@@ -401,16 +401,25 @@
         <h2 class="govuk-heading-l">Upcoming features</h2>
         
         {{ govukDetails({
-          summaryText: "In development",
+          summaryText: "In development or considered",
           html: '
             <ul class="govuk-task-list">
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="#">Task lists</a>
+                  <div class="govuk-task-list__hint">Task list to indicate to users what actions they need to complete.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
+                </div>
+              </li>
               <li class="govuk-task-list__item govuk-task-list__item--with-link">
                 <div class="govuk-task-list__name-and-hint">
                   <a class="govuk-link govuk-task-list__link" href="#">Add to list branching contact user journey.</a>
                   <div class="govuk-task-list__hint">Branching for if the user requires recording joint groups or individuals.</div>
                 </div>
                 <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--blue">In discussion</strong>
+                  <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
                 </div>
               </li>
               
@@ -419,9 +428,18 @@
         }) }}
 
         {{ govukDetails({
-          summaryText: "Recently Added",
+          summaryText: "Previously added",
           html: '
             <ul class="govuk-task-list">
+              <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                <div class="govuk-task-list__name-and-hint">
+                  <a class="govuk-link govuk-task-list__link" href="#">Linked and lead case</a>
+                  <div class="govuk-task-list__hint">Add linked cases and a notification banner to add a lead case.</div>
+                </div>
+                <div class="govuk-task-list__status">
+                  <strong class="govuk-tag govuk-tag--green">17 April 2026</strong>
+                </div>
+              </li>
               <li class="govuk-task-list__item govuk-task-list__item--with-link">
                 <div class="govuk-task-list__name-and-hint">
                   <a class="govuk-link govuk-task-list__link" href="#">Download all contacts</a>
