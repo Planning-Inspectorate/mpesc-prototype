@@ -1,6 +1,12 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}{% if error %}Error: {% endif %}Add Inspector Name{% endblock %}
-{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/edit/check-inspectors?ref=" + ref }) }}{% endblock %}
+
+{% block pageTitle %}
+{% if error %}Error: {% endif %}Add Inspector Name
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "/cases/edit/check-inspectors?ref=" + ref }) }}
+{% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
@@ -40,6 +46,7 @@
 <script src="/public/javascripts/accessible-autocomplete.min.js"></script>
 <script>
   const officers = [
+    "Charlotte Morphet",
     "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
     "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
     "(Service Account) Automated Tester", "Owen Woodwards"

@@ -11,7 +11,7 @@
 {% endif %}
 
 {# ========================================================== #}
-{# PAGINATION LOGIC (Pure Nunjucks)                           #}
+{# PAGINATION LOGIC                                           #}
 {# ========================================================== #}
 {% set allLogs = currentCase.auditLog or [] %}
 {% set totalLogs = allLogs.length %}
@@ -128,7 +128,7 @@
           
           {% if pagedLogs and pagedLogs.length > 0 %}
             
-            {# Loop through our new PAGED logic array instead of the whole log #}
+            {# Loop through PAGED logic array instead of the whole log #}
             {% for log in pagedLogs %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 60px;" data-cy="history-date-{{ loop.index0 }}">{{ log.date | safe }}</td>
@@ -149,7 +149,7 @@
         </tbody>
       </table>
 
-      {# --- FOOTER PAGINATION --- #}
+      {# --- BOTTOM PAGE PAGINATION BUTTONS --- #}
       {% if pageItems.length > 1 %}
         {{ govukPagination({
           previous: prevLink and { href: prevLink },

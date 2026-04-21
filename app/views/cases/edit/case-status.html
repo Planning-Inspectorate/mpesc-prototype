@@ -1,6 +1,12 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}{% if error %}Error: {% endif %}What is the case status? - Planning Inspectorate Portal{% endblock %}
-{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block pageTitle %}
+{% if error %}Error: {% endif %}What is the case status? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -11,7 +17,6 @@
       
       <form action="/cases/edit/case-status?ref={{ ref }}" method="post" novalidate>
         
-        {# --- UPDATED STATUS LIST --- #}
         {{ govukRadios({
           name: "caseStatus",
           fieldset: { legend: { text: "What is the case status?", isPageHeading: true, classes: "govuk-fieldset__legend--l" } },

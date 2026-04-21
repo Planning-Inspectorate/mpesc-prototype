@@ -1,6 +1,12 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}{% if error %}Error: {% endif %}Which round of advertised modifications is the case at? - Planning Inspectorate Portal{% endblock %}
-{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}{% endblock %}
+
+{% block pageTitle %}
+{% if error %}Error: {% endif %}Which round of advertised modifications is the case at? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">

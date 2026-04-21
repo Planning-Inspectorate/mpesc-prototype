@@ -33,3 +33,24 @@ Check applicant or appellant - Planning Inspectorate Portal
   </div>
 </div>
 {% endblock %}
+
+
+{# THIS PAGE WILL NO LONGER BE SHOWN AS APPLICANTS WILL ALWAYS HAVE 1 ENTRY BUT THE LOGIC IS STILL AVAILABLE
+  
+  IF YOU WANT TO USE THIS PAGE, RE-ADD THE REMOVE BUTTON FOR IF THERE IS ONLY 1 ENTRY ON: 
+  
+  'check-applicants.html'
+  
+  AND FIND:
+  
+  {% if list.length > 1 %}
+  <li class="govuk-summary-list__actions-list-item">
+    <a class="govuk-link" href="/cases/applicants/remove?ref={{ ref }}&id={{ item.id }}">
+      Remove<span class="govuk-visually-hidden"> applicant</span>
+    </a>
+  </li>
+  {% endif %} 
+
+ AND DELETE THE IF FUNCTION WRAPPING THE REMOVE BUTTON.
+
+#}

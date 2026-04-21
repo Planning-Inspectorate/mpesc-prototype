@@ -194,6 +194,7 @@ router.post('/case-received-date-answer', function (req, res) {
 router.post('/case-officer-answer', function (req, res) {
   var selectedOfficer = req.session.data['caseOfficer'];
   var allowedOfficers = [
+    "Charlotte Morphet",
       "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield", "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", "Owen Woodwards",
       "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner", "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange", "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
   ];
@@ -1536,6 +1537,7 @@ addAuditLog(req, req.query.ref, "Case officer removed");
 
   // OPTIONAL: Check if the name is actually in the allowed list
   var officers = [
+    "Charlotte Morphet",
     "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
     "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
     "(Service Account) Automated Tester", "Owen Woodwards", "Tony Stark",
@@ -1740,6 +1742,7 @@ router.post('/cases/edit/inspector-name', function (req, res) {
 
   // Check valid list (Optional)
   var officers = [
+    "Charlotte Morphet",
     "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
     "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
     "(Service Account) Automated Tester", "Owen Woodwards"
@@ -5878,6 +5881,7 @@ router.post('/assigned-to-me/search-user', function (req, res) {
   }
 
   var officers = [
+    "Charlotte Morphet",
     "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
     "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
     "(Service Account) Automated Tester", "Owen Woodwards", 
