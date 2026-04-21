@@ -1,5 +1,8 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}Is this case the lead case? - Planning Inspectorate Portal{% endblock %}
+
+{% block pageTitle %}
+Is this case the lead case? - Planning Inspectorate Portal
+{% endblock %}
 
 
 {% block beforeContent %}
@@ -10,13 +13,17 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
     {% if errorIsLeadCase %}
       {{ govukErrorSummary({
         titleText: "There is a problem",
         errorList: [{ text: errorIsLeadCase, href: "#isLeadCase" }]
       }) }}
+
     {% endif %}
+
     <form action="/is-lead-case-answer" method="post" novalidate>
+
       {{ govukRadios({
         classes: "govuk-radios--inline",
         idPrefix: "isLeadCase",
@@ -30,7 +37,9 @@
           { value: "no", text: "No", checked: data['isLeadCase'] == 'no' }
         ]
       }) }}
+
       {{ govukButton({ text: "Continue" }) }}
+      
     </form>
   </div>
 </div>

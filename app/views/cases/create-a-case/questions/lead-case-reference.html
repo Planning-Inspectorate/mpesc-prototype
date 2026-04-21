@@ -1,5 +1,8 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}What is the case reference of the lead case? - Planning Inspectorate Portal{% endblock %}
+
+{% block pageTitle %}
+What is the case reference of the lead case? - Planning Inspectorate Portal
+{% endblock %}
 
 
 {% block beforeContent %}
@@ -10,13 +13,16 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
     {% if errorLeadCaseReference %}
       {{ govukErrorSummary({
         titleText: "There is a problem",
         errorList: [{ text: errorLeadCaseReference, href: "#leadCaseReference" }]
       }) }}
     {% endif %}
+
     <form action="/lead-case-reference-answer" method="post" novalidate>
+
       {{ govukInput({
         id: "leadCaseReference",
         name: "leadCaseReference",
@@ -28,7 +34,9 @@
         },
         errorMessage: { text: errorLeadCaseReference } if errorLeadCaseReference else null
       }) }}
+
       {{ govukButton({ text: "Continue" }) }}
+      
     </form>
   </div>
 </div>

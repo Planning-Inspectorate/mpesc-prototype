@@ -6,10 +6,12 @@
 
 {% block beforeContent %}
 
-  {# 1. Set a safe fallback just in case #}
+{# DYNAMIC BACK LINKS DEPENDING ON BRANCHES #}
+  {# FALL BACK LINK #}
   {% set backLink = "/cases/create-a-case/questions/casework-area" %}
 
-  {# 2. CHECK BRANCH A: PEAS #}
+
+  {# CHECK FOR BRANCH A: Planning, Environmental and Applications #}
   {% if data['casework-area'] == "Planning, Environmental and Applications" %}
     
     {% if data['peas-type-of-case'] == "Drought" %}
@@ -30,7 +32,8 @@
     
     {% endif %}
 
-  {# 3. CHECK BRANCH B: Rights of Way and Common Land #}
+
+  {# CHECK FOR BRANCH B: Rights of Way and Common Land #}
   {% elif data['casework-area'] == "Rights of Way and Common Land" %}
     
     {% if data['row-type-of-case'] == "Coastal Access" %}
@@ -46,7 +49,7 @@
 
   {% endif %}
 
-  {# 4. Render the button using our calculated link #}
+  
   {{ govukBackLink({
     text: "Back",
     href: backLink

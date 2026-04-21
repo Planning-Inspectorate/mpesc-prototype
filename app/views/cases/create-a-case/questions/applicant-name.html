@@ -1,6 +1,13 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %}{% if errorList %}Error: {% endif %}Who is the Applicant or appellant? - Planning Inspectorate Portal{% endblock %}
-{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}{% endblock %}
+
+{% block pageTitle %}
+{% if errorList %}Error: {% endif %}Who is the Applicant or appellant? - Planning Inspectorate Portal
+{% endblock %}
+
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
@@ -14,7 +21,7 @@
       legend: { text: "Who is the applicant or appellant?", classes: "govuk-fieldset__legend--l", isPageHeading: true }
     }) %}
     
-    {# --- NEW FORMATTED TEXT BLOCK START --- #}
+    {# --- BODY TEXT BLOCK START --- #}
     <p class="govuk-body">
       Enter the name of the main party. This could also be a server. You can enter:
     </p>
@@ -30,11 +37,11 @@
     </p>
 
     <br>
-    {# --- NEW FORMATTED TEXT BLOCK END --- #}
+    {# --- BODY TEXT BLOCK END --- #}
 
     <form action="{% if editMode %}/cases/edit/applicant-name?ref={{ ref }}&id={{ id }}{% else %}/cases/create-a-case/questions/applicant-name{% if id %}?id={{ id }}{% endif %}{% endif %}" method="post" novalidate>
       
-      {# Render general error inline if they left everything blank #}
+      {# If all blank, show general error #}
       {% if errors.general %}
         <p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errors.general.text }}</p>
       {% endif %}

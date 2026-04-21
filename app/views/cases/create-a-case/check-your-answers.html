@@ -14,8 +14,7 @@
       </h1>
 
 
-
-
+{# FORMAT THE CASE RECEIVED DATE TO MATCH GDS #}
 {% if data['case-received-date-year'] and data['case-received-date-month'] and data['case-received-date-day'] %}
 
   {% set monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
@@ -29,6 +28,7 @@
 {% endif %}
 
 
+{# FORMAT THE ADDRESS LINE TO MATCH GDS #}
       {% set addressHtml %}
   {{ data['addressLine1'] }}
 
@@ -129,8 +129,8 @@
 
 
 
+{# 1. LIST CREATION + ALWAYS SHOWN QUESTIONS #}
 
-                                                {# 1. LIST CREATION #}
 {% set rows = [
   {
     key: { text: "What area does this new case relate to?" },
@@ -154,7 +154,10 @@
   }) %}
 {% endif %}
 
-                                                {# 2. DYNAMICALLY QUESTIONS #}
+
+
+{# 2. DYNAMIC QUESTIONS #}
+
 {% if data['casework-area'] == 'Rights of Way and Common Land' %}
 {# -- Coastal Access Branch -- #}
 {% if data['row-type-of-case'] == 'Coastal Access' %}
@@ -221,7 +224,10 @@
   }) %}
 {% endif %}
 
-                                                {# ALWAYS SHOWN QUESTIONS #}
+
+
+{# 3. NEXT SET OF ALWAYS SHOWN QUESTIONS #}
+
 {% set _ = rows.push({
   key: { text: "What is the case name?" },
   value: { text: data['caseName'] },
@@ -281,6 +287,10 @@
   value: { text: "Yes" if data['isLinkedCase'] == 'yes' else "No" },
   actions: { items: [{ href: "/cases/create-a-case/questions/linked-case", text: "Change", visuallyHiddenText: "Is this a linked case?" }] }
 }) %}
+
+
+
+{# 4. CONDITIONALLY SHOWN LINKED CASE QUESTIONS #}
 
 {% if data['isLinkedCase'] == 'yes' %}
   {% set _ = rows.push({

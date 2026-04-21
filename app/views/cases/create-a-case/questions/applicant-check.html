@@ -13,13 +13,10 @@ Check applicant or appellant - Planning Inspectorate Portal
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Check applicant or appellant details</h1>
 
-    {# --- GET DATA --- #}
-    {# Pull the array directly from the session data #}
     {% set applicantList = data['applicants'] or [] %}
 
     {# --- DATA TABLE --- #}
     {% if applicantList.length > 0 %}
-      {# Added the MOJ Sortable Module to the table #}
       <table class="govuk-table" data-module="moj-sortable-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
@@ -31,6 +28,7 @@ Check applicant or appellant - Planning Inspectorate Portal
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
         </thead>
+
         <tbody class="govuk-table__body">
           {% for item in applicantList %}
             <tr class="govuk-table__row">
@@ -85,14 +83,12 @@ Check applicant or appellant - Planning Inspectorate Portal
           {% endfor %}
         </tbody>
       </table>
+
     {% else %}
       <p class="govuk-body">Add one or more applicants or appellants. No applicant or <br> appellant details have been added.</p>
-
-  
     {% endif %}
 
     {# --- BUTTONS --- #}
-    {# Note: Because this is just navigating to the next stage, we use a GET form #}
     <form action="/cases/create-a-case/questions/site-address" method="get">
       
       <div class="govuk-button-group">

@@ -22,9 +22,6 @@
 
       <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
 
-  
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
 {{ govukRadios({
   name: "wayleaves-subtype",
   value: data['wayleaves-subtype'], fieldset: {

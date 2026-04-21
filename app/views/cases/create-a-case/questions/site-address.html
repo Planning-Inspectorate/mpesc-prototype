@@ -16,7 +16,6 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      {# 1. ERROR SUMMARY (Only shows if there is an error) #}
       {% if error %}
         {{ govukErrorSummary({
           titleText: "There is a problem",
@@ -30,9 +29,6 @@
       {% endif %}
 
       <form class="form" action="/site-address-answer" method="post">
-
-{% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/fieldset/macro.njk" import govukFieldset %}
 
 {% call govukFieldset({
   legend: {

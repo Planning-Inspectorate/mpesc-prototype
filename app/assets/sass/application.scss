@@ -6,61 +6,120 @@
 // Add extra styles here
 
 /* GLOBAL FONT OVERRIDE */
-html, body,
-.govuk-tag--grey, .govuk-tag--green, .govuk-tag--teal, .govuk-tag--blue, .govuk-tag--purple, .govuk-tag--magenta, .govuk-tag--red, .govuk-tag--orange, .govuk-tag--yellow,
-.govuk-heading-xl, .govuk-heading-l, .govuk-heading-m, .govuk-heading-s,
-.govuk-task-list__hint, .govuk-task-list__name-and-hint,
-.govuk-caption-xl, .govuk-caption-l, .govuk-caption-m,
-.govuk-body, .govuk-body-l, .govuk-body-m, .govuk-body-s,
-.govuk-label, .govuk-hint, .govuk-fieldset__legend,
-.govuk-input, .govuk-textarea, .govuk-select,
-.govuk-radios__label, .govuk-checkboxes__label, .govuk-tabs__tab,
-.govuk-button, .govuk-link, .govuk-back-link,
-.govuk-summary-list__key, .govuk-summary-list__value, .govuk-summary-list__actions, .govuk-summary-card__title,
-.govuk-table__header, .govuk-table__cell,
-.govuk-task-list__name-and-hint, .govuk-task-list__status,
-.govuk-accordion__section-button, .govuk-details__summary-text,
-.govuk-header__service-name, .govuk-footer__link, .govuk-link--no-visited-state,
-.govuk-link--no-visited-state:visited, .pins-pagination-options,
-.govuk-phase-banner__text, .govuk-notification-banner__heading,
-.govuk-error-message, .govuk-error-summary__title,
-.govuk-notification-banner,
+html, 
+body,
+
+/* Typography & Links */
+.govuk-body, 
+.govuk-body a, 
+.govuk-body li, 
+.govuk-body ul,
+.govuk-body-l, 
+.govuk-body-m, 
+.govuk-body-s,
+.govuk-caption-l, 
+.govuk-caption-m, 
+.govuk-caption-xl,
+.govuk-heading-l, 
+.govuk-heading-m, 
+.govuk-heading-s, 
+.govuk-heading-xl,
+.govuk-link, 
+.govuk-link--no-visited-state, 
+.govuk-link--no-visited-state:visited,
+
+/* Forms & Inputs */
+.govuk-button, 
+.govuk-checkboxes__label, 
+.govuk-fieldset__legend,
+.govuk-hint, 
+.govuk-input, 
+.govuk-label, 
+.govuk-radios__label, 
+.govuk-select, 
+.govuk-textarea,
+
+/* Lists & Tables */
+.govuk-list, 
+.govuk-list a, 
+.govuk-list li,
+.govuk-list--bullet a, 
+.govuk-list--bullet li,
+.govuk-table__cell, 
+.govuk-table__header,
+
+/* Summary Lists & Cards */
+.govuk-summary-card__title,
+.govuk-summary-list__actions, 
+.govuk-summary-list__key, 
+.govuk-summary-list__value,
+
+/* Tags */
+.govuk-tag--blue, 
+.govuk-tag--green, 
+.govuk-tag--grey, 
+.govuk-tag--magenta, 
+.govuk-tag--orange, 
+.govuk-tag--purple, 
+.govuk-tag--red, 
+.govuk-tag--teal, 
+.govuk-tag--yellow,
+
+/* Task Lists & Accordions */
+.govuk-accordion__section-button, 
 .govuk-accordion__show-all-text,
+.govuk-details__summary-text,
+.govuk-task-list__hint, 
+.govuk-task-list__name-and-hint, 
+.govuk-task-list__status,
+
+/* Banners, Panels & Notifications */
 .govuk-inset-text,
+.govuk-notification-banner,
 .govuk-notification-banner__content,
 .govuk-notification-banner__header,
 .govuk-notification-banner__heading,
 .govuk-notification-banner__link,
-.govuk-error-summary__body,
-.govuk-error-summary__list,
-.govuk-error-summary__list li,
-.govuk-warning-text__text,
+.govuk-panel.govuk-panel--confirmation, 
+.govuk-panel__body, 
+.govuk-panel__title,
+.govuk-phase-banner__text, 
 .govuk-warning-text,
-.govuk-error-summary__list a,
+.govuk-warning-text__text,
+
+/* Error Summaries & Messages */
+.govuk-error-message, 
+.govuk-error-summary__body,
+.govuk-error-summary__list, 
+.govuk-error-summary__list a, 
+.govuk-error-summary__list li, 
 .govuk-error-summary__list ul,
-.govuk-summary-list__value,
-.govuk-list--bullet li,
-.govuk-list--bullet a,
-.govuk-breadcrumbs__link,
-.govuk-breadcrumbs__list,
+.govuk-error-summary__title,
+
+/* Navigation, Header & Footer */
+.govuk-back-link,
+.govuk-breadcrumbs__link, 
+.govuk-breadcrumbs__list, 
 .govuk-breadcrumbs__list-item,
-.govuk-list,
-.govuk-list a,
-.govuk-list li,
-.govuk-body a,
-.govuk-body li,
-.govuk-body ul,
-.pins-header-demo, 
-.pins-service-nav__link,
-.govuk-panel.govuk-panel--confirmation, .govuk-panel__title, .govuk-panel__body,
-.pins-service-nav__title,
+.govuk-footer__link, 
+.govuk-header__service-name, 
+.govuk-tabs__tab,
+
+/* Custom PINS & MOJ overrides */
+.govuk-width-container.pins-service-nav__container, 
 .moj-filter__tag,
-.govuk-width-container.pins-service-nav__container, .pins-service-nav .pins-footer {
+.pins-header-demo, 
+.pins-pagination-options,
+.pins-service-nav .pins-footer,
+.pins-service-nav__link,
+.pins-service-nav__title {
   font-family: "Helvetica", "Arial", sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* YOUR CUSTOM PINS STYLING REMAINS BELOW */
+
+
+/* Custom PINS header styles */
 .pins-header-demo {
   padding-top: 24px;
   padding-bottom: 24px;
@@ -68,26 +127,25 @@ html, body,
   border-bottom: 10px solid #13A19B;
 }
 
-/* ... the rest of your custom PINS styles ... */
-
-
-/* FORCE the background to be grey, overriding the 'rebranded' template styles */
+/* Override the 'rebranded' template styles to match PINS header and footer background colour */
 .govuk-template {
   background-color: #f3f2f1;
 }
 
-/* 1. Make the standard width containers white (for main content) */
+/* Keep the width container white after override */
 .govuk-width-container {
   background-color: #ffffff !important;
 }
 
-/* 2. OVERRIDE: Prevent the header, nav, and footer containers from turning white */
+/* Prevent the header, nav, and footer containers from turning white due to override */
 .pins-header-demo .govuk-width-container,
 .pins-service-nav__container {
   background-color: #f3f2f1 !important;
 }
 
-/* Override Autocomplete Font to match GDS */
+
+
+/* Change Autocomplete Fonts to match GDS */
 .autocomplete__menu,
 .autocomplete__input,
 .autocomplete__hint,
@@ -97,13 +155,14 @@ html, body,
   line-height: 1.5 !important;
 }
 
-/* Optional: Fix the border color to match GDS focus state */
+/* Fix the border color and width to match GDS focus state */
 .autocomplete__wrapper {
-  max-width: 100%; /* Ensures it respects the govuk-grid width */
+  max-width: 100%;
 }
 
+/* Ensure selected options are GDS blue consistent */
 .autocomplete__option--focused {
-  background-color: #1d70b8 !important; /* GDS Link Blue */
+  background-color: #1d70b8 !important;
   color: white !important;
 }
 
@@ -111,11 +170,12 @@ html, body,
 .autocomplete__input {
   border: 2px solid #0b0c0c;
   padding: 5px;
-  height: 40px; /* Standard GDS input height */
+  height: 40px;
 }
 
+/* GDS focused state */
 .autocomplete__input--focused {
-  outline: 3px solid #ffdd00; /* GDS Focus Ring */
+  outline: 3px solid #ffdd00;
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px;
 }

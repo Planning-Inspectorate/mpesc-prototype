@@ -18,9 +18,6 @@
 
       <form class="form" action="/row-type-of-case-answer" method="post">
 
-
-          {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
 {{ govukRadios({
   name: "row-type-of-case",
   value: data['row-type-of-case'], fieldset: {
