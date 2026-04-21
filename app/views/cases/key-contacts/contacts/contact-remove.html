@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}Remove contact?{% endblock %}
+{% block pageTitle %}
+Remove contact?
+{% endblock %}
 
 {% block beforeContent %}
     {{ govukBackLink({ text: "Back", href: backUrl }) }}
@@ -19,7 +21,6 @@
       }) }}
     {% endif %}
 
-    {# novalidate stops the browser from blocking the GOV.UK error styling #}
     <form action="{{ actionUrl }}" method="post" novalidate>
       {{ govukRadios({
         classes: "govuk-radios--inline",

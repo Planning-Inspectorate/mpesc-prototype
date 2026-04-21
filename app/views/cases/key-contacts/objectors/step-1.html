@@ -21,7 +21,6 @@
 
     <form method="post" action="/cases/key-contacts/objectors/step-1?ref={{ ref }}&id={{ id }}" novalidate>
 
-      {# OPEN FIELDSET #}
       {% call govukFieldset({
         legend: {
           text: "Who is the objector?",
@@ -30,7 +29,7 @@
         }
       }) %}
 
-       {# --- NEW FORMATTED TEXT BLOCK START --- #}
+    {# --- BODY TEXT BLOCK START --- #}
     <p class="govuk-body">
       Enter the name of the individual, the organisation, or both. You can enter:
     </p>
@@ -46,6 +45,7 @@
     </p>
 
     <br>
+    {# --- BODY TEXT BLOCK END --- #}
 
       {# Render general error inline if they left everything blank #}
       {% if errors.general %}
@@ -82,7 +82,6 @@
         errorMessage: errors.org if errors.org else null
       }) }}
 
-      {# CLOSE FIELDSET #}
       {% endcall %}
 
       {{ govukButton({ text: "Continue" }) }}
