@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}Are you sure you want to cancel?{% endblock %}
+{% block pageTitle %}
+Are you sure you want to cancel?
+{% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({ text: "Back", href: "/cases/related-cases/hub?ref=" + ref }) }}
@@ -9,6 +11,7 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
     {% if error %}
       {{ govukErrorSummary({
         titleText: "There is a problem",
@@ -18,10 +21,12 @@
 
     <form action="/cases/related-cases/cancel?ref={{ ref }}" method="post" novalidate>
       <h1 class="govuk-heading-l">Are you sure you want to cancel?</h1>
+
       {{ govukWarningText({
         text: "Any unsaved related case data will be deleted and will need to be completed again.",
         iconFallbackText: "Warning"
       }) }}
+
       {{ govukRadios({
         classes: "govuk-radios--inline",
         idPrefix: "cancelRelatedCases",
@@ -32,7 +37,9 @@
           { value: "no", text: "No" }
         ]
       }) }}
+
       {{ govukButton({ text: "Continue" }) }}
+
     </form>
   </div>
 </div>

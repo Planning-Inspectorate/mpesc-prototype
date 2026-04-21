@@ -11,6 +11,7 @@ Are you sure you want to cancel?
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+    
     {% if error %}
       {{ govukErrorSummary({
         titleText: "There is a problem",
@@ -24,6 +25,7 @@ Are you sure you want to cancel?
         text: "Any unsaved applicant data will be deleted and will need to be completed again.",
         iconFallbackText: "Warning"
       }) }}
+
       {{ govukRadios({
         classes: "govuk-radios--inline",
         idPrefix: "cancelApplicants",
@@ -34,7 +36,9 @@ Are you sure you want to cancel?
           { value: "no", text: "No" }
         ]
       }) }}
+
       {{ govukButton({ text: "Continue" }) }}
+
     </form>
   </div>
 </div>
