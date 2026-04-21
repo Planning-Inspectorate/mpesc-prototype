@@ -208,7 +208,9 @@ router.post('/case-officer-answer', function (req, res) {
   }
 });
 
-// NEW ROUTE: Linked Case Question
+
+
+// 1. Linked Case Question (Branching)
 router.post('/linked-case-answer', function(req, res) {
   var isLinked = req.body['isLinkedCase'];
 
@@ -218,13 +220,49 @@ router.post('/linked-case-answer', function(req, res) {
     });
   }
 
-  // Save selection
   req.session.data['isLinkedCase'] = isLinked;
-  
-  // Proceed to Check Your Answers
-  res.redirect('/cases/create-a-case/check-your-answers');
+
+  // Branching Logic
+  if (isLinked === 'yes') {
+    res.redirect('/cases/create-a-case/questions/is-lead-case');
+  } else {
+    res.redirect('/cases/create-a-case/check-your-answers');
+  }
 });
 
+// 2. NEW ROUTE: Is this the lead case?
+router.post('/is-lead-case-answer', function(req, res) {
+  var isLead = req.body['isLeadCase'];
+
+  if (!isLead) {
+    return res.render('cases/create-a-case/questions/is-lead-case', {
+      errorIsLeadCase: "Select yes if this case is the lead case"
+    });
+  }
+
+  req.session.data['isLeadCase'] = isLead;
+
+  // Branching Logic
+  if (isLead === 'yes') {
+    res.redirect('/cases/create-a-case/check-your-answers');
+  } else {
+    res.redirect('/cases/create-a-case/questions/lead-case-reference');
+  }
+});
+
+// 3. NEW ROUTE: What is the lead case reference?
+router.post('/lead-case-reference-answer', function(req, res) {
+  var refInput = req.body['leadCaseReference'];
+
+  if (!refInput || refInput.trim() === "") {
+    return res.render('cases/create-a-case/questions/lead-case-reference', {
+      errorLeadCaseReference: "Enter the lead case reference"
+    });
+  }
+
+  req.session.data['leadCaseReference'] = refInput.trim();
+  res.redirect('/cases/create-a-case/check-your-answers');
+});
 
 
 router.post('/site-address-answer', function(req, res) {
@@ -451,11 +489,33 @@ router.post('/create-case-submit', function (req, res) {
   }
 
 
-// --- 6. SAVE THE CASE ---
+  // --- 6. SAVE THE CASE ---
 
-// Define case work area slug for both display and filtering (This is crucial for your checkboxes to work on the All Cases page)
+  // -> NEW LOGIC: Resolve the Lead/Linked fields using the finalRef generated above
+  var isLinkedFlag = req.session.data['isLinkedCase'] === 'yes';
+  var isLeadFlag = req.session.data['isLeadCase'] === 'yes';
+  var inputLeadRef = req.session.data['leadCaseReference'];
 
-var areaSelection = req.session.data['casework-area'];
+  var resolvedLeadCase = null;
+  var initialLinkedCases = [];
+
+  if (isLinkedFlag) {
+    if (isLeadFlag) {
+      // It IS the lead case. Just save its own reference into the leadCase field.
+      resolvedLeadCase = finalRef;
+    } else {
+      // It is NOT the lead case. Use what they typed in the box.
+      resolvedLeadCase = inputLeadRef;
+      // Add the typed lead case to the linked cases array so it shows in the UI later
+      initialLinkedCases.push({
+        id: 'lc-' + Math.floor(Math.random() * 10000),
+        reference: inputLeadRef
+      });
+    }
+  }
+
+  // Define case work area slug for both display and filtering (This is crucial for your checkboxes to work on the All Cases page)
+  var areaSelection = req.session.data['casework-area'];
   var areaSlug = "";
 
   if (areaSelection === "Planning, Environmental and Applications") {
@@ -480,24 +540,17 @@ var areaSelection = req.session.data['casework-area'];
     // Status: Take from the radio selection, fallback to "New case" if empty
     "caseStatus": "",
 
-    // --- NEW: LINKED CASE VARIABLES ---
-    // If they said yes, set the flag. We leave leadCase blank so the banner triggers later.
-    "isLinked": req.session.data['isLinkedCase'] === 'yes',
-    "linkedCases": [],
-    "leadCase": null,
-    
+    // --- NEW: INJECT THE RESOLVED LINKED DATA HERE ---
+    "isLinked": isLinkedFlag,
+    "leadCase": resolvedLeadCase,
+    "linkedCases": initialLinkedCases,
+    // ------------------------------------------------
+
     // Display Labels (for the table)
     "type": caseType,
     "subtype": subtype,
-    // In routes.js - Updated to create cleaner, predictable slugs
-    "areaValue": (areaSelection || "").toLowerCase()
-                  .replace(/\band\b/g, '')  // Removes "and"
-                  .replace(/\bof\b/g, '')   // Removes "of"
-                  .replace(/,?\s+/g, '-')   // Replaces spaces with dashes
-                  .replace(/-+/g, '-'),     // Fixes double dashes
-
+    
     // Filter Slugs (Crucial for your checkboxes to work)
-    // We convert "Rights of Way" to "rights-of-way" automatically
     "areaValue": (req.session.data['casework-area'] || "").toLowerCase().replace(/,?\s+/g, '-'),
     "typeValue": (caseType || "").toLowerCase().replace(/,?\s+/g, '-'),
     "subtypeValue": (subtype || "").toLowerCase().replace(/,?\s+/g, '-'),
@@ -528,7 +581,7 @@ var areaSelection = req.session.data['casework-area'];
 
 
 
-// --- 6.5 SAVE, CLEANUP & REDIRECT ---
+  // --- 6.5 SAVE, CLEANUP & REDIRECT ---
 
   // 1. Capture the "database" (the cases you've already saved)
   const savedCases = req.session.data['cases'] || [];
@@ -537,7 +590,9 @@ var areaSelection = req.session.data['casework-area'];
   // This wipes all the form data used during creation
   req.session.data = { 'cases': savedCases };
 
-  addAuditLog(req, finalRef, "Case created");
+  if (typeof addAuditLog === "function") {
+    addAuditLog(req, finalRef, "Case created");
+  }
 
   // 3. Log the success for your own terminal debugging
   console.log("SUCCESS: Case Saved with Ref:", finalRef);

@@ -48,29 +48,6 @@
 
   {% endif %}
 
-  {# --- LINKED CASE NOTIFICATION BANNER --- #}
-    {% if currentCase.isLinked and not currentCase.leadCase %}
-      <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-
-      <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-        <div class="govuk-notification-banner__header">
-          <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-            Important
-          </h2>
-        </div>
-        <div class="govuk-notification-banner__content">
-          <p class="govuk-notification-banner__heading">
-            You must <a class="govuk-notification-banner__link" href="#overview">add a lead case</a> to this linked case.
-          </p>
-        </div>
-      </div>
-
-      </div>
-      </div>
-    {% endif %}
-
-
 {# ========================================== #}
   {# --- ROW 1: HEADER & BUTTONS ---            #}
   {# ========================================== #}

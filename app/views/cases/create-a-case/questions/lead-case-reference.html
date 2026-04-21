@@ -1,0 +1,35 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}What is the case reference of the lead case? - Planning Inspectorate Portal{% endblock %}
+
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/create-a-case/questions/is-lead-case" }) }}
+{% endblock %}
+
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errorLeadCaseReference %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorLeadCaseReference, href: "#leadCaseReference" }]
+      }) }}
+    {% endif %}
+    <form action="/lead-case-reference-answer" method="post" novalidate>
+      {{ govukInput({
+        id: "leadCaseReference",
+        name: "leadCaseReference",
+        value: data['leadCaseReference'],
+        label: {
+          text: "What is the case reference of the lead case?",
+          classes: "govuk-label--l",
+          isPageHeading: true
+        },
+        errorMessage: { text: errorLeadCaseReference } if errorLeadCaseReference else null
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

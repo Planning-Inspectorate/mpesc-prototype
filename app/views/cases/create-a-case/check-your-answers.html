@@ -282,6 +282,22 @@
   actions: { items: [{ href: "/cases/create-a-case/questions/linked-case", text: "Change", visuallyHiddenText: "Is this a linked case?" }] }
 }) %}
 
+{% if data['isLinkedCase'] == 'yes' %}
+  {% set _ = rows.push({
+    key: { text: "Is this case the lead case?" },
+    value: { text: "Yes" if data['isLeadCase'] == 'yes' else "No" },
+    actions: { items: [{ href: "/cases/create-a-case/questions/is-lead-case", text: "Change", visuallyHiddenText: "Is this case the lead case?" }] }
+  }) %}
+  
+  {% if data['isLeadCase'] == 'no' %}
+    {% set _ = rows.push({
+      key: { text: "What is the case reference of the lead case?" },
+      value: { text: data['leadCaseReference'] },
+      actions: { items: [{ href: "/cases/create-a-case/questions/lead-case-reference", text: "Change", visuallyHiddenText: "Lead case reference" }] }
+    }) %}
+  {% endif %}
+{% endif %}
+
 {# RENDER THE COMPONENT #}
 {{ govukSummaryList({
   rows: rows

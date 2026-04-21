@@ -1,0 +1,37 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}Is this case the lead case? - Planning Inspectorate Portal{% endblock %}
+
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/cases/create-a-case/questions/linked-case" }) }}
+{% endblock %}
+
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errorIsLeadCase %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorIsLeadCase, href: "#isLeadCase" }]
+      }) }}
+    {% endif %}
+    <form action="/is-lead-case-answer" method="post" novalidate>
+      {{ govukRadios({
+        classes: "govuk-radios--inline",
+        idPrefix: "isLeadCase",
+        name: "isLeadCase",
+        fieldset: {
+          legend: { text: "Is this case the lead case?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: errorIsLeadCase } if errorIsLeadCase else null,
+        items: [
+          { value: "yes", text: "Yes", checked: data['isLeadCase'] == 'yes' },
+          { value: "no", text: "No", checked: data['isLeadCase'] == 'no' }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}
