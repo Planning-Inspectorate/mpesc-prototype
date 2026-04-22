@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}Search results - Planning Inspectorate Portal{% endblock %}
+{% block pageTitle %}
+Search results - Planning Inspectorate Portal
+{% endblock %}
 
 {% block beforeContent %}
   <div class="govuk-breadcrumbs govuk-!-margin-bottom-0 govuk-!-margin-top-4">
@@ -131,7 +133,7 @@
               </div>
             </td>
             
-            {# 4. Vertically Stacked Actions #}
+            {# Actions Column #}
             <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
               <ul class="govuk-list govuk-!-margin-bottom-0">
                 <li class="govuk-!-margin-bottom-2">
@@ -148,7 +150,6 @@
         </tbody>
       </table>
 
-      {# Dynamic GOV.UK Pagination Macro #}
       {% if pageItems.length > 1 %}
         {{ govukPagination({
           previous: prevLink and { href: prevLink },

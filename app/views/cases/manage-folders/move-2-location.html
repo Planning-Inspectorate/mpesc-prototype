@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}File location - Planning Inspectorate Portal{% endblock %}
+{% block pageTitle %}
+File location - Planning Inspectorate Portal
+{% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({ text: "Back", href: "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "/move-files/step-1?ref=" + currentCase.reference }) }}
@@ -9,7 +11,7 @@
 {% block content %}
 
 <style>
-  /* Instant, glitch-free fix: Force the parent container to stay open 
+  /* Fix to prevent radio flickering between deselecting and reselecting: Force the parent container to stay open 
     if any child radio inside it is currently checked. 
   */
   .govuk-radios__conditional:has(input[name="destinationFolderId"]:checked) {
@@ -27,7 +29,7 @@
             <h1 class="govuk-fieldset__heading">File location</h1>
           </legend>
 
-          {# --- NEW: Explicitly state the current location for accessibility --- #}
+          {# --- Explicitly state the current location for accessibility --- #}
           <div class="govuk-!-margin-bottom-6">
             <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-0">Current folder:</p>
             <p class="govuk-body">
@@ -94,7 +96,7 @@
 <script nonce="">
   document.addEventListener('DOMContentLoaded', function() {
     
-    // Clear selection logic 
+    // Remove selection logic 
     document.getElementById('clear-selection-btn').addEventListener('click', function(e) {
       e.preventDefault();
       

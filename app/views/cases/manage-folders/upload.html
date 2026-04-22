@@ -13,7 +13,6 @@
 
 {% block content %}
 <style>
-  /* Just the border color tweak you requested, keeping original MOJ dimensions */
   .moj-multi-file-upload__dropzone {
     outline-color: #1d70b8 !important; 
   }
@@ -52,7 +51,7 @@
 
       <div class="moj-multi-file-upload moj-multi-file-upload--enhanced">
         
-        {# 1. HIDDEN TOOLBOX FOR PROTOTYPE TESTING #}
+        {# HIDDEN TOOLBOX FOR PROTOTYPE TESTING #}
         <div id="prototype-toolbox" class="govuk-!-padding-4 govuk-!-margin-bottom-6" style="display: none; border: 4px solid #1d70b8; background: #f3f2f1;">
           <h3 class="govuk-heading-s" style="color: #1d70b8;">Prototype Testing: Select a mock file</h3>
           <div class="govuk-button-group">
@@ -62,7 +61,7 @@
           </div>
         </div>
 
-        {# 2. UPLOAD BOX (Reverted perfectly to standard MOJ structure) #}
+        {# UPLOAD BOX #}
         <div class="moj-multi-file-upload__upload">
           <div class="govuk-form-group">
             <div class="moj-multi-file-upload__dropzone">
@@ -75,7 +74,7 @@
           </div>
         </div>
 
-        {# 3. UPLOADED FILES LIST (Margin pulled to 0 to eliminate the white space gap) #}
+        {# UPLOADED FILES LIST #}
         <div class="moj-multi-file__uploaded-files moj-hidden govuk-!-margin-top-0" id="uploaded-files-container">
           <h2 class="govuk-heading-m govuk-!-margin-top-4">Files selected</h2>
           <div class="govuk-summary-list moj-multi-file-upload__list" id="mock-file-list">

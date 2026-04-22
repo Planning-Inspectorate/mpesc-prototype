@@ -56,7 +56,7 @@
 
     <form id="search-bar-form" action="/cases/manage-folders/search-results" method="GET" data-cy="search-form">
       
-      {# MUST BE A HIDDEN INPUT: Ensures 'ref' is securely kept in the URL #}
+      {# Hidden input to keep 'ref' securely in the URL #}
       <input type="hidden" name="ref" value="{{ currentCase.reference }}">
 
       <div class="govuk-form-group">

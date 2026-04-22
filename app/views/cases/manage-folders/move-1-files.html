@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}Move files - Planning Inspectorate Portal{% endblock %}
+{% block pageTitle %}
+Move files - Planning Inspectorate Portal
+{% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({ 
@@ -20,7 +22,7 @@
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">File name</th>
           
-          {# --- Conditionally show Action header pushed right --- #}
+          {# --- Conditionally show action header if more than one file --- #}
           {% if docsToMove.length > 1 %}
             <th scope="col" class="govuk-table__header govuk-!-text-align-right">
               <span class="govuk-visually-hidden">Action</span>
@@ -34,7 +36,7 @@
         <tr class="govuk-table__row">
           <td class="govuk-table__cell"><span data-cy="file-name-{{ doc.id }}">{{ doc.name }}</span></td>
           
-          {# --- Conditionally show Remove link pushed right --- #}
+          {# --- Conditionally show remove link if more than one file --- #}
           {% if docsToMove.length > 1 %}
             <td class="govuk-table__cell govuk-!-text-align-right">
               <a class="govuk-link" href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files/remove?docId={{ doc.id }}&ref={{ currentCase.reference }}">
