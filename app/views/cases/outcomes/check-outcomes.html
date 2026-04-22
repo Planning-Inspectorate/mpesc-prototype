@@ -12,7 +12,7 @@ Check outcome details - Planning Inspectorate Portal
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Check outcome details</h1>
 
-    {# 1. UNIFIED DATA SOURCE (Bulletproof Fallback) #}
+    {# LOAD IN SESSION DATA + DATABASE DATA #}
     {% set outcomeList = outcomeList or data['tempOutcomesList'] or [] %}
 
     {# --- DATA TABLE --- #}
@@ -68,7 +68,7 @@ Check outcome details - Planning Inspectorate Portal
       <p class="govuk-body">Add one or more outcomes. No outcome details have been added.</p>
     {% endif %}
 
-    {# --- BUTTONS WRAPPED IN FORM --- #}
+    {# --- BUTTONS --- #}
     <form action="/cases/outcomes/commit?ref={{ ref }}" method="post" novalidate>
 
       <div class="govuk-button-group">

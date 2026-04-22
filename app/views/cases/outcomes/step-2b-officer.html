@@ -74,8 +74,8 @@
 
   accessibleAutocomplete({
     element: document.querySelector('#officerName-container'),
-    id: 'officerName',         // Must match the 'for' attribute in the label
-    name: 'officerName',       // This is what req.body will look for in your route
+    id: 'officerName',         
+    name: 'officerName',     
     source: officers,
     // Pull the previously saved value from the session if it exists
     defaultValue: "{{ data['tempOutcome'].officerName | default('') }}", 
