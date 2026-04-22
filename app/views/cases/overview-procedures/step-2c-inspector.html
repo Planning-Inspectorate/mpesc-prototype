@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}Who is the inspector? (optional) - Planning Inspectorate Portal{% endblock %}
+{% block pageTitle %}
+Who is the inspector? (optional) - Planning Inspectorate Portal
+{% endblock %}
 
 {% block beforeContent %}
   
@@ -25,17 +27,16 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     
-    {# 1. The explicit heading #}
+    {# BODY TEXT + CUSTOM LINK TO INSPECTOR PAGE #}
     <h1 class="govuk-heading-l">Who is the inspector?</h1>
 
-    {# 2. The new body text with the smart escape hatch link #}
     <p class="govuk-body">
       If no inspectors are available, add them on the <a class="govuk-link" href="/cases/overview-procedures/leave-to-inspectors?ref={{ ref }}&id={{ id }}">inspectors page</a>.
     </p>
 
     <form action="/cases/overview-procedures/step-2c?ref={{ ref }}&id={{ id }}" method="post">
       
-      {# Build list of inspectors from the main case data #}
+      {# Build list of inspectors from the main case data to create dynamic radio button options #}
       {% set radioItems = [] %}
       {% if inspectors and inspectors.length > 0 %}
         {% for insp in inspectors %}

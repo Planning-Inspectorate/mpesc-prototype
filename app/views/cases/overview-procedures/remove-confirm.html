@@ -1,6 +1,8 @@
 {% extends "layouts/main.html" %}
 
-{% block pageTitle %}Remove procedure?{% endblock %}
+{% block pageTitle %}
+Remove procedure?
+{% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({ text: "Back", href: "/cases/overview-procedures/check?ref=" + ref }) }}
