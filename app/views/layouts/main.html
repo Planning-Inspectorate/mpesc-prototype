@@ -9,14 +9,14 @@
   <link rel="apple-touch-icon" sizes="152x152" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-apple-touch-icon-152x152.png">
   <link rel="apple-touch-icon" href="/plugin-assets/govuk-frontend/dist/govuk/assets/images/govuk-apple-touch-icon.png">
   
-  {# Here is our fixed manifest link! #}
   <link rel="manifest" href="/plugin-assets/govuk-frontend/dist/govuk/assets/manifest.json" crossorigin="use-credentials">
 {% endblock %}
 
+{# HEADER STYLING #}
 {% block header %}
 
 <style>
-  /* 0. Apply Official GOV.UK Font to Custom Elements */
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
   .pins-header-demo,
   .pins-service-nav,
   .pins-footer {
@@ -25,7 +25,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* 1. The Green PINS Header */
+  /* PINS HEADER */
   .pins-header-demo {
     padding-top: 24px;
     padding-bottom: 24px;
@@ -33,7 +33,7 @@
     border-bottom: 10px solid #13A19B;
   }
 
-  /* 2. The Grey Navigation Bar */
+  /* NAVIGATION BAR */
   .pins-service-nav {
     background: #f3f2f1;
     font-size: 16px;
@@ -48,7 +48,7 @@
     min-height: 50px;
   }
 
-  /* Title Style */
+  /* MPESC */
   .pins-service-nav__title {
     background: #f3f2f1;
     font-weight: bold;
@@ -58,7 +58,16 @@
     padding-left: 0;
   }
 
-  /* List Container */
+  .pins-service-nav__title,
+  .pins-service-nav__title:link,
+  .pins-service-nav__title:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 0px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  /* NAVIGATION LIST */
   .pins-service-nav__list {
     list-style: none;
     padding: 0;
@@ -71,7 +80,7 @@
     display: inline;
   }
 
-  /* Links */
+  /* LINKS AND HOVER STATES*/
   .pins-service-nav__link,
   .pins-service-nav__link:link,
   .pins-service-nav__link:visited {
@@ -89,23 +98,13 @@
     border-bottom-color: #000000;
   }
 
-  /* for MPESC title */
-  .pins-service-nav__title,
-  .pins-service-nav__title:link,
-  .pins-service-nav__title:visited {
-    color: #0b0c0c;
-    text-decoration: none;
-    border-bottom: 0px solid transparent;
-    transition: color 0.2s, border-bottom-color 0.2s;
-  }
-
   .pins-service-nav__title:hover {
     color: #0b0c0c;
     text-decoration: none;
     border-bottom-color: #0b0c0c;
   }
 
-  /* Active State */
+  /* LINK ACTIVE STATES */
   .pins-service-nav__item--active .pins-service-nav__link {
     font-weight: bold;
     color: #000000;
@@ -114,7 +113,7 @@
     border-bottom: 2px solid #000000;
   }
 
-  /* Mobile responsiveness */
+  /* BROWSER RESPONSIVENESS */
   @media (max-width: 600px) {
     .pins-service-nav__container {
       flex-direction: column;
@@ -172,8 +171,13 @@
 {% endblock %}
 
 
+
+
+{# FOOTER STYLING #}
 {% block footer %}
+
 <style>
+  /* FOOTER BACKGROUND AND BORDER COLOUR */
   .pins-footer {
     background: #f3f2f1;
     border-top: 4px solid #13a19b !important;
@@ -182,6 +186,7 @@
     color: #0b0c0c;
   }
   
+  /* CONTAINER BACKGROUND AND ITEM DISTRIBUTION AND ALIGMENT */
   .govuk-footer__meta {
     display: flex;
     background: #f3f2f1;
@@ -201,6 +206,7 @@
     display: inline;
   }
   
+  /* LINKS, VISITED AND, HOVER STATES */
   .govuk-footer__link {
     color: #1d70b8;
     text-decoration: underline;
