@@ -13,7 +13,7 @@
 
 {% block content %}
 
-{# 1. FIND THE CASE #}
+{# FIND THE CASE DATA #}
 {% set currentCase = null %}
 {% if data['cases'] %}
   {% for case in data['cases'] %}
@@ -48,7 +48,7 @@
 
   {% endif %}
 
-{# ========================================== #}
+  {# ========================================== #}
   {# --- ROW 1: HEADER & BUTTONS ---            #}
   {# ========================================== #}
   <div class="govuk-grid-row">
@@ -59,7 +59,7 @@
         {{ currentCase.caseName }}
       </h1>
 
-      {# --- LOGIC: Check if ANY contact arrays have data --- #}
+      {# --- Check if any contact arrays have data to load in --- #}
       {% set hasApplicants = currentCase.applicants and currentCase.applicants.length > 0 %}
       {% set hasObjectors = currentCase.objectors and currentCase.objectors.length > 0 %}
       {% set hasOtherContacts = currentCase.contacts and currentCase.contacts.length > 0 %}
@@ -78,7 +78,7 @@
           href: "#"
         }) }}
 
-        {# --- NEW: Conditional Contacts Download Button --- #}
+        {# --- If there are contacts, show download contacts button --- #}
         {% if hasAnyContacts %}
           {{ govukButton({
             text: "Download all contacts",
@@ -93,7 +93,7 @@
     </div>
   </div>
 
-{# ========================================== #}
+  {# ========================================== #}
   {# --- ROW 2: NAV & CASE NOTES ---            #}
   {# ========================================== #}
   <div class="govuk-grid-row">
@@ -101,7 +101,7 @@
       
       <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Summary card list</h2>
       
-      {# 1. Always Visible Links #}
+      {# Always Visible Links #}
       <ul class="govuk-list govuk-!-margin-bottom-3">
         <li><a href="#overview" class="govuk-link govuk-link--no-visited-state">Overview</a></li>
         <li><a href="#case-details" class="govuk-link govuk-link--no-visited-state">Case details</a></li>
@@ -113,7 +113,7 @@
       {% set outcomeCount = currentCase.outcomes | length if currentCase.outcomes else 0 %}
       {% set hiddenCount = 6 + procCount + outcomeCount %}
 
-      {# 2. The Custom Toggle Button (Matches Dev Environment) #}
+      {# The Custom Toggle Button #}
       <a href="#" id="toggle-summary-cards" data-hidden-count="{{ hiddenCount }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-bottom-4 govuk-!-display-inline-block" style="text-decoration: none;">
         <span class="govuk-accordion__section-toggle" data-nosnippet="">
           <span class="govuk-accordion__section-toggle-focus">
@@ -123,7 +123,7 @@
         </span>
       </a>
 
-      {# 3. Hidden Links Container #}
+      {# Hidden Links Container #}
       <div id="extra-summary-cards" style="display: none;" class="govuk-!-margin-bottom-8">
         <ul class="govuk-list">
           <li><a href="#timetable" class="govuk-link govuk-link--no-visited-state">Timetable</a></li>
@@ -159,7 +159,7 @@
         </ul>
       </div>
 
-    {# 4. Case Notes Section #}
+    {# Case Notes Section #}
       <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Case note actions</h2>
 
       {% set caseNotesHtml %}
@@ -185,7 +185,7 @@
           }) }}
         </form>
 
-        {# 2. Loop through and display the saved notes (MAX 4) #}
+        {# Loop through and display the saved notes (MAX 4) #}
         {% if currentCase.caseNotes and currentCase.caseNotes.length > 0 %}
           <div>
             <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
@@ -204,7 +204,7 @@
               {% endif %}
             {% endfor %}
 
-            {# 3. Show "Show all notes" link if there are more than 4 #}
+            {# Show "Show all notes" link if there are more than 4 #}
             {% if currentCase.caseNotes.length > 4 %}
               <p class="govuk-body govuk-!-text-align-centre">
                 <a class="govuk-link govuk-link--no-visited-state" href="/cases/all-case-notes?ref={{ currentCase.reference }}" data-cy="show-all-notes-link">
@@ -217,7 +217,7 @@
         {% endif %}
       {% endset %}
 
-      {# 3. Make the summary text dynamically count the notes! #}
+      {# Make the summary text dynamically count the notes! #}
       {% set noteCount = currentCase.caseNotes | length if currentCase.caseNotes else 0 %}
       
       {{ govukDetails({
@@ -228,9 +228,7 @@
     </div>
   </div> 
 
-  {# ========================================== #}
-  {# --- JAVASCRIPT FOR THE TOGGLE BUTTON ---   #}
-  {# ========================================== #}
+  {# --- Js for show/more button for summary anchor links ---   #}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const toggleBtn = document.getElementById('toggle-summary-cards');
@@ -270,240 +268,210 @@
     <div class="govuk-grid-column-full">
   
       
-      {# 1. OVERVIEW #}
-      {% set procedureListHtml %}
-  {% if currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0 %}
-    
-    {# Always show the first 3 items #}
-    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-      {% for proc in currentCase.overviewProcedures %}
-        {% if loop.index <= 3 %}
-          <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+{# ========================================================== #}
+{# 1. OVERVIEW                                                #}
+{# ========================================================== #}
 
-    {# If there are more than 3, hide the rest and add a toggle link #}
-    {% if currentCase.overviewProcedures.length > 3 %}
-      {% set hiddenCount = currentCase.overviewProcedures.length - 3 %}
+  {# --- HTML Arrays will be set out at the top of every section --- #}
+
+  {# --- PROCEDURE LIST HTML --- #}
+  {% set procedureListHtml %}
+    {% if currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0 %}
       
-      {# Hidden list #}
-      <div id="more-procs" style="display: none;">
-        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-0">
-          {% for proc in currentCase.overviewProcedures %}
-            {% if loop.index > 3 %}
-              <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-        <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
-          <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='none'; document.getElementById('show-more-link').style.display='block'; return false;">Show less</a>
-        </p>
-      </div>
-
-      {# Show more link #}
-      <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0" id="show-more-link">
-        <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='block'; this.parentElement.style.display='none'; return false;">Show {{ hiddenCount }} more</a>
-      </p>
-    {% endif %}
-
-  {% else %}
-    -
-  {% endif %}
-{% endset %}
-
-      {# --- RELATED CASES HTML --- #}
-      {% set relatedCasesHtml %}
-        {% if currentCase.relatedCases and currentCase.relatedCases.length > 0 %}
-         <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
-            {% for item in currentCase.relatedCases %}
-              <li>{{ item.reference }}</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          -
-        {% endif %}
-      {% endset %}
-
-      {# --- LINKED CASES HTML (Now strictly just the array) --- #}
-      {% set linkedCasesHtml %}
-        {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
-          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
-            {% for item in currentCase.linkedCases %}
-              <li>{{ item.reference }}</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          -
-        {% endif %}
-      {% endset %}
-
-      {# --- LEAD CASE LOGIC --- #}
-      {% set leadCaseText %}
-        {% if currentCase.isLinked == false %}
-          This case is not linked
-        {% elif currentCase.leadCase %}
-          {% if currentCase.leadCase == currentCase.reference %}
-            {{ currentCase.leadCase }} (Current case)
-          {% else %}
-            {{ currentCase.leadCase }}
+      {# Always show the first 3 items #}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% for proc in currentCase.overviewProcedures %}
+          {% if loop.index <= 3 %}
+            <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
           {% endif %}
-        {% else %}
-          -
-        {% endif %}
-      {% endset %}
+        {% endfor %}
+      </ul>
 
-      {{ govukSummaryList({
-        attributes: { id: "overview" },
-        card: { title: { text: "Overview" } },
-        rows: [
-          { 
-            key: { text: "Case type" }, value: { text: currentCase.type or "-" }, actions: { items: [{ visuallyHiddenText: "case type" }] } 
-          },
-          { 
-            key: { text: "Subtype" }, 
-            value: { text: "-" if (currentCase.subtype == "NONE" or not currentCase.subtype) else currentCase.subtype }, 
-            actions: { items: [{ visuallyHiddenText: "subtype" }] } 
-          },
-          { 
-            key: { text: "Act" }, 
-            value: { text: currentCase.act or "-" }, 
-            actions: { items: [{ 
-              href: "/cases/edit/act?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.act else "Add", 
-              visuallyHiddenText: "act" 
-            }] } 
-          },
-          { 
-            key: { text: "Consent sought" }, 
-            value: { text: currentCase['consent-sought'] or "-" }, 
-            actions: { items: [{ 
-              href: "/cases/edit/consent-sought?ref=" + currentCase.reference, 
-              text: "Change" if currentCase['consent-sought'] else "Add", 
-              visuallyHiddenText: "consent sought" 
-            }] } 
-          },
-          { 
-            key: { text: "Priority" }, 
-            value: { text: currentCase['priority'] or "-" }, 
-            actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
-          },
-          { 
-            key: { text: "Inspector band" }, 
-            value: { text: currentCase['inspector-band'] or "-" }, 
-            actions: { items: [{ 
-              href: "/cases/edit/inspector-band?ref=" + currentCase.reference, 
-              text: "Change" if currentCase['inspector-band'] else "Add", 
-              visuallyHiddenText: "inspector band" 
-            }] } 
-          },
-          { 
-            key: { text: "Procedure" }, 
-            value: { html: procedureListHtml }, 
-            actions: { 
-              items: [{ 
-                href: "/cases/overview-procedures/hub?ref=" + currentCase.reference if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "/cases/overview-procedures/start?ref=" + currentCase.reference, 
-                text: "Change" if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "Add",
-                visuallyHiddenText: "procedure"
-              }] }
-          },
-          { 
-            key: { text: "Related case(s)" }, 
-            value: { html: relatedCasesHtml }, 
-            actions: { 
-              items: [{ 
-                href: "/cases/related-cases/hub?ref=" + currentCase.reference if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "/cases/related-cases/start?ref=" + currentCase.reference, 
-                text: "Change" if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "Add", 
-                visuallyHiddenText: "related cases" 
-              }] }
-          },
-          { 
-            key: { html: "Lead case <span id='lead-case-row'></span>" }, 
-            value: { text: leadCaseText }, 
-            actions: { 
-              items: [{ 
-                href: "/cases/linked-cases/lead-case-question?ref=" + currentCase.reference, 
-                text: "Change" if (currentCase.leadCase or currentCase.isLinked == false) else "Add", 
-                visuallyHiddenText: "lead case" 
-              }] 
-            }
-          },
-          { 
-            key: { text: "Linked case(s)" }, 
-            value: { html: linkedCasesHtml }, 
-            actions: { 
-              items: [{ 
-                href: "/cases/linked-cases/hub?ref=" + currentCase.reference if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "/cases/linked-cases/start?ref=" + currentCase.reference, 
-                text: "Change" if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "Add", 
-                visuallyHiddenText: "linked cases" 
-              }] 
-            }
-          }
-        ]
-      }) }}
+      {# If there are more than 3, hide the rest and add a toggle link #}
+      {% if currentCase.overviewProcedures.length > 3 %}
+        {% set hiddenCount = currentCase.overviewProcedures.length - 3 %}
+        
+        {# Hidden list #}
+        <div id="more-procs" style="display: none;">
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-0">
+            {% for proc in currentCase.overviewProcedures %}
+              {% if loop.index > 3 %}
+                <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+          <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+            <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='none'; document.getElementById('show-more-link').style.display='block'; return false;">Show less</a>
+          </p>
+        </div>
 
-{# --- 2. CASE DETAILS --- #}
+        {# Show more link #}
+        <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0" id="show-more-link">
+          <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='block'; this.parentElement.style.display='none'; return false;">Show {{ hiddenCount }} more</a>
+        </p>
+      {% endif %}
 
-{% set abeyanceHtml %}
-  {% if currentCase.abeyancePeriod %}
-    Start: {{ currentCase.abeyancePeriod.startDate.formatted }}<br>
-    End: {{ currentCase.abeyancePeriod.endDate.formatted if currentCase.abeyancePeriod.endDate else "Not provided" }}
-  {% endif %}
-{% endset %}
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
 
-{% set applicantsHtml %}
-  {% if currentCase.applicants and currentCase.applicants.length > 0 %}
-    
-    {# --- VISIBLE APPLICANTS (Max 2) --- #}
-    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-      {% for i in range(0, 2) %}
-        {% set app = currentCase.applicants[i] %}
-        {% if app %}
-          <li class="{% if i > 0 %}govuk-!-margin-top-4{% endif %}">
-            {% if app.firstName or app.lastName %}
-              <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
-            {% endif %}
-            {% if app.companyName %}<div>{{ app.companyName }}</div>{% endif %}
-            
-            {# Address #}
-            {% if app.address.line1 %}<div>{{ app.address.line1 }}</div>{% endif %}
-            {% if app.address.line2 %}<div>{{ app.address.line2 }}</div>{% endif %}
-            {% if app.address.town %}<div>{{ app.address.town }}</div>{% endif %}
-            {% if app.address.county %}<div>{{ app.address.county }}</div>{% endif %}
-            {% if app.address.postcode %}<div>{{ app.address.postcode }}</div>{% endif %}
-            
-            {# Contact #}
-            {% if app.email %}<div>{{ app.email }}</div>{% endif %}
-            {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+  {# --- RELATED CASES HTML --- #}
+  {% set relatedCasesHtml %}
+    {% if currentCase.relatedCases and currentCase.relatedCases.length > 0 %}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% for item in currentCase.relatedCases %}
+          <li>{{ item.reference }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
 
-    {# --- SHOW/HIDE LOGIC ONLY IF MORE THAN 2 APPLICANTS --- #}
-    {% if currentCase.applicants.length > 2 %}
+  {# --- LINKED CASES HTML --- #}
+  {% set linkedCasesHtml %}
+    {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% for item in currentCase.linkedCases %}
+          <li>{{ item.reference }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
+
+  {# --- LEAD CASE LOGIC --- #}
+  {% set leadCaseText %}
+    {% if currentCase.isLinked == false %}
+      This case is not linked
+    {% elif currentCase.leadCase %}
+      {% if currentCase.leadCase == currentCase.reference %}
+        {{ currentCase.leadCase }} (Current case)
+      {% else %}
+        {{ currentCase.leadCase }}
+      {% endif %}
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
+
+  {# --- SET OUT THE SUMMARY CARD ROWS --- #}
+  {{ govukSummaryList({
+    attributes: { id: "overview" },
+    card: { title: { text: "Overview" } },
+    rows: [
+      { 
+        key: { text: "Case type" }, value: { text: currentCase.type or "-" }, actions: { items: [{ visuallyHiddenText: "case type" }] } 
+      },
+      { 
+        key: { text: "Subtype" }, 
+        value: { text: "-" if (currentCase.subtype == "NONE" or not currentCase.subtype) else currentCase.subtype }, 
+        actions: { items: [{ visuallyHiddenText: "subtype" }] } 
+      },
+      { 
+        key: { text: "Act" }, 
+        value: { text: currentCase.act or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/act?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.act else "Add", 
+          visuallyHiddenText: "act" 
+        }] } 
+      },
+      { 
+        key: { text: "Consent sought" }, 
+        value: { text: currentCase['consent-sought'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/consent-sought?ref=" + currentCase.reference, 
+          text: "Change" if currentCase['consent-sought'] else "Add", 
+          visuallyHiddenText: "consent sought" 
+        }] } 
+      },
+      { 
+        key: { text: "Priority" }, 
+        value: { text: currentCase['priority'] or "-" }, 
+        actions: { items: [{ href: "/cases/edit/priority?ref=" + currentCase.reference, text: "Change" if currentCase['priority'] else "Add", visuallyHiddenText: "priority" }] } 
+      },
+      { 
+        key: { text: "Inspector band" }, 
+        value: { text: currentCase['inspector-band'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/inspector-band?ref=" + currentCase.reference, 
+          text: "Change" if currentCase['inspector-band'] else "Add", 
+          visuallyHiddenText: "inspector band" 
+        }] } 
+      },
+      { 
+        key: { text: "Procedure" }, 
+        value: { html: procedureListHtml }, 
+        actions: { 
+          items: [{ 
+            href: "/cases/overview-procedures/hub?ref=" + currentCase.reference if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "/cases/overview-procedures/start?ref=" + currentCase.reference, 
+            text: "Change" if (currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0) else "Add",
+            visuallyHiddenText: "procedure"
+          }] }
+      },
+      { 
+        key: { text: "Related case(s)" }, 
+        value: { html: relatedCasesHtml }, 
+        actions: { 
+          items: [{ 
+            href: "/cases/related-cases/hub?ref=" + currentCase.reference if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "/cases/related-cases/start?ref=" + currentCase.reference, 
+            text: "Change" if (currentCase.relatedCases and currentCase.relatedCases.length > 0) else "Add", 
+            visuallyHiddenText: "related cases" 
+          }] }
+      },
+      { 
+        key: { html: "Lead case <span id='lead-case-row'></span>" }, 
+        value: { text: leadCaseText }, 
+        actions: { 
+          items: [{ 
+            href: "/cases/linked-cases/lead-case-question?ref=" + currentCase.reference, 
+            text: "Change" if (currentCase.leadCase or currentCase.isLinked == false) else "Add", 
+            visuallyHiddenText: "lead case" 
+          }] 
+        }
+      },
+      { 
+        key: { text: "Linked case(s)" }, 
+        value: { html: linkedCasesHtml }, 
+        actions: { 
+          items: [{ 
+            href: "/cases/linked-cases/hub?ref=" + currentCase.reference if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "/cases/linked-cases/start?ref=" + currentCase.reference, 
+            text: "Change" if (currentCase.linkedCases and currentCase.linkedCases.length > 0) else "Add", 
+            visuallyHiddenText: "linked cases" 
+          }] 
+        }
+      }
+    ]
+  }) }}
+
+
+{# ========================================================== #}
+{# 2. CASE DETAILS                                            #}
+{# ========================================================== #}
+
+  {# --- HTML Arrays and data formatting will be set out at the top of every section --- #}
+
+  {# --- ABEYANCE PERIOD DATE FORMATTING --- #}
+  {% set abeyanceHtml %}
+    {% if currentCase.abeyancePeriod %}
+      Start: {{ currentCase.abeyancePeriod.startDate.formatted }}<br>
+      End: {{ currentCase.abeyancePeriod.endDate.formatted if currentCase.abeyancePeriod.endDate else "Not provided" }}
+    {% endif %}
+  {% endset %}
+
+  {# --- APPLICANTS HTML --- #}
+  {% set applicantsHtml %}
+    {% if currentCase.applicants and currentCase.applicants.length > 0 %}
       
-      {# --- THE TOGGLE LINK --- #}
-      <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0">
-        <a href="javascript:void(0);" id="toggle-applicants" class="govuk-link" onclick="
-          var extra = document.getElementById('extra-applicants');
-          var link = document.getElementById('toggle-applicants');
-          if(extra.style.display === 'none') {
-            extra.style.display = 'block';
-            link.innerText = 'Hide';
-          } else {
-            extra.style.display = 'none';
-            link.innerText = 'Show {{ currentCase.applicants.length - 2 }} more';
-          }
-        ">Show {{ currentCase.applicants.length - 2 }} more</a>
-      </p>
-
-      {# --- HIDDEN APPLICANTS CONTAINER --- #}
-      <div id="extra-applicants" style="display: none;">
-        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-4">
-          {% for i in range(2, currentCase.applicants.length) %}
-            {% set app = currentCase.applicants[i] %}
-            <li class="{% if i > 2 %}govuk-!-margin-top-4{% endif %}">
+      {# --- Only show 2 applicant entries --- #}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% for i in range(0, 2) %}
+          {% set app = currentCase.applicants[i] %}
+          {% if app %}
+            <li class="{% if i > 0 %}govuk-!-margin-top-4{% endif %}">
               {% if app.firstName or app.lastName %}
                 <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
               {% endif %}
@@ -520,355 +488,408 @@
               {% if app.email %}<div>{{ app.email }}</div>{% endif %}
               {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
             </li>
-          {% endfor %}
-        </ul>
-      </div>
-      
-    {% endif %}
+          {% endif %}
+        {% endfor %}
+      </ul>
 
-  {% else %}
-    -
-  {% endif %}
-{% endset %}
+      {# --- If more than 2 applicants reveal show/hide toggle button --- #}
+      {% if currentCase.applicants.length > 2 %}
+        
+        {# --- Toggle link for show/hide --- #}
+        <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+          <a href="javascript:void(0);" id="toggle-applicants" class="govuk-link" onclick="
+            var extra = document.getElementById('extra-applicants');
+            var link = document.getElementById('toggle-applicants');
+            if(extra.style.display === 'none') {
+              extra.style.display = 'block';
+              link.innerText = 'Hide';
+            } else {
+              extra.style.display = 'none';
+              link.innerText = 'Show {{ currentCase.applicants.length - 2 }} more';
+            }
+          ">Show {{ currentCase.applicants.length - 2 }} more</a>
+        </p>
 
-{% set hasSiteAddress = true if (currentCase.siteAddresses and currentCase.siteAddresses.length > 0) or currentCase.siteAddress or currentCase['site-address'] else false %}
-          
-          {% set siteAddressHtml %}
-            {% if currentCase.siteAddresses and currentCase.siteAddresses.length > 1 %}
-              
-              {# --- VISIBLE ADDRESS (Plot 1) --- #}
-              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-                {% set firstAddr = currentCase.siteAddresses[0] %}
-                <li>
-                  <strong>Plot 1</strong><br>
-                  {{ firstAddr.addressLine1 }}{% if firstAddr.addressLine1 %}<br>{% endif %}
-                  {{ firstAddr.addressLine2 }}{% if firstAddr.addressLine2 %}<br>{% endif %}
-                  {{ firstAddr.addressTown }}{% if firstAddr.addressTown %}<br>{% endif %}
-                  {{ firstAddr.addressCounty }}{% if firstAddr.addressCounty %}<br>{% endif %}
-                  {{ firstAddr.addressPostcode }}
-                </li>
-              </ul>
-
-              {# --- THE TOGGLE LINK (Placed above the hidden container) --- #}
-              <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0">
-                <a href="javascript:void(0);" id="toggle-site-addresses" class="govuk-link" onclick="
-                  var extra = document.getElementById('extra-site-addresses');
-                  var link = document.getElementById('toggle-site-addresses');
-                  if(extra.style.display === 'none') {
-                    extra.style.display = 'block';
-                    link.innerText = 'Hide';
-                  } else {
-                    extra.style.display = 'none';
-                    link.innerText = 'Show {{ currentCase.siteAddresses.length - 1 }} more';
-                  }
-                ">Show {{ currentCase.siteAddresses.length - 1 }} more</a>
-              </p>
-
-              {# --- HIDDEN CONTAINER (Plot 2 onwards) --- #}
-              <div id="extra-site-addresses" style="display: none;">
-                <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-4">
-                  {% for i in range(1, currentCase.siteAddresses.length) %}
-                    {% set addr = currentCase.siteAddresses[i] %}
-                    <li class="{% if i > 1 %}govuk-!-margin-top-4{% endif %}">
-                      <strong>Plot {{ i + 1 }}</strong><br>
-                      {{ addr.addressLine1 }}{% if addr.addressLine1 %}<br>{% endif %}
-                      {{ addr.addressLine2 }}{% if addr.addressLine2 %}<br>{% endif %}
-                      {{ addr.addressTown }}{% if addr.addressTown %}<br>{% endif %}
-                      {{ addr.addressCounty }}{% if addr.addressCounty %}<br>{% endif %}
-                      {{ addr.addressPostcode }}
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
-
-            {# --- EXACTLY 1 ADDRESS --- #}
-            {% elif currentCase.siteAddresses and currentCase.siteAddresses.length == 1 %}
-              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-                <li>
-                  {% set addr = currentCase.siteAddresses[0] %}
-                  {{ addr.addressLine1 }}{% if addr.addressLine1 %}<br>{% endif %}
-                  {{ addr.addressLine2 }}{% if addr.addressLine2 %}<br>{% endif %}
-                  {{ addr.addressTown }}{% if addr.addressTown %}<br>{% endif %}
-                  {{ addr.addressCounty }}{% if addr.addressCounty %}<br>{% endif %}
-                  {{ addr.addressPostcode }}
-                </li>
-              </ul>
-            
-            {# --- LEGACY STRING FALLBACK --- #}
-            {% elif currentCase.siteAddress or currentCase['site-address'] %}
-              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-                <li>{{ (currentCase.siteAddress or currentCase['site-address']) | replace('\n', '<br>') | safe }}</li>
-              </ul>
-            
-            {# --- EMPTY STATE --- #}
-            {% else %}
-              -
-            {% endif %}
-          {% endset %}
-
-
-{{ govukSummaryList({
-  attributes: { id: "case-details" },
-  card: { title: { text: "Case details" } },
-  rows: [
-    { 
-      key: { text: "Case reference" }, 
-      value: { text: currentCase.reference }, 
-      actions: { items: [] } 
-    },
-    {
-      key: { text: "External reference" }, 
-      value: { text: currentCase.externalReference or currentCase['external-reference'] or "-" }, 
-      actions: { items: [{ 
-        href: "/cases/edit/external-reference?ref=" + currentCase.reference, 
-        text: "Change" if (currentCase.externalReference or currentCase['external-reference']) else "Add", 
-        visuallyHiddenText: "external reference" 
-      }] } 
-    },
-    { 
-      key: { text: "Historical reference" }, 
-      value: { text: currentCase['historicalReference'] or "-" }, 
-      actions: { items: [{ }] } 
-    },
-    { 
-      key: { text: "Case name" }, 
-      value: { text: currentCase.caseName or currentCase['case-name'] or "-" }, 
-      actions: { items: [{ 
-        href: "/cases/edit/case-name?ref=" + currentCase.reference, 
-        text: "Change" if (currentCase.caseName or currentCase['case-name']) else "Add", 
-        visuallyHiddenText: "case name" 
-      }] } 
-    },
-    { 
-      key: { text: "Case status" }, 
-      value: { text: currentCase['caseStatus'] or "-" }, 
-      actions: { items: [{ href: "/cases/edit/case-status?ref=" + currentCase.reference, text: "Change" if currentCase['caseStatus'] else "Add", visuallyHiddenText: "case status" }] } 
-    },
-    {
-      key: { text: "Abeyance period" },
-      value: { 
-        html: abeyanceHtml if currentCase.abeyancePeriod else "-" 
-      },
-      actions: { 
-        items: [{ 
-          href: "/cases/edit/abeyance-period?ref=" + currentCase.reference, 
-          text: "Change" if currentCase.abeyancePeriod else "Add" 
-        }] 
-      }
-    },
-    { 
-      key: { text: "Advertised modification status" }, 
-      value: { text: currentCase['modificationStatus'] or "-" }, 
-      actions: { items: [{ href: "/cases/edit/modification-status?ref=" + currentCase.reference, text: "Change" if currentCase['modificationStatus'] else "Add", visuallyHiddenText: "modification status" }] } 
-    },
-    {
-      key: { text: "Who is the applicant or appellant?" },
-      value: { 
-        html: applicantsHtml
-      },
-      actions: { 
-      items: [{ 
-        href: "/cases/applicants/hub?ref=" + currentCase.reference if (currentCase.applicants and currentCase.applicants.length > 0) else "/cases/applicants/start?ref=" + currentCase.reference, 
-        text: "Change" if (currentCase.applicants and currentCase.applicants.length > 0) else "Add", 
-        visuallyHiddenText: "applicant details" 
-      }] }
-    },
-    { 
-      key: { text: "Site address" }, 
-      value: { 
-        html: siteAddressHtml
-      }, 
-      actions: { items: [{ 
-        href: "/cases/edit/site-address?ref=" + currentCase.reference if hasSiteAddress else "/cases/edit/site-address/first?ref=" + currentCase.reference, 
-        text: "Change" if hasSiteAddress else "Add", 
-        visuallyHiddenText: "site address" 
-      }] } 
-    },
-    { 
-      key: { text: "Site location" }, 
-      value: { text: currentCase.siteLocation or currentCase['site-location'] or "-" }, 
-      actions: { items: [{ 
-        href: "/cases/edit/site-location?ref=" + currentCase.reference, 
-        text: "Change" if (currentCase.siteLocation or currentCase['site-location']) else "Add", 
-        visuallyHiddenText: "site location" 
-      }] } 
-    },
-    { 
-      key: { text: "Authority (LPA, OMA, CRA)" }, 
-      value: { text: currentCase.authorityName or currentCase['authority'] or "-" }, 
-      actions: { items: [{ 
-        href: "/cases/edit/authority?ref=" + currentCase.reference, 
-        text: "Change" if (currentCase.authorityName or currentCase['authority']) else "Add", 
-        visuallyHiddenText: "authority" 
-      }] } 
-    }
-  ]
-}) }}
-
-      {# --- 3. TEAM --- #}
-      {% set inspectorsHtml %}
-        {% if currentCase.inspectors and currentCase.inspectors.length > 0 %}
-          <ul class="govuk-list govuk-list--bullet govuk-!-margin-left-0 govuk-!-margin-bottom-0">
-            {% for item in currentCase.inspectors %}
-              <li>
-                {{ item.name }}<br>
-                {{ item.date }}
+        {# --- Hidden list for extra applicants --- #}
+        <div id="extra-applicants" style="display: none;">
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-4">
+            {% for i in range(2, currentCase.applicants.length) %}
+              {% set app = currentCase.applicants[i] %}
+              <li class="{% if i > 2 %}govuk-!-margin-top-4{% endif %}">
+                {% if app.firstName or app.lastName %}
+                  <div><strong>{{ (app.firstName + " " + app.lastName) | trim }}</strong></div>
+                {% endif %}
+                {% if app.companyName %}<div>{{ app.companyName }}</div>{% endif %}
+                
+                {# Address #}
+                {% if app.address.line1 %}<div>{{ app.address.line1 }}</div>{% endif %}
+                {% if app.address.line2 %}<div>{{ app.address.line2 }}</div>{% endif %}
+                {% if app.address.town %}<div>{{ app.address.town }}</div>{% endif %}
+                {% if app.address.county %}<div>{{ app.address.county }}</div>{% endif %}
+                {% if app.address.postcode %}<div>{{ app.address.postcode }}</div>{% endif %}
+                
+                {# Contact #}
+                {% if app.email %}<div>{{ app.email }}</div>{% endif %}
+                {% if app.phone %}<div>{{ app.phone }}</div>{% endif %}
               </li>
             {% endfor %}
           </ul>
-        {% else %}
-          -
-        {% endif %}
-      {% endset %}
+        </div>
+        
+      {% endif %}
 
-      {{ govukSummaryList({
-        attributes: { id: "team" },
-        card: { title: { text: "Team" } },
-        rows: [
-          { 
-            key: { text: "Case officer" }, 
-            value: { text: currentCase.caseOfficer or currentCase['case-officer'] or "-" }, 
-            actions: { items: [{ 
-              href: "/cases/edit/case-officer?ref=" + currentCase.reference, 
-              text: "Change" if (currentCase.caseOfficer or currentCase['case-officer']) else "Add", 
-              visuallyHiddenText: "case officer" 
-            }] } 
-          },
-          { 
-            key: { text: "Inspector(s)" }, 
-            value: { html: inspectorsHtml }, 
-            actions: { items: [{ 
-              href: "/cases/edit/check-inspectors?ref=" + currentCase.reference if currentCase.inspectors.length > 0 else "/cases/edit/check-inspectors-first?ref=" + currentCase.reference, 
-              text: "Change" if (currentCase.inspectors and currentCase.inspectors.length > 0) else "Add", 
-              visuallyHiddenText: "inspectors" 
-            }] } 
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
+
+
+  {# --- SITE ADDRESSES HTML --- #}
+  {% set hasSiteAddress = true if (currentCase.siteAddresses and currentCase.siteAddresses.length > 0) 
+    or currentCase.siteAddress or currentCase['site-address'] else false %}
+          
+  {% set siteAddressHtml %}
+    {% if currentCase.siteAddresses and currentCase.siteAddresses.length > 1 %}
+      
+      {# --- Plot 1 / First site address --- #}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% set firstAddr = currentCase.siteAddresses[0] %}
+        <li>
+          <strong>Plot 1</strong><br>
+          {{ firstAddr.addressLine1 }}{% if firstAddr.addressLine1 %}<br>{% endif %}
+          {{ firstAddr.addressLine2 }}{% if firstAddr.addressLine2 %}<br>{% endif %}
+          {{ firstAddr.addressTown }}{% if firstAddr.addressTown %}<br>{% endif %}
+          {{ firstAddr.addressCounty }}{% if firstAddr.addressCounty %}<br>{% endif %}
+          {{ firstAddr.addressPostcode }}
+        </li>
+      </ul>
+
+      {# --- Toggle link button for show/hide --- #}
+      <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+        <a href="javascript:void(0);" id="toggle-site-addresses" class="govuk-link" onclick="
+          var extra = document.getElementById('extra-site-addresses');
+          var link = document.getElementById('toggle-site-addresses');
+          if(extra.style.display === 'none') {
+            extra.style.display = 'block';
+            link.innerText = 'Hide';
+          } else {
+            extra.style.display = 'none';
+            link.innerText = 'Show {{ currentCase.siteAddresses.length - 1 }} more';
           }
-        ]
-      }) }}
+        ">Show {{ currentCase.siteAddresses.length - 1 }} more</a>
+      </p>
 
+      {# --- Extra site addresses hidden if more than one --- #}
+      <div id="extra-site-addresses" style="display: none;">
+        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-4">
+          {% for i in range(1, currentCase.siteAddresses.length) %}
+            {% set addr = currentCase.siteAddresses[i] %}
+            <li class="{% if i > 1 %}govuk-!-margin-top-4{% endif %}">
+              <strong>Plot {{ i + 1 }}</strong><br>
+              {{ addr.addressLine1 }}{% if addr.addressLine1 %}<br>{% endif %}
+              {{ addr.addressLine2 }}{% if addr.addressLine2 %}<br>{% endif %}
+              {{ addr.addressTown }}{% if addr.addressTown %}<br>{% endif %}
+              {{ addr.addressCounty }}{% if addr.addressCounty %}<br>{% endif %}
+              {{ addr.addressPostcode }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
 
-      {# 4. TIMETABLE #}
+    {# --- If only exactly one site address --- #}
+    {% elif currentCase.siteAddresses and currentCase.siteAddresses.length == 1 %}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        <li>
+          {% set addr = currentCase.siteAddresses[0] %}
+          {{ addr.addressLine1 }}{% if addr.addressLine1 %}<br>{% endif %}
+          {{ addr.addressLine2 }}{% if addr.addressLine2 %}<br>{% endif %}
+          {{ addr.addressTown }}{% if addr.addressTown %}<br>{% endif %}
+          {{ addr.addressCounty }}{% if addr.addressCounty %}<br>{% endif %}
+          {{ addr.addressPostcode }}
+        </li>
+      </ul>
+    
+    {# --- Old site address string as fallback --- #}
+    {% elif currentCase.siteAddress or currentCase['site-address'] %}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        <li>{{ (currentCase.siteAddress or currentCase['site-address']) | replace('\n', '<br>') | safe }}</li>
+      </ul>
+    
+    {# --- EMPTY STATE --- #}
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
 
-    {% set caseReceivedText %}
-  {% if currentCase.caseReceivedDate and currentCase.caseReceivedDate.formatted %}
-    {{ currentCase.caseReceivedDate.formatted }}
-  {% elseif currentCase.receivedDay %}
-    {# Fallback: Convert number to Month Name #}
-    {% set months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
-    {% set monthNum = currentCase.receivedMonth | int %}
-    {{ currentCase.receivedDay }} {{ months[monthNum - 1] }} {{ currentCase.receivedYear }}
-  {% else %}
-    -
-  {% endif %}
-{% endset %}
+  {# --- SET OUT THE SUMMARY CARD ROWS --- #}
+  {{ govukSummaryList({
+    attributes: { id: "case-details" },
+    card: { title: { text: "Case details" } },
+    rows: [
+      { 
+        key: { text: "Case reference" }, 
+        value: { text: currentCase.reference }, 
+        actions: { items: [] } 
+      },
+      {
+        key: { text: "External reference" }, 
+        value: { text: currentCase.externalReference or currentCase['external-reference'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/external-reference?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.externalReference or currentCase['external-reference']) else "Add", 
+          visuallyHiddenText: "external reference" 
+        }] } 
+      },
+      { 
+        key: { text: "Historical reference" }, 
+        value: { text: currentCase['historicalReference'] or "-" }, 
+        actions: { items: [{ }] } 
+      },
+      { 
+        key: { text: "Case name" }, 
+        value: { text: currentCase.caseName or currentCase['case-name'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/case-name?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.caseName or currentCase['case-name']) else "Add", 
+          visuallyHiddenText: "case name" 
+        }] } 
+      },
+      { 
+        key: { text: "Case status" }, 
+        value: { text: currentCase['caseStatus'] or "-" }, 
+        actions: { items: [{ href: "/cases/edit/case-status?ref=" + currentCase.reference, text: "Change" if currentCase['caseStatus'] else "Add", visuallyHiddenText: "case status" }] } 
+      },
+      {
+        key: { text: "Abeyance period" },
+        value: { html: abeyanceHtml if currentCase.abeyancePeriod else "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/abeyance-period?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.abeyancePeriod else "Add" 
+        }] }
+      },
+      { 
+        key: { text: "Advertised modification status" }, 
+        value: { text: currentCase['modificationStatus'] or "-" }, 
+        actions: { items: [{ href: "/cases/edit/modification-status?ref=" + currentCase.reference, text: "Change" if currentCase['modificationStatus'] else "Add", visuallyHiddenText: "modification status" }] } 
+      },
+      {
+        key: { text: "Who is the applicant or appellant?" },
+        value: { html: applicantsHtml },
+        actions: { items: [{ 
+          href: "/cases/applicants/hub?ref=" + currentCase.reference if (currentCase.applicants and currentCase.applicants.length > 0) else "/cases/applicants/start?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.applicants and currentCase.applicants.length > 0) else "Add", 
+          visuallyHiddenText: "applicant details" 
+        }] }
+      },
+      { 
+        key: { text: "Site address" }, 
+        value: { html: siteAddressHtml }, 
+        actions: { items: [{ 
+          href: "/cases/edit/site-address?ref=" + currentCase.reference if hasSiteAddress else "/cases/edit/site-address/first?ref=" + currentCase.reference, 
+          text: "Change" if hasSiteAddress else "Add", 
+          visuallyHiddenText: "site address" 
+        }] } 
+      },
+      { 
+        key: { text: "Site location" }, 
+        value: { text: currentCase.siteLocation or currentCase['site-location'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/site-location?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.siteLocation or currentCase['site-location']) else "Add", 
+          visuallyHiddenText: "site location" 
+        }] } 
+      },
+      { 
+        key: { text: "Authority (LPA, OMA, CRA)" }, 
+        value: { text: currentCase.authorityName or currentCase['authority'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/authority?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.authorityName or currentCase['authority']) else "Add", 
+          visuallyHiddenText: "authority" 
+        }] } 
+      }
+    ]
+  }) }}
 
-      {{ govukSummaryList({
-        attributes: { id: "timetable" },
-        card: { title: { text: "Timetable" } },
-        rows: [
-          {
-            key: { text: "Expected submission date" },
-            value: { text: currentCase.expectedSubmissionDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/expected-submission-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.expectedSubmissionDate else "Add", 
-              visuallyHiddenText: "expected submission date" 
-            }] }
-          },
-          {
-            key: { text: "Case received / submitted" },
-            value: { text: caseReceivedText },
-            actions: { items: [{ 
-              href: "/cases/edit/case-received-date?ref=" + currentCase.reference, 
-              text: "Change" if (caseReceivedText | trim != "-") else "Add", 
-              visuallyHiddenText: "case received date" 
-            }] }
-          },
-          {
-            key: { text: "Target decision date" },
-            value: { text: currentCase.targetDecisionDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/target-decision-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.targetDecisionDate else "Add", 
-              visuallyHiddenText: "target decision date" 
-            }] }
-          },
-          {
-            key: { text: "Start date" },
-            value: { text: currentCase.startDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/start-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.startDate else "Add", 
-              visuallyHiddenText: "start date" 
-            }] }
-          },
-          {
-            key: { text: "Date proposed modifications advertised" },
-            value: { text: currentCase.modificationsAdvertisedDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/modifications-advertised-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.modificationsAdvertisedDate else "Add", 
-              visuallyHiddenText: "modifications advertised date" 
-            }] }
-          },
-          {
-            key: { text: "Objection period ends" },
-            value: { text: currentCase.objectionPeriodEndDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/objection-period-end-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.objectionPeriodEndDate else "Add", 
-              visuallyHiddenText: "objection period end date" 
-            }] }
-          },
-          {
-            key: { text: "Date to notify parties of decision date" },
-            value: { text: currentCase.decisionNotificationDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/decision-notification-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.decisionNotificationDate else "Add", 
-              visuallyHiddenText: "decision notification date" 
-            }] }
-          },
-          {
-            key: { text: "Date decision must be issued by / expiry date" },
-            value: { text: currentCase.decisionIssuedByDate.formatted or "-" },
-            actions: { items: [{ 
-              href: "/cases/edit/decision-issued-by-date?ref=" + currentCase.reference, 
-              text: "Change" if currentCase.decisionIssuedByDate else "Add", 
-              visuallyHiddenText: "decision issued by date" 
-            }] }
-          }
-        ]
-      }) }}
-
-      {# --- 5. KEY CONTACTS --- #}
-      {{ govukSummaryList({
-        card: { title: { text: "Key Contacts" } },
-        attributes: { id: "key-contacts" },
-        rows: [
-          {
-            key: { text: "Objector(s)" },
-            value: { text: (currentCase.objectors.length + " Objector(s)") if (currentCase.objectors and currentCase.objectors.length > 0) else "-" },
-            actions: { items: [{ 
-              href: "/cases/key-contacts/objectors?ref=" + currentCase.reference if currentCase.objectors.length > 0 else "/cases/key-contacts/objectors/first?ref=" + currentCase.reference,
-              text: "Change" if currentCase.objectors.length else "Add", 
-              visuallyHiddenText: "objectors" 
-            }] }
-          },
-          {
-            key: { text: "Contact(s)" },
-            value: { text: (currentCase.contacts.length + " Contact(s)") if (currentCase.contacts and currentCase.contacts.length > 0) else "-" },
-            actions: { items: [{ 
-              href: "/cases/key-contacts/contacts?ref=" + currentCase.reference if currentCase.contacts.length > 0 else "/cases/key-contacts/contacts/first?ref=" + currentCase.reference,
-              text: "Change" if currentCase.contacts.length else "Add", 
-              visuallyHiddenText: "contacts" 
-            }] }
-          }
-        ]
-      }) }}
 
 {# ========================================================== #}
-{# DYNAMIC PROCEDURE CARDS (Hidden if empty)                  #}
+{# 3. TEAM                                                    #}
+{# ========================================================== #}
+
+  {# --- INSPECTORS HTML --- #}
+  {% set inspectorsHtml %}
+    {% if currentCase.inspectors and currentCase.inspectors.length > 0 %}
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% for item in currentCase.inspectors %}
+          <li>
+            {{ item.name }}<br>
+            {{ item.date }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
+
+  {# --- SET OUT THE SUMMARY CARD ROWS --- #}
+  {{ govukSummaryList({
+    attributes: { id: "team" },
+    card: { title: { text: "Team" } },
+    rows: [
+      { 
+        key: { text: "Case officer" }, 
+        value: { text: currentCase.caseOfficer or currentCase['case-officer'] or "-" }, 
+        actions: { items: [{ 
+          href: "/cases/edit/case-officer?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.caseOfficer or currentCase['case-officer']) else "Add", 
+          visuallyHiddenText: "case officer" 
+        }] } 
+      },
+      { 
+        key: { text: "Inspector(s)" }, 
+        value: { html: inspectorsHtml }, 
+        actions: { items: [{ 
+          href: "/cases/edit/check-inspectors?ref=" + currentCase.reference if currentCase.inspectors.length > 0 else "/cases/edit/check-inspectors-first?ref=" + currentCase.reference, 
+          text: "Change" if (currentCase.inspectors and currentCase.inspectors.length > 0) else "Add", 
+          visuallyHiddenText: "inspectors" 
+        }] } 
+      }
+    ]
+  }) }}
+
+
+{# ========================================================== #}
+{# 4. TIMETABLE                                               #}
+{# ========================================================== #}
+
+  {# --- CASE RECEIVED TEXT LOGIC --- #}
+  {% set caseReceivedText %}
+    {% if currentCase.caseReceivedDate and currentCase.caseReceivedDate.formatted %}
+      {{ currentCase.caseReceivedDate.formatted }}
+    {% elseif currentCase.receivedDay %}
+      {# Fallback: Convert number to Month Name #}
+      {% set months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] %}
+      {% set monthNum = currentCase.receivedMonth | int %}
+      {{ currentCase.receivedDay }} {{ months[monthNum - 1] }} {{ currentCase.receivedYear }}
+    {% else %}
+      -
+    {% endif %}
+  {% endset %}
+
+  {# --- SET OUT THE SUMMARY CARD ROWS --- #}
+  {{ govukSummaryList({
+    attributes: { id: "timetable" },
+    card: { title: { text: "Timetable" } },
+    rows: [
+      {
+        key: { text: "Expected submission date" },
+        value: { text: currentCase.expectedSubmissionDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/expected-submission-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.expectedSubmissionDate else "Add", 
+          visuallyHiddenText: "expected submission date" 
+        }] }
+      },
+      {
+        key: { text: "Case received / submitted" },
+        value: { text: caseReceivedText },
+        actions: { items: [{ 
+          href: "/cases/edit/case-received-date?ref=" + currentCase.reference, 
+          text: "Change" if (caseReceivedText | trim != "-") else "Add", 
+          visuallyHiddenText: "case received date" 
+        }] }
+      },
+      {
+        key: { text: "Target decision date" },
+        value: { text: currentCase.targetDecisionDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/target-decision-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.targetDecisionDate else "Add", 
+          visuallyHiddenText: "target decision date" 
+        }] }
+      },
+      {
+        key: { text: "Start date" },
+        value: { text: currentCase.startDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/start-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.startDate else "Add", 
+          visuallyHiddenText: "start date" 
+        }] }
+      },
+      {
+        key: { text: "Date proposed modifications advertised" },
+        value: { text: currentCase.modificationsAdvertisedDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/modifications-advertised-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.modificationsAdvertisedDate else "Add", 
+          visuallyHiddenText: "modifications advertised date" 
+        }] }
+      },
+      {
+        key: { text: "Objection period ends" },
+        value: { text: currentCase.objectionPeriodEndDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/objection-period-end-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.objectionPeriodEndDate else "Add", 
+          visuallyHiddenText: "objection period end date" 
+        }] }
+      },
+      {
+        key: { text: "Date to notify parties of decision date" },
+        value: { text: currentCase.decisionNotificationDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/decision-notification-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.decisionNotificationDate else "Add", 
+          visuallyHiddenText: "decision notification date" 
+        }] }
+      },
+      {
+        key: { text: "Date decision must be issued by / expiry date" },
+        value: { text: currentCase.decisionIssuedByDate.formatted or "-" },
+        actions: { items: [{ 
+          href: "/cases/edit/decision-issued-by-date?ref=" + currentCase.reference, 
+          text: "Change" if currentCase.decisionIssuedByDate else "Add", 
+          visuallyHiddenText: "decision issued by date" 
+        }] }
+      }
+    ]
+  }) }}
+
+
+{# ========================================================== #}
+{# 5. KEY CONTACTS                                            #}
+{# ========================================================== #}
+
+  {# --- SET OUT THE SUMMARY CARD ROWS --- #}
+  {{ govukSummaryList({
+    card: { title: { text: "Key Contacts" } },
+    attributes: { id: "key-contacts" },
+    rows: [
+      {
+        key: { text: "Objector(s)" },
+        value: { text: (currentCase.objectors.length + " Objector(s)") if (currentCase.objectors and currentCase.objectors.length > 0) else "-" },
+        actions: { items: [{ 
+          href: "/cases/key-contacts/objectors?ref=" + currentCase.reference if currentCase.objectors.length > 0 else "/cases/key-contacts/objectors/first?ref=" + currentCase.reference,
+          text: "Change" if currentCase.objectors.length else "Add", 
+          visuallyHiddenText: "objectors" 
+        }] }
+      },
+      {
+        key: { text: "Contact(s)" },
+        value: { text: (currentCase.contacts.length + " Contact(s)") if (currentCase.contacts and currentCase.contacts.length > 0) else "-" },
+        actions: { items: [{ 
+          href: "/cases/key-contacts/contacts?ref=" + currentCase.reference if currentCase.contacts.length > 0 else "/cases/key-contacts/contacts/first?ref=" + currentCase.reference,
+          text: "Change" if currentCase.contacts.length else "Add", 
+          visuallyHiddenText: "contacts" 
+        }] }
+      }
+    ]
+  }) }}
+
+{# ========================================================== #}
+{# 6. DYNAMIC PROCEDURE CARDS (Hidden if empty)               #}
 {# ========================================================== #}
 
 {% if currentCase.overviewProcedures and currentCase.overviewProcedures.length > 0 %}
@@ -998,229 +1019,191 @@
 {% endif %}
 
 
-      {# ========================================================== #}
-      {# OUTCOME OVERVIEW                                           #}
-      {# ========================================================== #}
-      <div class="govuk-summary-card" id="outcomeOverview">
-        <div class="govuk-summary-card__title-wrapper">
-          <h2 class="govuk-summary-card__title">Outcome overview</h2>
-        </div>
-        <div class="govuk-summary-card__content">
-          
-          {% set outcomeRows = [] %}
-          
-          {% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
-            
-            {# 1. Build the HTML for the bulleted list #}
-            {% set outcomeListHtml %}
-              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
-                {% for out in currentCase.outcomes %}
-                  <li>{{ out.type }}</li>
-                {% endfor %}
-              </ul>
-            {% endset %}
+{# ========================================================== #}
+{# 7. OUTCOME OVERVIEW                                        #}
+{# ========================================================== #}
 
-            {% set outcomeRows = [
-              { 
-                key: { text: "Type of decision or report" }, 
-                value: { html: outcomeListHtml }, 
-                actions: { 
-                  items: [
-                    { 
-                      href: "/cases/outcomes/hub?ref=" + currentCase.reference, 
-                      text: "Add",
-                      visuallyHiddenText: "type of decision or report"
-                    },
-                    { 
-                      href: "/cases/outcomes/hub?ref=" + currentCase.reference, 
-                      text: "Change",
-                      visuallyHiddenText: "type of decision or report"
-                    }
-                  ] 
-                } 
-              },
-              {
-                key: { text: "Parties notified of outcome" },
-                value: { text: currentCase.outcomeOverview.partiesNotifiedDate.formatted if currentCase.outcomeOverview.partiesNotifiedDate else "-" },
-                actions: { 
-                  items: [{ 
-                    href: "/cases/overview-outcome/parties-notified?ref=" + currentCase.reference, 
-                    text: "Change" if currentCase.outcomeOverview.partiesNotifiedDate else "Add" 
-                  }] 
-                }
-              },
-              {
-                key: { text: "Order decision dispatch" },
-                value: { text: currentCase.outcomeOverview.orderDispatchDate.formatted if currentCase.outcomeOverview.orderDispatchDate else "-" },
-                actions: { 
-                  items: [{ 
-                    href: "/cases/overview-outcome/order-dispatch?ref=" + currentCase.reference, 
-                    text: "Change" if currentCase.outcomeOverview.orderDispatchDate else "Add" 
-                  }] 
-                }
-              },
-              {
-                key: { text: "Sealed order returned" },
-                value: { text: currentCase.outcomeOverview.sealedOrderReturnedDate.formatted if currentCase.outcomeOverview.sealedOrderReturnedDate else "-" },
-                actions: { 
-                  items: [{ 
-                    href: "/cases/overview-outcome/sealed-order?ref=" + currentCase.reference, 
-                    text: "Change" if currentCase.outcomeOverview.sealedOrderReturnedDate else "Add" 
-                  }] 
-                }
-              },
-              {
-                key: { text: "Decision published" },
-                value: { text: currentCase.outcomeOverview.decisionPublishedDate.formatted if currentCase.outcomeOverview.decisionPublishedDate else "-" },
-                actions: { 
-                  items: [{ 
-                    href: "/cases/overview-outcome/decision-published?ref=" + currentCase.reference, 
-                    text: "Change" if currentCase.outcomeOverview.decisionPublishedDate else "Add" 
-                  }] 
-                }
-              }
-            ] %}
-            
-          {% else %}
-            {# Empty State #}
-            {% set outcomeRows = [
-              {
-                key: { text: "Type of decision or report" },
-                value: { text: "-" },
-                actions: { 
-                  items: [{ 
-                    href: "/cases/outcomes/start?ref=" + currentCase.reference, 
-                    text: "Add",
-                    visuallyHiddenText: "type of decision or report"
-                  }] 
-                }
-              }
-            ] %}
-          {% endif %}
+<div class="govuk-summary-card" id="outcomeOverview">
+  <div class="govuk-summary-card__title-wrapper">
+    <h2 class="govuk-summary-card__title">Outcome overview</h2>
+  </div>
+  <div class="govuk-summary-card__content">
+    
+    {% set outcomeRows = [] %}
+    
+    {% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
+      
+      {# --- OUTCOME LIST HTML --- #}
+      {% set outcomeListHtml %}
+        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+          {% for out in currentCase.outcomes %}
+            <li>{{ out.type }}</li>
+          {% endfor %}
+        </ul>
+      {% endset %}
 
-          {{ govukSummaryList({ rows: outcomeRows }) }}
+      {% set outcomeRows = [
+        { 
+          key: { text: "Type of decision or report" }, 
+          value: { html: outcomeListHtml }, 
+          actions: { 
+            items: [
+              { href: "/cases/outcomes/hub?ref=" + currentCase.reference, text: "Add", visuallyHiddenText: "type of decision or report" },
+              { href: "/cases/outcomes/hub?ref=" + currentCase.reference, text: "Change", visuallyHiddenText: "type of decision or report" }
+            ] 
+          } 
+        },
+        {
+          key: { text: "Parties notified of outcome" },
+          value: { text: currentCase.outcomeOverview.partiesNotifiedDate.formatted if currentCase.outcomeOverview.partiesNotifiedDate else "-" },
+          actions: { items: [{ href: "/cases/overview-outcome/parties-notified?ref=" + currentCase.reference, text: "Change" if currentCase.outcomeOverview.partiesNotifiedDate else "Add" }] }
+        },
+        {
+          key: { text: "Order decision dispatch" },
+          value: { text: currentCase.outcomeOverview.orderDispatchDate.formatted if currentCase.outcomeOverview.orderDispatchDate else "-" },
+          actions: { items: [{ href: "/cases/overview-outcome/order-dispatch?ref=" + currentCase.reference, text: "Change" if currentCase.outcomeOverview.orderDispatchDate else "Add" }] }
+        },
+        {
+          key: { text: "Sealed order returned" },
+          value: { text: currentCase.outcomeOverview.sealedOrderReturnedDate.formatted if currentCase.outcomeOverview.sealedOrderReturnedDate else "-" },
+          actions: { items: [{ href: "/cases/overview-outcome/sealed-order?ref=" + currentCase.reference, text: "Change" if currentCase.outcomeOverview.sealedOrderReturnedDate else "Add" }] }
+        },
+        {
+          key: { text: "Decision published" },
+          value: { text: currentCase.outcomeOverview.decisionPublishedDate.formatted if currentCase.outcomeOverview.decisionPublishedDate else "-" },
+          actions: { items: [{ href: "/cases/overview-outcome/decision-published?ref=" + currentCase.reference, text: "Change" if currentCase.outcomeOverview.decisionPublishedDate else "Add" }] }
+        }
+      ] %}
+      
+    {% else %}
+      
+      {# --- EMPTY STATE --- #}
+      {% set outcomeRows = [
+        {
+          key: { text: "Type of decision or report" },
+          value: { text: "-" },
+          actions: { items: [{ href: "/cases/outcomes/start?ref=" + currentCase.reference, text: "Add", visuallyHiddenText: "type of decision or report" }] }
+        }
+      ] %}
+      
+    {% endif %}
 
-        </div>
+    {{ govukSummaryList({ rows: outcomeRows }) }}
+
+  </div>
+</div>
+
+
+{# ========================================================== #}
+{# 8. DYNAMIC OUTCOME CARDS                                   #}
+{# ========================================================== #}
+
+{% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
+  {% for outcome in currentCase.outcomes %}
+    
+    <div class="govuk-summary-card" id="outcome-{{ loop.index }}">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">{{ outcome.type }}</h2>
+        <ul class="govuk-summary-card__actions">
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link" href="/cases/outcomes/hub?ref={{ currentCase.reference }}">
+              <span class="govuk-visually-hidden"> {{ outcome.type | lower }}</span>
+            </a>
+          </li>
+        </ul>
       </div>
-
-      {# ========================================================== #}
-      {# DYNAMIC OUTCOME CARDS (Decisions / Reports)                #}
-      {# ========================================================== #}
-      {% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
-        {% for outcome in currentCase.outcomes %}
+      
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
           
-          {# FIX 1: Changed id from outcome.id to loop.index to match the anchor links #}
-          <div class="govuk-summary-card" id="outcome-{{ loop.index }}">
-            <div class="govuk-summary-card__title-wrapper">
-              
-              <h2 class="govuk-summary-card__title">{{ outcome.type }}</h2>
-              
-              <ul class="govuk-summary-card__actions">
-                <li class="govuk-summary-card__action">
-                  {# FIX 2: Pointed href to /hub to protect the Draft Array #}
-                  <a class="govuk-link" href="/cases/outcomes/hub?ref={{ currentCase.reference }}">
-                    <span class="govuk-visually-hidden"> {{ outcome.type | lower }}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            <div class="govuk-summary-card__content">
-              <dl class="govuk-summary-list">
-                
-                {# 1. Originator #}
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Originator</dt>
-                  <dd class="govuk-summary-list__value">
-                    {% if outcome.originator == "Inspector" %}
-                      Inspector<br>
-                      <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.inspectorName }}</span>
-                    {% elseif outcome.originator == "Officer" %}
-                      Case officer<br>
-                      <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.officerName }}</span>
-                    {% else %}
-                      Secretary of State
-                    {% endif %}
-                  </dd>
-                </div>
-
-                {# 2. Outcome #}
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Outcome</dt>
-                  <dd class="govuk-summary-list__value">
-                    {{ outcome.decisionOutcome }}
-                    {% if outcome.decisionOutcomeDetails %}
-                      <br><span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">({{ outcome.decisionOutcomeDetails }})</span>
-                    {% endif %}
-                  </dd>
-                </div>
-
-                {# 3. Outcome Date #}
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Outcome date</dt>
-                  <dd class="govuk-summary-list__value">
-                    {{ outcome.outcomeDate.formatted if outcome.outcomeDate else "-" }}
-                  </dd>
-                </div>
-
-                {# 4. Received Date #}
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Received date</dt>
-                  <dd class="govuk-summary-list__value">
-                    {{ outcome.receivedDate.formatted if outcome.receivedDate else "-" }}
-                  </dd>
-                </div>
-
-              </dl>
-            </div>
+          {# 1. Originator #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Originator</dt>
+            <dd class="govuk-summary-list__value">
+              {% if outcome.originator == "Inspector" %}
+                Inspector<br>
+                <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.inspectorName }}</span>
+              {% elseif outcome.originator == "Officer" %}
+                Case officer<br>
+                <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.officerName }}</span>
+              {% else %}
+                Secretary of State
+              {% endif %}
+            </dd>
           </div>
 
-        {% endfor %}
-      {% endif %}
+          {# 2. Outcome #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Outcome</dt>
+            <dd class="govuk-summary-list__value">
+              {{ outcome.decisionOutcome }}
+              {% if outcome.decisionOutcomeDetails %}
+                <br><span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">({{ outcome.decisionOutcomeDetails }})</span>
+              {% endif %}
+            </dd>
+          </div>
+
+          {# 3. Outcome Date #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Outcome date</dt>
+            <dd class="govuk-summary-list__value">
+              {{ outcome.outcomeDate.formatted if outcome.outcomeDate else "-" }}
+            </dd>
+          </div>
+
+          {# 4. Received Date #}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Received date</dt>
+            <dd class="govuk-summary-list__value">
+              {{ outcome.receivedDate.formatted if outcome.receivedDate else "-" }}
+            </dd>
+          </div>
+
+        </dl>
+      </div>
+    </div>
+
+  {% endfor %}
+{% endif %}
 
 
-      {# 10. Additional resource locations #}
-      {{ govukSummaryList({
+{# ========================================================== #}
+{# 9. ADDITIONAL RESOURCE LOCATIONS                           #}
+{# ========================================================== #}
+
+{{ govukSummaryList({
   attributes: { id: "additionalResourceLocations" },
-  card: { 
-    title: { text: "Additional resource locations" } 
-  },
+  card: { title: { text: "Additional resource locations" } },
   rows: [
     { 
       key: { text: "Offline document location" }, 
-      value: { 
-        html: currentCase.offlineDocLocation | nl2br if currentCase.offlineDocLocation else "-" 
-      }, 
-      actions: { 
-        items: [{ 
-          href: "/cases/edit/offline-document-location?ref=" + currentCase.reference, 
-          text: ("Change" if currentCase.offlineDocLocation else "Add"), 
-          visuallyHiddenText: "offline document location" 
-        }] 
-      }
+      value: { html: currentCase.offlineDocLocation | nl2br if currentCase.offlineDocLocation else "-" }, 
+      actions: { items: [{ 
+        href: "/cases/edit/offline-document-location?ref=" + currentCase.reference, 
+        text: "Change" if currentCase.offlineDocLocation else "Add", 
+        visuallyHiddenText: "offline document location" 
+      }] }
     },
-
     { 
       key: { text: "Relevant website links" }, 
-      value: { 
-        html: currentCase.relevantWebsiteLinks | nl2br if currentCase.relevantWebsiteLinks else "-" 
-      }, 
-      actions: { 
-        items: [{ 
-          href: "/cases/edit/relevant-website-links?ref=" + currentCase.reference, 
-          text: ("Change" if currentCase.relevantWebsiteLinks else "Add"), 
-          visuallyHiddenText: "relevant website links" 
-        }] 
-      } 
-  ]}
+      value: { html: currentCase.relevantWebsiteLinks | nl2br if currentCase.relevantWebsiteLinks else "-" }, 
+      actions: { items: [{ 
+        href: "/cases/edit/relevant-website-links?ref=" + currentCase.reference, 
+        text: "Change" if currentCase.relevantWebsiteLinks else "Add", 
+        visuallyHiddenText: "relevant website links" 
+      }] } 
+    }
+  ]
 }) }}
 
-      {# 11. INVOICING #}
+
+{# ========================================================== #}
+{# 10. INVOICING                                              #}
+{# ========================================================== #}
+
 {{ govukSummaryList({
   attributes: { id: "invoicing" },
-  card: { 
-    title: { text: "Invoicing" } 
-  },
+  card: { title: { text: "Invoicing" } },
   rows: [
     { 
       key: { text: "Rechargeable" }, 
@@ -1245,44 +1228,52 @@
   ]
 }) }}
 
-      {# 11. CASE HISTORY #}
-  {{ govukSummaryList({
-    attributes: { id: "case-history" },
-    card: { 
-      title: { text: "Case audit log" } 
-    },
-    rows: [
-      { 
-        key: { text: "Last modified date" }, 
-        value: { text: currentCase.lastModified if currentCase.lastModified else "Not yet modified" } 
-      },
-      { 
-        key: { text: "Last modified by" }, 
-        value: { text: currentCase.lastModifiedBy if currentCase.lastModifiedBy else "N/A" }
-      },
-      { 
-        key: { text: "Case closed date" }, 
-        value: { text: currentCase.caseClosedDate if currentCase.caseClosedDate else "-" }
-      },
-      { 
-        key: { text: "Case history" }, 
-        actions: { items: [{ href: "/cases/edit/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
-      }
-    ]
-  }) }}
 
-      </div>
+{# ========================================================== #}
+{# 11. CASE HISTORY (AUDIT LOG)                               #}
+{# ========================================================== #}
+
+{{ govukSummaryList({
+  attributes: { id: "case-history" },
+  card: { title: { text: "Case audit log" } },
+  rows: [
+    { 
+      key: { text: "Last modified date" }, 
+      value: { text: currentCase.lastModified if currentCase.lastModified else "Not yet modified" } 
+    },
+    { 
+      key: { text: "Last modified by" }, 
+      value: { text: currentCase.lastModifiedBy if currentCase.lastModifiedBy else "N/A" }
+    },
+    { 
+      key: { text: "Case closed date" }, 
+      value: { text: currentCase.caseClosedDate if currentCase.caseClosedDate else "-" }
+    },
+    { 
+      key: { text: "Case history" },
+      value: { text: "" },
+      actions: { items: [{ href: "/cases/edit/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
+    }
+  ]
+}) }}
+
+    </div>
   </div>
 
 
 {% else %}
 
-  {# --- ERROR STATE --- #}
+  {# ========================================================== #}
+  {# ERROR STATE (Case Not Found)                               #}
+  {# ========================================================== #}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">Case not found</h1>
       <p class="govuk-body">We could not find a case with reference: <strong>{{ data['ref'] }}</strong></p>
-      <p><a href="/cases/create-a-case/questions/casework-area">Start a new case</a></p>
+      <p class="govuk-body">
+        <a class="govuk-link" href="/cases/create-a-case/questions/casework-area">Start a new case</a>
+      </p>
     </div>
   </div>
 
