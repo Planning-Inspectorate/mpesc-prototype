@@ -1,6 +1,12 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %} How long is the inquiry preparation time? (optional) - Planning Inspectorate Portal {% endblock %}
-{% block beforeContent %} {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }} {% endblock %}
+
+{% block pageTitle %}
+How long is the inquiry preparation time? (optional) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">

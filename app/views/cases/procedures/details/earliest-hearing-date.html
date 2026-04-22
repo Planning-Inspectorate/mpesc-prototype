@@ -1,6 +1,12 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %} When is the earliest possible hearing date? (optional) - Planning Inspectorate Portal {% endblock %}
-{% block beforeContent %} {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }} {% endblock %}
+
+{% block pageTitle %}
+When is the earliest possible hearing date? (optional) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">

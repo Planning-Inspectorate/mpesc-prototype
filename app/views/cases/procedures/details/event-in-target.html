@@ -1,6 +1,12 @@
 {% extends "layouts/main.html" %}
-{% block pageTitle %} Was the inquiry completed in the target timeframe? - Planning Inspectorate Portal {% endblock %}
-{% block beforeContent %} {{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }} {% endblock %}
+
+{% block pageTitle %}
+Was the inquiry completed in the target timeframe? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "/cases/case-details?ref=" + ref }) }}
+{% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
