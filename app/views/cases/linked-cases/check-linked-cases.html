@@ -15,7 +15,7 @@ Linked case(s) - Planning Inspectorate Portal
 
       <h1 class="govuk-heading-l">Check linked case details</h1>
 
-      {# 1. UNIFIED DATA SOURCE #}
+      {# 1. LOAD IN SESSION DATA + DATABASE DATA #}
       {% set list = linkedCases | default(data['tempLinkedCasesList']) | default([]) %}
 
       {# 2. THE TABLE #}
@@ -53,7 +53,7 @@ Linked case(s) - Planning Inspectorate Portal
         <p class="govuk-body">Add one or more linked cases. No linked case details have been added.</p>
       {% endif %}
 
-      {# 3. THE BUTTONS #}
+      {# 3. BUTTONS #}
       <form action="/cases/linked-cases/commit?ref={{ ref }}" method="post" novalidate>
    
         <div class="govuk-button-group">
