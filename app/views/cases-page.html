@@ -42,7 +42,7 @@
   .moj-filter-layout__filter { border: none !important; }
   .moj-filter__options { margin-top: -1px; padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6 }
 
-  /* HIDE THE HARDCODED MOJ BUTTON AT THE TOP (So we can use our custom full-width one) */
+  /* HIDE THE HARDCODED MOJ APPLY FILTERS BUTTON AT THE TOP (so we can use full-width one instead) */
   .moj-filter__options > .govuk-button:first-child { display: none !important; }
 
   /* --- ACCORDION STYLES --- */
@@ -112,13 +112,13 @@
 <div class="moj-filter-layout custom-filter-layout">
 
   {# ========================================================== #}
-  {# LEFT COLUMN: THE FILTER (32% width)                        #}
+  {# LEFT COLUMN: THE FILTER (31% width)                        #}
   {# ========================================================== #}
   <div class="custom-filter-column">
 
     {%- set filterOptionsHtml %}
       
-      {# --- RESTORED TOP BUTTON (Above the Show all sections link) --- #}
+      {# --- Full width apply filters button --- #}
       {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
 
       <div style="padding-bottom:10px;">
@@ -469,11 +469,11 @@
   </div>
 
   {# ========================================================== #}
-  {# RIGHT COLUMN: RESULTS TABLE                                #}
+  {# RIGHT COLUMN: RESULTS TABLE (69%)                          #}
   {# ========================================================== #}
   <div class="custom-content-column">
       
-    {# --- RESTORED MAIN SEARCH BAR --- #}
+    {# --- MAIN SEARCH BAR --- #}
     <div class="govuk-form-group">
       <h1 class="govuk-label-wrapper">
         <label class="govuk-label govuk-label--m" id="search-label" for="search-input">

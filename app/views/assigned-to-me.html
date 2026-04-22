@@ -2,7 +2,7 @@
 
 {% extends "layouts/main.html" %}
 
-{# --- Dynamic Text Setup --- #}
+{# --- Dynamic text to display who the case is assigned to --- #}
 {% set headerText = "My cases" if isViewingOwnCases else "Cases assigned to " + activeUserName %}
 {% set emptyText = "You are not assigned to any cases" if isViewingOwnCases else activeUserName + " is not assigned to any cases" %}
 
@@ -37,10 +37,10 @@
   .moj-filter { width: 100%; margin-bottom: 30px; }
   .moj-filter__options { padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6; background: #fff; }
 
-  /* HIDE THE HARDCODED MOJ BUTTON AT THE TOP */
+  /* HIDE THE HARDCODED APPLY FILTERS MOJ BUTTON AT THE TOP (so we can use our own) */
   .moj-filter__options > .govuk-button:first-child { display: none !important; }
 
-  /* --- FIX: FORCE CLEAR FILTERS TO SIT INLINE WITHOUT WRAPPING --- */
+  /* --- FIX: FORCE CLEAR FILTERS BUTTON TO SIT INLINE WITHOUT WRAPPING --- */
   .moj-filter__selected-heading {
     display: flex !important;
     flex-direction: row !important;
@@ -54,21 +54,20 @@
   .moj-filter__heading-action { margin: 0 !important; width: auto !important; flex-shrink: 0; }
   .moj-filter__heading-action p { margin: 0 !important; white-space: nowrap !important; }
 
-  /* --- 3 COLUMN CHECKBOX GRID --- */
+  /* --- 3 COLUMN CHECKBOX GRID FILTER ARRANGMENT --- */
   .checkbox-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     column-gap: 20px;
   }
-  
-  /* Add the bottom border to mimic the reference image */
+
   .checkbox-grid .govuk-checkboxes__item {
     border-bottom: 1px solid #b1b4b6;
     padding-bottom: 10px;
     margin-bottom: 10px;
   }
 
-  /* Make sure it drops to 1 column on mobile */
+  /* Make sure it drops to 1 column if window is narrowed */
   @media (max-width: 768px) {
     .checkbox-grid { grid-template-columns: 1fr; }
   }
@@ -90,7 +89,7 @@
   <div class="govuk-grid-column-full">
 
     {# ========================================================== #}
-    {# TRUE EMPTY STATE (No cases assigned to this user at all)   #}
+    {# EMPTY STATE (No cases assigned to this user at all)        #}
     {# ========================================================== #}
     {% if totalCasesCount == 0 %}
       <h1 class="govuk-heading-l">{{ emptyText }}</h1>
@@ -132,7 +131,7 @@
           
           {%- set filterOptionsHtml %}
             
-            {# --- Apply Button constrained to original width (31%) --- #}
+            {# --- Apply Button constrained to 31% filter width --- #}
             {{ govukButton({ 
               text: "Apply filters", 
               classes: "govuk-!-margin-bottom-6 govuk-!-margin-top-2",
