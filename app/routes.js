@@ -526,63 +526,149 @@ router.post('/create-case-submit', function (req, res) {
 
 
 
-// --- CASE DETAILS EDIT LOGIC ---
+// ==============================================================================
+// CASE DETAILS: EDIT LOGIC
+// ==============================================================================
 
-// Helper to find a case
+// ------------------------------------------------------------------------------
+// 0. GLOBAL HELPERS
+// ------------------------------------------------------------------------------
+
+// Helper to find the current case from the session database
 function getCase(req) {
   var ref = req.query.ref || req.body.ref || req.params.ref;
   var cases = req.session.data['cases'] || [];
   return cases.find(c => c.reference === ref);
 }
 
-// --- SPECIFIC FIELD ROUTES (Must be above the generic :field route) ---
 
-// 1. CASE NAME (Migration Logic: Reads old 'case-name', saves new 'caseName')
-router.get('/cases/edit/case-name', function(req, res) {
+// ------------------------------------------------------------------------------
+// 1. OVERVIEW CARD FIELDS (Simple Inputs / Radios)
+// ------------------------------------------------------------------------------
+
+// --- ACT / LEGISLATION ---
+router.get('/cases/edit/act', function(req, res) {
   var c = getCase(req);
-  
-  // LOGIC: Check for the new camelCase variable first. 
-  // If it doesn't exist, check the old kebab-case variable.
-  var currentValue = c.caseName || c['case-name'];
-
-  res.render('cases/edit/case-name', { 
-    ref: c.reference, 
-    value: currentValue 
-  });
+  res.render('cases/edit/act', { ref: c.reference, value: c.act || "" });
 });
 
-router.post('/cases/edit/case-name', function(req, res) {
+router.post('/cases/edit/act', function(req, res) {
   var ref = req.query.ref;
-  // Ensure we read from the form correctly (Make sure input name="caseName")
-  var val = req.body.caseName; 
-  
-  // VALIDATION
+  var val = req.body.act;
+  var c = getCase(req);
+
+  const legislationList = [
+    "Acquisition of Land Act 1981, 32", "Acquisition of Land Act 1981, 19 and Schedule 3, para 6",
+    "Town and Country Planning Act 1990, 137", "Commons Act 2006, 16", "Commons Act 2006, 38",
+    "Commons Act 2006, Part 1 Schedule 6", "Greater London Parks & Open Spaces Order 1967, Article 12",
+    "Greater London Parks & Open Spaces Order 1967, Article 17", "Highways Act 1980, 26",
+    "Highways Act 1980, 118", "Highways Act 1980, 119", "Highways Act 1980, 118A",
+    "Highways Act 1980, 118B", "Highways Act 1980, 119A", "Highways Act 1980, 119B",
+    "Highways Act 1980, 119D", "Inclosure Act 1845, 149", "Law of Property Act 1925, 193",
+    "National Trust Act 1971, 23", "Town and Country Planning Act 1990, 78",
+    "Town and Country Planning Act 1990, 247", "Town and Country Planning Act 1990, 251",
+    "Town and Country Planning Act 1990, 257", "Town and Country Planning Act 1990, 61",
+    "Wildlife and Countryside Act 1981, 53", "Wildlife and Countryside Act 1981, 54",
+    "Wildlife and Countryside Act 1981, Schedule 14 A", "Wildlife and Countryside Act 1981, Schedule 14 D"
+  ];
+
   if (!val || val.trim() === "") {
-    return res.render('cases/edit/case-name', { 
-      ref: ref, 
-      value: val, 
-      error: true, 
-      errorMessage: { text: "Enter the case name" } 
-    });
+    return res.render('cases/edit/act', { ref: ref, error: true, errorMessage: { text: "Enter the relevant legislation or act" } });
   }
 
+  if (!legislationList.includes(val)) {
+    return res.render('cases/edit/act', { ref: ref, value: val, error: true, errorMessage: { text: "Select an act from the list" } });   
+  }
+
+  c.act = val;
+  req.session.flashSection = "overview"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Act updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=legislation');
+});
+
+// --- CONSENT SOUGHT ---
+router.get('/cases/edit/consent-sought', function(req, res) {
+  var ref = req.query.ref;
   var c = getCase(req);
-  
-  // SAVE to new variable
-  c.caseName = val;
+  res.render('cases/edit/consent-sought', { ref: ref, currentValue: c['consent-sought'] });
+});
 
-  req.session.flashSection = "case-details"; 
+router.post('/cases/edit/consent-sought', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  var val = req.body['consent-sought'];
 
-addAuditLog(req, ref, "Case name updated to '" + val + "'"); 
-  
+  c['consent-sought'] = val;
+  req.session.flashSection = "overview"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Consent sought updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// --- PRIORITY ---
+router.get('/cases/edit/priority', function(req, res) {
+  var c = getCase(req);
+  res.render('cases/edit/priority', { ref: c.reference, value: c.priority || c['priority'] });
+});
+
+router.post('/cases/edit/priority', function(req, res) {
+  var ref = req.query.ref;
+  var action = req.body.action;
+  var val = req.body.priority;
+  var c = getCase(req);
+
+  if (action === 'remove') {
+    delete c.priority;
+    delete c['priority'];
+    req.session.flashSection = "overview"; 
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Priority removed");
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  }
+
+  if (!val) {
+    return res.render('cases/edit/priority', { ref: ref, error: true, errorMessage: { text: "Select a priority" } });
+  }
+
+  c.priority = val;
+  req.session.flashSection = "overview"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Priority updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-// --- 2. EXTERNAL REFERENCE (No validation, migrate to externalReference) ---
+// --- INSPECTOR BAND ---
+router.get('/cases/edit/inspector-band', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases');
+  res.render('cases/edit/inspector-band', { ref: ref, currentValue: c['inspector-band'] });
+});
+
+router.post('/cases/edit/inspector-band', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  if (req.body.action === "remove") {
+    c['inspector-band'] = ""; 
+    req.session.flashSection = "overview"; 
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Inspector band removed");
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  var val = req.body['inspector-band'];
+  c['inspector-band'] = val;
+  req.session.flashSection = "overview"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Inspector band updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+
+// ------------------------------------------------------------------------------
+// 2. CASE DETAILS CARD FIELDS (Simple Inputs / Radios / Double Dates)
+// ------------------------------------------------------------------------------
+
+// --- EXTERNAL REFERENCE ---
 router.get('/cases/edit/external-reference', function(req, res) {
   var c = getCase(req);
-  var val = c.externalReference || c['external-reference'];
-  res.render('cases/edit/external-reference', { ref: c.reference, value: val });
+  res.render('cases/edit/external-reference', { ref: c.reference, value: c.externalReference || c['external-reference'] });
 });
 
 router.post('/cases/edit/external-reference', function(req, res) {
@@ -591,49 +677,270 @@ router.post('/cases/edit/external-reference', function(req, res) {
   var c = getCase(req);
   
   c.externalReference = val;
-
   req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "External reference updated to '" + val + "'");
-  
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "External reference updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-// ==============================================
-// APPLICANTS LOGIC (Working Draft Pattern)
-// ==============================================
+// --- HISTORICAL REFERENCE ---
+router.get('/cases/edit/historical-reference', function(req, res) {
+  var c = getCase(req);
+  res.render('cases/edit/historical-reference', { ref: c.reference, value: c.historicalReference || c['historical-reference'] });
+});
 
-// 0. Empty State Page: Check First
+router.post('/cases/edit/historical-reference', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  
+  c.historicalReference = req.body.historicalReference;
+  delete c['historical-reference']; 
+  req.session.flashSection = "case-details"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Historical reference updated to '" + c.historicalReference + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- CASE NAME ---
+router.get('/cases/edit/case-name', function(req, res) {
+  var c = getCase(req);
+  res.render('cases/edit/case-name', { ref: c.reference, value: c.caseName || c['case-name'] });
+});
+
+router.post('/cases/edit/case-name', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.caseName; 
+  
+  if (!val || val.trim() === "") {
+    return res.render('cases/edit/case-name', { ref: ref, value: val, error: true, errorMessage: { text: "Enter the case name" } });
+  }
+
+  var c = getCase(req);
+  c.caseName = val;
+  req.session.flashSection = "case-details"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Case name updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- CASE STATUS ---
+router.post('/cases/edit/case-status', function(req, res) {
+  var ref = req.query.ref;
+  var action = req.body.action; 
+  var val = req.body.caseStatus;
+  var c = getCase(req);
+
+  if (action === 'remove') {
+    delete c.caseStatus;
+    delete c['case-status'];
+    delete c.caseClosedDate; 
+    req.session.flashSection = "case-details"; 
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Case status removed");
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  }
+
+  if (!val) {
+    return res.render('cases/edit/case-status', { ref: ref, error: true, errorMessage: { text: "Select a case status" } });
+  }
+
+  c.caseStatus = val;
+  delete c['case-status'];
+
+  if (val === 'Closed' || val === 'Closed - opened in error') {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+    c.caseClosedDate = `${dateStr} at ${timeStr}`;
+  } else {
+    delete c.caseClosedDate;
+  }
+
+  req.session.flashSection = "case-details"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Case status updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- ABEYANCE PERIOD ---
+router.get('/cases/edit/abeyance-period', (req, res) => {
+  var c = getCase(req); 
+  var abeyance = c.abeyancePeriod || {};
+  var start = abeyance.startDate || {};
+  var end = abeyance.endDate || {};
+
+  res.render('cases/edit/abeyance-period', { 
+    ref: c.reference,
+    startDay: start.day, startMonth: start.month, startYear: start.year,
+    endDay: end.day, endMonth: end.month, endYear: end.year
+  });
+});
+
+router.post('/cases/edit/abeyance-period', (req, res) => {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  if (!c) return res.redirect('/');
+  
+  if (!c.abeyancePeriod) c.abeyancePeriod = {};
+
+  let sD = req.body['start-day'], sM = req.body['start-month'], sY = req.body['start-year'];
+  let eD = req.body['end-day'], eM = req.body['end-month'], eY = req.body['end-year'];
+
+  // 1. Check if they cleared everything to remove the abeyance period
+  if (!sD && !sM && !sY && !eD && !eM && !eY) {
+    c.abeyancePeriod = null;
+    req.session.flashSection = "case-details";
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Abeyance period was removed");
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  let allErrors = [];
+  let startErrorFields = [];
+  let endErrorFields = [];
+
+  // 2. Validate Start Date
+  let startResult = validateAndSaveDate(req, res, 'start', 'Abeyance start date', c.abeyancePeriod, 'startDate');
+  if (startResult.status === "ERROR") {
+    allErrors = allErrors.concat(startResult.errorList);
+    startErrorFields = startResult.errorFields;
+  }
+
+  // 3. Validate End Date (Optional)
+  if (!eD && !eM && !eY) {
+    c.abeyancePeriod.endDate = null;
+  } else {
+    let endResult = validateAndSaveDate(req, res, 'end', 'Abeyance end date', c.abeyancePeriod, 'endDate');
+    if (endResult.status === "ERROR") {
+      allErrors = allErrors.concat(endResult.errorList);
+      endErrorFields = endResult.errorFields;
+    }
+  }
+
+  // 4. Custom Check: Start date must be before end date
+  if (allErrors.length === 0 && c.abeyancePeriod.startDate && c.abeyancePeriod.endDate) {
+    let startDateObj = new Date(c.abeyancePeriod.startDate.year, c.abeyancePeriod.startDate.month - 1, c.abeyancePeriod.startDate.day);
+    let endDateObj = new Date(c.abeyancePeriod.endDate.year, c.abeyancePeriod.endDate.month - 1, c.abeyancePeriod.endDate.day);
+    
+    if (startDateObj >= endDateObj) {
+      allErrors.push({ 
+        text: "Abeyance start date must be before the abeyance end date", 
+        href: "#start-day" 
+      });
+      startErrorFields = ['day', 'month', 'year'];
+      endErrorFields = ['day', 'month', 'year'];
+    }
+  }
+
+  // 5. If there are any errors, re-render the page
+  if (allErrors.length > 0) {
+    return res.render('cases/edit/abeyance-period', { 
+      ref: ref,
+      startDay: sD, startMonth: sM, startYear: sY,
+      endDay: eD, endMonth: eM, endYear: eY,
+      errorList: allErrors,
+      startErrorFields: startErrorFields,
+      endErrorFields: endErrorFields
+    });
+  }
+
+  // Success!
+  req.session.flashSection = "case-details"; 
+  let auditText = `Abeyance period updated: ${c.abeyancePeriod.startDate ? `${c.abeyancePeriod.startDate.day}/${c.abeyancePeriod.startDate.month}/${c.abeyancePeriod.startDate.year}` : 'N/A'} to ${c.abeyancePeriod.endDate ? `${c.abeyancePeriod.endDate.day}/${c.abeyancePeriod.endDate.month}/${c.abeyancePeriod.endDate.year}` : 'N/A'}`;
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, auditText);
+
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// --- MODIFICATION STATUS ---
+router.get('/cases/edit/modification-status', function(req, res) {
+  var c = getCase(req);
+  res.render('cases/edit/modification-status', { ref: c.reference, value: c.modificationStatus || c['modification-status'] });
+});
+
+router.post('/cases/edit/modification-status', function(req, res) {
+  var ref = req.query.ref;
+  var action = req.body.action;
+  var val = req.body.modificationStatus;
+  var c = getCase(req);
+
+  if (action === 'remove') {
+    delete c.modificationStatus;
+    delete c['modification-status'];
+    req.session.flashSection = "case-details"; 
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Modification status removed");
+    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+  }
+
+  if (!val) {
+    return res.render('cases/edit/modification-status', { ref: ref, error: true, errorMessage: { text: "Select a modification status" } });
+  }
+
+  c.modificationStatus = val;
+  delete c['modification-status'];
+  req.session.flashSection = "case-details"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Modification status updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- SITE LOCATION ---
+router.get('/cases/edit/site-location', function(req, res) {
+  var c = getCase(req);
+  res.render('cases/edit/site-location', { ref: c.reference, value: c.siteLocation || c['site-location'] });
+});
+
+router.post('/cases/edit/site-location', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.siteLocation;
+  var c = getCase(req);
+  
+  c.siteLocation = val;
+  delete c['site-location'];
+  req.session.flashSection = "case-details"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Site location updated to '" + val + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+// --- AUTHORITY ---
+router.get('/cases/edit/authority', function(req, res) {
+  var c = getCase(req);
+  res.render('cases/edit/authority', { ref: c.reference, value: c.authorityName || c['authority'] });
+});
+
+router.post('/cases/edit/authority', function(req, res) {
+  var ref = req.query.ref;
+  var val = req.body.authorityName;
+  var c = getCase(req);
+  
+  if (val && val.trim() !== "" && typeof validAuthorities !== "undefined" && !validAuthorities.includes(val)) {
+    return res.render('cases/edit/authority', { ref: ref, value: val, errorAuthority: "Select an authority from the list" });
+  }
+
+  c.authorityName = val;
+  delete c['authority'];
+  req.session.flashSection = "case-details"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Authority updated to '" + (val || 'None') + "'");
+  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
+});
+
+
+// ------------------------------------------------------------------------------
+// 3. APPLICANTS (Draft Array Pattern)
+// ------------------------------------------------------------------------------
+
 router.get('/cases/applicants/start', function(req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
-  if (!myCase) return res.redirect('/cases/all-cases');
-
+  var c = getCase(req);
+  if (!c) return res.redirect('/cases/all-cases');
   req.session.data['tempApplicantsList'] = [];
   res.render('cases/edit/check-applicants-first', { ref: ref });
 });
 
-// 1. SHOW THE LIST PAGE (Hub)
 router.get('/cases/applicants/hub', function (req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
-  if (!myCase.applicants) { myCase.applicants = []; }
-
-  // Clone real data to draft if no draft exists
+  var c = getCase(req);
+  if (!c.applicants) { c.applicants = []; }
   if (!req.session.data['tempApplicantsList']) {
-    req.session.data['tempApplicantsList'] = JSON.parse(JSON.stringify(myCase.applicants));
+    req.session.data['tempApplicantsList'] = JSON.parse(JSON.stringify(c.applicants));
   }
-
-  // Clear single-item temp variable
   delete req.session.data['tempApplicant'];
-
-  res.render('cases/edit/check-applicants', { 
-    ref: ref,
-    applicants: req.session.data['tempApplicantsList'] 
-  });
+  res.render('cases/edit/check-applicants', { ref: ref, applicants: req.session.data['tempApplicantsList'] });
 });
 
-// 2. STEP 1: Applicant Name
 router.get('/cases/edit/applicant-name', (req, res) => {
   let ref = req.query.ref;
   let id = req.query.id;
@@ -641,71 +948,47 @@ router.get('/cases/edit/applicant-name', (req, res) => {
 
   if (id && (!req.session.data['tempApplicant'] || req.session.data['tempApplicant'].id !== id)) {
     let existingApp = draftList.find(a => a.id === id);
-    if (existingApp) {
-      req.session.data['tempApplicant'] = JSON.parse(JSON.stringify(existingApp));
-    }
+    if (existingApp) req.session.data['tempApplicant'] = JSON.parse(JSON.stringify(existingApp));
   } else if (!id && !req.session.data['tempApplicant']) {
     req.session.data['tempApplicant'] = {};
   }
 
-  // Dynamic Back URL
   let backUrl = (draftList.length > 0) ? `/cases/applicants/hub?ref=${ref}` : `/cases/applicants/start?ref=${ref}`;
-
-  res.render('cases/create-a-case/questions/applicant-name', { 
-    ref: ref, id: id, val: req.session.data['tempApplicant'] || {}, editMode: true, backUrl: backUrl 
-  });
+  res.render('cases/create-a-case/questions/applicant-name', { ref: ref, id: id, val: req.session.data['tempApplicant'] || {}, editMode: true, backUrl: backUrl });
 });
 
 router.post('/cases/edit/applicant-name', (req, res) => {
   let ref = req.query.ref;
   let id = req.query.id;
-  
   let first = req.body.firstName || "";
   let last = req.body.lastName || "";
   let company = req.body.companyName || "";
-  
   let errors = {};
   let errorList = [];
 
-  // --- VALIDATION LOGIC ---
   if (!first && !last && !company) {
     let err = { text: "Enter at least one of first name, last name or company name", href: "#firstName" };
-    errors.general = err;
-    errorList.push(err);
+    errors.general = err; errorList.push(err);
   }
   if (first.length > 250) {
     let err = { text: "First name must be less than 250 characters", href: "#firstName" };
-    errors.firstName = err;
-    errorList.push(err);
+    errors.firstName = err; errorList.push(err);
   }
   if (last.length > 250) {
     let err = { text: "Last name must be less than 250 characters", href: "#lastName" };
-    errors.lastName = err;
-    errorList.push(err);
+    errors.lastName = err; errorList.push(err);
   }
   if (company.length > 250) {
     let err = { text: "Company name must be less than 250 characters", href: "#companyName" };
-    errors.companyName = err;
-    errorList.push(err);
+    errors.companyName = err; errorList.push(err);
   }
 
-  // If validation fails, render the page with errors
   if (errorList.length > 0) {
     let draftList = req.session.data['tempApplicantsList'] || [];
     let backUrl = (draftList.length > 0) ? `/cases/applicants/hub?ref=${ref}` : `/cases/applicants/start?ref=${ref}`;
-
-    return res.render('cases/create-a-case/questions/applicant-name', { 
-      ref: ref, 
-      id: id, 
-      val: { firstName: first, lastName: last, companyName: company }, // Preserve what they typed
-      errors: errors, 
-      errorList: errorList,
-      editMode: true, 
-      backUrl: backUrl 
-    });
+    return res.render('cases/create-a-case/questions/applicant-name', { ref: ref, id: id, val: { firstName: first, lastName: last, companyName: company }, errors: errors, errorList: errorList, editMode: true, backUrl: backUrl });
   }
 
-  // Success: Save to temp object and proceed
   if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
   req.session.data['tempApplicant'].firstName = first;
   req.session.data['tempApplicant'].lastName = last;
@@ -714,101 +997,49 @@ router.post('/cases/edit/applicant-name', (req, res) => {
   res.redirect(`/cases/edit/applicant-address?ref=${ref}&id=${id || ''}`);
 });
 
-// 3. STEP 2: Applicant Address
 router.get('/cases/edit/applicant-address', (req, res) => {
   let ref = req.query.ref;
   let id = req.query.id || '';
   let temp = req.session.data['tempApplicant'] || {};
-  
-  res.render('cases/create-a-case/questions/applicant-address', { 
-    ref: ref, id: id, val: temp, address: temp.address || {}, editMode: true,
-    backUrl: `/cases/edit/applicant-name?ref=${ref}&id=${id}` 
-  });
+  res.render('cases/create-a-case/questions/applicant-address', { ref: ref, id: id, val: temp, address: temp.address || {}, editMode: true, backUrl: `/cases/edit/applicant-name?ref=${ref}&id=${id}` });
 });
 
 router.post('/cases/edit/applicant-address', (req, res) => {
   let ref = req.query.ref;
   let id = req.query.id;
-
-  // Run the validation helper
   var result = validateAndSaveAddress(req, res, 'applicant', 'Applicant address', req.session.data['tempApplicant'], 'address');
 
-  // If validation fails
   if (result.status === "ERROR") {
-    return res.render('cases/create-a-case/questions/applicant-address', { 
-      ref: ref, 
-      id: id, 
-      val: req.session.data['tempApplicant'],
-      address: {
-        line1: req.body['applicant-line1'], 
-        line2: req.body['applicant-line2'], 
-        town: req.body['applicant-town'], 
-        county: req.body['applicant-county'], 
-        postcode: req.body['applicant-postcode']
-      }, // Preserve raw input
-      errorList: result.errorList, 
-      errorFields: result.errorFields, 
-      editMode: true,
-      backUrl: `/cases/edit/applicant-name?ref=${ref}&id=${id || ''}`
-    });
+    return res.render('cases/create-a-case/questions/applicant-address', { ref: ref, id: id, val: req.session.data['tempApplicant'], address: { line1: req.body['applicant-line1'], line2: req.body['applicant-line2'], town: req.body['applicant-town'], county: req.body['applicant-county'], postcode: req.body['applicant-postcode'] }, errorList: result.errorList, errorFields: result.errorFields, editMode: true, backUrl: `/cases/edit/applicant-name?ref=${ref}&id=${id || ''}` });
   }
-
-  // Success: Proceed to next step
   res.redirect(`/cases/edit/applicant-contact?ref=${ref}&id=${id || ''}`);
 });
 
-// 4. STEP 3: Applicant Contact & SAVE TO DRAFT
 router.get('/cases/edit/applicant-contact', (req, res) => {
   let ref = req.query.ref;
   let id = req.query.id || '';
-  
-  res.render('cases/create-a-case/questions/applicant-contact', { 
-    ref: ref, id: id, val: req.session.data['tempApplicant'] || {}, editMode: true,
-    backUrl: `/cases/edit/applicant-address?ref=${ref}&id=${id}` 
-  });
+  res.render('cases/create-a-case/questions/applicant-contact', { ref: ref, id: id, val: req.session.data['tempApplicant'] || {}, editMode: true, backUrl: `/cases/edit/applicant-address?ref=${ref}&id=${id}` });
 });
 
 router.post('/cases/edit/applicant-contact', (req, res) => {
   let ref = req.query.ref;
   let id = req.query.id;
-  
   let email = req.body.email || "";
   let phone = req.body.phone || "";
-
   let errors = {};
   let errorList = [];
 
-  // --- VALIDATION LOGIC ---
-  if (email.length > 250) {
-    let err = { text: "Email must be less than 250 characters", href: "#email" };
-    errors.email = err;
-    errorList.push(err);
-  }
-  if (phone.length > 15) {
-    let err = { text: "Phone number must be less than 15 characters", href: "#phone" };
-    errors.phone = err;
-    errorList.push(err);
-  }
+  if (email.length > 250) { let err = { text: "Email must be less than 250 characters", href: "#email" }; errors.email = err; errorList.push(err); }
+  if (phone.length > 15) { let err = { text: "Phone number must be less than 15 characters", href: "#phone" }; errors.phone = err; errorList.push(err); }
 
-  // If validation fails, render the page with errors
   if (errorList.length > 0) {
-    return res.render('cases/create-a-case/questions/applicant-contact', { 
-      ref: ref, 
-      id: id, 
-      val: { email: email, phone: phone }, // Preserve what they typed
-      errors: errors, 
-      errorList: errorList,
-      editMode: true,
-      backUrl: `/cases/edit/applicant-address?ref=${ref}&id=${id || ''}`
-    });
+    return res.render('cases/create-a-case/questions/applicant-contact', { ref: ref, id: id, val: { email: email, phone: phone }, errors: errors, errorList: errorList, editMode: true, backUrl: `/cases/edit/applicant-address?ref=${ref}&id=${id || ''}` });
   }
   
-  // Success: Save to temp object
   if (!req.session.data['tempApplicant']) req.session.data['tempApplicant'] = {};
   req.session.data['tempApplicant'].email = email;
   req.session.data['tempApplicant'].phone = phone;
 
-  // Save to Draft Array
   let draftList = req.session.data['tempApplicantsList'] || [];
   let completedApplicant = req.session.data['tempApplicant'];
 
@@ -822,22 +1053,13 @@ router.post('/cases/edit/applicant-contact', (req, res) => {
 
   req.session.data['tempApplicantsList'] = draftList;
   req.session.data['tempApplicant'] = null; 
-  
   res.redirect(`/cases/applicants/hub?ref=${ref}`);
 });
 
-// ==============================================
-// REMOVE APPLICANT (From Draft)
-// ==============================================
 router.get('/cases/applicants/remove', (req, res) => {
   let id = req.query.id;
   let ref = req.query.ref;
-  
-  res.render('cases/create-a-case/questions/applicant-remove', { 
-    id: id, ref: ref,
-    backUrl: `/cases/applicants/hub?ref=${ref}`,
-    actionUrl: `/cases/applicants/remove?id=${id}&ref=${ref}`
-  });
+  res.render('cases/create-a-case/questions/applicant-remove', { id: id, ref: ref, backUrl: `/cases/applicants/hub?ref=${ref}`, actionUrl: `/cases/applicants/remove?id=${id}&ref=${ref}` });
 });
 
 router.post('/cases/applicants/remove', (req, res) => {
@@ -846,65 +1068,41 @@ router.post('/cases/applicants/remove', (req, res) => {
   let confirm = req.body.applicantRemove;
 
   if (!confirm) {
-    return res.render('cases/create-a-case/questions/applicant-remove', { 
-      id: id, ref: ref, error: true,
-      backUrl: `/cases/applicants/hub?ref=${ref}`,
-      actionUrl: `/cases/applicants/remove?id=${id}&ref=${ref}`
-    });
+    return res.render('cases/create-a-case/questions/applicant-remove', { id: id, ref: ref, error: true, backUrl: `/cases/applicants/hub?ref=${ref}`, actionUrl: `/cases/applicants/remove?id=${id}&ref=${ref}` });
   }
 
-  if (confirm === 'yes') {
-    if (req.session.data['tempApplicantsList']) {
-      req.session.data['tempApplicantsList'] = req.session.data['tempApplicantsList'].filter(a => a.id !== id);
-    }
+  if (confirm === 'yes' && req.session.data['tempApplicantsList']) {
+    req.session.data['tempApplicantsList'] = req.session.data['tempApplicantsList'].filter(a => a.id !== id);
   }
-  
   res.redirect(`/cases/applicants/hub?ref=${ref}`);
 });
 
-// ==============================================
-// FINAL COMMIT / CANCEL ACTIONS
-// ==============================================
-
-// COMMIT DRAFT: Final Save to Case Details
 router.post('/cases/applicants/commit', function(req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
-
-  if (myCase) {
-    myCase.applicants = req.session.data['tempApplicantsList'] || [];
-  }
-  
+  var c = getCase(req);
+  if (c) { c.applicants = req.session.data['tempApplicantsList'] || []; }
   req.session.data['tempApplicantsList'] = null;
   req.session.flashSection = "case-details"; 
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
-// CANCEL DRAFT: Smart Check
 router.get('/cases/applicants/cancel', function(req, res) {
   var ref = req.query.ref;
-  var myCase = req.session.data['cases'].find(c => c.reference === ref);
-
-  var originalApps = myCase.applicants || [];
+  var c = getCase(req);
+  var originalApps = c.applicants || [];
   var draftApps = req.session.data['tempApplicantsList'] || [];
 
   if (JSON.stringify(originalApps) === JSON.stringify(draftApps)) {
     req.session.data['tempApplicantsList'] = null;
     return res.redirect('/cases/case-details?ref=' + ref);
   }
-
   res.render('cases/edit/cancel-applicants', { ref: ref });
 });
 
-// CANCEL DRAFT: Process Warning Page
 router.post('/cases/applicants/cancel', function(req, res) {
   var ref = req.query.ref;
   var confirm = req.body.cancelApplicants;
-
-  if (!confirm) {
-    return res.render('cases/edit/cancel-applicants', { ref: ref, error: true });
-  }
-
+  if (!confirm) return res.render('cases/edit/cancel-applicants', { ref: ref, error: true });
   if (confirm === 'yes') {
     req.session.data['tempApplicantsList'] = null;
     res.redirect('/cases/case-details?ref=' + ref);
@@ -914,15 +1112,12 @@ router.post('/cases/applicants/cancel', function(req, res) {
 });
 
 
-// ==============================================
-// SITE ADDRESS: ADD TO LIST (Working Draft Pattern)
-// ==============================================
+// ------------------------------------------------------------------------------
+// 4. SITE ADDRESS (Draft Array Pattern)
+// ------------------------------------------------------------------------------
 
-// Helper: Get Site Addresses Array (Auto-migrates legacy string addresses)
 function getSiteAddresses(c) {
   if (c.siteAddresses) return c.siteAddresses;
-  
-  // Migrate legacy data on the fly
   if (c.addressLine1 || c.siteAddress || c['site-address']) {
     return [{
       id: 'sa-1',
@@ -936,34 +1131,23 @@ function getSiteAddresses(c) {
   return [];
 }
 
-// 0. Empty State Page: Site Address First
 router.get('/cases/edit/site-address/first', function(req, res) {
   var c = getCase(req);
   if (!c) return res.redirect('/cases/case-details?ref=' + req.query.ref);
-
   req.session.data['tempSiteAddresses'] = [];
   res.render('cases/site-address/site-address-first', { ref: c.reference });
 });
 
-// 1. HUB PAGE: Check Site Addresses
 router.get('/cases/edit/site-address', function(req, res) {
   var c = getCase(req);
   var original = getSiteAddresses(c);
-
   if (!req.session.data['tempSiteAddresses']) {
     req.session.data['tempSiteAddresses'] = JSON.parse(JSON.stringify(original));
   }
-
   var keysToClear = ['temp_sa_line1', 'temp_sa_line2', 'temp_sa_town', 'temp_sa_county', 'temp_sa_postcode'];
   keysToClear.forEach(key => delete req.session.data[key]);
-
-  res.render('cases/site-address/check', {
-    ref: c.reference,
-    addresses: req.session.data['tempSiteAddresses'] 
-  });
+  res.render('cases/site-address/check', { ref: c.reference, addresses: req.session.data['tempSiteAddresses'] });
 });
-
-// --- ADD / EDIT FLOW ---
 
 router.get('/cases/edit/site-address/step-1', function(req, res) {
   var id = req.query.id;
@@ -971,8 +1155,7 @@ router.get('/cases/edit/site-address/step-1', function(req, res) {
   var address = id ? (draftList.find(x => x.id == id) || {}) : {};
 
   res.render('cases/site-address/site-address-question', {
-    ref: req.query.ref,
-    id: id,
+    ref: req.query.ref, id: id,
     addressLine1: req.session.data['temp_sa_line1'] || address.addressLine1,
     addressLine2: req.session.data['temp_sa_line2'] || address.addressLine2,
     addressTown: req.session.data['temp_sa_town'] || address.addressTown,
@@ -991,7 +1174,6 @@ router.post('/cases/edit/site-address/step-1', function(req, res) {
   var error = false;
   var errorMsg = "";
 
-  // Strict UK Postcode Regex (Matching your original code)
   if (postcode && postcode.trim() !== "") {
     var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
     var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
@@ -1015,7 +1197,6 @@ router.post('/cases/edit/site-address/step-1', function(req, res) {
 
   var draftList = req.session.data['tempSiteAddresses'] || [];
   var id = req.query.id || Date.now().toString();
-  
   var newAddress = { id: id, addressLine1: line1, addressLine2: line2, addressTown: town, addressCounty: county, addressPostcode: postcode };
 
   var idx = draftList.findIndex(x => x.id == id);
@@ -1023,24 +1204,16 @@ router.post('/cases/edit/site-address/step-1', function(req, res) {
   else draftList.push(newAddress);
 
   req.session.data['tempSiteAddresses'] = draftList;
-  
   var keysToClear = ['temp_sa_line1', 'temp_sa_line2', 'temp_sa_town', 'temp_sa_county', 'temp_sa_postcode'];
   keysToClear.forEach(key => delete req.session.data[key]);
 
   res.redirect(`/cases/edit/site-address?ref=${req.query.ref}`);
 });
 
-// ==============================================
-// REMOVE SITE ADDRESS (From Draft)
-// ==============================================
-
 router.get('/cases/edit/site-address/remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  res.render('cases/site-address/site-address-remove', { 
-    ref: ref, id: id, 
-    backUrl: `/cases/edit/site-address?ref=${ref}`, actionUrl: `/cases/edit/site-address/remove?id=${id}&ref=${ref}`
-  });
+  res.render('cases/site-address/site-address-remove', { ref: ref, id: id, backUrl: `/cases/edit/site-address?ref=${ref}`, actionUrl: `/cases/edit/site-address/remove?id=${id}&ref=${ref}` });
 });
 
 router.post('/cases/edit/site-address/remove', function(req, res) {
@@ -1048,12 +1221,7 @@ router.post('/cases/edit/site-address/remove', function(req, res) {
   var id = req.query.id;
   var confirm = req.body.contactRemove; 
 
-  if (!confirm) {
-    return res.render('cases/site-address/site-address-remove', { 
-      ref: ref, id: id, error: true, 
-      backUrl: `/cases/edit/site-address?ref=${ref}`, actionUrl: `/cases/edit/site-address/remove?id=${id}&ref=${ref}`
-    });
-  }
+  if (!confirm) return res.render('cases/site-address/site-address-remove', { ref: ref, id: id, error: true, backUrl: `/cases/edit/site-address?ref=${ref}`, actionUrl: `/cases/edit/site-address/remove?id=${id}&ref=${ref}` });
 
   if (confirm === 'yes' && req.session.data['tempSiteAddresses']) {
     req.session.data['tempSiteAddresses'] = req.session.data['tempSiteAddresses'].filter(x => x.id !== id);
@@ -1061,31 +1229,15 @@ router.post('/cases/edit/site-address/remove', function(req, res) {
   res.redirect(`/cases/edit/site-address?ref=${ref}`);
 });
 
-// ==============================================
-// FINAL COMMIT / CANCEL ACTIONS
-// ==============================================
-
-// COMMIT DRAFT: Save and continue
 router.post('/cases/edit/site-address/save', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
   var draft = req.session.data['tempSiteAddresses'] || [];
   
-  // 1. UPDATE THE NEW ARRAY
   c.siteAddresses = draft;
+  delete c['siteAddress']; delete c['site-address']; delete c['addressLine1']; delete c['addressLine2']; delete c['addressTown']; delete c['addressCounty']; delete c['addressPostcode'];
+  req.session.data['tempSiteAddresses'] = null; 
   
-  // 2. CLEAN UP OLD VARIABLES (Enforcing "One Way" data structure)
-  delete c['siteAddress'];
-  delete c['site-address'];
-  delete c['addressLine1'];
-  delete c['addressLine2'];
-  delete c['addressTown'];
-  delete c['addressCounty'];
-  delete c['addressPostcode'];
-
-  req.session.data['tempSiteAddresses'] = null; // wipe draft
-  
-  // 3. GENERATE AUDIT LOG STRING
   var auditStrings = draft.map(function(addr, index) {
     var parts = [addr.addressLine1, addr.addressLine2, addr.addressTown, addr.addressCounty, addr.addressPostcode].filter(Boolean);
     var prefix = draft.length > 1 ? ("Plot " + (index + 1) + ": ") : "";
@@ -1093,16 +1245,11 @@ router.post('/cases/edit/site-address/save', function(req, res) {
   });
   var finalAuditText = auditStrings.length > 0 ? auditStrings.join(' | ') : "All site addresses removed";
 
-  // 4. TRIGGER BANNER AND LOG (Matching your original code exactly)
   req.session.flashSection = "case-details"; 
-  if (typeof addAuditLog === "function") {
-    addAuditLog(req, ref, "Site address updated to '" + finalAuditText + "'");
-  }
-  
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Site address updated to '" + finalAuditText + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
 });
 
-// CANCEL DRAFT
 router.get('/cases/edit/site-address/cancel', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
@@ -1119,7 +1266,6 @@ router.get('/cases/edit/site-address/cancel', function(req, res) {
 router.post('/cases/edit/site-address/cancel', function(req, res) {
   var ref = req.query.ref;
   var confirm = req.body.cancelContacts; 
-
   if (!confirm) return res.render('cases/site-address/cancel-site-address', { ref: ref, error: true });
   
   if (confirm === 'yes') {
@@ -1131,302 +1277,14 @@ router.post('/cases/edit/site-address/cancel', function(req, res) {
 });
 
 
-// --- 5. SITE LOCATION (No validation, migrate to siteLocation) ---
-router.get('/cases/edit/site-location', function(req, res) {
-  var c = getCase(req);
-  var val = c.siteLocation || c['site-location'];
-  res.render('cases/edit/site-location', { ref: c.reference, value: val });
-});
+// ------------------------------------------------------------------------------
+// 5. TEAM & INSPECTORS
+// ------------------------------------------------------------------------------
 
-router.post('/cases/edit/site-location', function(req, res) {
-  var ref = req.query.ref;
-  var val = req.body.siteLocation;
-  var c = getCase(req);
-  
-  c.siteLocation = val;
-  delete c['site-location'];
-
-  req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Site location updated to '" + val + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
-// --- 6. AUTHORITY (Migrate to authorityName) ---
-router.get('/cases/edit/authority', function(req, res) {
-  var c = getCase(req);
-  var val = c.authorityName || c['authority'];
-  res.render('cases/edit/authority', { ref: c.reference, value: val });
-});
-
-router.post('/cases/edit/authority', function(req, res) {
-  var ref = req.query.ref;
-  var val = req.body.authorityName;
-  var c = getCase(req);
-  
-  // Validation
-  if (val && val.trim() !== "" && !validAuthorities.includes(val)) {
-    return res.render('cases/edit/authority', {
-      ref: ref,
-      value: val, // keep what they typed so they can fix it
-      errorAuthority: "Select an authority from the list"
-    });
-  }
-
-  c.authorityName = val;
-  delete c['authority'];
-
-  req.session.flashSection = "case-details"; 
-  addAuditLog(req, ref, "Authority updated to '" + (val || 'None') + "'");
-  
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
-// --- 7. HISTORICAL REFERENCE (Text input, no validation) ---
-router.get('/cases/edit/historical-reference', function(req, res) {
-  var c = getCase(req);
-  // specific variable OR generic fallback
-  var val = c.historicalReference || c['historical-reference'];
-  res.render('cases/edit/historical-reference', { ref: c.reference, value: val });
-});
-
-router.post('/cases/edit/historical-reference', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-  
-  c.historicalReference = req.body.historicalReference;
-  delete c['historical-reference']; // Cleanup old var
-
-  req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Historical reference updated to '" + c.historicalReference + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
-// --- 8. CASE STATUS (12 Radios + Remove logic) ---
-router.post('/cases/edit/case-status', function(req, res) {
-  var ref = req.query.ref;
-  var action = req.body.action; // Check if "Remove" was clicked
-  var val = req.body.caseStatus;
-  var c = getCase(req);
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.caseStatus;
-    delete c['case-status'];
-    delete c.caseClosedDate; // Clear the closed date if status is removed
-
-    req.session.flashSection = "case-details"; 
-    addAuditLog(req, ref, "Case status removed");
-
-    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-  }
-
-  // 2. Validation (Required)
-  if (!val) {
-    return res.render('cases/edit/case-status', { 
-      ref: ref, 
-      error: true, 
-      errorMessage: { text: "Select a case status" } 
-    });
-  }
-
-  // 3. Save Normal Status
-  c.caseStatus = val;
-  delete c['case-status'];
-
-  // --- 4. NEW LOGIC: SAVE CASE CLOSED DATE ---
-  if (val === 'Closed' || val === 'Closed - opened in error') {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-    
-    // Save it looking exactly like your audit log (e.g. "24 March 2026 at 10:30am")
-    c.caseClosedDate = `${dateStr} at ${timeStr}`;
-  } else {
-    // If the case is reopened to "In progress" or anything else, wipe the closed date!
-    delete c.caseClosedDate;
-  }
-
-  req.session.flashSection = "case-details"; 
-  addAuditLog(req, ref, "Case status updated to '" + val + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
-// --- 9. MODIFICATION STATUS (5 Radios + Remove logic) ---
-router.get('/cases/edit/modification-status', function(req, res) {
-  var c = getCase(req);
-  var val = c.modificationStatus || c['modification-status'];
-  res.render('cases/edit/modification-status', { ref: c.reference, value: val });
-});
-
-router.post('/cases/edit/modification-status', function(req, res) {
-  var ref = req.query.ref;
-  var action = req.body.action;
-  var val = req.body.modificationStatus;
-  var c = getCase(req);
-
-  if (action === 'remove') {
-    delete c.modificationStatus;
-    delete c['modification-status'];
-    req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Modification status removed");
-    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-  }
-
-  if (!val) {
-    return res.render('cases/edit/modification-status', { 
-      ref: ref, 
-      error: true, 
-      errorMessage: { text: "Select a modification status" } 
-    });
-  }
-
-  c.modificationStatus = val;
-  delete c['modification-status'];
-  req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Modification status updated to '" + val + "'");
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
-// --- 10. PRIORITY (3 Radios + Remove logic) ---
-router.get('/cases/edit/priority', function(req, res) {
-  var c = getCase(req);
-  var val = c.priority || c['priority'];
-  res.render('cases/edit/priority', { ref: c.reference, value: val });
-});
-
-router.post('/cases/edit/priority', function(req, res) {
-  var ref = req.query.ref;
-  var action = req.body.action;
-  var val = req.body.priority;
-  var c = getCase(req);
-
-  if (action === 'remove') {
-    delete c.priority;
-    delete c['priority'];
-
-    req.session.flashSection = "case-details"; 
-
-addAuditLog(req, ref, "Priority removed");
-    return res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-  }
-
-  if (!val) {
-    return res.render('cases/edit/priority', { 
-      ref: ref, 
-      error: true, 
-      errorMessage: { text: "Select a priority" } 
-    });
-  }
-
-  c.priority = val;
-
-  req.session.flashSection = "overview"; 
-
-addAuditLog(req, ref, "Priority updated to '" + val + "'");
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=case-details');
-});
-
-// --- LEGISLATION / ACT LOGIC ---
-
-router.get('/cases/edit/act', function(req, res) {
-  var c = getCase(req);
-  // Get existing value from the case object
-  var val = c.act || "";
-  
-  res.render('cases/edit/act', { 
-    ref: c.reference, 
-    value: val 
-  });
-});
-
-router.post('/cases/edit/act', function(req, res) {
-  var ref = req.query.ref;
-  var val = req.body.act; // matches the 'name' attribute in your autocomplete
-  var c = getCase(req);
-
-  // 1. The Allowed List (from your image)
-  const legislationList = [
-    "Acquisition of Land Act 1981, 32",
-    "Acquisition of Land Act 1981, 19 and Schedule 3, para 6",
-    "Town and Country Planning Act 1990, 137",
-    "Commons Act 2006, 16",
-    "Commons Act 2006, 38",
-    "Commons Act 2006, Part 1 Schedule 6",
-    "Greater London Parks & Open Spaces Order 1967, Article 12",
-    "Greater London Parks & Open Spaces Order 1967, Article 17",
-    "Highways Act 1980, 26",
-    "Highways Act 1980, 118",
-    "Highways Act 1980, 119",
-    "Highways Act 1980, 118A",
-    "Highways Act 1980, 118B",
-    "Highways Act 1980, 119A",
-    "Highways Act 1980, 119B",
-    "Highways Act 1980, 119D",
-    "Inclosure Act 1845, 149",
-    "Law of Property Act 1925, 193",
-    "National Trust Act 1971, 23",
-    "Town and Country Planning Act 1990, 78",
-    "Town and Country Planning Act 1990, 247",
-    "Town and Country Planning Act 1990, 251",
-    "Town and Country Planning Act 1990, 257",
-    "Town and Country Planning Act 1990, 61",
-    "Wildlife and Countryside Act 1981, 53",
-    "Wildlife and Countryside Act 1981, 54",
-    "Wildlife and Countryside Act 1981, Schedule 14 A",
-    "Wildlife and Countryside Act 1981, Schedule 14 D"
-  ];
-
-  // 2. Validation: Check if empty
-  if (!val || val.trim() === "") {
-    return res.render('cases/edit/act', {
-      ref: ref,
-      error: true,
-      errorMessage: { text: "Enter the relevant legislation or act" }
-    });
-  }
-
-  // 3. Validation: Check if the typed value exists in the list
-  // This prevents users from typing "Fake Act 2024" and saving it
-  if (!legislationList.includes(val)) {
-     return res.render('cases/edit/act', {
-      ref: ref,
-      value: val, // persists the invalid entry so they can fix it
-      error: true,
-      errorMessage: { text: "Select an act from the list" }
-    });   
-  }
-
-  // 4. Save to the case object
-  c.act = val;
-
-  req.session.flashSection = "overview"; 
-
-addAuditLog(req, ref, "Act updated to '" + val + "'");
-  
-  // Redirect back to case details with a success parameter
-  // 'updated=legislation' can be used to trigger a success banner
-  res.redirect('/cases/case-details?ref=' + ref + '&updated=legislation');
-});
-
-
-// --- TEAM / CASE OFFICER LOGIC ---
-
+// --- CASE OFFICER ---
 router.get('/cases/edit/case-officer', function(req, res) {
   var c = getCase(req);
-  // Read caseOfficer (camelCase) or fallback to case-officer (kebab)
-  var val = c.caseOfficer || c['case-officer'];
-  
-  res.render('cases/edit/case-officer', { 
-    ref: c.reference, 
-    value: val 
-  });
+  res.render('cases/edit/case-officer', { ref: c.reference, value: c.caseOfficer || c['case-officer'] });
 });
 
 router.post('/cases/edit/case-officer', function(req, res) {
@@ -1435,270 +1293,96 @@ router.post('/cases/edit/case-officer', function(req, res) {
   var action = req.body.action;
   var c = getCase(req);
 
-  // 1. Handle Remove
   if (action === 'remove') {
     delete c.caseOfficer;
     req.session.flashSection = "team"; 
-
-addAuditLog(req, req.query.ref, "Case officer removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Case officer removed");
     return res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
   }
 
-  // 2. Validation
-  // We can check if it's empty
   if (!val || val.trim() === "") {
-    return res.render('cases/edit/case-officer', {
-      ref: ref,
-      error: true,
-      errorMessage: { text: "Select a case officer" }
-    });
+    return res.render('cases/edit/case-officer', { ref: ref, error: true, errorMessage: { text: "Select a case officer" } });
   }
 
-  // OPTIONAL: Check if the name is actually in the allowed list
   var officers = [
-    "Charlotte Morphet",
-    "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
-    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
-    "(Service Account) Automated Tester", "Owen Woodwards", "Tony Stark",
-    "Steve Rogers",
-    "Natasha Romanoff",
-    "Bruce Banner",
-    "Thor Odinson",
-    "Wanda Maximoff",
-    "Peter Parker",
-    "Carol Danvers",
-    "Stephen Strange",
-    "T'Challa",
-    "Clint Barton",
-    "Sam Wilson",
-    "Bucky Barnes",
-    "Scott Lang",
-    "Hope van Dyne"
+    "Charlotte Morphet", "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", "Owen Woodwards", 
+    "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner", "Thor Odinson", "Wanda Maximoff", 
+    "Peter Parker", "Carol Danvers", "Stephen Strange", "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
   ];
   
   if (!officers.includes(val)) {
-     return res.render('cases/edit/case-officer', {
-      ref: ref,
-      value: val, // keep what they typed
-      error: true,
-      errorMessage: { text: "Select a case officer" }
-    });   
+     return res.render('cases/edit/case-officer', { ref: ref, value: val, error: true, errorMessage: { text: "Select a case officer" } });   
   }
 
-  // 3. Save
   c.caseOfficer = val;
-  delete c['case-officer']; // Cleanup old variable
+  delete c['case-officer']; 
   req.session.flashSection = "team"; 
-
-addAuditLog(req, req.query.ref, "Case officer updated to '" + val + "'");
-  
-  // Note: updated=team refers to the ID of the new summary card below
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Case officer updated to '" + val + "'");
   res.redirect('/cases/case-details?ref=' + ref + '&updated=team');
 });
 
-
-// --- CONSENT SOUGHT ---
-router.get('/cases/edit/consent-sought', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Pass the case reference and the current saved value to the page
-  res.render('cases/edit/consent-sought', {
-    ref: ref,
-    currentValue: c['consent-sought'] // Sends the current answer (e.g., "Yes")
-  });
-});
-
-router.post('/cases/edit/consent-sought', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // 1. Grab the value from the form 
-  // (IMPORTANT: Make sure your HTML input/radio buttons have name="consent-sought")
-  var val = req.body['consent-sought'];
-
-  // 2. Save the value directly to the case object
-  // (Using bracket notation because of the hyphen in the name)
-  c['consent-sought'] = val;
-
-  // 3. Set the flash message for the 'Overview' card
-  req.session.flashSection = "overview"; 
-
-addAuditLog(req, ref, "Consent sought updated to '" + val + "'");
-
-  // 4. Redirect smoothly back to the case details page
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// --- INSPECTOR BAND ---
-router.get('/cases/edit/inspector-band', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // If the case doesn't exist, bounce them back to the case list
-  if (!c) {
-    return res.redirect('/cases');
-  }
-
-  // Render the page and pass the existing value so the form can pre-fill
-  res.render('cases/edit/inspector-band', {
-    ref: ref,
-    currentValue: c['inspector-band'] // Sends "Band 1", "Band 2", etc.
-  });
-});
-
-router.post('/cases/edit/inspector-band', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  if (req.body.action === "remove") {
-    
-    c['inspector-band'] = ""; 
-
-    req.session.flashSection = "overview"; 
-
-addAuditLog(req, ref, "Inspector band removed");
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-  var val = req.body['inspector-band'];
-
-  c['inspector-band'] = val;
-
-  req.session.flashSection = "overview"; 
-
-addAuditLog(req, ref, "Inspector band updated to '" + val + "'");
-
-  
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// ==============================================
-// INSPECTOR LOGIC (Working Draft Pattern)
-// ==============================================
-
-// 0. Empty State Page: Check Inspectors First
+// --- INSPECTORS (Draft Array Pattern) ---
 router.get('/cases/edit/check-inspectors-first', function(req, res) {
   var c = getCase(req);
   if (!c) return res.redirect('/cases/all-cases');
-
-  // Start with a blank draft
   req.session.data['tempInspectorsList'] = [];
-
-  res.render('cases/edit/check-inspectors-first', {
-    ref: req.query.ref
-  });
+  res.render('cases/edit/check-inspectors-first', { ref: req.query.ref });
 });
 
-// 1. HUB PAGE: Check Inspectors
 router.get('/cases/edit/check-inspectors', function (req, res) {
   var c = getCase(req);
   if (!c.inspectors) { c.inspectors = []; }
-
-  // If there is no draft list in the session yet, clone the real data to start working!
-  if (!req.session.data['tempInspectorsList']) {
-    req.session.data['tempInspectorsList'] = JSON.parse(JSON.stringify(c.inspectors));
-  }
-
-  // Clear temp individual data (So "Add details" starts fresh)
+  if (!req.session.data['tempInspectorsList']) { req.session.data['tempInspectorsList'] = JSON.parse(JSON.stringify(c.inspectors)); }
   req.session.data['inspectorTemp'] = null; 
-
-  res.render('cases/edit/check-inspectors', { 
-    ref: c.reference,
-    // Pass the DRAFT list to the UI, not the real list!
-    inspectors: req.session.data['tempInspectorsList']
-  });
+  res.render('cases/edit/check-inspectors', { ref: c.reference, inspectors: req.session.data['tempInspectorsList'] });
 });
 
-// 2. CHANGE ROUTE: Load existing data into session
 router.get('/cases/edit/inspector-change', function (req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
   var draftList = req.session.data['tempInspectorsList'] || [];
-
-  // Find the item in the draft list
   var item = draftList.find(i => i.id === id);
 
   if (item) {
-    req.session.data['inspectorTemp'] = {
-      id: item.id,
-      name: item.name,
-      day: item.rawDay,
-      month: item.rawMonth,
-      year: item.rawYear
-    };
+    req.session.data['inspectorTemp'] = { id: item.id, name: item.name, day: item.rawDay, month: item.rawMonth, year: item.rawYear };
   }
-
-  // Redirect to the first step (Name)
   res.redirect('/cases/edit/inspector-name?ref=' + ref);
 });
 
-// 3. STEP 1: Inspector Name (GET)
 router.get('/cases/edit/inspector-name', function (req, res) {
-  // Use temp data if it exists (for editing), otherwise empty
   var temp = req.session.data['inspectorTemp'] || {};
-  
-  res.render('cases/edit/inspector-name', { 
-    ref: req.query.ref,
-    value: temp.name
-  });
+  res.render('cases/edit/inspector-name', { ref: req.query.ref, value: temp.name });
 });
 
-// 4. STEP 1: Inspector Name (POST)
 router.post('/cases/edit/inspector-name', function (req, res) {
   var ref = req.query.ref;
   var val = req.body.inspectorName;
   
-  // Validation
   if (!val || val.trim() === "") {
-    return res.render('cases/edit/inspector-name', {
-      ref: ref,
-      error: true,
-      errorMessage: { text: "Select an inspector" }
-    });
+    return res.render('cases/edit/inspector-name', { ref: ref, error: true, errorMessage: { text: "Select an inspector" } });
   }
 
-  // Check valid list (Optional)
   var officers = [
-    "Charlotte Morphet",
-    "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
-    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
-    "(Service Account) Automated Tester", "Owen Woodwards"
+    "Charlotte Morphet", "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", "Owen Woodwards"
   ];
   if (!officers.includes(val)) {
-     return res.render('cases/edit/inspector-name', {
-      ref: ref,
-      value: val,
-      error: true,
-      errorMessage: { text: "Select an inspector" }
-    });   
+     return res.render('cases/edit/inspector-name', { ref: ref, value: val, error: true, errorMessage: { text: "Select an inspector" } });   
   }
 
-  // Save to temp object
   if (!req.session.data['inspectorTemp']) { req.session.data['inspectorTemp'] = {}; }
   req.session.data['inspectorTemp'].name = val;
-
   res.redirect('/cases/edit/inspector-date?ref=' + ref);
 });
 
-// 5. STEP 2: Inspector Date (GET)
 router.get('/cases/edit/inspector-date', function (req, res) {
   var temp = req.session.data['inspectorTemp'] || {};
-  
-  res.render('cases/edit/inspector-date', { 
-    ref: req.query.ref,
-    day: temp.day,
-    month: temp.month,
-    year: temp.year
-  });
+  res.render('cases/edit/inspector-date', { ref: req.query.ref, day: temp.day, month: temp.month, year: temp.year });
 });
 
-// 6. STEP 2: Inspector Date (POST - Save to Draft)
 router.post('/cases/edit/inspector-date', function (req, res) {
   var ref = req.query.ref;
-  var c = getCase(req);
-
   var day = req.body['date-day'];
   var month = req.body['date-month'];
   var year = req.body['date-year'];
@@ -1706,7 +1390,6 @@ router.post('/cases/edit/inspector-date', function (req, res) {
   var errorList = [];
   var errorFields = []; 
 
-  // --- ROBUST DATE VALIDATION ---
   if (!day && !month && !year) {
     errorList.push({ text: "Enter the Inspector allocated date", href: "#date-day" });
     errorFields = ['day', 'month', 'year'];
@@ -1715,44 +1398,17 @@ router.post('/cases/edit/inspector-date', function (req, res) {
     if (!day) missing.push('day');
     if (!month) missing.push('month');
     if (!year) missing.push('year');
-  
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Inspector allocated date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Inspector allocated date must include a " + missing[0];
-      }
+      var missingText = missing.length === 2 ? "Inspector allocated date must include a " + missing[0] + " and " + missing[1] : "Inspector allocated date must include a " + missing[0];
       errorList.push({ text: missingText, href: "#date-" + missing[0] });
       errorFields = errorFields.concat(missing);
     }
   }
 
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Inspector allocated date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Inspector allocated date day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Inspector allocated date month must be between 1 and 12", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Inspector allocated date year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Inspector allocated date month must be between 1 and 12", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Inspector allocated date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
      if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
@@ -1761,110 +1417,58 @@ router.post('/cases/edit/inspector-date', function (req, res) {
      }
   }
 
-  // --- ERROR HANDLING ---
   if (errorList.length > 0) {
-    return res.render('cases/edit/inspector-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
+    return res.render('cases/edit/inspector-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
   }
 
-  // --- SUCCESS: SAVE TO DRAFT ---
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   var formattedDate = day + " " + months[month - 1] + " " + year;
   
   var temp = req.session.data['inspectorTemp'] || {};
   var draftList = req.session.data['tempInspectorsList'] || [];
-  
-  var name = temp.name;
-  var editingId = temp.id; // Check if we are editing an existing ID
+  var editingId = temp.id;
 
   if (editingId) {
-    // UPDATE EXISTING in DRAFT
     var item = draftList.find(i => i.id === editingId);
-    if (item) {
-      item.name = name;
-      item.date = formattedDate;
-      item.rawDay = day;
-      item.rawMonth = month;
-      item.rawYear = year;
-    }
+    if (item) { item.name = temp.name; item.date = formattedDate; item.rawDay = day; item.rawMonth = month; item.rawYear = year; }
   } else {
-    // CREATE NEW in DRAFT
-    draftList.push({
-      id: 'insp-' + Math.floor(Math.random() * 10000),
-      name: name,
-      date: formattedDate,
-      rawDay: day,
-      rawMonth: month,
-      rawYear: year
-    });
+    draftList.push({ id: 'insp-' + Math.floor(Math.random() * 10000), name: temp.name, date: formattedDate, rawDay: day, rawMonth: month, rawYear: year });
   }
 
   req.session.data['tempInspectorsList'] = draftList;
-  req.session.data['inspectorTemp'] = null; // Clear individual temp data
-
+  req.session.data['inspectorTemp'] = null;
   res.redirect('/cases/edit/check-inspectors?ref=' + ref);
 });
 
-// ==============================================
-// REMOVE INSPECTOR CONFIRMATION (From Draft)
-// ==============================================
-
-// 1. View Confirmation Page (No interception here anymore)
 router.get('/cases/edit/inspector-remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
-  
-  // Proceed directly to the confirmation page
-  res.render('cases/edit/remove-inspectors', { 
-    ref: ref,
-    id: id,
-    backUrl: `/cases/edit/check-inspectors?ref=${ref}`,
-    actionUrl: `/cases/edit/inspector-remove?id=${id}&ref=${ref}`
-  });
+  res.render('cases/edit/remove-inspectors', { ref: ref, id: id, backUrl: `/cases/edit/check-inspectors?ref=${ref}`, actionUrl: `/cases/edit/inspector-remove?id=${id}&ref=${ref}` });
 });
 
-// 2. Submit Confirmation (WITH SMART INTERCEPT ON 'YES')
 router.post('/cases/edit/inspector-remove', function(req, res) {
   var ref = req.query.ref;
   var id = req.query.id;
   var confirm = req.body.inspectorRemove; 
   var c = getCase(req);
 
-  // Validation: Did they select a radio option?
   if (!confirm) {
-    return res.render('cases/edit/remove-inspectors', { 
-      ref: ref,
-      id: id, 
-      error: true,
-      backUrl: `/cases/edit/check-inspectors?ref=${ref}`,
-      actionUrl: `/cases/edit/inspector-remove?id=${id}&ref=${ref}`
-    });
+    return res.render('cases/edit/remove-inspectors', { ref: ref, id: id, error: true, backUrl: `/cases/edit/check-inspectors?ref=${ref}`, actionUrl: `/cases/edit/inspector-remove?id=${id}&ref=${ref}` });
   }
 
-  // If they selected YES, run the dependency check
   if (confirm === 'yes') {
-    
-    // Find out who they are trying to remove
     var draftList = req.session.data['tempInspectorsList'] || [];
     var targetInspector = draftList.find(i => i.id === id);
     var inspName = targetInspector ? targetInspector.name : "";
 
-    // --- SMART INTERCEPT: Check for dependencies ---
     var attachedProcs = (c.overviewProcedures || []).filter(p => p.inspector === inspName);
     var attachedOutcomes = (c.outcomes || []).filter(o => o.inspectorName === inspName);
 
-    // If the inspector is attached to anything, block the removal!
     if (attachedProcs.length > 0 || attachedOutcomes.length > 0) {
       var errorList = [];
-      
       var hasProc = attachedProcs.length > 0;
       var hasOut = attachedOutcomes.length > 0;
 
-      // 1. Loop through ALL attached procedures and list them
       if (hasProc) {
         attachedProcs.forEach(proc => {
           let rawType = proc.type ? proc.type.toLowerCase() : "procedure";
@@ -1874,7 +1478,6 @@ router.post('/cases/edit/inspector-remove', function(req, res) {
         });
       }
 
-      // 2. Loop through ALL attached outcomes and list them
       if (hasOut) {
         attachedOutcomes.forEach(out => {
           let rawType = out.type ? out.type.toLowerCase() : "outcome";
@@ -1883,1645 +1486,479 @@ router.post('/cases/edit/inspector-remove', function(req, res) {
         });
       }
 
-      // 3. Build the final instruction line (with dynamic grammar)
       var procText = attachedProcs.length > 1 ? "procedures" : "procedure";
       var outText = attachedOutcomes.length > 1 ? "outcomes" : "outcome";
 
-      if (hasProc && !hasOut) {
-        errorList.push({ text: `You must assign a different inspector to the ${procText} before you can remove them from the case.`, href: "#" });
-      } else if (!hasProc && hasOut) {
-        errorList.push({ text: `You must assign a different inspector to the ${outText} before you can remove them from the case.`, href: "#" });
-      } else if (hasProc && hasOut) {
-        errorList.push({ text: `You must assign a different inspector to the ${procText} and ${outText} before you can remove them from the case.`, href: "#" });
-      }
+      if (hasProc && !hasOut) { errorList.push({ text: `You must assign a different inspector to the ${procText} before you can remove them from the case.`, href: "#" }); } 
+      else if (!hasProc && hasOut) { errorList.push({ text: `You must assign a different inspector to the ${outText} before you can remove them from the case.`, href: "#" }); } 
+      else if (hasProc && hasOut) { errorList.push({ text: `You must assign a different inspector to the ${procText} and ${outText} before you can remove them from the case.`, href: "#" }); }
 
-      // Render the check-inspectors Hub page instantly with the generated error messages
-      return res.render('cases/edit/check-inspectors', {
-        ref: ref,
-        inspectors: draftList,
-        errorList: errorList
-      });
+      return res.render('cases/edit/check-inspectors', { ref: ref, inspectors: draftList, errorList: errorList });
     }
 
-    // --- NO DEPENDENCIES: Delete from the DRAFT array ---
     if (req.session.data['tempInspectorsList']) {
       req.session.data['tempInspectorsList'] = req.session.data['tempInspectorsList'].filter(i => i.id !== id);
     }
   }
-  
-  // Redirect back to hub page
   res.redirect(`/cases/edit/check-inspectors?ref=${ref}`);
 });
 
-// ==============================================
-// FINAL COMMIT / CANCEL ACTIONS
-// ==============================================
-
-// COMMIT DRAFT: User clicked "Save and return"
 router.post('/cases/edit/check-inspectors/save', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Overwrite the real database with our working draft
   c.inspectors = req.session.data['tempInspectorsList'] || [];
-  
-  // Clear the draft completely
   req.session.data['tempInspectorsList'] = null;
-
-  // Flash banner and redirect
   req.session.flashSection = "team"; 
-  addAuditLog(req, ref, "Inspector details updated");
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Inspector details updated");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
-// CANCEL DRAFT: View Warning Page (Smart Check - INSPECTORS)
 router.get('/cases/edit/check-inspectors/cancel', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
   var originalInspectors = c.inspectors || [];
   var draftInspectors = req.session.data['tempInspectorsList'] || [];
 
-  var isUnchanged = JSON.stringify(originalInspectors) === JSON.stringify(draftInspectors);
-
-  if (isUnchanged) {
-    // NO CHANGES: Silently clear the draft and go straight to case details
+  if (JSON.stringify(originalInspectors) === JSON.stringify(draftInspectors)) {
     req.session.data['tempInspectorsList'] = null;
     return res.redirect('/cases/case-details?ref=' + ref);
   }
-
-  // CHANGES DETECTED: Render the warning page
-  res.render('cases/edit/cancel-inspectors', { 
-    ref: ref 
-  });
+  res.render('cases/edit/cancel-inspectors', { ref: ref });
 });
 
-// CANCEL DRAFT: Process Warning Page
 router.post('/cases/edit/check-inspectors/cancel', function(req, res) {
   var ref = req.query.ref;
   var confirm = req.body.cancelInspectors;
-
-  if (!confirm) {
-    return res.render('cases/edit/cancel-inspectors', { ref: ref, error: true });
-  }
-
+  if (!confirm) return res.render('cases/edit/cancel-inspectors', { ref: ref, error: true });
   if (confirm === 'yes') {
-    // Toss the draft in the trash and go to case details
     req.session.data['tempInspectorsList'] = null;
     res.redirect('/cases/case-details?ref=' + ref);
   } else {
-    // Take them back to the working list
     res.redirect('/cases/edit/check-inspectors?ref=' + ref);
   }
 });
 
 
-// ------------------------------------- TIMETABLE SUMMARY CARD --------------------------------------------
+// ------------------------------------------------------------------------------
+// 6. TIMETABLE CARD FIELDS (Date Inputs)
+// ------------------------------------------------------------------------------
 
-// --- 1. CASE RECEIVED DATE (Clean & Validated) ---
-
-router.get('/cases/edit/case-received-date', function(req, res) {
-  var c = getCase(req);
-
-  // Look for the date in all possible locations:
-  // 1. The new formatted object (if edited)
-  // 2. The variables from the Create flow (receivedDay)
-  // 3. The raw variables from older prototypes (case-received-date-day)
-  
-  var day = (c.caseReceivedDate && c.caseReceivedDate.day) 
-            || c.receivedDay 
-            || c['case-received-date-day'];
-
-  var month = (c.caseReceivedDate && c.caseReceivedDate.month) 
-              || c.receivedMonth 
-              || c['case-received-date-month'];
-
-  var year = (c.caseReceivedDate && c.caseReceivedDate.year) 
-             || c.receivedYear 
-             || c['case-received-date-year'];
-
-  res.render('cases/edit/case-received-date', {
-    ref: c.reference,
-    day: day,
-    month: month,
-    year: year
-  });
-});
-
-router.post('/cases/edit/case-received-date', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Get inputs (matches HTML namePrefix 'date')
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
-  var action = req.body.action;
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.caseReceivedDate;
-    delete c.receivedDay; 
-    delete c.receivedMonth; 
-    delete c.receivedYear;
-    delete c['case-received-date-day'];
-    delete c['case-received-date-month'];
-    delete c['case-received-date-year'];
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter Case received / submitted date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
-  else {
-    // Check for missing parts
-    var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
-    if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Case received / submitted date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Case received / submitted date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
-    }
-  }
-
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Case received / submitted must include a day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
-
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Case received / submitted month must be between 1 and 12", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Case received / submitted year must include 4 numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
-  if (day && month && year && errorList.length === 0) {
-     var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
-  }
-
-  // If there are errors, reload the page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/case-received-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      // Pass back values so user doesn't re-type
-      day: day,
-      month: month,
-      year: year
-    });
-  }
-
-  // 3. Success: Save Data
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
-
-  // Save as the new standard object
-  c.caseReceivedDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-  
-  // Update legacy variables to keep everything in sync
-  c.receivedDay = day;
-  c.receivedMonth = month;
-  c.receivedYear = year;
-
-  req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Case received / submitted date updated to '" + formatted + "'"); 
-
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// --- 2. START DATE (With Robust Validation) ---
-
-router.get('/cases/edit/start-date', function(req, res) {
-  var c = getCase(req);
-  // We look for our specific object "startDate"
-  var val = c.startDate || {};
-  
-  res.render('cases/edit/start-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/edit/start-date', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
-  var action = req.body.action;
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.startDate;
-    req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Start date removed");
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the start date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
-  else {
-    // Check for missing parts
-    var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
-    if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Start date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Start date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
-    }
-  }
-
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Start date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
-
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Start date month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Start date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
-  if (day && month && year && errorList.length === 0) {
-     var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
-  }
-
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/start-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
-
-  // 3. Save
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
-
-  c.startDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
-  req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Start date updated to '" + formatted + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// --- 3. EXPECTED SUBMISSION DATE ---
-
+// --- 6.1 EXPECTED SUBMISSION DATE ---
 router.get('/cases/edit/expected-submission-date', function(req, res) {
   var c = getCase(req);
   var val = c.expectedSubmissionDate || {};
-  
-  res.render('cases/edit/expected-submission-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
+  res.render('cases/edit/expected-submission-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
 });
 
 router.post('/cases/edit/expected-submission-date', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
   var action = req.body.action;
 
-  // 1. Handle Remove
   if (action === 'remove') {
     delete c.expectedSubmissionDate;
     req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Expected submission date removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Expected submission date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the expected submission date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the expected submission date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
   else {
-    // Check for missing parts
     var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Expected submission date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Expected submission date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
+      var missingText = missing.length === 2 ? "Expected submission date must include a " + missing[0] + " and " + missing[1] : "Expected submission date must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
     }
   }
 
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Expected submission date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Expected submission date day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Expected submission date month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Expected submission date year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Expected submission date month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Expected submission date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
   }
 
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/expected-submission-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
+  if (errorList.length > 0) return res.render('cases/edit/expected-submission-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
 
-  // 3. Save
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
 
-  c.expectedSubmissionDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
+  c.expectedSubmissionDate = { day: day, month: month, year: year, formatted: formatted };
   req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Expected submission date updated to '" + formatted + "'");
-
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Expected submission date updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
-// --- 4. TARGET DECISION DATE ---
 
+// --- 6.2 CASE RECEIVED / SUBMITTED DATE ---
+router.get('/cases/edit/case-received-date', function(req, res) {
+  var c = getCase(req);
+  var day = (c.caseReceivedDate && c.caseReceivedDate.day) || c.receivedDay || c['case-received-date-day'];
+  var month = (c.caseReceivedDate && c.caseReceivedDate.month) || c.receivedMonth || c['case-received-date-month'];
+  var year = (c.caseReceivedDate && c.caseReceivedDate.year) || c.receivedYear || c['case-received-date-year'];
+
+  res.render('cases/edit/case-received-date', { ref: c.reference, day: day, month: month, year: year });
+});
+
+router.post('/cases/edit/case-received-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
+  var action = req.body.action;
+
+  if (action === 'remove') {
+    delete c.caseReceivedDate; delete c.receivedDay; delete c.receivedMonth; delete c.receivedYear;
+    delete c['case-received-date-day']; delete c['case-received-date-month']; delete c['case-received-date-year'];
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter Case received / submitted date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
+  else {
+    var missing = [];
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
+    if (missing.length > 0) {
+      var missingText = missing.length === 2 ? "Case received / submitted date must include a " + missing[0] + " and " + missing[1] : "Case received / submitted date must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
+    }
+  }
+
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Case received / submitted must include a day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Case received / submitted month must be between 1 and 12", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Case received / submitted year must include 4 numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
+
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
+  }
+
+  if (errorList.length > 0) return res.render('cases/edit/case-received-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
+
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
+
+  c.caseReceivedDate = { day: day, month: month, year: year, formatted: formatted };
+  c.receivedDay = day; c.receivedMonth = month; c.receivedYear = year;
+
+  req.session.flashSection = "timetable"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Case received / submitted date updated to '" + formatted + "'"); 
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+
+// --- 6.3 TARGET DECISION DATE ---
 router.get('/cases/edit/target-decision-date', function(req, res) {
   var c = getCase(req);
   var val = c.targetDecisionDate || {};
-  
-  res.render('cases/edit/target-decision-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
+  res.render('cases/edit/target-decision-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
 });
 
 router.post('/cases/edit/target-decision-date', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
   var action = req.body.action;
 
-  // 1. Handle Remove
   if (action === 'remove') {
     delete c.targetDecisionDate;
     req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Target decision date removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Target decision date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the target decision date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the target decision date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
   else {
-    // Check for missing parts
     var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Target decision date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Target decision date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
+      var missingText = missing.length === 2 ? "Target decision date must include a " + missing[0] + " and " + missing[1] : "Target decision date must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
     }
   }
 
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Target decision date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Target decision date day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Target decision date month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Target decision date year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Target decision date month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Target decision date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
   }
 
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/target-decision-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
+  if (errorList.length > 0) return res.render('cases/edit/target-decision-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
 
-  // 3. Save
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
 
-  c.targetDecisionDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
+  c.targetDecisionDate = { day: day, month: month, year: year, formatted: formatted };
   req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Target decision date updated to '" + formatted + "'");
-
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Target decision date updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
-// --- 5. CASE OFFICER VERIFICATION DATE ---
-
-router.get('/cases/edit/co-verification-date', function(req, res) {
+// --- 6.4 START DATE ---
+router.get('/cases/edit/start-date', function(req, res) {
   var c = getCase(req);
-  var val = c.coVerificationDate || {};
-  
-  res.render('cases/edit/co-verification-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
+  var val = c.startDate || {};
+  res.render('cases/edit/start-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
 });
 
-router.post('/cases/edit/co-verification-date', function(req, res) {
+router.post('/cases/edit/start-date', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
   var action = req.body.action;
 
-  // 1. Handle Remove
   if (action === 'remove') {
-    delete c.coVerificationDate;
+    delete c.startDate;
     req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Case officer verification date removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Start date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the case officer verification date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the start date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
   else {
-    // Check for missing parts
     var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Case officer verification date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Case officer verification date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
+      var missingText = missing.length === 2 ? "Start date must include a " + missing[0] + " and " + missing[1] : "Start date must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
     }
   }
 
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Case officer verification date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Start date day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Start date month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Start date year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Case officer verification date month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Case officer verification date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
   }
 
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/co-verification-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
+  if (errorList.length > 0) return res.render('cases/edit/start-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
 
-  // 3. Save
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
 
-  c.coVerificationDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
+  c.startDate = { day: day, month: month, year: year, formatted: formatted };
   req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Case officer verification date updated to '" + formatted + "'");
-
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Start date updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
-// --- 6. DATE PROPOSED MODIFICATIONS ADVERTISED ---
-
+// --- 6.5 DATE PROPOSED MODIFICATIONS ADVERTISED ---
 router.get('/cases/edit/modifications-advertised-date', function(req, res) {
   var c = getCase(req);
   var val = c.modificationsAdvertisedDate || {};
-  
-  res.render('cases/edit/modifications-advertised-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
+  res.render('cases/edit/modifications-advertised-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
 });
 
 router.post('/cases/edit/modifications-advertised-date', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
   var action = req.body.action;
 
-  // 1. Handle Remove
   if (action === 'remove') {
     delete c.modificationsAdvertisedDate;
     req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Date proposed modifications advertised removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Date proposed modifications advertised removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the date proposed modifications advertised", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the date proposed modifications advertised", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
   else {
-    // Check for missing parts
     var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Date proposed modifications advertised must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Date proposed modifications advertised must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
+      var missingText = missing.length === 2 ? "Date proposed modifications advertised must include a " + missing[0] + " and " + missing[1] : "Date proposed modifications advertised must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
     }
   }
 
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Date proposed modifications advertised day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Date proposed modifications advertised day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Date proposed modifications advertised month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Date proposed modifications advertised year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Date proposed modifications advertised month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Date proposed modifications advertised year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
   }
 
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/modifications-advertised-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
+  if (errorList.length > 0) return res.render('cases/edit/modifications-advertised-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
 
-  // 3. Save
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
 
-  c.modificationsAdvertisedDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
+  c.modificationsAdvertisedDate = { day: day, month: month, year: year, formatted: formatted };
   req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Date proposed modifications advertised updated to '" + formatted + "'");
-
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Date proposed modifications advertised updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
-// --- 7. OBJECTION PERIOD END DATE ---
 
+// --- 6.6 OBJECTION PERIOD END DATE ---
 router.get('/cases/edit/objection-period-end-date', function(req, res) {
   var c = getCase(req);
   var val = c.objectionPeriodEndDate || {};
-  
-  res.render('cases/edit/objection-period-end-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
+  res.render('cases/edit/objection-period-end-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
 });
 
 router.post('/cases/edit/objection-period-end-date', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
   var action = req.body.action;
 
-  // 1. Handle Remove
   if (action === 'remove') {
     delete c.objectionPeriodEndDate;
     req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Objection period end date removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Objection period end date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the objection period end date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the objection period end date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
   else {
-    // Check for missing parts
     var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Objection period end date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Objection period end date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
+      var missingText = missing.length === 2 ? "Objection period end date must include a " + missing[0] + " and " + missing[1] : "Objection period end date must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
     }
   }
 
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Objection period end date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Objection period end date day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Objection period end date month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Objection period end date year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Objection period end date month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Objection period end date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
   }
 
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/objection-period-end-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
+  if (errorList.length > 0) return res.render('cases/edit/objection-period-end-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
 
-  // 3. Save
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
 
-  c.objectionPeriodEndDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
+  c.objectionPeriodEndDate = { day: day, month: month, year: year, formatted: formatted };
   req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Objection period end date updated to '" + formatted + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-// --- 8. DEADLINE FOR CONSENT ---
-
-router.get('/cases/edit/consent-deadline-date', function(req, res) {
-  var c = getCase(req);
-  var val = c.consentDeadlineDate || {};
-  
-  res.render('cases/edit/consent-deadline-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/edit/consent-deadline-date', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
-  var action = req.body.action;
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.consentDeadlineDate;
-    req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Consent deadline date removed");
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the deadline for consent", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
-  else {
-    // Check for missing parts
-    var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
-    if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Deadline for consent must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Deadline for consent must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
-    }
-  }
-
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Deadline for consent day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
-
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Deadline for consent month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Deadline for consent year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
-  if (day && month && year && errorList.length === 0) {
-     var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
-  }
-
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/consent-deadline-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
-
-  // 3. Save
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
-
-  c.consentDeadlineDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
-  req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Consent deadline date updated to '" + formatted + "'");
-
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Objection period end date updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
 
-// --- 9. OGD DUE DATE ---
-
-router.get('/cases/edit/ogd-due-date', function(req, res) {
-  var c = getCase(req);
-  var val = c.ogdDueDate || {};
-  
-  res.render('cases/edit/ogd-due-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/edit/ogd-due-date', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
-  var action = req.body.action;
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.ogdDueDate;
-    req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Date due to Other Government Department (OGD) removed");
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter Date due to Other Government Department (OGD)", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
-  else {
-    // Check for missing parts
-    var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
-    if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Date due to Other Government Department (OGD) date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Date due to Other Government Department (OGD) date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
-    }
-  }
-
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Date due to Other Government Department (OGD) date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
-
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Date due to Other Government Department (OGD) month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Date due to Other Government Department (OGD) must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
-  if (day && month && year && errorList.length === 0) {
-     var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
-  }
-
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/ogd-due-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
-
-  // 3. Save
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
-
-  c.ogdDueDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
-  req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Date due to Other Government Department (OGD) updated to '" + formatted + "'");
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// --- 10. PROPOSAL LETTER DATE ---
-
-router.get('/cases/edit/proposal-letter-date', function(req, res) {
-  var c = getCase(req);
-  var val = c.proposalLetterDate || {};
-  
-  res.render('cases/edit/proposal-letter-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/edit/proposal-letter-date', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
-  var action = req.body.action;
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.proposalLetterDate;
-    req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Proposal letter date removed");
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the proposal letter date", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
-  else {
-    // Check for missing parts
-    var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
-    if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Proposal letter date must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Proposal letter date must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
-    }
-  }
-
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Proposal letter date day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
-
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Proposal letter date month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Proposal letter date year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
-  if (day && month && year && errorList.length === 0) {
-     var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
-  }
-
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/proposal-letter-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
-
-  // 3. Save
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
-
-  c.proposalLetterDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
-  req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Proposal letter date updated to '" + formatted + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// --- 11. DECISION ISSUED BY DATE ---
-
-router.get('/cases/edit/decision-issued-by-date', function(req, res) {
-  var c = getCase(req);
-  var val = c.decisionIssuedByDate || {};
-  
-  res.render('cases/edit/decision-issued-by-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
-});
-
-router.post('/cases/edit/decision-issued-by-date', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
-  var action = req.body.action;
-
-  // 1. Handle Remove
-  if (action === 'remove') {
-    delete c.decisionIssuedByDate;
-    req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Decision issued by date removed");
-    return res.redirect('/cases/case-details?ref=' + ref);
-  }
-
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the date decision must be issued by", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
-  else {
-    // Check for missing parts
-    var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
-    if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Date decision must be issued by must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Date decision must be issued by must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
-    }
-  }
-
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Date decision must be issued by day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
-
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Date decision must be issued by month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Date decision must be issued by year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
-  if (day && month && year && errorList.length === 0) {
-     var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
-  }
-
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/decision-issued-by-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
-
-  // 3. Save
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
-
-  c.decisionIssuedByDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
-  req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Decision issued by date updated to '" + formatted + "'");
-
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-
-// --- 12. DECISION NOTIFICATION DATE ---
-
+// --- 6.7 DATE TO NOTIFY PARTIES OF DECISION DATE ---
 router.get('/cases/edit/decision-notification-date', function(req, res) {
   var c = getCase(req);
   var val = c.decisionNotificationDate || {};
-  
-  res.render('cases/edit/decision-notification-date', {
-    ref: c.reference,
-    day: val.day,
-    month: val.month,
-    year: val.year
-  });
+  res.render('cases/edit/decision-notification-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
 });
 
 router.post('/cases/edit/decision-notification-date', function(req, res) {
   var ref = req.query.ref;
   var c = getCase(req);
-
-  // Get inputs
-  var day = req.body['date-day'];
-  var month = req.body['date-month'];
-  var year = req.body['date-year'];
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
   var action = req.body.action;
 
-  // 1. Handle Remove
   if (action === 'remove') {
     delete c.decisionNotificationDate;
     req.session.flashSection = "timetable"; 
-
-addAuditLog(req, ref, "Decision notification date removed");
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Decision notification date removed");
     return res.redirect('/cases/case-details?ref=' + ref);
   }
 
-  // 2. Validation Logic
-  var errorList = [];
-  var errorFields = [];
-
-  // Check if everything is empty
-  if (!day && !month && !year) {
-    errorList.push({ text: "Enter the date to notify parties of decision", href: "#date-day" });
-    errorFields = ['day', 'month', 'year'];
-  } 
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the date to notify parties of decision", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
   else {
-    // Check for missing parts
     var missing = [];
-    if (!day) missing.push('day');
-    if (!month) missing.push('month');
-    if (!year) missing.push('year');
-  
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
     if (missing.length > 0) {
-      var missingText = "";
-      if (missing.length === 2) {
-        missingText = "Date to notify parties of decision must include a " + missing[0] + " and " + missing[1];
-      } else {
-        missingText = "Date to notify parties of decision must include a " + missing[0];
-      }
-      errorList.push({ text: missingText, href: "#date-" + missing[0] });
-      errorFields = errorFields.concat(missing);
+      var missingText = missing.length === 2 ? "Date to notify parties of decision must include a " + missing[0] + " and " + missing[1] : "Date to notify parties of decision must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
     }
   }
 
-  // Validate Day (1-31)
-  if (day) {
-    var dayNum = Number(day);
-    if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Date to notify parties of decision day must be a real day", href: "#date-day" });
-      if (!errorFields.includes('day')) errorFields.push('day');
-    }
-  }
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Date to notify parties of decision day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Date to notify parties of decision month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Date to notify parties of decision year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
 
-  // Validate Month (1-12)
-  if (month) {
-    var monthNum = Number(month);
-    if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Date to notify parties of decision month must be a real month", href: "#date-month" });
-      if (!errorFields.includes('month')) errorFields.push('month');
-    }
-  }
-
-  // Validate Year (4 digits)
-  if (year) {
-    var yearNum = Number(year);
-    if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Date to notify parties of decision year must include four numbers", href: "#date-year" });
-      if (!errorFields.includes('year')) errorFields.push('year');
-    }
-  }
-
-  // Check for real date (e.g. 31 Feb)
   if (day && month && year && errorList.length === 0) {
      var dateObj = new Date(year, month - 1, day);
-     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) {
-        errorList.push({ text: "Enter a real date", href: "#date-day" });
-        errorFields = ['day', 'month', 'year'];
-     }
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
   }
 
-  // If there are errors, reload page
-  if (errorList.length > 0) {
-    return res.render('cases/edit/decision-notification-date', {
-      ref: ref,
-      errorList: errorList,
-      errorFields: errorFields,
-      day: day, month: month, year: year
-    });
-  }
+  if (errorList.length > 0) return res.render('cases/edit/decision-notification-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
 
-  // 3. Save
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var monthName = month ? months[month - 1] : "";
-  var formatted = day + " " + monthName + " " + year;
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
 
-  c.decisionNotificationDate = {
-    day: day,
-    month: month,
-    year: year,
-    formatted: formatted
-  };
-
+  c.decisionNotificationDate = { day: day, month: month, year: year, formatted: formatted };
   req.session.flashSection = "timetable"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Decision notification date updated to '" + formatted + "'");
+  res.redirect('/cases/case-details?ref=' + ref);
+});
 
-addAuditLog(req, ref, "Decision notification date updated to '" + formatted + "'");
 
+// --- 6.8 DATE DECISION MUST BE ISSUED BY / EXPIRY DATE ---
+router.get('/cases/edit/decision-issued-by-date', function(req, res) {
+  var c = getCase(req);
+  var val = c.decisionIssuedByDate || {};
+  res.render('cases/edit/decision-issued-by-date', { ref: c.reference, day: val.day, month: val.month, year: val.year });
+});
+
+router.post('/cases/edit/decision-issued-by-date', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+  var day = req.body['date-day']; var month = req.body['date-month']; var year = req.body['date-year'];
+  var action = req.body.action;
+
+  if (action === 'remove') {
+    delete c.decisionIssuedByDate;
+    req.session.flashSection = "timetable"; 
+    if (typeof addAuditLog === "function") addAuditLog(req, ref, "Decision issued by date removed");
+    return res.redirect('/cases/case-details?ref=' + ref);
+  }
+
+  var errorList = []; var errorFields = [];
+  if (!day && !month && !year) { errorList.push({ text: "Enter the date decision must be issued by", href: "#date-day" }); errorFields = ['day', 'month', 'year']; } 
+  else {
+    var missing = [];
+    if (!day) missing.push('day'); if (!month) missing.push('month'); if (!year) missing.push('year');
+    if (missing.length > 0) {
+      var missingText = missing.length === 2 ? "Date decision must be issued by must include a " + missing[0] + " and " + missing[1] : "Date decision must be issued by must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#date-" + missing[0] }); errorFields = errorFields.concat(missing);
+    }
+  }
+
+  if (day && (Number(day) < 1 || Number(day) > 31 || isNaN(Number(day)))) { errorList.push({ text: "Date decision must be issued by day must be a real day", href: "#date-day" }); if (!errorFields.includes('day')) errorFields.push('day'); }
+  if (month && (Number(month) < 1 || Number(month) > 12 || isNaN(Number(month)))) { errorList.push({ text: "Date decision must be issued by month must be a real month", href: "#date-month" }); if (!errorFields.includes('month')) errorFields.push('month'); }
+  if (year && (year.length != 4 || isNaN(Number(year)))) { errorList.push({ text: "Date decision must be issued by year must include four numbers", href: "#date-year" }); if (!errorFields.includes('year')) errorFields.push('year'); }
+
+  if (day && month && year && errorList.length === 0) {
+     var dateObj = new Date(year, month - 1, day);
+     if ((dateObj.getMonth() + 1 != month) || (dateObj.getDate() != day)) { errorList.push({ text: "Enter a real date", href: "#date-day" }); errorFields = ['day', 'month', 'year']; }
+  }
+
+  if (errorList.length > 0) return res.render('cases/edit/decision-issued-by-date', { ref: ref, errorList: errorList, errorFields: errorFields, day: day, month: month, year: year });
+
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var formatted = day + " " + (month ? months[month - 1] : "") + " " + year;
+
+  c.decisionIssuedByDate = { day: day, month: month, year: year, formatted: formatted };
+  req.session.flashSection = "timetable"; 
+  if (typeof addAuditLog === "function") addAuditLog(req, ref, "Decision issued by date updated to '" + formatted + "'");
   res.redirect('/cases/case-details?ref=' + ref);
 });
 
@@ -3625,7 +2062,7 @@ function validateAndSaveDateTime(req, res, fieldName, displayName, storageObj, s
 
   // --- DATE VALIDATION ---
   
-  // 1. Check if completely empty (FIX: Trigger error instead of allowing it)
+  // 1. Check if completely empty
   if (!day && !month && !year) {
     errorList.push({ text: "Enter the date for the " + displayName.toLowerCase(), href: "#" + fieldName + "-day" });
     errorFields = ['day', 'month', 'year'];
@@ -3910,11 +2347,11 @@ function addAuditLog(req, caseRef, details) {
 }
 
 
-// ==============================================
+// =======================================================
 // UNIFIED DYNAMIC PROCEDURE ROUTES
 // Handles Procedure 1, Procedure 2, Procedure 3, etc.
 // Uses the URL parameter :index to find the right object
-// ==============================================
+// =======================================================
 
 // Helper: Get the specific procedure from the array
 function getTargetProcedure(req) {
@@ -5145,108 +3582,6 @@ router.post('/cases/procedures/:index/written-reps-date', function(req, res) {
   }
 });
 
-
-// =========================================================
-// EDIT: Abeyance Period (Double Date Input)
-// =========================================================
-
-router.get('/cases/edit/abeyance-period', (req, res) => {
-  var c = getCase(req); 
-  var abeyance = c.abeyancePeriod || {};
-  var start = abeyance.startDate || {};
-  var end = abeyance.endDate || {};
-
-  res.render('cases/edit/abeyance-period', { 
-    ref: req.query.ref,
-    startDay: start.day, startMonth: start.month, startYear: start.year,
-    endDay: end.day, endMonth: end.month, endYear: end.year
-  });
-});
-
-router.post('/cases/edit/abeyance-period', (req, res) => {
-  var c = getCase(req);
-  if (!c) return res.redirect('/');
-  
-  if (!c.abeyancePeriod) c.abeyancePeriod = {};
-
-  let sD = req.body['start-day'], sM = req.body['start-month'], sY = req.body['start-year'];
-  let eD = req.body['end-day'], eM = req.body['end-month'], eY = req.body['end-year'];
-
-  // 1. Check if they cleared everything to remove the abeyance period
-  if (!sD && !sM && !sY && !eD && !eM && !eY) {
-    c.abeyancePeriod = null;
-    
-    // AUDIT LOG: Stamp that the abeyance period was completely removed
-    addAuditLog(req, req.query.ref, "Abeyance period was removed");
-    
-    return res.redirect('/cases/case-details?ref=' + req.query.ref);
-  }
-
-  let allErrors = [];
-  let startErrorFields = [];
-  let endErrorFields = [];
-
-  // 2. Validate Start Date (Required if they entered anything on this page)
-  let startResult = validateAndSaveDate(req, res, 'start', 'Abeyance start date', c.abeyancePeriod, 'startDate');
-  if (startResult.status === "ERROR") {
-    allErrors = allErrors.concat(startResult.errorList);
-    startErrorFields = startResult.errorFields;
-  }
-
-  // 3. Validate End Date (Optional - skip if completely blank)
-  if (!eD && !eM && !eY) {
-    c.abeyancePeriod.endDate = null;
-  } else {
-    let endResult = validateAndSaveDate(req, res, 'end', 'Abeyance end date', c.abeyancePeriod, 'endDate');
-    if (endResult.status === "ERROR") {
-      allErrors = allErrors.concat(endResult.errorList);
-      endErrorFields = endResult.errorFields;
-    }
-  }
-
- // 4. Custom Check: Start date must be before end date (Only run if both dates are valid so far)
-  if (allErrors.length === 0 && c.abeyancePeriod.startDate && c.abeyancePeriod.endDate) {
-    let startDateObj = new Date(c.abeyancePeriod.startDate.year, c.abeyancePeriod.startDate.month - 1, c.abeyancePeriod.startDate.day);
-    let endDateObj = new Date(c.abeyancePeriod.endDate.year, c.abeyancePeriod.endDate.month - 1, c.abeyancePeriod.endDate.day);
-    
-    // If the start date is after OR exactly the same as the end date, throw the error
-    if (startDateObj >= endDateObj) {
-      allErrors.push({ 
-        text: "Abeyance start date must be before the abeyance end date", 
-        href: "#start-day" // Jumps the user to the start date input when clicked
-      });
-      
-      // Highlight both date inputs in red so the user knows they conflict
-      startErrorFields = ['day', 'month', 'year'];
-      endErrorFields = ['day', 'month', 'year'];
-    }
-  }
-
-  // 5. If there are any errors, re-render the page
-  if (allErrors.length > 0) {
-    return res.render('cases/edit/abeyance-period', { 
-      ref: req.query.ref,
-      startDay: sD, startMonth: sM, startYear: sY,
-      endDay: eD, endMonth: eM, endYear: eY,
-      errorList: allErrors,
-      startErrorFields: startErrorFields,
-      endErrorFields: endErrorFields
-    });
-  }
-
-  // Success!
-  req.session.flashSection = "case-details"; 
-
-  // AUDIT LOG: Stamp the specific dates! 
-  // Notice we passed req.query.ref as the second argument here.
-  addAuditLog(
-    req, 
-    req.query.ref, 
-    `Abeyance period updated: ${c.abeyancePeriod.startDate ? `${c.abeyancePeriod.startDate.day}/${c.abeyancePeriod.startDate.month}/${c.abeyancePeriod.startDate.year}` : 'N/A'} to ${c.abeyancePeriod.endDate ? `${c.abeyancePeriod.endDate.day}/${c.abeyancePeriod.endDate.month}/${c.abeyancePeriod.endDate.year}` : 'N/A'}`
-  );
-
-  res.redirect('/cases/case-details?ref=' + req.query.ref);
-});
 
 
 
