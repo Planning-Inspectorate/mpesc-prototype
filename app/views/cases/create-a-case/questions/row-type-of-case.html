@@ -12,45 +12,32 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorRowType %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorRowType, href: "#row-type-of-case" }]
+      }) }}
+    {% endif %}
 
-      <form class="form" action="/row-type-of-case-answer" method="post">
-
-{{ govukRadios({
-  name: "row-type-of-case",
-  value: data['row-type-of-case'], fieldset: {
-    legend: {
-      text: "Which case type is it?",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-  items: [
-    {
-      value: "Coastal Access",
-      text: "Coastal Access"
-    },
-    {
-      value: "Common Land",
-      text: "Common Land"
-    },
-    {
-      value: "Rights of Way",
-      text: "Rights of Way"
-    }
-  ]
-}) }}
-
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+    <form class="form" action="/row-type-of-case-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "row-type-of-case",
+        value: data['row-type-of-case'],
+        fieldset: {
+          legend: { text: "Which case type is it?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: errorRowType } if errorRowType else null,
+        items: [
+          { value: "Coastal Access", text: "Coastal Access" },
+          { value: "Common Land", text: "Common Land" },
+          { value: "Rights of Way", text: "Rights of Way" }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

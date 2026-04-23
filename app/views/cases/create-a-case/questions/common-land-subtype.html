@@ -9,96 +9,46 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorSubtype, href: "#common-land-subtype" }]
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        Which Common Land subtype is it?
-      </h1>
+    <h1 class="govuk-heading-l">Which Common Land subtype is it?</h1>
 
-      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
-     
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
+    <form class="form" action="/common-land-subtype-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "common-land-subtype",
+        value: data['common-land-subtype'],
+        fieldset: {
+          legend: { text: "Which Common Land subtype is it?", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "Commons for Ecclesiastical Purposes", text: "Commons for Ecclesiastical Purposes" },
+          { value: "Commons in Greater London", text: "Commons in Greater London" },
+          { value: "Compulsory Purchase of Common Land", text: "Compulsory Purchase of Common Land" },
+          { value: "Deregistration & Exchange", text: "Deregistration & Exchange" },
+          { value: "Inclosure", text: "Inclosure" },
+          { value: "Inclosure : obsolescent functions", text: "Inclosure : obsolescent functions" },
+          { value: "Land Exchange", text: "Land Exchange" },
+          { value: "Local Acts and Provisional Order Confirmation Acts", text: "Local Acts and Provisional Order Confirmation Acts" },
+          { value: "Public Access to Commons - limitations and restrictions", text: "Public Access to Commons - limitations and restrictions" },
+          { value: "Referred applications from Commons Registration Authorities", text: "Referred applications from Commons Registration Authorities" },
+          { value: "Scheme of Management", text: "Scheme of Management" },
+          { value: "Stint Rates", text: "Stint Rates" },
+          { value: "Works on Common Land", text: "Works on Common Land" },
+          { value: "Works on Common Land (National Trust)", text: "Works on Common Land (National Trust)" }
+        ]
+      }) }}
 
-{{ govukRadios({
-  name: "common-land-subtype",
-  value: data['common-land-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-items: [
-    {
-      value: "Commons for Ecclesiastical Purposes",
-      text: "Commons for Ecclesiastical Purposes"
-    },
-    {
-      value: "Commons in Greater London",
-      text: "Commons in Greater London"
-    },
-    {
-      value: "Compulsory Purchase of Common Land",
-      text: "Compulsory Purchase of Common Land"
-    },
-    {
-      value: "Deregistration & Exchange",
-      text: "Deregistration & Exchange"
-    },
-    {
-      value: "Inclosure",
-      text: "Inclosure"
-    },
-    {
-      value: "Inclosure : obsolescent functions",
-      text: "Inclosure : obsolescent functions"
-    },
-    {
-      value: "Land Exchange",
-      text: "Land Exchange"
-    },
-    {
-      value: "Local Acts and Provisional Order Confirmation Acts",
-      text: "Local Acts and Provisional Order Confirmation Acts"
-    },
-    {
-      value: "Public Access to Commons - limitations and restrictions",
-      text: "Public Access to Commons - limitations and restrictions"
-    },
-    {
-      value: "Referred applications from Commons Registration Authorities",
-      text: "Referred applications from Commons Registration Authorities"
-    },
-    {
-      value: "Scheme of Management",
-      text: "Scheme of Management"
-    },
-    {
-      value: "Stint Rates",
-      text: "Stint Rates"
-    },
-    {
-      value: "Works on Common Land",
-      text: "Works on Common Land"
-    },
-    {
-      value: "Works on Common Land (National Trust)",
-      text: "Works on Common Land (National Trust)"
-    }
-  ]
-}) }}
-        
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

@@ -12,50 +12,34 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorSubtype, href: "#drought-subtype" }]
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        Which Drought subtype is it?
-      </h1>
+    <h1 class="govuk-heading-l">Which Drought subtype is it?</h1>
 
-      <form class="form" action="/drought-subtype-answer" method="post">
-
- 
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
-{{ govukRadios({
-  name: "drought-subtype",
-  value: data['drought-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-  items: [
-    {
-      value: "Drought Permits",
-      text: "Drought Permits"
-    },
-    {
-      value: "Drought Orders",
-      text: "Drought Orders"
-    }
-    
-  ]
-}) }}
+    <form class="form" action="/drought-subtype-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "drought-subtype",
+        value: data['drought-subtype'],
+        fieldset: {
+          legend: { text: "Which Drought subtype is it?", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "Drought Permits", text: "Drought Permits" },
+          { value: "Drought Orders", text: "Drought Orders" }
+        ]
+      }) }}
    
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

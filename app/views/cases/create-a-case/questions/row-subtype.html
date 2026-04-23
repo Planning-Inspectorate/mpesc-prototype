@@ -9,76 +9,41 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorSubtype, href: "#row-subtype" }]
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        Which Rights of Way subtype is it?
-      </h1>
+    <h1 class="govuk-heading-l">Which Rights of Way subtype is it?</h1>
 
-      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
- 
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
-{{ govukRadios({
-  name: "row-subtype",
-  value: data['row-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-  items: [
-    {
-      value: "Dispensation for Serving Notice HA80",
-      text: "Dispensation for Serving Notice HA80"
-    },
-    {
-      value: "Dispensation for Serving Notice TCPA90",
-      text: "Dispensation for Serving Notice TCPA90"
-    },
-    {
-      value: "Dispensation for Serving Notice WCA81",
-      text: "Dispensation for Serving Notice WCA81"
-    },
-    {
-      value: "Opposed Definitive Map Modification Order (DMMO)",
-      text: "Opposed Definitive Map Modification Order (DMMO)"
-    },
-    {
-      value: "Opposed Public Path Order (PPO) HA80",
-      text: "Opposed Public Path Order (PPO) HA80"
-    },
-    {
-      value: "Opposed Public Path Order (PPO) TCPA90",
-      text: "Opposed Public Path Order (PPO) TCPA90"
-    },
-    {
-      value: "Schedule 14 Appeal",
-      text: "Schedule 14 Appeal"
-    },
-    {
-      value: "Schedule 14 Direction",
-      text: "Schedule 14 Direction"
-    },
-    {
-      value: "Schedule 13A Appeal",
-      text: "Schedule 13A Appeal"
-    }
-  ]
-}) }}
+    <form class="form" action="/row-subtype-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "row-subtype",
+        value: data['row-subtype'],
+        fieldset: {
+          legend: { text: "Which Rights of Way subtype is it?", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "Dispensation for Serving Notice HA80", text: "Dispensation for Serving Notice HA80" },
+          { value: "Dispensation for Serving Notice TCPA90", text: "Dispensation for Serving Notice TCPA90" },
+          { value: "Dispensation for Serving Notice WCA81", text: "Dispensation for Serving Notice WCA81" },
+          { value: "Opposed Definitive Map Modification Order (DMMO)", text: "Opposed Definitive Map Modification Order (DMMO)" },
+          { value: "Opposed Public Path Order (PPO) HA80", text: "Opposed Public Path Order (PPO) HA80" },
+          { value: "Opposed Public Path Order (PPO) TCPA90", text: "Opposed Public Path Order (PPO) TCPA90" },
+          { value: "Schedule 14 Appeal", text: "Schedule 14 Appeal" },
+          { value: "Schedule 14 Direction", text: "Schedule 14 Direction" },
+          { value: "Schedule 13A Appeal", text: "Schedule 13A Appeal" }
+        ]
+      }) }}
    
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

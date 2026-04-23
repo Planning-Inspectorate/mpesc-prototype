@@ -8,210 +8,324 @@ const govukPrototypeKit = require('govuk-prototype-kit')
 const {applyAzureHostingFix} = require('./azure-hosting-fix');
 applyAzureHostingFix();
 
-
 const router = govukPrototypeKit.requests.setupRouter()
 
 
-// Page routes
+// ==============================================================================
+// CREATE A CASE ROUTES
+// ==============================================================================
 
-// --- COMBINED RESET AND START ROUTE ---
+// ------------------------------------------------------------------------------
+// 1. SETUP & INITIALIZATION
+// ------------------------------------------------------------------------------
+
+// Wipe session data (except saved cases) to prevent ghost data, then start flow
 router.get('/create-case-start', function (req, res) {
-  
-  // 1. "Nuclear" capture: Save the database (the cases already created)
   const savedCases = req.session.data['cases'] || [];
-
-  // 2. Wipe EVERYTHING: This kills ghost data from 'Edit' and 'Create' flows alike
   req.session.data = {};
-
-  // 3. Restore only the database
   req.session.data['cases'] = savedCases;
-
-  // 4. (Optional) Restore global settings if you have any
-  // req.session.data['userRole'] = 'Admin';
-
-  // 5. Redirect to the first page of the creation journey
   res.redirect('/cases/create-a-case/questions/casework-area');
 });
 
+
+// ------------------------------------------------------------------------------
+// 2. AREA, TYPE & SUBTYPE BRANCHING (With Validation)
+// ------------------------------------------------------------------------------
+
+// Branching: Casework Area
 router.post('/casework-area-answer', function (req, res) {
-
-
-  var caseworkarea = req.session.data['casework-area']
-  if (caseworkarea == "Planning, Environmental and Applications") {
-    res.redirect('/cases/create-a-case/questions/peas-type-of-case')
-  } else if (caseworkarea == "Rights of Way and Common Land") {
-
-    res.redirect('/cases/create-a-case/questions/row-type-of-case') 
+  var caseworkarea = req.session.data['casework-area'];
+  
+  if (!caseworkarea) {
+    return res.render('cases/create-a-case/questions/casework-area', {
+      errorCaseworkArea: "Select the casework area"
+    });
   }
 
-})
+  if (caseworkarea === "Planning, Environmental and Applications") {
+    res.redirect('/cases/create-a-case/questions/peas-type-of-case');
+  } else if (caseworkarea === "Rights of Way and Common Land") {
+    res.redirect('/cases/create-a-case/questions/row-type-of-case');
+  }
+});
 
+// Branching: PEAS Type
 router.post('/peas-type-of-case-answer', function (req, res) {
-
-
-  var peastype = req.session.data['peas-type-of-case']
-  if (peastype == "Drought") {
-    res.redirect('/cases/create-a-case/questions/drought-subtype')
-
-  } else if (peastype == "Housing and Planning CPOs") {
-    res.redirect('/cases/create-a-case/questions/housing-planning-cpos-subtype') 
-
-  } else if (peastype == "Other Secretary of State casework") {
-    res.redirect('/cases/create-a-case/questions/other-sos-casework-subtype') 
-
-  } else if (peastype == "Purchase Notices") {
-    res.redirect('/cases/create-a-case/questions/case-name') 
-
-  } else if (peastype == "Wayleaves") {
-    res.redirect('/cases/create-a-case/questions/wayleaves-subtype') 
-  } 
-
-})
-
-router.post('/drought-subtype-answer', function (req, res) {
-
-
-  var droughtsub = req.session.data['drought-subtype']
-  if (droughtsub == "Drought Permits") {
-    res.redirect('/cases/create-a-case/questions/case-name')
-  } else if (droughtsub == "Drought Orders") {
-
-    res.redirect('/cases/create-a-case/questions/case-name') 
+  var peastype = req.session.data['peas-type-of-case'];
+  
+  if (!peastype) {
+    return res.render('cases/create-a-case/questions/peas-type-of-case', {
+      errorPeasType: "Select Planning, Environmental and Applications case type"
+    });
   }
 
-})
+  if (peastype === "Drought") {
+    res.redirect('/cases/create-a-case/questions/drought-subtype');
+  } else if (peastype === "Housing and Planning CPOs") {
+    res.redirect('/cases/create-a-case/questions/housing-planning-cpos-subtype');
+  } else if (peastype === "Other Secretary of State casework") {
+    res.redirect('/cases/create-a-case/questions/other-sos-casework-subtype');
+  } else if (peastype === "Purchase Notices") {
+    res.redirect('/cases/create-a-case/questions/case-name'); // Skips subtype
+  } else if (peastype === "Wayleaves") {
+    res.redirect('/cases/create-a-case/questions/wayleaves-subtype');
+  }
+});
 
+// Branching: ROW Type
 router.post('/row-type-of-case-answer', function (req, res) {
+  var rowtype = req.session.data['row-type-of-case'];
+  
+  if (!rowtype) {
+    return res.render('cases/create-a-case/questions/row-type-of-case', {
+      errorRowType: "Select the Right of Way and Common Land case type"
+    });
+  }
+
+  if (rowtype === "Coastal Access") {
+    res.redirect('/cases/create-a-case/questions/coastal-subtype');
+  } else if (rowtype === "Common Land") {
+    res.redirect('/cases/create-a-case/questions/common-land-subtype');
+  } else if (rowtype === "Rights of Way") {
+    res.redirect('/cases/create-a-case/questions/row-subtype');
+  }
+});
+
+// Subtype: Drought
+router.post('/drought-subtype-answer', function (req, res) {
+  if (!req.session.data['drought-subtype']) {
+    return res.render('cases/create-a-case/questions/drought-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
+
+// Subtype: Coastal Access
+router.post('/coastal-subtype-answer', function (req, res) {
+  if (!req.session.data['coastal-subtype']) {
+    return res.render('cases/create-a-case/questions/coastal-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
+
+// Subtype: Common Land
+router.post('/common-land-subtype-answer', function (req, res) {
+  if (!req.session.data['common-land-subtype']) {
+    return res.render('cases/create-a-case/questions/common-land-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
+
+// Subtype: Housing & Planning CPOs
+router.post('/housing-planning-cpos-subtype-answer', function (req, res) {
+  if (!req.session.data['housing-planning-cpos-subtype']) {
+    return res.render('cases/create-a-case/questions/housing-planning-cpos-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
+
+// Subtype: Rights of Way
+router.post('/row-subtype-answer', function (req, res) {
+  if (!req.session.data['row-subtype']) {
+    return res.render('cases/create-a-case/questions/row-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
+
+// Subtype: Wayleaves
+router.post('/wayleaves-subtype-answer', function (req, res) {
+  if (!req.session.data['wayleaves-subtype']) {
+    return res.render('cases/create-a-case/questions/wayleaves-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
+
+// Subtype: Other SOS Casework (With 'Other' textbox validation)
+router.post('/other-sos-casework-subtype-answer', function (req, res) {
+  var subtype = req.session.data['other-sos-casework-subtype'];
+  var otherText = req.session.data['sos-other-textbox'];
+
+  if (!subtype) {
+    return res.render('cases/create-a-case/questions/other-sos-casework-subtype', { errorSubtype: "Select the case subtype" });
+  }
+  
+  if (subtype === "Other" && (!otherText || otherText.trim() === "")) {
+    return res.render('cases/create-a-case/questions/other-sos-casework-subtype', { errorOtherText: "Enter the details for 'Other'" });
+  }
+
+  res.redirect('/cases/create-a-case/questions/case-name');
+});
 
 
-  var rowtype = req.session.data['row-type-of-case']
-  if (rowtype == "Coastal Access") {
-    res.redirect('/cases/create-a-case/questions/coastal-subtype')
+// ------------------------------------------------------------------------------
+// 3. CORE CASE DETAILS
+// ------------------------------------------------------------------------------
 
-  } else if (rowtype == "Common Land") {
-    res.redirect('/cases/create-a-case/questions/common-land-subtype') 
-
-  } else if (rowtype == "Rights of Way") {
-    res.redirect('/cases/create-a-case/questions/row-subtype') 
-}
-
-})
-
-
-// Error Messages
-
+// Case Name Validation
 router.post('/case-name-answer', function (req, res) {
-  var caseName = req.session.data['caseName']
-  if (caseName == "") {
+  var caseName = req.session.data['caseName'];
+  if (!caseName || caseName.trim() === "") {
     res.render('/cases/create-a-case/questions/case-name', {
       errorCaseName: "Enter the case name"
-    })
+    });
   } else {
-    res.redirect('/cases/create-a-case/questions/external-reference')
+    res.redirect('/cases/create-a-case/questions/external-reference');
   }
+});
 
-})
-
+// Received Date Validation (Checks for missing fields and valid numbers)
 router.post('/case-received-date-answer', function (req, res) {
+  var day = req.session.data['case-received-date-day'];
+  var month = req.session.data['case-received-date-month'];
+  var year = req.session.data['case-received-date-year'];
 
-  var day = req.session.data['case-received-date-day']
-  var month = req.session.data['case-received-date-month']
-  var year = req.session.data['case-received-date-year']
+  var errorList = [];
+  var errorFields = [];
 
-  var errorList = []   
-  var errorFields = [] 
-
+  // Check for completely empty date
   if (!day && !month && !year) {
-    errorList.push({ text: "Enter received date of submission", href: "#case-received-date-day" })
-    errorFields = ['day', 'month', 'year']
-  } 
-  else {
-    
-    var missing = []
-    if (!day) missing.push('day')
-    if (!month) missing.push('month')
-    if (!year) missing.push('year')
+    errorList.push({ text: "Enter received date of submission", href: "#case-received-date-day" });
+    errorFields = ['day', 'month', 'year'];
+  } else {
+    // Check for partially missing date fields
+    var missing = [];
+    if (!day) missing.push('day');
+    if (!month) missing.push('month');
+    if (!year) missing.push('year');
 
-  
     if (missing.length > 0) {
-      var missingText = ""
-      if (missing.length === 2) {
-        missingText = "Received date of submission must include a " + missing[0] + " and " + missing[1]
-      } else {
-        missingText = "Received date of submission must include a " + missing[0]
-      }
-      
-      errorList.push({ text: missingText, href: "#case-received-date-" + missing[0] })
-      errorFields = errorFields.concat(missing) // Add missing fields to highlight list
+      var missingText = missing.length === 2 
+        ? "Received date of submission must include a " + missing[0] + " and " + missing[1] 
+        : "Received date of submission must include a " + missing[0];
+      errorList.push({ text: missingText, href: "#case-received-date-" + missing[0] });
+      errorFields = errorFields.concat(missing);
     }
   }
 
+  // Validate specific number ranges
   if (day) {
-    var dayNum = Number(day)
+    var dayNum = Number(day);
     if (dayNum < 1 || dayNum > 31 || isNaN(dayNum)) {
-      errorList.push({ text: "Received date of submission day must be a real day", href: "#case-received-date-day" })
-      if (!errorFields.includes('day')) errorFields.push('day')
+      errorList.push({ text: "Received date of submission day must be a real day", href: "#case-received-date-day" });
+      if (!errorFields.includes('day')) errorFields.push('day');
     }
   }
 
   if (month) {
-    var monthNum = Number(month)
+    var monthNum = Number(month);
     if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
-      errorList.push({ text: "Received date of submission month must be between 1 and 12", href: "#case-received-date-month" })
-      if (!errorFields.includes('month')) errorFields.push('month')
+      errorList.push({ text: "Received date of submission month must be between 1 and 12", href: "#case-received-date-month" });
+      if (!errorFields.includes('month')) errorFields.push('month');
     }
   }
 
   if (year) {
-    var yearNum = Number(year)
+    var yearNum = Number(year);
     if (year.length != 4 || isNaN(yearNum)) {
-      errorList.push({ text: "Received date of submission year must include four numbers", href: "#case-received-date-year" })
-      if (!errorFields.includes('year')) errorFields.push('year')
+      errorList.push({ text: "Received date of submission year must include four numbers", href: "#case-received-date-year" });
+      if (!errorFields.includes('year')) errorFields.push('year');
     }
   }
 
-
+  // Return errors or proceed
   if (errorList.length > 0) {
-
-    var fieldErrorMessage = errorList.map(e => e.text).join('<br>')
-
+    var fieldErrorMessage = errorList.map(e => e.text).join('<br>');
     res.render('/cases/create-a-case/questions/case-received-date', {
-      errorList: errorList,
-      errorFields: errorFields,
-      fieldErrorMessage: fieldErrorMessage, 
-      day: day,
-      month: month,
-      year: year
-    })
+      errorList: errorList, errorFields: errorFields, fieldErrorMessage: fieldErrorMessage, 
+      day: day, month: month, year: year
+    });
   } else {
-    res.redirect('/cases/create-a-case/questions/applicant-check-first')
+    res.redirect('/cases/create-a-case/questions/applicant-check-first');
+  }
+});
+
+// Site Address Validation (Strict UK Postcode check if provided)
+router.post('/site-address-answer', function(req, res) {
+  var line1 = req.body['addressLine1'];
+  var line2 = req.body['addressLine2'];
+  var town = req.body['addressTown'];
+  var county = req.body['addressCounty'];
+  var postcode = req.body['addressPostcode'];
+
+  var error = false;
+  var errorMsg = "";
+
+  if (postcode && postcode.trim() !== "") {
+    var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
+    var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
+
+    if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
+      error = true;
+      errorMsg = "Postcode must be between 5 and 7 characters";
+    } else if (!postcodeRegex.test(cleanPostcode)) {
+      error = true;
+      errorMsg = "Enter a real postcode";
+    }
   }
 
-})
+  if (error) {
+    return res.render('/cases/create-a-case/questions/site-address', { 
+      addressLine1: line1, addressLine2: line2, addressTown: town, 
+      addressCounty: county, addressPostcode: postcode,
+      error: true, errorMessage: { text: errorMsg }
+    });
+  }
 
+  req.session.data['addressLine1'] = line1;
+  req.session.data['addressLine2'] = line2;
+  req.session.data['addressTown'] = town;
+  req.session.data['addressCounty'] = county;
+  req.session.data['addressPostcode'] = postcode;
 
+  res.redirect('/cases/create-a-case/questions/location');
+});
 
+// Authority Selection Validation
+const validAuthorities = [
+  "Bristol City Council", "Camden London Borough Council", "Cornwall Council",
+  "Manchester City Council", "Nottingham City Council", "Sheffield City Council",
+  "Southwark Council", "Wandsworth Borough Council", "Westminster City Council", "York City Council"
+];
+
+router.post('/authority-answer', function(req, res) {
+  let val = req.body.authorityName;
+
+  if (val && val.trim() !== "" && !validAuthorities.includes(val)) {
+    return res.render('cases/create-a-case/questions/authority', {
+      authorityName: val, errorAuthority: "Select an authority from the list"
+    });
+  }
+
+  req.session.data['authorityName'] = val;
+  res.redirect('/cases/create-a-case/questions/case-officer');
+});
+
+// Case Officer Validation
 router.post('/case-officer-answer', function (req, res) {
   var selectedOfficer = req.session.data['caseOfficer'];
   var allowedOfficers = [
-    "Charlotte Morphet",
-      "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield", "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", "Owen Woodwards",
-      "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner", "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange", "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
+      "Charlotte Morphet", "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", 
+      "Steve Waterfield", "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", 
+      "(Service Account) Automated Tester", "Owen Woodwards", "Tony Stark", 
+      "Steve Rogers", "Natasha Romanoff", "Bruce Banner", "Thor Odinson", 
+      "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange", 
+      "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
   ];
 
-  if (selectedOfficer == "" || !allowedOfficers.includes(selectedOfficer)) {
+  if (!selectedOfficer || !allowedOfficers.includes(selectedOfficer)) {
     res.render('cases/create-a-case/questions/case-officer', {
       errorCaseOfficer: "Select a case officer"
     });
   } else {
-    // UPDATED: Now points to the new Linked Case question
     res.redirect('/cases/create-a-case/questions/linked-case');
   }
 });
 
 
+// ------------------------------------------------------------------------------
+// 4. LINKED & LEAD CASE LOGIC
+// ------------------------------------------------------------------------------
 
-// 1. Linked Case Question (Branching)
+// Q1: Is this a linked case?
 router.post('/linked-case-answer', function(req, res) {
   var isLinked = req.body['isLinkedCase'];
 
@@ -223,7 +337,6 @@ router.post('/linked-case-answer', function(req, res) {
 
   req.session.data['isLinkedCase'] = isLinked;
 
-  // Branching Logic
   if (isLinked === 'yes') {
     res.redirect('/cases/create-a-case/questions/is-lead-case');
   } else {
@@ -231,7 +344,7 @@ router.post('/linked-case-answer', function(req, res) {
   }
 });
 
-// 2. NEW ROUTE: Is this the lead case?
+// Q2: Is this case the lead case?
 router.post('/is-lead-case-answer', function(req, res) {
   var isLead = req.body['isLeadCase'];
 
@@ -243,7 +356,6 @@ router.post('/is-lead-case-answer', function(req, res) {
 
   req.session.data['isLeadCase'] = isLead;
 
-  // Branching Logic
   if (isLead === 'yes') {
     res.redirect('/cases/create-a-case/check-your-answers');
   } else {
@@ -251,7 +363,7 @@ router.post('/is-lead-case-answer', function(req, res) {
   }
 });
 
-// 3. NEW ROUTE: What is the lead case reference?
+// Q3: What is the lead case reference?
 router.post('/lead-case-reference-answer', function(req, res) {
   var refInput = req.body['leadCaseReference'];
 
@@ -266,233 +378,74 @@ router.post('/lead-case-reference-answer', function(req, res) {
 });
 
 
-router.post('/site-address-answer', function(req, res) {
-  
-  // Get values from form
-  var line1 = req.body['addressLine1'];
-  var line2 = req.body['addressLine2'];
-  var town = req.body['addressTown'];
-  var county = req.body['addressCounty'];
-  var postcode = req.body['addressPostcode'];
-
-  // --- VALIDATION LOGIC ---
-  var error = false;
-  var errorMsg = "";
-
-  // Only validate if postcode is NOT empty (since it's optional)
-  if (postcode && postcode.trim() !== "") {
-    
-    // Clean up input (remove spaces, uppercase)
-    var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
-    
-    // Strict UK Postcode Regex
-    var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
-
-    if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
-      error = true;
-      errorMsg = "Postcode must be between 5 and 7 characters";
-    } 
-    else if (!postcodeRegex.test(cleanPostcode)) {
-      error = true;
-      errorMsg = "Enter a real postcode";
-    }
-  }
-
-  // IF ERROR: Re-render the page with errors
-  if (error) {
-    return res.render('/cases/create-a-case/questions/site-address', { // Note: 'site-address' is likely in the root views folder for create flow
-      // Pass back values so user doesn't have to re-type
-      addressLine1: line1,
-      addressLine2: line2,
-      addressTown: town,
-      addressCounty: county,
-      addressPostcode: postcode,
-      error: true,
-      errorMessage: { text: errorMsg }
-    });
-  }
-
-  // --- SUCCESS ---
-  // Save to session (Create flow uses session data)
-  req.session.data['addressLine1'] = line1;
-  req.session.data['addressLine2'] = line2;
-  req.session.data['addressTown'] = town;
-  req.session.data['addressCounty'] = county;
-  req.session.data['addressPostcode'] = postcode;
-
-  // Continue to next step
-  res.redirect('/cases/create-a-case/questions/location'); // or whatever your next step is
-});
-
-// --- SHARED DUMMY AUTHORITIES LIST ---
-const validAuthorities = [
-  "Bristol City Council",
-  "Camden London Borough Council",
-  "Cornwall Council",
-  "Manchester City Council",
-  "Nottingham City Council",
-  "Sheffield City Council",
-  "Southwark Council",
-  "Wandsworth Borough Council",
-  "Westminster City Council",
-  "York City Council"
-];
-
-
-// =========================================================
-// CREATE A CASE: AUTHORITY
-// =========================================================
-router.post('/authority-answer', function(req, res) {
-  let val = req.body.authorityName;
-
-  // Validation: Only throw error if they typed something AND it's not in the list
-  if (val && val.trim() !== "" && !validAuthorities.includes(val)) {
-    return res.render('cases/create-a-case/questions/authority', {
-      authorityName: val,
-      errorAuthority: "Select an authority from the list"
-    });
-  }
-
-  // Save to session and move to the next question
-  req.session.data['authorityName'] = val;
-  res.redirect('/cases/create-a-case/questions/case-officer');
-});
-
-
-//Reference Number Validation
+// ------------------------------------------------------------------------------
+// 5. FINAL SUBMISSION & REFERENCE GENERATION
+// ------------------------------------------------------------------------------
 
 router.post('/create-case-submit', function (req, res) {
-
-  // --- 1. DEBUG LOGS (Keep this forever!) ---
   console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   console.log("!!! ROUTE TRIGGERED: /create-case-submit !!!");
   console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-  // --- 2. DETERMINE CASE TYPE (ROBUST MODE) ---
-  // We use .toLowerCase() to match loosely (avoids capitalization errors)
+  // --- 1. DETERMINE CASE TYPE ---
   var area = (req.session.data['casework-area'] || "").toLowerCase();
   var caseType = "";
 
-  // Logic: Check keywords rather than exact strings
   if (area.includes('rights') || area.includes('common')) {
      caseType = req.session.data['row-type-of-case']; 
-  } 
-  else {
-     // Default to PEAS if it's not ROW/Common Land
+  } else {
      caseType = req.session.data['peas-type-of-case'];
   }
   
-  // Fallback if still empty
   if (!caseType) {
     caseType = req.session.data['row-type-of-case'] || req.session.data['peas-type-of-case'] || "UNKNOWN";
   }
 
-  console.log("DEBUG: Area identified as:", area);
-  console.log("DEBUG: Case Type identified as:", caseType);
-
-
-  // --- 3. GET SUBTYPE (STRICT SWITCH) ---
+  // --- 2. GET SUBTYPE ---
   var subtype = "";
-
   switch(caseType) {
-    case 'Drought':
-      subtype = req.session.data['drought-subtype']; 
-      break;
-    case 'Housing and Planning CPOs':
-    case 'Housing':
-      subtype = req.session.data['housing-planning-cpos-subtype'];
-      break;
-    case 'Other Secretary of State casework':
-    case 'Other':
-      subtype = req.session.data['other-sos-casework-subtype'];
-      break;
-    case 'Purchase Notices':
-      subtype = ""; // No subtype
-      break;
-    case 'Wayleaves':
-      subtype = req.session.data['wayleaves-subtype'];
-      break;
-    case 'Coastal Access':
-      subtype = req.session.data['coastal-subtype'];
-      break;
-    case 'Common Land':
-      subtype = req.session.data['common-land-subtype'];
-      break;
-    case 'Rights of Way':
-      subtype = req.session.data['row-subtype'];
-      break;
-    default:
-      subtype = "UNKNOWN";
+    case 'Drought': subtype = req.session.data['drought-subtype']; break;
+    case 'Housing and Planning CPOs': case 'Housing': subtype = req.session.data['housing-planning-cpos-subtype']; break;
+    case 'Other Secretary of State casework': case 'Other': subtype = req.session.data['other-sos-casework-subtype']; break;
+    case 'Purchase Notices': subtype = ""; break;
+    case 'Wayleaves': subtype = req.session.data['wayleaves-subtype']; break;
+    case 'Coastal Access': subtype = req.session.data['coastal-subtype']; break;
+    case 'Common Land': subtype = req.session.data['common-land-subtype']; break;
+    case 'Rights of Way': subtype = req.session.data['row-subtype']; break;
+    default: subtype = "UNKNOWN";
   }
 
-
-  // --- 4. THE FULL DATA MAP ---
+  // --- 3. THE FULL DATA MAP ---
   const refData = {
-    "Drought": { 
-      "Drought Orders": ["DRO", "ORD"], "Drought orders": ["DRO", "ORD"], 
-      "Drought Permits": ["DRO", "PER"], "Drought permits": ["DRO", "PER"]
-    },
-    "Housing and Planning CPOs": { 
-      "Housing": ["CPO", "HOU"], "Planning": ["CPO", "PLA"], "Ad hoc": ["CPO", "ADH"] 
-    },
-    "Other Secretary of State casework": {
-      "DEFRA CPO": ["SOS", "ENV"], "DESNZ CPO": ["SOS", "ENG"], "DfT CPO": ["SOS", "TRN"],
-      "Ad hoc CPO": ["SOS", "CPO"], "Advert": ["SOS", "ADV"], "Completion notice": ["SOS", "COM"],
-      "Discontinuance notice": ["SOS", "DIS"], "Modification to planning permission": ["SOS", "MOD"],
-      "Review of mineral permission": ["SOS", "MIN"], "Revocation": ["SOS", "REV"], "Other": ["SOS", "OTH"]
-    },
+    "Drought": { "Drought Orders": ["DRO", "ORD"], "Drought orders": ["DRO", "ORD"], "Drought Permits": ["DRO", "PER"], "Drought permits": ["DRO", "PER"] },
+    "Housing and Planning CPOs": { "Housing": ["CPO", "HOU"], "Planning": ["CPO", "PLA"], "Ad hoc": ["CPO", "ADH"] },
+    "Other Secretary of State casework": { "DEFRA CPO": ["SOS", "ENV"], "DESNZ CPO": ["SOS", "ENG"], "DfT CPO": ["SOS", "TRN"], "Ad hoc CPO": ["SOS", "CPO"], "Advert": ["SOS", "ADV"], "Completion notice": ["SOS", "COM"], "Discontinuance notice": ["SOS", "DIS"], "Modification to planning permission": ["SOS", "MOD"], "Review of mineral permission": ["SOS", "MIN"], "Revocation": ["SOS", "REV"], "Other": ["SOS", "OTH"] },
     "Purchase Notices": {},
-    "Wayleaves": { 
-      "New lines": ["WAY", "LIN"], "Tree lopping": ["WAY", "TRE"], "Wayleaves": ["WAY", "WAY"] 
-    },
-    "Coastal Access": {
-      "Coastal access appeal": ["MCA", "CAA"], "Notice appeal": ["MCA", "NOT"], 
-      "Objection": ["MCA", "OBJ"], "Restriction appeal (access land)": ["MCA", "RES"]
-    },
-    "Common Land": {
-      "Commons for Ecclesiastical Purposes": ["COM", "ECC"], "Commons in Greater London": ["COM", "LDN"], 
-      "Compulsory Purchase of Common Land": ["COM", "PCL"], "Referred applications from Commons Registration Authorities": ["COM", "REF"], 
-      "Deregistration & Exchange": ["COM", "DRE"], "Inclosure": ["COM", "INC"], 
-      "Inclosure : obsolescent functions": ["COM", "OBS"], "Land Exchange": ["COM", "LEX"], 
-      "Local Acts and Provisional Order Confirmation Acts": ["COM", "LCA"], "Public Access to Commons - limitations and restrictions": ["COM", "PAC"], 
-      "Scheme of Management": ["COM", "SOM"], "Stint Rates": ["COM", "STI"], 
-      "Works on Common Land": ["COM", "WCL"], "Works on Common Land (National Trust)": ["COM", "WNT"]
-    },
-    "Rights of Way": {
-      "Dispensation for Serving Notice HA80": ["ROW", "SNH"], "Dispensation for Serving Notice TCPA90": ["ROW", "SNT"],
-      "Dispensation for Serving Notice WCA81": ["ROW", "SNW"], "Opposed Definitive Map Modification Order (DMMO)": ["ROW", "DMM"],
-      "Opposed Public Path Order (PPO) HA80": ["ROW", "PPH"], "Opposed Public Path Order (PPO) TCPA90": ["ROW", "PPT"],
-      "Schedule 14 Appeal": ["ROW", "S14A"], "Schedule 14 Direction": ["ROW", "S14D"], "Schedule 13A Appeal": ["ROW", "S13A"]
-    }
+    "Wayleaves": { "New lines": ["WAY", "LIN"], "Tree lopping": ["WAY", "TRE"], "Wayleaves": ["WAY", "WAY"] },
+    "Coastal Access": { "Coastal access appeal": ["MCA", "CAA"], "Notice appeal": ["MCA", "NOT"], "Objection": ["MCA", "OBJ"], "Restriction appeal (access land)": ["MCA", "RES"] },
+    "Common Land": { "Commons for Ecclesiastical Purposes": ["COM", "ECC"], "Commons in Greater London": ["COM", "LDN"], "Compulsory Purchase of Common Land": ["COM", "PCL"], "Referred applications from Commons Registration Authorities": ["COM", "REF"], "Deregistration & Exchange": ["COM", "DRE"], "Inclosure": ["COM", "INC"], "Inclosure : obsolescent functions": ["COM", "OBS"], "Land Exchange": ["COM", "LEX"], "Local Acts and Provisional Order Confirmation Acts": ["COM", "LCA"], "Public Access to Commons - limitations and restrictions": ["COM", "PAC"], "Scheme of Management": ["COM", "SOM"], "Stint Rates": ["COM", "STI"], "Works on Common Land": ["COM", "WCL"], "Works on Common Land (National Trust)": ["COM", "WNT"] },
+    "Rights of Way": { "Dispensation for Serving Notice HA80": ["ROW", "SNH"], "Dispensation for Serving Notice TCPA90": ["ROW", "SNT"], "Dispensation for Serving Notice WCA81": ["ROW", "SNW"], "Opposed Definitive Map Modification Order (DMMO)": ["ROW", "DMM"], "Opposed Public Path Order (PPO) HA80": ["ROW", "PPH"], "Opposed Public Path Order (PPO) TCPA90": ["ROW", "PPT"], "Schedule 14 Appeal": ["ROW", "S14A"], "Schedule 14 Direction": ["ROW", "S14D"], "Schedule 13A Appeal": ["ROW", "S13A"] }
   };
 
-
-  // --- 5. GENERATE REFERENCE ---
+  // --- 4. GENERATE REFERENCE ---
   var finalRef = "ERROR/REF/100"; 
   var seq = "100" + Math.floor(1 + Math.random() * 99); 
 
-  if (caseType == "Purchase Notices") {
+  if (caseType === "Purchase Notices") {
     finalRef = `PUR/${seq}`;
-  } 
-  else if (refData[caseType]) {
+  } else if (refData[caseType]) {
     var typeGroup = refData[caseType];
     var codes = typeGroup[subtype];
-    
     if (codes) {
       finalRef = `${codes[0]}/${codes[1]}/${seq}`;
     } else {
-      console.log("WARNING: Code not found for subtype '" + subtype + "'. Using fallback.");
       finalRef = `UNK/NOWN/${seq}`;
     }
-  } 
-  else {
+  } else {
     finalRef = `GEN/ERIC/${seq}`; 
   }
 
-
-  // --- 6. SAVE THE CASE ---
-
-  // -> NEW LOGIC: Resolve the Lead/Linked fields using the finalRef generated above
+  // --- 5. RESOLVE LINKED / LEAD CASE ---
   var isLinkedFlag = req.session.data['isLinkedCase'] === 'yes';
   var isLeadFlag = req.session.data['isLeadCase'] === 'yes';
   var inputLeadRef = req.session.data['leadCaseReference'];
@@ -502,12 +455,9 @@ router.post('/create-case-submit', function (req, res) {
 
   if (isLinkedFlag) {
     if (isLeadFlag) {
-      // It IS the lead case. Just save its own reference into the leadCase field.
       resolvedLeadCase = finalRef;
     } else {
-      // It is NOT the lead case. Use what they typed in the box.
       resolvedLeadCase = inputLeadRef;
-      // Add the typed lead case to the linked cases array so it shows in the UI later
       initialLinkedCases.push({
         id: 'lc-' + Math.floor(Math.random() * 10000),
         reference: inputLeadRef
@@ -515,17 +465,9 @@ router.post('/create-case-submit', function (req, res) {
     }
   }
 
-  // Define case work area slug for both display and filtering (This is crucial for your checkboxes to work on the All Cases page)
+  // --- 6. COMPILE CASE DATA OBJECT ---
   var areaSelection = req.session.data['casework-area'];
-  var areaSlug = "";
-
-  if (areaSelection === "Planning, Environmental and Applications") {
-    areaSlug = "planning-environment-applications";
-  } else if (areaSelection === "Rights of Way and Common Land") {
-    areaSlug = "rights-of-way-common-land";
-  }
-
-  // 1. Construct the address string
+  
   var fullAddress = [
     req.session.data['addressLine1'],
     req.session.data['addressLine2'],
@@ -534,24 +476,17 @@ router.post('/create-case-submit', function (req, res) {
     req.session.data['addressPostcode']
   ].filter(Boolean).join(',\n');
 
-  // 2. Create the case object with Filter-Ready Slugs
   var newCase = {
     "reference": finalRef,
-    
-    // Status: Take from the radio selection, fallback to "New case" if empty
     "caseStatus": "",
-
-    // --- NEW: INJECT THE RESOLVED LINKED DATA HERE ---
     "isLinked": isLinkedFlag,
     "leadCase": resolvedLeadCase,
     "linkedCases": initialLinkedCases,
-    // ------------------------------------------------
-
-    // Display Labels (for the table)
+    
     "type": caseType,
     "subtype": subtype,
     
-    // Filter Slugs (Crucial for your checkboxes to work)
+    // Slugs for filtering/routing
     "areaValue": (req.session.data['casework-area'] || "").toLowerCase().replace(/,?\s+/g, '-'),
     "typeValue": (caseType || "").toLowerCase().replace(/,?\s+/g, '-'),
     "subtypeValue": (subtype || "").toLowerCase().replace(/,?\s+/g, '-'),
@@ -560,48 +495,32 @@ router.post('/create-case-submit', function (req, res) {
     "receivedMonth": req.session.data['case-received-date-month'],
     "receivedYear": req.session.data['case-received-date-year'],
     "caseOfficer": req.session.data['caseOfficer'],
-    
     "caseName": req.session.data['caseName'] || req.session.data['case-name'],
     "siteAddress": fullAddress, 
-    
     "addressLine1": req.session.data['addressLine1'],
     "addressLine2": req.session.data['addressLine2'],
     "addressTown": req.session.data['addressTown'],
     "addressCounty": req.session.data['addressCounty'],
     "addressPostcode": req.session.data['addressPostcode'],
-
-    applicants: req.session.data['applicants'] || [],
+    "applicants": req.session.data['applicants'] || [],
     "authorityName": req.session.data['authorityName'] || req.session.data['authority-name'],
     "externalReference": req.session.data['externalReference'] || req.session.data['external-reference'],
     "siteLocation": req.session.data['siteLocation'] || req.session.data['site-location']
   };
 
-  // 3. Push to database
+  // --- 7. SAVE TO DATABASE & REDIRECT ---
   if (!req.session.data['cases']) { req.session.data['cases'] = []; }
   req.session.data['cases'].push(newCase);
 
-
-
-  // --- 6.5 SAVE, CLEANUP & REDIRECT ---
-
-  // 1. Capture the "database" (the cases you've already saved)
   const savedCases = req.session.data['cases'] || [];
-
-  // 2. Clear the session but restore the database
-  // This wipes all the form data used during creation
   req.session.data = { 'cases': savedCases };
 
   if (typeof addAuditLog === "function") {
     addAuditLog(req, finalRef, "Case created");
   }
 
-  // 3. Log the success for your own terminal debugging
   console.log("SUCCESS: Case Saved with Ref:", finalRef);
-  
-  // 4. Perform the SINGLE redirect to the success page
-  // We pass the caseRef in the URL so the success page can display "Case [Ref] created"
   res.redirect('/cases/create-a-case/success?caseRef=' + encodeURIComponent(finalRef));
-
 });
 
 

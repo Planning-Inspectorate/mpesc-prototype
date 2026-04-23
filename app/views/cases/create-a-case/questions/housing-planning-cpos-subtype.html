@@ -12,54 +12,35 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorSubtype, href: "#housing-planning-cpos-subtype" }]
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        Select the subtype that covers this Compulsory Purchase Order (CPO)
-      </h1>
+    <h1 class="govuk-heading-l">Select the subtype that covers this Compulsory Purchase Order (CPO)</h1>
 
-      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
+    <form class="form" action="/housing-planning-cpos-subtype-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "housing-planning-cpos-subtype",
+        value: data['housing-planning-cpos-subtype'],
+        fieldset: {
+          legend: { text: "Select the subtype that covers this Compulsory Purchase Order (CPO)", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "Housing", text: "Housing" },
+          { value: "Planning", text: "Planning" },
+          { value: "Ad hoc", text: "Ad hoc" }
+        ]
+      }) }}
 
-
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
-{{ govukRadios({
-  name: "housing-planning-cpos-subtype",
-  value: data['housing-planning-cpos-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-  items: [
-    {
-      value: "Housing",
-      text: "Housing"
-    },
-    {
-      value: "Planning",
-      text: "Planning"
-    },
-    {
-      value: "Ad hoc",
-      text: "Ad hoc"
-    }
-    
-  ]
-}) }}
-
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

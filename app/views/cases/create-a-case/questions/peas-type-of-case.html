@@ -12,56 +12,34 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorPeasType %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorPeasType, href: "#peas-type-of-case" }]
+      }) }}
+    {% endif %}
 
-      <form class="form" action="/peas-type-of-case-answer" method="post">
-
-        
-          {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
-{{ govukRadios({
-  name: "peas-type-of-case",
-  value: data['peas-type-of-case'], fieldset: {
-    legend: {
-      text: "Which case type is it?",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-  items: [
-    {
-      value: "Drought",
-      text: "Drought"
-    },
-    {
-      value: "Housing and Planning CPOs",
-      text: "Housing and Planning CPOs"
-    },
-    {
-      value: "Other Secretary of State casework",
-      text: "Other Secretary of State casework"
-    },
-    {
-      value: "Purchase Notices",
-      text: "Purchase Notices"
-    },
- {
-      value: "Wayleaves",
-      text: "Wayleaves"
-    }
-  ]
-}) }}
-       
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+    <form class="form" action="/peas-type-of-case-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "peas-type-of-case",
+        value: data['peas-type-of-case'],
+        fieldset: {
+          legend: { text: "Which case type is it?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: errorPeasType } if errorPeasType else null,
+        items: [
+          { value: "Drought", text: "Drought" },
+          { value: "Housing and Planning CPOs", text: "Housing and Planning CPOs" },
+          { value: "Other Secretary of State casework", text: "Other Secretary of State casework" },
+          { value: "Purchase Notices", text: "Purchase Notices" },
+          { value: "Wayleaves", text: "Wayleaves" }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

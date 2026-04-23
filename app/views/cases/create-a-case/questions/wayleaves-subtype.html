@@ -12,51 +12,35 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorSubtype, href: "#wayleaves-subtype" }]
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        What Wayleaves subtype is it?
-      </h1>
+    <h1 class="govuk-heading-l">What Wayleaves subtype is it?</h1>
 
-      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
-
-{{ govukRadios({
-  name: "wayleaves-subtype",
-  value: data['wayleaves-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-  items: [
-    {
-      value: "New lines",
-      text: "New lines"
-    },
-    {
-      value: "Tree lopping",
-      text: "Tree lopping"
-    },
-    {
-      value: "Wayleaves",
-      text: "Wayleaves"
-    }
+    <form class="form" action="/wayleaves-subtype-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "wayleaves-subtype",
+        value: data['wayleaves-subtype'],
+        fieldset: {
+          legend: { text: "What Wayleaves subtype is it?", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "New lines", text: "New lines" },
+          { value: "Tree lopping", text: "Tree lopping" },
+          { value: "Wayleaves", text: "Wayleaves" }
+        ]
+      }) }}
     
-  ]
-}) }}
-    
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

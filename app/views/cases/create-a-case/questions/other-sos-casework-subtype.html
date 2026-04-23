@@ -12,104 +12,56 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype or errorOtherText %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: errorSubtype, href: "#other-sos-casework-subtype" } if errorSubtype,
+          { text: errorOtherText, href: "#sos-other-textbox" } if errorOtherText
+        ] | reject("undefined")
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        Which Other Secretary of State casework subtype is it?
-      </h1>
+    <form class="form" action="/other-sos-casework-subtype-answer" method="post" novalidate>
 
-      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
-
-
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
-         {% from "govuk/components/input/macro.njk" import govukInput %}
-
-         {% set otherHtml %}
-         
-  {{ govukInput({
-    classes: "govuk-input--width-10",
-    id: "sos-other-textbox",
-    name: "sos-other-textbox",
-    value: data['sos-other-textbox'],
-    type: "text",
-    attributes: {
-      "autocomplete": "off"
-    }
-  }) }}
-{% endset %}
-
-{{ govukRadios({
-  name: "other-sos-casework-subtype",
-  value: data['other-sos-casework-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-  items: [
-    {
-      value: "DEFRA CPO",
-      text: "DEFRA CPO"
-    },
-    {
-      value: "DESNZ CPO",
-      text: "DESNZ CPO"
-    },
-    {
-      value: "DfT CPO",
-      text: "DfT CPO"
-    },
-    {
-      value: "Ad hoc CPO",
-      text: "Ad hoc CPO"
-    },
-    {
-      value: "Advert",
-      text: "Advert"
-    },
-    {
-      value: "Completion notice",
-      text: "Completion notice"
-    },
-    {
-      value: "Discontinuance notice",
-      text: "Discontinuance notice"
-    },
-    {
-      value: "Modification to planning permission",
-      text: "Modification to planning permission"
-    },
-    {
-      value: "Review of mineral permission",
-      text: "Review of mineral permission"
-    },
-    {
-      value: "Revocation",
-      text: "Revocation"
-    },
-    {
-      value: "Other",
-      text: "Other",
-      conditional: {
-        html: otherHtml
-      }
-    }
-    
-  ]
-}) }}
-  
-
-        {{ govukButton({
-          text: "Continue"
+      {% set otherHtml %}
+        {{ govukInput({
+          classes: "govuk-input--width-10",
+          id: "sos-other-textbox",
+          name: "sos-other-textbox",
+          value: data['sos-other-textbox'],
+          errorMessage: { text: errorOtherText } if errorOtherText else null,
+          attributes: { "autocomplete": "off" }
         }) }}
+      {% endset %}
 
-      </form>
+      {{ govukRadios({
+        name: "other-sos-casework-subtype",
+        value: data['other-sos-casework-subtype'],
+        fieldset: {
+          legend: { text: "Which Other Secretary of State casework subtype is it?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "DEFRA CPO", text: "DEFRA CPO" },
+          { value: "DESNZ CPO", text: "DESNZ CPO" },
+          { value: "DfT CPO", text: "DfT CPO" },
+          { value: "Ad hoc CPO", text: "Ad hoc CPO" },
+          { value: "Advert", text: "Advert" },
+          { value: "Completion notice", text: "Completion notice" },
+          { value: "Discontinuance notice", text: "Discontinuance notice" },
+          { value: "Modification to planning permission", text: "Modification to planning permission" },
+          { value: "Review of mineral permission", text: "Review of mineral permission" },
+          { value: "Revocation", text: "Revocation" },
+          { value: "Other", text: "Other", conditional: { html: otherHtml } }
+        ]
+      }) }}
 
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}

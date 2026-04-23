@@ -9,56 +9,36 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    {% if errorSubtype %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [{ text: errorSubtype, href: "#coastal-subtype" }]
+      }) }}
+    {% endif %}
 
-      <h1 class="govuk-heading-l">
-        Which Coastal Access subtype is it?
-      </h1>
+    <h1 class="govuk-heading-l">Which Coastal Access subtype is it?</h1>
 
-      <form class="form" action="/cases/create-a-case/questions/case-name" method="post">
-      
-         {% from "govuk/components/radios/macro.njk" import govukRadios %}
-
-{{ govukRadios({
-  name: "coastal-subtype",
-  value: data['coastal-subtype'], fieldset: {
-    legend: {
-      text: "",
-      isPageHeading: true,
-      classes: "govuk-fieldset__legend--l"
-    }
-  },
-
-  items: [
-    {
-      value: "Coastal access appeal",
-      text: "Coastal access appeal"
-    },
-    {
-      value: "Notice appeal",
-      text: "Notice appeal"
-    },
-    {
-      value: "Objection",
-      text: "Objection"
-    },
-    {
-      value: "Restriction appeal (access land)",
-      text: "Restriction appeal (access land)"
-    }
-    
-  ]
-}) }}
+    <form class="form" action="/coastal-subtype-answer" method="post" novalidate>
+      {{ govukRadios({
+        name: "coastal-subtype",
+        value: data['coastal-subtype'],
+        fieldset: {
+          legend: { text: "Which Coastal Access subtype is it?", isPageHeading: false, classes: "govuk-visually-hidden" }
+        },
+        errorMessage: { text: errorSubtype } if errorSubtype else null,
+        items: [
+          { value: "Coastal access appeal", text: "Coastal access appeal" },
+          { value: "Notice appeal", text: "Notice appeal" },
+          { value: "Objection", text: "Objection" },
+          { value: "Restriction appeal (access land)", text: "Restriction appeal (access land)" }
+        ]
+      }) }}
        
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-
-      </form>
-
-    </div>
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
   </div>
-
+</div>
 {% endblock %}
