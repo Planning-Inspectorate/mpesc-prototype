@@ -1,0 +1,67 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+What is your contact type? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+    {% endif %}
+
+<form method="post" action="/cases/contacts/step-1?ref={{ ref }}&id={{ id }}">
+      
+      {{ govukRadios({
+        idPrefix: "con-type",
+        name: "con-type",
+        fieldset: {
+          legend: {
+            text: "What is your contact type?",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        errorMessage: { text: errorList[0].text } if errorList and errorList.length > 0 else null,
+        items: [
+          { value: "Acquiring authority", text: "Acquiring authority", checked: (type == "Acquiring authority") },
+          { value: "Agent", text: "Agent", checked: (type == "Agent") },
+          { value: "Case Officer", text: "Case Officer", checked: (type == "Case Officer") },
+          { value: "Commons registration authority", text: "Commons registration authority", checked: (type == "Commons registration authority") },
+          { value: "Consultee", text: "Consultee", checked: (type == "Consultee") },
+          { value: "Government Agency", text: "Government Agency", checked: (type == "Government Agency") },
+          { value: "Interested Owner", text: "Interested Owner", checked: (type == "Interested Owner") },
+          { value: "Interested Person/Party", text: "Interested Person/Party", checked: (type == "Interested Person/Party") },
+          { value: "Landowner", text: "Landowner", checked: (type == "Landowner") },
+          { value: "Landowner Agent", text: "Landowner Agent", checked: (type == "Landowner Agent") },
+          { value: "Local planning authority", text: "Local planning authority", checked: (type == "Local planning authority") },
+          { value: "LPA Agent", text: "LPA Agent", checked: (type == "LPA Agent") },
+          { value: "LPA Contact", text: "LPA Contact", checked: (type == "LPA Contact") },
+          { value: "Member of Parliament", text: "Member of Parliament", checked: (type == "Member of Parliament") },
+          { value: "Natural England", text: "Natural England", checked: (type == "Natural England") },
+          { value: "Notified party", text: "Notified party", checked: (type == "Notified party") },
+          { value: "Order Making Authority", text: "Order Making Authority", checked: (type == "Order Making Authority") },
+          { value: "Order Making Authority Contact", text: "Order Making Authority Contact", checked: (type == "Order Making Authority Contact") },
+          { value: "Other Party", text: "Other Party", checked: (type == "Other Party") },
+          { value: "Potential claimant", text: "Potential claimant", checked: (type == "Potential claimant") },
+          { value: "Programme Officer", text: "Programme Officer", checked: (type == "Programme Officer") },
+          { value: "Representer", text: "Representer", checked: (type == "Representer") },
+          { value: "Representative", text: "Representative", checked: (type == "Representative") },
+          { value: "Secretary of State", text: "Secretary of State", checked: (type == "Secretary of State") },
+          { value: "Sponsor", text: "Sponsor", checked: (type == "Sponsor") },
+          { value: "Tenant", text: "Tenant", checked: (type == "Tenant") },
+          { value: "Third Party", text: "Third Party", checked: (type == "Third Party") }
+        ]
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

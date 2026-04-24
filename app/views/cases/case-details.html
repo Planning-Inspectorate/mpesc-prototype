@@ -685,7 +685,7 @@
         key: { text: "Site address" }, 
         value: { html: siteAddressHtml }, 
         actions: { items: [{ 
-          href: "/cases/edit/site-address?ref=" + currentCase.reference if hasSiteAddress else "/cases/edit/site-address/first?ref=" + currentCase.reference, 
+          href: "/cases/site-address/hub?ref=" + currentCase.reference if hasSiteAddress else "/cases/site-address/start?ref=" + currentCase.reference, 
           text: "Change" if hasSiteAddress else "Add", 
           visuallyHiddenText: "site address" 
         }] } 
@@ -750,7 +750,7 @@
         key: { text: "Inspector(s)" }, 
         value: { html: inspectorsHtml }, 
         actions: { items: [{ 
-          href: "/cases/edit/check-inspectors?ref=" + currentCase.reference if currentCase.inspectors.length > 0 else "/cases/edit/check-inspectors-first?ref=" + currentCase.reference, 
+          href: "/cases/inspectors/check-inspectors?ref=" + currentCase.reference if currentCase.inspectors.length > 0 else "/cases/inspectors/check-inspectors-first?ref=" + currentCase.reference, 
           text: "Change" if (currentCase.inspectors and currentCase.inspectors.length > 0) else "Add", 
           visuallyHiddenText: "inspectors" 
         }] } 
@@ -871,7 +871,7 @@
         key: { text: "Objector(s)" },
         value: { text: (currentCase.objectors.length + " Objector(s)") if (currentCase.objectors and currentCase.objectors.length > 0) else "-" },
         actions: { items: [{ 
-          href: "/cases/key-contacts/objectors?ref=" + currentCase.reference if currentCase.objectors.length > 0 else "/cases/key-contacts/objectors/first?ref=" + currentCase.reference,
+          href: "/cases/objectors/hub?ref=" + currentCase.reference if currentCase.objectors.length > 0 else "/cases/objectors/start?ref=" + currentCase.reference,
           text: "Change" if currentCase.objectors.length else "Add", 
           visuallyHiddenText: "objectors" 
         }] }
@@ -880,7 +880,7 @@
         key: { text: "Contact(s)" },
         value: { text: (currentCase.contacts.length + " Contact(s)") if (currentCase.contacts and currentCase.contacts.length > 0) else "-" },
         actions: { items: [{ 
-          href: "/cases/key-contacts/contacts?ref=" + currentCase.reference if currentCase.contacts.length > 0 else "/cases/key-contacts/contacts/first?ref=" + currentCase.reference,
+          href: "/cases/contacts/hub?ref=" + currentCase.reference if currentCase.contacts.length > 0 else "/cases/contacts/start?ref=" + currentCase.reference,
           text: "Change" if currentCase.contacts.length else "Add", 
           visuallyHiddenText: "contacts" 
         }] }

@@ -1,0 +1,39 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+What is the objector status? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+    {% endif %}
+
+    <form method="post" action="/cases/objectors/step-4?ref={{ ref }}&id={{ id }}">
+      
+      {{ govukRadios({
+        name: "obj-status",
+        fieldset: {
+          legend: { text: "What is the objector status?", isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+        },
+        errorMessage: { text: errorList[0].text } if errorList.length > 0 else null,
+        items: [
+          { value: "Admissible", text: "Admissible", checked: (status == "Admissible") },
+          { value: "Upheld", text: "Upheld", checked: (status == "Upheld") },
+          { value: "Withdrawn", text: "Withdrawn", checked: (status == "Withdrawn") },
+          { divider: "or" },
+          { value: "Not applicable", text: "Not applicable", checked: (status == "Not applicable") }
+        ]
+      }) }}
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

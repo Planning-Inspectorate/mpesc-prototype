@@ -1,0 +1,91 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  {% if errorList.length > 0 %}Error: {% endif %}Who is the objector? - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <form method="post" action="/cases/objectors/step-1?ref={{ ref }}&id={{ id }}" novalidate>
+
+      {% call govukFieldset({
+        legend: {
+          text: "Who is the objector?",
+          classes: "govuk-fieldset__legend--l",
+          isPageHeading: true
+        }
+      }) %}
+
+    {# --- BODY TEXT BLOCK START --- #}
+    <p class="govuk-body">
+      Enter the name of the individual, the organisation, or both. You can enter:
+    </p>
+    
+    <ul class="govuk-list govuk-list--bullet">
+      <li>a person's name</li>
+      <li>a joint party, company or organisation name</li>
+      <li>both a person and a joint party or company name</li>
+    </ul>
+    
+    <p class="govuk-body">
+      Use the 'Joint objectors or company name' field to add multiple names at once e.g. Mr and Mrs Smith
+    </p>
+
+    <br>
+    {# --- BODY TEXT BLOCK END --- #}
+
+      {# Render general error inline if they left everything blank #}
+      {% if errors.general %}
+        <p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errors.general.text }}</p>
+      {% endif %}
+
+      {{ govukInput({
+        label: {
+          text: "First Name"
+        },
+        id: "obj-fname",
+        name: "obj-fname",
+        value: fname,
+        errorMessage: errors.fname if errors.fname else null
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Last Name"
+        },
+        id: "obj-lname",
+        name: "obj-lname",
+        value: lname,
+        errorMessage: errors.lname if errors.lname else null
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Objector company or organisation name"
+        },
+        id: "obj-org",
+        name: "obj-org",
+        value: org,
+        errorMessage: errors.org if errors.org else null
+      }) }}
+
+      {% endcall %}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

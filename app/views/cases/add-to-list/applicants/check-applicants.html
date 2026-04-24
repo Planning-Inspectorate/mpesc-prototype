@@ -1,0 +1,127 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check applicant or appellant details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    {# 1. UNIFIED DATA SOURCE (Working Draft Pattern) #}
+    {% set list = applicants | default(data['tempApplicantsList']) | default([]) %}
+
+    <h1 class="govuk-heading-l">Check applicant or appellant</h1>
+
+    {# --- DATA TABLE --- #}
+    {% if list.length > 0 %}
+      <table class="govuk-table" data-module="moj-sortable-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            {# Added aria-sort="none" to the headers to sort by #}
+            <th scope="col" class="govuk-table__header" aria-sort="none">Name</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Address</th>
+            <th scope="col" class="govuk-table__header" aria-sort="none">Contact details</th>
+            {# Not adding aria-sort to Actions #}
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for item in list %}
+            <tr class="govuk-table__row">
+              
+              {# 1. Name & Company (Stacked) #}
+              <td class="govuk-table__cell">
+                {% if item.firstName or item.lastName %}
+                  <div>{{ (item.firstName + " " + item.lastName) | trim }}</div>
+                {% endif %}
+                {% if item.companyName %}
+                  <div>{{ item.companyName }}</div>
+                {% endif %}
+                {% if not item.firstName and not item.lastName and not item.companyName %}
+                  -
+                {% endif %}
+              </td>
+              
+              {# 2. Address (Using the nested helper object) #}
+              <td class="govuk-table__cell">
+                {% if item.address.line1 %}<div>{{ item.address.line1 }}</div>{% endif %}
+                {% if item.address.line2 %}<div>{{ item.address.line2 }}</div>{% endif %}
+                {% if item.address.town %}<div>{{ item.address.town }}</div>{% endif %}
+                {% if item.address.county %}<div>{{ item.address.county }}</div>{% endif %}
+                {% if item.address.postcode %}<div>{{ item.address.postcode }}</div>{% endif %}
+                {% if not item.address.formatted %}-{% endif %}
+              </td>
+              
+              {# 3. Contact Details #}
+              <td class="govuk-table__cell">
+                {% if item.email %}<div>{{ item.email }}</div>{% endif %}
+                {% if item.phone %}<div>{{ item.phone }}</div>{% endif %}
+                {% if not item.email and not item.phone %}-{% endif %}
+              </td>
+              
+              {# 4. Actions #}
+              <td class="govuk-table__cell">
+                <ul class="govuk-summary-list__actions-list">
+                  <li class="govuk-summary-list__actions-list-item">
+                    <a class="govuk-link" href="/cases/applicants/applicant-name?ref={{ ref }}&id={{ item.id }}">
+                      Change<span class="govuk-visually-hidden"> applicant details</span>
+                    </a>
+                  </li>
+                  
+                  {# Only show Remove action button if there is more than 1 applicant #}
+                  {% if list.length > 1 %}
+                    <li class="govuk-summary-list__actions-list-item">
+                      <a class="govuk-link" href="/cases/applicants/remove?ref={{ ref }}&id={{ item.id }}">
+                        Remove<span class="govuk-visually-hidden"> applicant</span>
+                      </a>
+                    </li>
+                  {% endif %}
+                </ul>
+              </td>
+
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">Add one or more applicants or appellants. No applicant or appellant details have been added.</p>
+    {% endif %}
+
+    {# --- BUTTONS --- #}
+    <form action="/cases/applicants/commit?ref={{ ref }}" method="post" novalidate>
+
+      {# GROUP 1 #}
+      <div class="govuk-button-group">
+        
+        {{ govukButton({
+          text: "Add details",
+          classes: "govuk-button--secondary",
+          href: "/cases/applicants/applicant-name?ref=" + ref
+        }) }}
+
+      </div>
+
+      {# GROUP 2 #}
+        <div class="govuk-button-group">
+          
+          {{ govukButton({
+            text: "Save and continue"
+          }) }}
+
+          {{ govukButton({
+            text: "Cancel",
+            classes: "govuk-button--secondary",
+            href: "/cases/applicants/cancel?ref=" + ref
+          }) }}
+
+        </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

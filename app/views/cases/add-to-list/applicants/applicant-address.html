@@ -1,0 +1,78 @@
+{% extends "layouts/main.html" %}
+{% block pageTitle %}
+  {% if errorList %}Error: {% endif %}Applicant or appellant address - Planning Inspectorate Portal
+{% endblock %}
+{% block beforeContent %}{{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+    {% endif %}
+
+    <form action="/cases/applicants/applicant-address?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+          <h1 class="govuk-fieldset__heading">Applicant or appellant address</h1>
+        </legend>
+
+        {{ govukInput({
+          label: { text: "Address line 1 (optional)" },
+          id: "applicant-line1",
+          name: "applicant-line1",
+          value: address.line1,
+          autocomplete: "address-line1"
+        }) }}
+
+        {{ govukInput({
+          label: { text: "Address line 2 (optional)" },
+          id: "applicant-line2",
+          name: "applicant-line2",
+          value: address.line2,
+          autocomplete: "address-line2"
+        }) }}
+
+        {{ govukInput({
+          label: { text: "Town or city (optional)" },
+          classes: "govuk-!-width-two-thirds",
+          id: "applicant-town",
+          name: "applicant-town",
+          value: address.town,
+          autocomplete: "address-level2"
+        }) }}
+
+        {{ govukInput({
+          label: { text: "County (optional)" },
+          classes: "govuk-!-width-two-thirds",
+          id: "applicant-county",
+          name: "applicant-county",
+          value: address.county
+        }) }}
+
+        {# Extract postcode error if it exists #}
+        {% set postcodeError = null %}
+        {% for err in errorList %}
+          {% if "postcode" in err.href %}
+            {% set postcodeError = err %}
+          {% endif %}
+        {% endfor %}
+
+        {{ govukInput({
+          label: { text: "Postcode (optional)" },
+          classes: "govuk-input--width-10" + (" govuk-input--error" if errorFields and 'postcode' in errorFields else ""),
+          id: "applicant-postcode",
+          name: "applicant-postcode",
+          value: address.postcode,
+          autocomplete: "postal-code",
+          errorMessage: { text: postcodeError.text } if postcodeError else null
+        }) }}
+      </fieldset>
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}

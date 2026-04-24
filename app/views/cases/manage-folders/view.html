@@ -493,10 +493,8 @@
 
        {% endif %}
       </form>
-    </div>
-  </div>
 
-          {# Dynamic GOV.UK Pagination Macro #}
+        {# Dynamic GOV.UK Pagination Macro #}
           {% if pageItems.length > 1 %}
             {{ govukPagination({
               previous: prevLink and { href: prevLink },
@@ -505,10 +503,8 @@
             }) }}
           {% endif %}
 
-      </form>
     </div>
   </div>
-</div>
 
 {# --- JAVASCRIPT FOR SELECT ALL, VALIDATION AND DYNAMIC TOGGLES --- #}
 <script type="module" nonce="">

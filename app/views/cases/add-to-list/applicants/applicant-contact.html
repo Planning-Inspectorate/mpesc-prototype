@@ -1,0 +1,47 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+{% if errorList %}Error: {% endif %}Applicant or appellant contact details (optional) - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: "javascript:history.back()" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    
+    {% if errorList %}
+      {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+    {% endif %}
+
+    <form action="/cases/applicants/applicant-contact?ref={{ ref }}&id={{ id }}" method="post" novalidate>
+      <h1 class="govuk-heading-l">Applicant or appellant contact details (optional)</h1>
+
+      {{ govukInput({
+        label: { text: "Email address" },
+        id: "email",
+        name: "email",
+        type: "email",
+        value: val.email,
+        errorMessage: errors.email if errors.email else null,
+        autocomplete: "email"
+      }) }}
+
+      {{ govukInput({
+        label: { text: "Phone number" },
+        id: "phone",
+        name: "phone",
+        type: "tel",
+        value: val.phone,
+        errorMessage: errors.phone if errors.phone else null,
+        classes: "govuk-input--width-20",
+        autocomplete: "tel"
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}
