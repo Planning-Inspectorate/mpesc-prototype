@@ -906,6 +906,7 @@
         { key: { text: "Inspector" }, value: { text: proc.inspector or "-" }, actions: { items: [{}] } },
         { key: { text: "Site visit date" }, value: { text: proc.siteVisit.formatted if proc.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/site-visit?ref=" + currentCase.reference, text: "Change" if proc.siteVisit else "Add" }] } },
         { key: { text: "Site visit type" }, value: { text: proc.siteVisitType or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/site-visit-type?ref=" + currentCase.reference, text: "Change" if proc.siteVisitType else "Add" }] } },
+        { key: { text: "Case officer verification date" }, value: { text: proc.verification.formatted if proc.verification else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/verification-date?ref=" + currentCase.reference, text: "Change" if proc.verification else "Add" }] } },
         { key: { text: "In house date" }, value: { text: proc.inHouse.formatted if proc.inHouse else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/in-house-date?ref=" + currentCase.reference, text: "Change" if proc.inHouse else "Add" }] } }
       ] %}
 
@@ -991,6 +992,7 @@
         { key: { text: "Inspector" }, value: { text: proc.inspector or "-" }, actions: { items: [{}] } },
         { key: { text: "Site visit date" }, value: { text: proc.siteVisit.formatted if proc.siteVisit else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/site-visit?ref=" + currentCase.reference, text: "Change" if proc.siteVisit else "Add" }] } },
         { key: { text: "Site visit type" }, value: { text: proc.siteVisitType or "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/site-visit-type?ref=" + currentCase.reference, text: "Change" if proc.siteVisitType else "Add" }] } },
+        { key: { text: "Case officer verification date" }, value: { text: proc.verification.formatted if proc.verification else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/verification-date?ref=" + currentCase.reference, text: "Change" if proc.verification else "Add" }] } },
         { key: { text: "Date offer for written representations" }, value: { text: proc.writtenRepsDate.formatted if proc.writtenRepsDate else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/written-reps-date?ref=" + currentCase.reference, text: "Change" if proc.writtenRepsDate else "Add" }] } },
         { key: { text: "Deadline for consent" }, value: { text: proc.deadlineForConsent.formatted if proc.deadlineForConsent else "-" }, actions: { items: [{ href: "/cases/procedures/procedure-" + loop.index + "/deadline-for-consent?ref=" + currentCase.reference, text: "Change" if proc.deadlineForConsent else "Add" }] } }
       ] %}

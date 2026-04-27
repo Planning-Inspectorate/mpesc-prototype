@@ -1,7 +1,7 @@
 const govukPrototypeKit = require('govuk-prototype-kit');
 const router = govukPrototypeKit.requests.setupRouter();
 
-// Import the helpers we just created!
+// Import the helpers from helpers.js using ../ to go up one folder (from /sub-routes/ to /app/)
 const { addAuditLog, validAuthorities, validateAndSaveAddress } = require('../helpers');
 
 // ==============================================================================

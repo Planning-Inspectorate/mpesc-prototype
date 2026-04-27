@@ -8,7 +8,7 @@ const router = govukPrototypeKit.requests.setupRouter()
 The routes.js files in this prototype are organised so that they are mostly self-contained by feature or section of the service, rather than having all routes in one file.
 
 This means that if you are working on a specific feature (e.g., related cases, overview procedures, managing folders, etc.), 
-you can find all the relevant routes and logic in one place without scrolling through one massive routes.js file.
+you can find all the relevant routes and logic in a dedicated place without scrolling through one massive routes.js file.
 
 A general rule is any html files located in the /cases folder will have its own .js file in sub-routes. 
 
@@ -447,7 +447,7 @@ router.get('/cases/generate-dummy', function (req, res) {
     });
   }
 
-  console.log("✅ Successfully injected 130 Dummy Cases!");
+  console.log("Successfully injected 130 Dummy Cases!");
   res.redirect('/cases-page');
 });
 

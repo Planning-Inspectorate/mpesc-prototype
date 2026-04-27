@@ -148,7 +148,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   
   var activeFolder = foundFolder.target;
@@ -340,7 +340,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete', function(
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   
   var activeFolder = foundFolder.target;
@@ -394,7 +394,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/generate-dummy', fu
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -402,7 +402,6 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/generate-dummy', fu
 
   var fileTypes = ["PDF", "DOCX", "XLSX", "JPG", "PNG"];
   
-  // Use the EXACT same array of names from your upload logic!
   var randomNames = [
     "Site-inspection-report",
     "Appellant-costs-application",
@@ -482,7 +481,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/upload', function(
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -567,7 +566,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/step-1',
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -587,7 +586,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/location
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   
   var activeFolder = foundFolder.target;
@@ -621,12 +620,12 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check', 
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
   var destId = req.session.data['moveDestinationId'];
-  var foundDest = findFolderDeep(currentCase.folders, destId); // Uses the imported helper!
+  var foundDest = findFolderDeep(currentCase.folders, destId); // Uses the imported helper
   var destFolder = foundDest ? foundDest.target : null;
   var destParent = foundDest ? foundDest.parent : null;
 
@@ -644,12 +643,12 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/move-files/check',
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var sourceFolder = foundFolder.target;
 
   var destId = req.session.data['moveDestinationId'];
-  var foundDest = findFolderDeep(currentCase.folders, destId); // Uses the imported helper!
+  var foundDest = findFolderDeep(currentCase.folders, destId); // Uses the imported helper
   var destFolder = foundDest ? foundDest.target : null;
 
   var fileIdsToMove = req.session.data['filesToMove'] || [];
@@ -751,7 +750,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/con
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -772,7 +771,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/co
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -823,7 +822,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/rename', function(r
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   
   var activeFolder = foundFolder.target;
@@ -845,7 +844,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/rename', function(
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   
   var activeFolder = foundFolder.target;
@@ -905,7 +904,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/create-subfolder', 
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -925,7 +924,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/create-subfolder',
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var parentFolder = foundFolder.target; 
 
@@ -1042,7 +1041,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/:docId/delete', fun
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -1065,7 +1064,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/:docId/delete', fu
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -1087,7 +1086,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/file-deleted', func
   var currentCase = cases.find(x => x.reference === ref);
   if (!currentCase) return res.redirect('/');
 
-  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper!
+  var foundFolder = findFolderDeep(currentCase.folders, folderId); // Uses the imported helper
   if (!foundFolder) return res.redirect(`/cases/manage-folders?ref=${ref}`);
   var activeFolder = foundFolder.target;
 
@@ -1109,7 +1108,7 @@ router.post('/cases/manage-folders/view/:folderId/:folderSlug/:docId/toggle-stat
   var currentCase = cases.find(x => x.reference === ref);
   
   if (currentCase) {
-    var foundFolder = findFolderDeep(currentCase.folders, req.params.folderId); // Uses the imported helper!
+    var foundFolder = findFolderDeep(currentCase.folders, req.params.folderId); // Uses the imported helper
     if (foundFolder) {
       var activeDoc = (foundFolder.target.documents || []).find(d => d.id === req.params.docId);
       if (activeDoc) {
