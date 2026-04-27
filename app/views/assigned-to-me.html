@@ -203,78 +203,114 @@
         </form>
       </div>
 
-     {# --- RESULTS SECTION --- #}
-      {% if filteredCases and filteredCases.length > 0 %}
-        
-        <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
-          <thead class="govuk-table__head">
+    {# ========================================================== #}
+    {# RESULTS HEADER & TOP PAGINATION                            #}
+    {# ========================================================== #}
+    {% if totalCasesCount > 0 %}
+      <div id="pagination-header" class="govuk-!-margin-bottom-6 govuk-!-margin-top-4">
+        <p class="govuk-body govuk-!-margin-bottom-2">
+          Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalCasesCount }}</strong> results
+        </p>
+
+        <p class="pins-pagination-options govuk-!-margin-bottom-0">
+            <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+            {% if itemsPerPage == 25 %}
+                <span class="govuk-body">25</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="/assigned-to-me?itemsPerPage=25" data-pagination="25">25</a>
+            {% endif %}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 50 %}
+                <span class="govuk-body">50</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="/assigned-to-me?itemsPerPage=50" data-pagination="50">50</a>
+            {% endif %}
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            {% if itemsPerPage == 100 %}
+                <span class="govuk-body">100</span>
+            {% else %}
+                <a class="govuk-link--no-visited-state" href="/assigned-to-me?itemsPerPage=100" data-pagination="100">100</a>
+            {% endif %}
+        </p>
+      </div>
+    {% endif %}
+
+    {# ========================================================== #}
+    {# RESULTS TABLE SECTION                                      #}
+    {# ========================================================== #}
+    {% if filteredCases and filteredCases.length > 0 %}
+      
+      <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
+            <th scope="col" class="govuk-table__header" style="width: 30%;" aria-sort="none">Case name</th>
+            <th scope="col" class="govuk-table__header" style="width: 18%; white-space: nowrap;" aria-sort="none">Case officer</th>
+            <th scope="col" class="govuk-table__header" style="width: 18%;" aria-sort="none">Inspector</th>
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
+            <th scope="col" class="govuk-table__header" style="width: 12%;" aria-sort="none">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for case in filteredCases %}
             <tr class="govuk-table__row">
-              {# 1. Reference: Locked width, no wrapping #}
-              <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Reference</th>
               
-              {# 2. Case name: Restricted to 30% to free up space for names #}
-              <th scope="col" class="govuk-table__header" style="width: 30%;" aria-sort="none">Case name</th>
+              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a>
+              </td>
               
-              {# 3. Case officer: Given more space, and header forced to a single line #}
-              <th scope="col" class="govuk-table__header" style="width: 18%; white-space: nowrap;" aria-sort="none">Case officer</th>
+              <td class="govuk-table__cell">{{ case.caseName }}</td>
+              <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
               
-              {# 4. Inspector: Given more space #}
-              <th scope="col" class="govuk-table__header" style="width: 18%;" aria-sort="none">Inspector</th>
+              <td class="govuk-table__cell">
+                {% if case.inspectors and case.inspectors.length > 0 %}
+                  {% for insp in case.inspectors %}{{ insp.name }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+                {% elseif case.inspector %}
+                  {{ case.inspector }}
+                {% else %}
+                  Unassigned
+                {% endif %}
+              </td>
               
-              {# 5. Received date: Locked width, no wrapping #}
-              <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;" aria-sort="none">Received</th>
+              <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+                {% if case.caseReceivedDate and case.caseReceivedDate.formatted %}
+                  {{ case.caseReceivedDate.formatted }}
+                {% elif case.receivedDay and case.receivedMonth and case.receivedYear %}
+                  {{ case.receivedDay }}/{{ case.receivedMonth }}/{{ case.receivedYear }}
+                {% elif case['case-received-date-day'] %}
+                  {{ case['case-received-date-day'] }}/{{ case['case-received-date-month'] }}/{{ case['case-received-date-year'] }}
+                {% endif %}
+              </td>
               
-              {# 6. Status: Fixed smaller width #}
-              <th scope="col" class="govuk-table__header" style="width: 12%;" aria-sort="none">Status</th>
+              <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
             </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-            {% for case in filteredCases %}
-              <tr class="govuk-table__row">
-                
-                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
-                  <a href="/cases/case-details?ref={{ case.reference }}" class="govuk-link">{{ case.reference }}</a>
-                </td>
-                
-                <td class="govuk-table__cell">{{ case.caseName }}</td>
-                
-                <td class="govuk-table__cell">{{ case.caseOfficer or case['case-officer'] or "Unassigned" }}</td>
-                
-                <td class="govuk-table__cell">
-                  {% if case.inspectors and case.inspectors.length > 0 %}
-                    {% for insp in case.inspectors %}{{ insp.name }}{% if not loop.last %}<br>{% endif %}{% endfor %}
-                  {% elseif case.inspector %}
-                    {{ case.inspector }}
-                  {% else %}
-                    Unassigned
-                  {% endif %}
-                </td>
-                
-                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
-                  {% if case.caseReceivedDate and case.caseReceivedDate.formatted %}
-                    {{ case.caseReceivedDate.formatted }}
-                  {% elif case.receivedDay and case.receivedMonth and case.receivedYear %}
-                    {{ case.receivedDay }}/{{ case.receivedMonth }}/{{ case.receivedYear }}
-                  {% elif case['case-received-date-day'] %}
-                    {{ case['case-received-date-day'] }}/{{ case['case-received-date-month'] }}/{{ case['case-received-date-year'] }}
-                  {% endif %}
-                </td>
-                
-                <td class="govuk-table__cell">{{ case.status or case.caseStatus or case['case-status'] }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+          {% endfor %}
+        </tbody>
+      </table>
 
-      {% else %}
-        
-        {# --- ZERO MATCHES STATE (Table Completely Hidden) --- #}
-        <div class="govuk-!-margin-top-6 govuk-!-margin-bottom-6">
-          <h2 class="govuk-heading-m">No results found</h2>
-          <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
-        </div>
-
+      {# ========================================================== #}
+      {# FOOTER PAGINATION (Safely outside the table!)              #}
+      {# ========================================================== #}
+      {% if pageItems.length > 1 %}
+        {{ govukPagination({
+          previous: prevLink and { href: prevLink },
+          next: nextLink and { href: nextLink },
+          items: pageItems
+        }) }}
       {% endif %}
+
+    {% else %}
+      
+      {# ========================================================== #}
+      {# ZERO MATCHES STATE                                         #}
+      {# ========================================================== #}
+      <div class="govuk-!-margin-top-6 govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">No results found</h2>
+        <p class="govuk-body">No cases match your selected status. Try <a href="/assigned-to-me/clear-filter" class="govuk-link">clearing your filter</a>.</p>
+      </div>
+
+    {% endif %}
 
     {% endif %}
 

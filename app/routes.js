@@ -1,8 +1,6 @@
 const govukPrototypeKit = require('govuk-prototype-kit')
-
 const {applyAzureHostingFix} = require('./azure-hosting-fix');
 applyAzureHostingFix();
-
 const router = govukPrototypeKit.requests.setupRouter()
 
 /* Notes and information:
@@ -22,17 +20,27 @@ Any html's not in /cases, the routes for those will be in this file.
 
 The sub route files in the folder app/sub-routes/ are:
 
-  - create-a-case.js 
-        (contains all the create a case journey routes, including the only add to list flow in the journey - applicant/appellant)
+  - all-case-notes.js
+      (contains the route for the dedicated case notes page that shows all case notes in one place)
 
-  - procedures.js 
-        (contains the dynamically generated procedure cards routes that are added to the case overview)
+  - case-details.js 
+      (contains the main route for the case details page which includes the banner logic, and also contains the route for adding a case note to a case)
+
+  - create-a-case.js 
+      (contains all the create a case journey routes, including the only add to list flow in the journey - applicant/appellant)
+
+  - edit.js 
+      (contains the general edit routes after you have created the case. This does not include the add to list flows which are in their own files)
+
+  - manage-folders.js
+      (contains all the routes for managing folders, including creating a folder, editing a folder, deleting a folder, and moving cases between folders)
 
   - overview-outcomes.js 
-        (contains the dynamically generated outcome cards routes that are added to the case overview)
-        
-  - edit-case.js 
-        (contains the general edit routes after you have created the case. This does not include the add to list flows which are in their own files)
+      (contains the dynamically generated outcome cards routes that are added to the case overview)
+
+  - procedures.js 
+      (contains the dynamically generated procedure cards routes that are added to the case overview)
+
 
 The other sub route files are all add to list patterns and are separated from the edit-case.js to keep things cleaner. These add to list patterns have a 'Working Draft Pattern/Logic'
 that ensures that a user must save their changes for their edits to be committed to the "database" (session data in this case). This is done by creating a temporary draft 
@@ -56,12 +64,15 @@ The helpers.js file contains shared helper functions that are used across all th
 
 */
 
+
 // --- IMPORT SUB ROUTERS ---
 require('./sub-routes/create-a-case');
 require('./sub-routes/edit');
 require('./sub-routes/manage-folders')
 require('./sub-routes/overview-outcome');
 require('./sub-routes/procedures');
+require('./sub-routes/case-details');
+require('./sub-routes/all-case-notes');
 
 
 // --- IMPORT ADD TO LIST ROUTERS ---
@@ -74,6 +85,7 @@ require('./sub-routes/add-to-list/overview-procedures');
 require('./sub-routes/add-to-list/objectors');
 require('./sub-routes/add-to-list/contacts');
 require('./sub-routes/add-to-list/outcomes');
+
 
 // --- IMPORT SHARED HELPERS ---
 const { 
@@ -88,61 +100,28 @@ const {
 } = require('./helpers');
 
 
+
 // ==============================================================================
-// MAIN CASE DETAILS HUB (Page Render & Banner Logic)
+// NAV ITEM 1: ASSIGNED TO ME
 // ==============================================================================
 
-router.get('/cases/case-details', function(req, res) {
-  let ref = req.query.ref;
-  
-  // 1. Keep the ref in the global session so other sub-pages remember what case we are on
-  if (ref) {
-    req.session.data['ref'] = ref;
-  }
-
-  // 2. Find the case directly in the server memory
-  let cases = req.session.data['cases'] || [];
-  let foundCase = cases.find(c => c.reference === ref);
-
-  // 3. Grab the flash message target (e.g., "timetable", "overview") if an edit was just made
-  let sectionToJumpTo = req.session.flashSection;
-
-  // 4. Delete the flash state immediately so the banner doesn't get stuck on refresh
-  req.session.flashSection = null; 
-
-  // 5. Render the case details hub, passing the case data and the target section for the banner
-  res.render('cases/case-details', { 
-    currentCase: foundCase,       
-    flashSection: sectionToJumpTo 
-  });
-});
-
-
-
-
-
-// =============================================================================
-// ASSIGNED TO ME PAGE
-// =============================================================================
-
-// 1. View the Assigned Cases page
+// --- 1. VIEW ASSIGNED CASES ---
 router.get('/assigned-to-me', function (req, res) {
   var allCases = req.session.data['cases'] || [];
   
-  // --- SIMULATED LOGIN WORKAROUND ---
-  // Hardcode the "logged in" user here. 
+  // SIMULATED LOGIN: Hardcode the active user here
   var loggedInUser = "Carol Danvers";
   
-  // Check if they explicitly searched for someone else
+  // Did they use the "Search for a user" feature?
   var searchedUser = req.session.data['viewingUser'];
   
-  // If they didn't search for anyone, default to the logged-in user
+  // Active user is the searched user, otherwise default to logged-in user
   var activeUser = searchedUser || loggedInUser;
   
-  // Boolean to tell the frontend if we are looking at our own queue
+  // Boolean to tell the UI if we are looking at our own queue
   var isViewingOwnCases = (!searchedUser || searchedUser === loggedInUser);
 
-  // Filter by the active user (Case Officer OR Inspector)
+  // FILTER 1: Only show cases assigned to the active user (Officer or Inspector)
   var userCases = allCases.filter(c => {
     var cOfficer = c.caseOfficer || c['case-officer'];
     if (cOfficer === activeUser) return true;
@@ -152,18 +131,15 @@ router.get('/assigned-to-me', function (req, res) {
     } else if (c.inspector === activeUser) {
        return true;
     }
+    
     return false;
   });
 
-  // Get the Status filter array
+  // FILTER 2: Apply Status Filter
   var statusFilter = req.session.data['statusFilter'];
-  if (statusFilter && typeof statusFilter === 'string') {
-    statusFilter = [statusFilter];
-  } else if (!statusFilter) {
-    statusFilter = [];
-  }
+  if (statusFilter && typeof statusFilter === 'string') statusFilter = [statusFilter]; 
+  else if (!statusFilter) statusFilter = [];
 
-  // Apply the Status filter
   var filteredCases = userCases;
   if (statusFilter.length > 0) {
     filteredCases = userCases.filter(c => {
@@ -172,27 +148,66 @@ router.get('/assigned-to-me', function (req, res) {
     });
   }
 
+  // --- PAGINATION MATH ---
+  const totalCasesCount = filteredCases.length; 
+  
+  let itemsPerPage = parseInt(req.query.itemsPerPage || req.session.data['assignedItemsPerPage'], 10);
+  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25; 
+  req.session.data['assignedItemsPerPage'] = itemsPerPage; 
+
+  let currentPage = parseInt(req.query.page || 1, 10);
+  if (isNaN(currentPage) || currentPage <= 0) currentPage = 1;
+
+  const totalPages = Math.ceil(totalCasesCount / itemsPerPage) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  
+  // Cut the massive list down to just the 25 items for this specific page
+  const paginatedCases = filteredCases.slice(startIndex, endIndex);
+
+  // Build the visual pagination UI array
+  let paginationItems = [];
+  let pagesToShow = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || i === currentPage || i === currentPage - 1 || i === currentPage + 1) {
+      pagesToShow.push(i);
+    }
+  }
+
+  let previousPage = null;
+  for (let i of pagesToShow) {
+    if (previousPage && i - previousPage > 1) paginationItems.push({ ellipsis: true });
+    paginationItems.push({ number: i, current: (i === currentPage), href: "/assigned-to-me?page=" + i });
+    previousPage = i;
+  }
+
   res.render('assigned-to-me', {
-    filteredCases: filteredCases,
+    filteredCases: paginatedCases, // <-- Pass the sliced array instead of the full array
     currentStatusFilter: statusFilter,
-    totalCasesCount: userCases.length, 
-    activeUserName: activeUser, // Passed to the frontend to inject the name
-    isViewingOwnCases: isViewingOwnCases // Used to toggle "Return to my cases" buttons
+    totalCasesCount: totalCasesCount, 
+    activeUserName: activeUser, 
+    isViewingOwnCases: isViewingOwnCases,
+    
+    // Pass pagination variables to the HTML
+    itemsPerPage: itemsPerPage,
+    startItem: totalCasesCount === 0 ? 0 : startIndex + 1,
+    endItem: Math.min(endIndex, totalCasesCount),
+    pageItems: paginationItems,
+    prevLink: currentPage > 1 ? "/assigned-to-me?page=" + (currentPage - 1) : null, 
+    nextLink: currentPage < totalPages ? "/assigned-to-me?page=" + (currentPage + 1) : null 
   });
 });
 
-// 2. Apply the Status Filter
-router.post('/assigned-to-me/filter', function (req, res) {
-  res.redirect('/assigned-to-me');
-});
+// --- 2. STATUS FILTER ACTIONS ---
+router.post('/assigned-to-me/filter', (req, res) => res.redirect('/assigned-to-me'));
 
-// 3. Clear the Status Filter
 router.get('/assigned-to-me/clear-filter', function (req, res) {
   req.session.data['statusFilter'] = null;
   res.redirect('/assigned-to-me');
 });
 
-// 4. Remove single pill on Assigned To Me
 router.get('/assigned-to-me/remove-filter/status/:value', function (req, res) {
   var valueToRemove = req.params.value;
   if (Array.isArray(req.session.data['statusFilter'])) {
@@ -201,39 +216,27 @@ router.get('/assigned-to-me/remove-filter/status/:value', function (req, res) {
   res.redirect('/assigned-to-me');
 });
 
-// 5. GET Search User Page
-router.get('/assigned-to-me/search-user', function (req, res) {
-  res.render('assigned-to-me-search');
-});
+// --- 3. SEARCH FOR A USER'S QUEUE (assigned-to-me-search) ---
+router.get('/assigned-to-me/search-user', (req, res) => res.render('assigned-to-me-search'));
 
-// 6. POST Search User Page (Validation)
 router.post('/assigned-to-me/search-user', function (req, res) {
   var val = req.body.assignedUser;
   
   if (!val || val.trim() === "") {
-    return res.render('assigned-to-me-search', {
-      error: true,
-      errorMessage: { text: "Select a case officer or inspector" }
-    });
+    return res.render('assigned-to-me-search', { error: true, errorMessage: { text: "Select a case officer or inspector" }});
   }
 
+  // Valid user list
   var officers = [
-    "Charlotte Morphet",
-    "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
-    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board",
-    "(Service Account) Automated Tester", "Owen Woodwards", 
-    "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner",
-    "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers",
-    "Stephen Strange", "T'Challa", "Clint Barton", "Sam Wilson",
-    "Bucky Barnes", "Scott Lang", "Hope van Dyne"
+    "Charlotte Morphet", "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", 
+    "Owen Woodwards", "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner",
+    "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange", 
+    "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
   ];
   
   if (!officers.includes(val)) {
-     return res.render('assigned-to-me-search', {
-      value: val,
-      error: true,
-      errorMessage: { text: "Select a case officer or inspector" }
-    });   
+     return res.render('assigned-to-me-search', { value: val, error: true, errorMessage: { text: "Select a case officer or inspector" }});   
   }
 
   // Save the selected user and wipe any existing status filters to show a fresh list
@@ -242,7 +245,7 @@ router.post('/assigned-to-me/search-user', function (req, res) {
   res.redirect('/assigned-to-me');
 });
 
-// 7. Reset back to "My Cases"
+// --- 4. RETURN TO MY CASES ---
 router.get('/assigned-to-me/my-cases', function (req, res) {
   req.session.data['viewingUser'] = null;
   req.session.data['statusFilter'] = [];
@@ -251,60 +254,51 @@ router.get('/assigned-to-me/my-cases', function (req, res) {
 
 
 
-// ============================================================================= ALL CASES PAGE ==============================================================================
+// ==============================================================================
+// NAV ITEM 2: ALL CASES PAGE (With Filtering & Pagination)
+// ==============================================================================
 
-// Catch BOTH the normal page load and the filter submission
+// Catch BOTH the normal page load (/cases-page) and the filter submission (/cases-filter)
 router.get(['/cases-page', '/cases-filter'], function (req, res) {
   let cases = req.session.data['cases'] || [];
 
-  // 1. Did the user submit the filter form?
+  // --- 1. SYNC URL TO SESSION (If form was submitted) ---
   const isFormSubmit = req.query.isFilterSubmit === 'true';
   
   if (isFormSubmit) {
-    // Overwrite the session with the live URL data
     req.session.data['area'] = req.query.area;
     req.session.data['type'] = req.query.type;
     req.session.data['status'] = req.query.status; 
     req.session.data['searchCriteria'] = req.query.searchCriteria;
 
-    // --- EXPRESS ARRAY LIMIT FIX ---
+    // Express array limit fix (forces single items into arrays)
     let rawSubtypes = req.query.subtype;
-    if (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes)) {
-      req.session.data['subtype'] = Object.values(rawSubtypes);
-    } else {
-      req.session.data['subtype'] = rawSubtypes;
-    }
+    req.session.data['subtype'] = (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes)) 
+      ? Object.values(rawSubtypes) : rawSubtypes;
 
     let rawStatuses = req.query.status;
-    if (rawStatuses && typeof rawStatuses === 'object' && !Array.isArray(rawStatuses)) {
-      req.session.data['status'] = Object.values(rawStatuses);
-    } else {
-      req.session.data['status'] = rawStatuses;
-    }
+    req.session.data['status'] = (rawStatuses && typeof rawStatuses === 'object' && !Array.isArray(rawStatuses)) 
+      ? Object.values(rawStatuses) : rawStatuses;
   }
 
-  // 2. Clean the arrays (Destroys the '_unchecked' junk AND double-checks the Express bug)
+  // --- 2. CLEANUP FILTER ARRAYS ---
+  // Destroys the '_unchecked' junk generated by GOV.UK checkboxes
   const cleanArray = (categoryName) => {
     let val = req.session.data[categoryName];
-    
     if (val && typeof val === 'object' && !Array.isArray(val)) {
       val = Object.values(val);
       req.session.data[categoryName] = val; 
     }
-
     return [].concat(val || []).filter(item => item && item !== '_unchecked');
   };
 
-  // Run the data through the upgraded cleaner
   const areas = cleanArray('area');
   const types = cleanArray('type');
   const subtypes = cleanArray('subtype');
   const statuses = cleanArray('status'); 
   const search = req.session.data['searchCriteria'] || "";
 
-  // ====================================================================
-  // 3. THE FILTER LOGIC: Strict "AND" logic across categories
-  // ====================================================================
+  // --- 3. APPLY CATEGORY FILTERS (AND Logic) ---
   const hasAreaFilters = areas.length > 0;
   const hasTypeFilters = types.length > 0;
   const hasSubtypeFilters = subtypes.length > 0;
@@ -312,65 +306,39 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
 
   if (hasAreaFilters || hasTypeFilters || hasSubtypeFilters || hasStatusFilters) {
     cases = cases.filter(c => {
-      
-      // Check Area: Passes if NO areas are checked, OR if the case matches a checked area
       const passesArea = !hasAreaFilters || areas.includes(c.areaValue);
-      
-      // Check Type: Passes if NO types are checked, OR if the case matches a checked type
       const passesType = !hasTypeFilters || types.includes(c.typeValue);
-      
-      // Check Subtype: Passes if NO subtypes are checked, OR if the case matches a checked subtype
       const passesSubtype = !hasSubtypeFilters || subtypes.includes(c.subtypeValue);
-      
-      // Check Status: Passes if NO statuses are checked, OR if the case matches a checked status
-      const cStat = c.caseStatus || c.status || c['case-status'];
-      const passesStatus = !hasStatusFilters || statuses.includes(cStat);
+      const passesStatus = !hasStatusFilters || statuses.includes(c.caseStatus || c.status || c['case-status']);
 
-      // FINAL RESULT: The case MUST pass ALL active category checks (AND logic)
+      // The case MUST pass ALL active category checks to show up
       return passesArea && passesType && passesSubtype && passesStatus;
     });
   }
 
-  // 4. Search Filter
+  // --- 4. APPLY SEARCH FILTER ---
   if (search) {
     cases = cases.filter(c => {
-      // Safely extract names from the applicants array of objects
-      let applicantsString = "";
-      if (Array.isArray(c.applicants)) {
-        applicantsString = c.applicants.map(a => {
-          return `${a.firstName || ""} ${a.lastName || ""} ${a.companyName || ""}`;
-        }).join(" ");
-      }
+      // Safely extract applicant names to make them searchable
+      let applicantsString = Array.isArray(c.applicants) 
+        ? c.applicants.map(a => `${a.firstName || ""} ${a.lastName || ""} ${a.companyName || ""}`).join(" ") 
+        : "";
 
       // Concatenate all searchable fields into one massive string
-      const content = (
-        (c.reference || "") + 
-        (c.caseName || "") + 
-        (c.caseStatus || "") + 
-        (c.authorityName || "") + 
-        (applicantsString)
-      ).toLowerCase();
-      
+      const content = ((c.reference || "") + (c.caseName || "") + (c.caseStatus || "") + (c.authorityName || "") + applicantsString).toLowerCase();
       return content.includes(search.toLowerCase());
     });
   }
-  
 
-  // --- 5. PAGINATION LOGIC ---
+  // --- 5. PAGINATION MATH ---
   const totalCasesCount = cases.length; 
   
-  let rawItems = req.query.itemsPerPage || req.session.data['itemsPerPage'];
-  let itemsPerPage = parseInt(rawItems, 10);
-  if (isNaN(itemsPerPage) || itemsPerPage <= 0) {
-    itemsPerPage = 25; 
-  }
+  let itemsPerPage = parseInt(req.query.itemsPerPage || req.session.data['itemsPerPage'], 10);
+  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25; 
   req.session.data['itemsPerPage'] = itemsPerPage; 
 
-  let rawPage = req.query.page || 1;
-  let currentPage = parseInt(rawPage, 10);
-  if (isNaN(currentPage) || currentPage <= 0) {
-    currentPage = 1;
-  }
+  let currentPage = parseInt(req.query.page || 1, 10);
+  if (isNaN(currentPage) || currentPage <= 0) currentPage = 1;
 
   const totalPages = Math.ceil(totalCasesCount / itemsPerPage) || 1;
   if (currentPage > totalPages) currentPage = totalPages;
@@ -379,103 +347,73 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   const endIndex = startIndex + itemsPerPage;
   const paginatedCases = cases.slice(startIndex, endIndex);
 
+  // Build the visual pagination UI array
   let paginationItems = [];
   let pagesToShow = [];
-  
   for (let i = 1; i <= totalPages; i++) {
-    if (
-      i === 1 ||                   
-      i === totalPages ||          
-      i === currentPage ||         
-      i === currentPage - 1 ||     
-      i === currentPage + 1        
-    ) {
+    if (i === 1 || i === totalPages || i === currentPage || i === currentPage - 1 || i === currentPage + 1) {
       pagesToShow.push(i);
     }
   }
 
   let previousPage = null;
   for (let i of pagesToShow) {
-    if (previousPage) {
-      if (i - previousPage > 1) {
-        paginationItems.push({ ellipsis: true });
-      }
-    }
-    
-    paginationItems.push({
-      number: i,
-      current: (i === currentPage),
-      href: "/cases-filter?page=" + i
-    });
-    
+    if (previousPage && i - previousPage > 1) paginationItems.push({ ellipsis: true });
+    paginationItems.push({ number: i, current: (i === currentPage), href: "/cases-filter?page=" + i });
     previousPage = i;
   }
 
-  // --- 6. RENDER THE PAGE ---
+  // --- 6. RENDER ---
   res.render('cases-page', { 
     cases: paginatedCases, 
     searchTerm: search,
-    
     totalCases: totalCasesCount,
     itemsPerPage: itemsPerPage,
     startItem: totalCasesCount === 0 ? 0 : startIndex + 1,
     endItem: Math.min(endIndex, totalCasesCount),
-    
     pageItems: paginationItems,
     prevLink: currentPage > 1 ? "/cases-filter?page=" + (currentPage - 1) : null, 
     nextLink: currentPage < totalPages ? "/cases-filter?page=" + (currentPage + 1) : null 
   });
 });
 
-// =========================================================
-// REMOVE INDIVIDUAL FILTER TAGS
-// =========================================================
+// --- 7. FILTER REMOVAL ACTIONS ---
 router.get('/cases/remove-filter/:filterCategory/:filterValue', function(req, res) {
-  let category = req.params.filterCategory; // e.g., 'area', 'type', 'subtype' or 'status'
-  let valueToRemove = req.params.filterValue; // e.g., 'housing' or 'Ready to start'
-
-  // Look up the current array of filters in the session
+  let category = req.params.filterCategory; 
+  let valueToRemove = req.params.filterValue; 
   let currentFilters = req.session.data[category];
 
   if (currentFilters) {
     if (Array.isArray(currentFilters)) {
-      // If there are multiple checkboxes selected, filter out the one we clicked
       req.session.data[category] = currentFilters.filter(item => item !== valueToRemove);
-    } else {
-      // If there was only one checkbox selected, wipe it out completely
-      if (currentFilters === valueToRemove) {
-        req.session.data[category] = null;
-      }
+    } else if (currentFilters === valueToRemove) {
+      req.session.data[category] = null;
     }
   }
-
-  // Redirect back to the cases page to refresh the view
   res.redirect('/cases-filter'); 
 });
 
-// --- CLEAR ALL FILTERS ROUTE ---
 router.get('/cases/clear-filters', function (req, res) {
   req.session.data['area'] = "";
   req.session.data['type'] = "";
   req.session.data['subtype'] = "";
-  req.session.data['status'] = ""; // <-- Added Status clear
+  req.session.data['status'] = ""; 
   req.session.data['searchCriteria'] = "";
   res.redirect('/cases-filter');
 });
 
-// --- CLEAR ONLY THE SEARCH BAR ---
 router.get('/cases/clear-search', function (req, res) {
   req.session.data['searchCriteria'] = "";
   res.redirect('/cases-filter');
 });
 
-// --- SECRET ROUTE: GENERATE 130 MIXED DUMMY CASES ---
+// ==============================================================================
+// UTILITY: GENERATE DUMMY CASES
+// ==============================================================================
 router.get('/cases/generate-dummy', function (req, res) {
-  if (!req.session.data['cases']) {
-    req.session.data['cases'] = [];
-  }
+  if (!req.session.data['cases']) req.session.data['cases'] = [];
 
-  // 1. Generate 65 Planning, Environmental and Applications Cases
+  // Generate 65 Planning Cases
   for (let i = 1; i <= 65; i++) {
     req.session.data['cases'].push({
       reference: "DRO/PER/" + i.toString().padStart(4, '0'),
@@ -492,7 +430,7 @@ router.get('/cases/generate-dummy', function (req, res) {
     });
   }
 
-  // 2. Generate 65 Rights of Way and Common Land Cases
+  // Generate 65 Rights of Way Cases
   for (let i = 1; i <= 65; i++) {
     req.session.data['cases'].push({
       reference: "ROW/S14A/" + i.toString().padStart(4, '0'),
@@ -509,120 +447,9 @@ router.get('/cases/generate-dummy', function (req, res) {
     });
   }
 
-  console.log("✅ Successfully injected 65 Planning and 65 Rights of Way cases!");
-  
-  // Bounce back to the cases list
+  console.log("✅ Successfully injected 130 Dummy Cases!");
   res.redirect('/cases-page');
 });
-
-
-// ==============================================
-// CASE NOTES ROUTE
-// ==============================================
-router.post('/cases/add-case-note', function(req, res) {
-  var ref = req.query.ref;
-  var cases = req.session.data['cases'] || [];
-  var c = cases.find(x => x.reference === ref);
-  if (!c) return res.redirect('/');
-
-  var comment = req.body.comment;
-
-  // Only save if they actually typed something!
-  if (comment && comment.trim() !== "") {
-    
-    if (!c.caseNotes) c.caseNotes = [];
-
-    // Generate the specific date & time format
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-    
-    // The Summary Card uses the weekday (e.g. Monday 23 March)
-    const metaDateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    
-    // The Table does NOT use the weekday (e.g. 23 March)
-    const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    const userStr = "Kieran De La Kruz"; // Matches your design mock!
-
-    // Add the new note to the TOP of the list with structured table data
-    c.caseNotes.unshift({
-      text: comment,
-      meta: `${timeStr} on ${metaDateStr} by ${userStr}`,
-      tableDate: tableDateStr,
-      tableTime: timeStr,
-      tableUser: userStr
-    });
-
-    addAuditLog(req, ref, "Case note added");
-  }
-
-  res.redirect('/cases/case-details?ref=' + ref);
-});
-
-// ==============================================
-// VIEW ALL CASE NOTES (GET)
-// ==============================================
-router.get('/cases/all-case-notes', function(req, res) {
-  var ref = req.query.ref;
-  var cases = req.session.data['cases'] || [];
-  var currentCase = cases.find(x => x.reference === ref);
-  if (!currentCase) return res.redirect('/');
-
-  res.render('cases/all-case-notes', {
-    currentCase: currentCase
-  });
-});
-
-
-// ==============================================
-// DOWNLOAD ALL CONTACTS AS CSV
-// ==============================================
-router.get('/cases/download-contacts', function (req, res) {
-  var ref = req.query.ref;
-  var cases = req.session.data['cases'] || [];
-  var currentCase = cases.find(c => c.reference === ref);
-
-  if (!currentCase) {
-    return res.redirect('/cases-page');
-  }
-
-  // 1. Set up the CSV Headers (Includes the Type/Status column!)
-  let csvContent = "Role,Type / Status,First Name,Last Name,Company / Organisation,Email,Phone\n";
-
-  // 2. Helper function to safely escape commas in CSV data
-  const escapeCSV = (str) => {
-    if (!str) return "";
-    let safeStr = str.toString().replace(/"/g, '""'); // Escape double quotes
-    return `"${safeStr}"`; // Wrap in quotes to protect inner commas
-  };
-
-  // 3. Process Applicants (Maps to: firstName, lastName, companyName)
-  if (currentCase.applicants && currentCase.applicants.length > 0) {
-    currentCase.applicants.forEach(app => {
-      csvContent += `Applicant,,${escapeCSV(app.firstName)},${escapeCSV(app.lastName)},${escapeCSV(app.companyName)},${escapeCSV(app.email)},${escapeCSV(app.phone)}\n`;
-    });
-  }
-
-  // 4. Process Objectors (Maps to: status, fname, lname, org)
-  if (currentCase.objectors && currentCase.objectors.length > 0) {
-    currentCase.objectors.forEach(obj => {
-      csvContent += `Objector,${escapeCSV(obj.status)},${escapeCSV(obj.fname)},${escapeCSV(obj.lname)},${escapeCSV(obj.org)},${escapeCSV(obj.email)},${escapeCSV(obj.phone)}\n`;
-    });
-  }
-
-  // 5. Process Contacts (Maps to: type, fname, lname, org)
-  if (currentCase.contacts && currentCase.contacts.length > 0) {
-    currentCase.contacts.forEach(con => {
-      csvContent += `Contact,${escapeCSV(con.type)},${escapeCSV(con.fname)},${escapeCSV(con.lname)},${escapeCSV(con.org)},${escapeCSV(con.email)},${escapeCSV(con.phone)}\n`;
-    });
-  }
-
-  // 6. Tell the browser to download this as a CSV file natively
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename="contacts-${ref.replace(/\//g, '-')}.csv"`);
-  res.send(csvContent);
-});
-
 
 
 module.exports = router;
