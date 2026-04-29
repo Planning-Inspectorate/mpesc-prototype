@@ -1,0 +1,356 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+  Dynamic cards - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  
+  {# ========================================================== #}
+  {# LEFT COLUMN: SIDE NAVIGATION (1/4 WIDTH)                   #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-one-quarter">
+    <nav class="moj-side-navigation" aria-label="Side navigation">
+      <ul class="moj-side-navigation__list">
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/smart-evidence-marking">Smart evidence marking</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/filters">Filters</a>
+        </li>
+        <li class="moj-side-navigation__item moj-side-navigation__item--active">
+          <a href="/features-and-components/dynamic-cards" aria-current="location">Dynamic cards</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/audit-log">Audit log</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/success-banner">Success banner</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  {# ========================================================== #}
+  {# RIGHT COLUMN: MAIN CONTENT (3/4 WIDTH)                     #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-three-quarters">
+
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Dynamic cards</h1>
+    
+    <p class="govuk-body">
+      Dynamically add summary cards and anchor links to a case details page when adding an unpredictable amount of data from an "Add to list" pattern.
+    </p>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">When to use this feature</h2>
+    
+    <p class="govuk-body">Use this component when a user needs to collect and display an array of multiple items on the case dashboard, such as:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>Adding multiple outcomes or decisions</li>
+      <li>Assigning multiple inspectors to a single case</li>
+      <li>Logging a list of objectors or third-party contacts</li>
+    </ul>
+
+    <p class="govuk-body">This pattern helps structure the front-end by:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>generating a new summary card automatically for every item in an array</li>
+      <li>giving each card a unique HTML ID (e.g. <code>id="outcome-1"</code>) so success banners can anchor directly to them</li>
+      <li>keeping the main overview card clean by only displaying a bulleted list summary of the added items</li>
+    </ul>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How it works</h2>
+
+    {# 1. DEFINE THE VISUAL EXAMPLE #}
+    {% set exampleHtml %}
+      {# Overview Card (Summary of the list) #}
+      {{ govukSummaryList({
+        card: {
+          title: { text: "Outcome overview" }
+        },
+        rows: [
+          { 
+            key: { text: "Type of decision or report" }, 
+            value: { html: "<ul class='govuk-list govuk-list--bullet govuk-!-margin-bottom-0'><li>Decision</li><li>Report</li></ul>" }, 
+            actions: { items: [ { href: "#", text: "Change", visuallyHiddenText: "type of decision or report" } ] } 
+          }
+        ]
+      }) }}
+
+      {# Dynamic Card Generation (What the loop outputs) #}
+      {{ govukSummaryList({
+        card: {
+          title: { text: "Decision" },
+          actions: { items: [{ href: "#", text: "", visuallyHiddenText: "Decision" }] }
+        },
+        rows: [
+          { key: { text: "Originator" }, value: { html: "Inspector<br><span class='govuk-body govuk-!-text-color-secondary govuk-!-margin-bottom-0'>Sarah Tudor</span>" } },
+          { key: { text: "Outcome" }, value: { html: "Granted<br><span class='govuk-body govuk-!-text-color-secondary govuk-!-margin-bottom-0'>(Subject to conditions)</span>" } },
+          { key: { text: "Outcome date" }, value: { text: "14 May 2024" } }
+        ]
+      }) }}
+      
+      {{ govukSummaryList({
+        card: {
+          title: { text: "Report" },
+          actions: { items: [{ href: "#", text: "", visuallyHiddenText: "Report" }] }
+        },
+        rows: [
+          { key: { text: "Originator" }, value: { html: "Secretary of State" } },
+          { key: { text: "Outcome" }, value: { text: "Refused" } },
+          { key: { text: "Outcome date" }, value: { text: "21 June 2024" } }
+        ]
+      }) }}
+    {% endset %}
+
+    {# 2. DEFINE THE NUNJUCKS CODE (Wrapped in RAW so it doesn't execute!) #}
+    {% set nunjucksCode %}
+{% raw %}
+{# 1. OVERVIEW CARD (Extracts the 'type' from the array to make a bulleted list) #}
+<div class="govuk-summary-card" id="outcomeOverview">
+  <div class="govuk-summary-card__title-wrapper">
+    <h2 class="govuk-summary-card__title">Outcome overview</h2>
+  </div>
+  <div class="govuk-summary-card__content">
+    {% set outcomeRows = [] %}
+    
+    {% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
+      {% set outcomeListHtml %}
+        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+          {% for out in currentCase.outcomes %}
+            <li>{{ out.type }}</li>
+          {% endfor %}
+        </ul>
+      {% endset %}
+
+      {% set outcomeRows = [
+        { 
+          key: { text: "Type of decision or report" }, 
+          value: { html: outcomeListHtml }, 
+          actions: { items: [{ href: "/cases/outcomes/hub?ref=" + currentCase.reference, text: "Change" }] } 
+        }
+      ] %}
+    {% else %}
+      {% set outcomeRows = [
+        {
+          key: { text: "Type of decision or report" },
+          value: { text: "-" },
+          actions: { items: [{ href: "/cases/outcomes/start?ref=" + currentCase.reference, text: "Add" }] }
+        }
+      ] %}
+    {% endif %}
+
+    {{ govukSummaryList({ rows: outcomeRows }) }}
+  </div>
+</div>
+
+{# 2. DYNAMIC LOOP (Creates a new full card for every item in the array) #}
+{% if currentCase.outcomes and currentCase.outcomes.length > 0 %}
+  {% for outcome in currentCase.outcomes %}
+    
+    <div class="govuk-summary-card" id="outcome-{{ loop.index }}">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">{{ outcome.type }}</h2>
+        <ul class="govuk-summary-card__actions">
+          <li class="govuk-summary-card__action">
+            <a class="govuk-link" href="/cases/outcomes/hub?ref={{ currentCase.reference }}">Change</a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+          
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Originator</dt>
+            <dd class="govuk-summary-list__value">
+              {% if outcome.originator == "Inspector" %}
+                Inspector<br>
+                <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.inspectorName }}</span>
+              {% else %}
+                Secretary of State
+              {% endif %}
+            </dd>
+          </div>
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Outcome</dt>
+            <dd class="govuk-summary-list__value">{{ outcome.decisionOutcome }}</dd>
+          </div>
+
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Outcome date</dt>
+            <dd class="govuk-summary-list__value">{{ outcome.outcomeDate.formatted if outcome.outcomeDate else "-" }}</dd>
+          </div>
+
+        </dl>
+      </div>
+    </div>
+
+  {% endfor %}
+{% endif %}
+{% endraw %}
+    {% endset %}
+
+    {# 3. DEFINE THE ROUTE/JS CODE #}
+    {% set routesCode %}
+// ===============================================================
+// WORKING DRAFT ARRAY PATTERN (Shortened for documentation)
+// ===============================================================
+
+// 1. START PAGE: Initialize the temporary working list
+router.get('/cases/outcomes/start', (req, res) => {
+  req.session.data['tempOutcomesList'] = [];
+  res.redirect('/cases/outcomes/step-1?ref=' + req.query.ref);
+});
+
+// 2. STEP PAGE: Add a single item to the draft list
+router.post('/cases/outcomes/step-1', (req, res) => {
+  if (!req.session.data['tempOutcome']) req.session.data['tempOutcome'] = {};
+  
+  // Collect the data from the form
+  req.session.data['tempOutcome'].type = req.body.outcomeType;
+  req.session.data['tempOutcome'].originator = req.body.originator;
+  
+  // Push the single item into the temporary array
+  var draftList = req.session.data['tempOutcomesList'] || [];
+  draftList.push(req.session.data['tempOutcome']);
+  
+  req.session.data['tempOutcomesList'] = draftList;
+  req.session.data['tempOutcome'] = null; // Clear the temporary object
+
+  res.redirect(`/cases/outcomes/hub?ref=${req.query.ref}`);
+});
+
+// 3. COMMIT: User confirms the list, save it to the main case
+router.post('/cases/outcomes/commit', function(req, res) {
+  var ref = req.query.ref;
+  var c = getCase(req);
+
+  // Overwrite the real database array with the draft array
+  c.outcomes = req.session.data['tempOutcomesList'] || [];
+  
+  req.session.data['tempOutcomesList'] = null; // Wipe draft
+  req.session.flashSection = "outcomeOverview"; // Trigger success banner target
+  
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+    {% endset %}
+
+    {# 4. BUILD THE TAB CONTENT BLOCKS #}
+    {% set tab1Example %}
+      <div class="app-example-wrapper" style="border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;">
+        {{ exampleHtml | safe }}
+      </div>
+    {% endset %}
+
+    {% set tab2Nunjucks %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ nunjucksCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {% set tab3Routes %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ routesCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {# 5. RENDER THE GOV.UK TABS COMPONENT #}
+    {{ govukTabs({
+      items: [
+        {
+          label: "Example",
+          id: "example",
+          panel: { html: tab1Example }
+        },
+        {
+          label: "Nunjucks",
+          id: "nunjucks",
+          panel: { html: tab2Nunjucks }
+        },
+        {
+          label: "Routes & Logic",
+          id: "routes",
+          panel: { html: tab3Routes }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How to implement</h2>
+    <ol class="govuk-list govuk-list--number">
+      <li>In your routing logic, use the "Working Draft Array Pattern" (seen in the Routes tab) to collect multiple items into a temporary array (e.g. <code>req.session.data['tempOutcomesList']</code>).</li>
+      <li>When the user clicks save, commit the array to the main case object (e.g. <code>c.outcomes</code>) and redirect back to the case details dashboard.</li>
+      <li>On the front-end view, check if the array exists using <code>{% raw %}{% if currentCase.outcomes.length > 0 %}{% endraw %}</code>.</li>
+      <li>Use a Nunjucks <code>{% raw %}{% for outcome in currentCase.outcomes %}{% endraw %}</code> loop to wrap a standard GOV.UK Summary Card, which will dynamically clone the component for every item saved in the list.</li>
+      <li><strong>Crucial:</strong> Append <code>loop.index</code> to the end of your card's ID (e.g., <code>id="outcome-{% raw %}{{ loop.index }}{% endraw %}"</code>). This ensures every dynamically generated card has a unique HTML identifier, allowing your success banner anchor links to scroll down to exactly the right place.</li>
+    </ol>
+
+  </div>
+</div>
+
+{# ========================================================== #}
+{# LOCAL JAVASCRIPT: COPY BUTTON FUNCTIONALITY                #}
+{# ========================================================== #}
+<script>
+  function copyCodeSnippet(button) {
+    // Find the closest <code> block to the clicked button
+    const container = button.closest('div');
+    const codeElement = container.querySelector('code');
+    
+    if (codeElement) {
+      // Copy the text to the clipboard
+      navigator.clipboard.writeText(codeElement.innerText).then(() => {
+        // Change button text to confirm
+        const originalText = button.innerText;
+        button.innerText = "Copied";
+        
+        // Change it back after 2 seconds
+        setTimeout(() => {
+          button.innerText = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  }
+</script>
+{% endblock %}

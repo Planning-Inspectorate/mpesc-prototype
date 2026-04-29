@@ -1,0 +1,441 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+  Smart evidence marking - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  
+  {# ========================================================== #}
+  {# LEFT COLUMN: SIDE NAVIGATION (1/4 WIDTH)                   #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-one-quarter">
+    <nav class="moj-side-navigation" aria-label="Side navigation">
+      <ul class="moj-side-navigation__list">
+        <li class="moj-side-navigation__item moj-side-navigation__item--active">
+          <a href="/features-and-components/smart-evidence-marking" aria-current="location">Smart evidence marking</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/filters">Filters</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/dynamic-cards">Dynamic cards</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/audit-log">Audit log</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/success-banner">Success banner</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  {# ========================================================== #}
+  {# RIGHT COLUMN: MAIN CONTENT (3/4 WIDTH)                     #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-three-quarters">
+
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Smart evidence marking</h1>
+    
+    <p class="govuk-body">
+      Features that allow a user to read or unread, flag or unflag files related to a case. These statuses update instantly without a page refresh.
+    </p>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">When to use this feature</h2>
+    
+    <p class="govuk-body">Use this component inside document tables where users need to process high volumes of information. It allows them to:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>keep track of what they have already reviewed (Read/Unread)</li>
+      <li>highlight specific files that need further attention or discussion (Flagged)</li>
+    </ul>
+
+    <p class="govuk-body">This pattern helps improve the user experience by:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>using JavaScript (Fetch API) to silently update the database in the background</li>
+      <li>preventing disruptive page reloads every time a user clicks a tag</li>
+      <li>retaining the user's exact scroll position in long lists of files</li>
+    </ul>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How it works</h2>
+
+    {# 1. DEFINE THE VISUAL EXAMPLE #}
+    {% set exampleHtml %}
+      {# Dummy data for the visual demonstration #}
+      {% set mockDocs = [
+        { id: "mock-1", name: "Application-form.pdf", type: "PDF", size: "2MB", date: "12 May 2024", readStatus: "Unread", isFlagged: false },
+        { id: "mock-2", name: "Site-plan-v2.jpg", type: "Image", size: "4MB", date: "14 May 2024", readStatus: "Read", isFlagged: true }
+      ] %}
+
+      <table class="govuk-table" data-module="moj-sortable-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 45%;">File name</th>
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 20%;">Uploaded</th>
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 15%;">Status</th>
+            <th scope="col" class="govuk-table__header" style="vertical-align: middle; width: 20%;">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for doc in mockDocs %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
+              <a class="govuk-link govuk-!-font-weight-bold" href="#" target="_blank">{{ doc.name }}</a>
+              <span class="govuk-body-s govuk-!-display-block govuk-!-margin-top-2 govuk-!-margin-bottom-0" style="color: #505a5f;">
+                File type and size: {{ doc.type }}, {{ doc.size }}
+              </span>
+            </td>
+            
+            <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">{{ doc.date }}</td>
+
+            <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
+              <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;" id="status-container-{{ doc.id }}">
+                {% if doc.readStatus == "Read" %}
+                  <strong class="govuk-tag govuk-tag--green" id="status-tag-read-{{ doc.id }}">Read</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--blue" id="status-tag-read-{{ doc.id }}">Unread</strong>
+                {% endif %}
+
+                {% if doc.isFlagged %}
+                  <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}">Flagged</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}" style="visibility: hidden;">Flagged</strong>
+                {% endif %}
+              </div>
+            </td>
+            
+            <td class="govuk-table__cell" style="vertical-align: top; padding-top: 15px;">
+              <ul class="govuk-list govuk-!-margin-bottom-0">
+                <li class="govuk-!-margin-bottom-2">
+                  <a class="govuk-link govuk-link--no-visited-state js-read-toggle-demo" href="#" data-doc-id="{{ doc.id }}">
+                    {% if doc.readStatus == "Read" %}Unread{% else %}Read{% endif %}
+                  </a>
+                </li>
+                <li class="govuk-!-margin-bottom-2">
+                  <a class="govuk-link govuk-link--no-visited-state js-flag-toggle-demo" href="#" data-doc-id="{{ doc.id }}">
+                    {% if doc.isFlagged %}Unflag{% else %}Flag{% endif %}
+                  </a>
+                </li>
+              </ul>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endset %}
+
+    {# 2. DEFINE THE NUNJUCKS CODE (Wrapped in RAW so it doesn't execute!) #}
+    {% set nunjucksCode %}
+{% raw %}
+<table class="govuk-table" data-module="moj-sortable-table">
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header">File name</th>
+      <th scope="col" class="govuk-table__header">Uploaded</th>
+      <th scope="col" class="govuk-table__header">Status</th>
+      <th scope="col" class="govuk-table__header">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    
+    {% for doc in paginatedDocuments %}
+    <tr class="govuk-table__row">
+      
+      <td class="govuk-table__cell">
+        <a class="govuk-link govuk-!-font-weight-bold" href="#">{{ doc.name }}</a>
+      </td>
+      
+      <td class="govuk-table__cell">{{ doc.date }}</td>
+
+      {# --- STATUS TAGS --- #}
+      <td class="govuk-table__cell">
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
+          
+          {% set readStat = doc.readStatus | default("Unread") %}
+          {% if readStat == "Read" %}
+            <strong class="govuk-tag govuk-tag--green" id="status-tag-read-{{ doc.id }}">Read</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--blue" id="status-tag-read-{{ doc.id }}">Unread</strong>
+          {% endif %}
+
+          {% if doc.isFlagged %}
+            <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}">Flagged</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--red" id="status-tag-flag-{{ doc.id }}" style="visibility: hidden;">Flagged</strong>
+          {% endif %}
+          
+        </div>
+      </td>
+      
+      {# --- TOGGLE ACTIONS --- #}
+      <td class="govuk-table__cell">
+        <ul class="govuk-list govuk-!-margin-bottom-0">
+          <li class="govuk-!-margin-bottom-2">
+            <a class="govuk-link govuk-link--no-visited-state js-read-toggle" href="#" data-doc-id="{{ doc.id }}">
+              {% if readStat == "Read" %}Unread{% else %}Read{% endif %}
+            </a>
+          </li>
+          <li class="govuk-!-margin-bottom-2">
+            <a class="govuk-link govuk-link--no-visited-state js-flag-toggle" href="#" data-doc-id="{{ doc.id }}">
+              {% if doc.isFlagged %}Unflag{% else %}Flag{% endif %}
+            </a>
+          </li>
+        </ul>
+      </td>
+
+    </tr>
+    {% endfor %}
+
+  </tbody>
+</table>
+{% endraw %}
+    {% endset %}
+
+    {# 3. DEFINE THE ROUTE/JS CODE #}
+    {% set routesCode %}
+// =========================================================
+// 1. FRONTEND: Local Javascript (Bottom of the view.html file)
+// =========================================================
+<script type="module" nonce="">
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // Function to silently hit the backend route
+    const updateBackendStatus = (docId, actionType, newValue) => {
+      fetch(`/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/${docId}/toggle-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ref: '{{ currentCase.reference }}',
+          actionType: actionType,
+          newValue: newValue
+        })
+      }).catch(err => console.error("Failed to update status:", err));
+    };
+
+    // Toggle Read/Unread
+    document.querySelectorAll('.js-read-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        const docId = this.getAttribute('data-doc-id');
+        const statusTag = document.getElementById('status-tag-read-' + docId);
+        let isNowRead = false;
+
+        if (this.textContent.trim() === 'Read') {
+          this.textContent = 'Unread';
+          if (statusTag) {
+            statusTag.textContent = 'Read';
+            statusTag.className = 'govuk-tag govuk-tag--green';
+          }
+          isNowRead = true;
+        } else {
+          this.textContent = 'Read';
+          if (statusTag) {
+            statusTag.textContent = 'Unread';
+            statusTag.className = 'govuk-tag govuk-tag--blue';
+          }
+        }
+        updateBackendStatus(docId, 'readStatus', isNowRead ? 'Read' : 'Unread');
+      });
+    });
+
+    // Toggle Flag/Unflag
+    document.querySelectorAll('.js-flag-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        const docId = this.getAttribute('data-doc-id');
+        let flagTag = document.getElementById('status-tag-flag-' + docId);
+        let isNowFlagged = false;
+
+        if (this.textContent.trim() === 'Flag') {
+          this.textContent = 'Unflag';
+          if (flagTag) flagTag.style.visibility = 'visible';
+          isNowFlagged = true;
+        } else {
+          this.textContent = 'Flag';
+          if (flagTag) flagTag.style.visibility = 'hidden';
+        }
+        updateBackendStatus(docId, 'isFlagged', isNowFlagged);
+      });
+    });
+  });
+</script>
+
+// =========================================================
+// 2. BACKEND: Express Route (manage-folders.js router file)
+// =========================================================
+router.post('/cases/manage-folders/view/:folderId/:folderSlug/:docId/toggle-status', function(req, res) {
+  var ref = req.body.ref;
+  var actionType = req.body.actionType; // 'readStatus' or 'isFlagged'
+  var newValue = req.body.newValue;
+  
+  var cases = req.session.data['cases'] || [];
+  var currentCase = cases.find(x => x.reference === ref);
+  
+  if (currentCase) {
+    var foundFolder = findFolderDeep(currentCase.folders, req.params.folderId); 
+    if (foundFolder) {
+      var activeDoc = (foundFolder.target.documents || []).find(d => d.id === req.params.docId);
+      if (activeDoc) {
+         if (actionType === 'readStatus') activeDoc.readStatus = newValue;
+         if (actionType === 'isFlagged') activeDoc.isFlagged = newValue;
+      }
+    }
+  }
+  // Send a silent 200 OK back to the frontend fetch request
+  res.json({ success: true });
+});
+    {% endset %}
+
+    {# 4. BUILD THE TAB CONTENT BLOCKS #}
+    {% set tab1Example %}
+      <div class="app-example-wrapper" style="border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;">
+        {{ exampleHtml | safe }}
+      </div>
+    {% endset %}
+
+    {% set tab2Nunjucks %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ nunjucksCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {% set tab3Routes %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ routesCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {# 5. RENDER THE GOV.UK TABS COMPONENT #}
+    {{ govukTabs({
+      items: [
+        {
+          label: "Example",
+          id: "example",
+          panel: { html: tab1Example }
+        },
+        {
+          label: "Nunjucks",
+          id: "nunjucks",
+          panel: { html: tab2Nunjucks }
+        },
+        {
+          label: "Routes & Javascript",
+          id: "routes",
+          panel: { html: tab3Routes }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How to implement</h2>
+    <ol class="govuk-list govuk-list--number">
+      <li>In your Nunjucks table, ensure every tag has a dynamic ID matching the document (e.g. <code>id="status-tag-read-&#123;&#123; doc.id &#125;&#125;"</code>).</li>
+      <li>Add the <code>visibility: hidden;</code> style to the "Flagged" tag when it is not active. This ensures the column width doesn't shift around when tags are toggled.</li>
+      <li>Give the Action links a specific CSS class (e.g., <code>js-read-toggle</code>) and embed the document ID directly into the link via a data attribute (<code>data-doc-id="&#123;&#123; doc.id &#125;&#125;"</code>).</li>
+      <li>Use Frontend Javascript to listen for clicks on those specific classes. When clicked, visually swap the Tag styling and Link text immediately, and trigger a `fetch()` request.</li>
+      <li>The `fetch()` request hits the Express backend, passing the Document ID and new status, which silently saves it to the session data without interrupting the user.</li>
+    </ol>
+
+  </div>
+</div>
+
+{# ========================================================== #}
+{# LOCAL JAVASCRIPT: COPY BUTTON & DEMO FUNCTIONALITY         #}
+{# ========================================================== #}
+<script>
+  function copyCodeSnippet(button) {
+    const container = button.closest('div');
+    const codeElement = container.querySelector('code');
+    if (codeElement) {
+      navigator.clipboard.writeText(codeElement.innerText).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Copied";
+        setTimeout(() => { button.innerText = originalText; }, 2000);
+      }).catch(err => { console.error('Failed to copy text: ', err); });
+    }
+  }
+
+  // Demo Javascript so the Visual Example tab actually works!
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // Toggle Read/Unread
+    document.querySelectorAll('.js-read-toggle-demo').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        const docId = this.getAttribute('data-doc-id');
+        const statusTag = document.getElementById('status-tag-read-' + docId);
+
+        if (this.textContent.trim() === 'Read') {
+          this.textContent = 'Unread';
+          if (statusTag) {
+            statusTag.textContent = 'Read';
+            statusTag.className = 'govuk-tag govuk-tag--green';
+          }
+        } else {
+          this.textContent = 'Read';
+          if (statusTag) {
+            statusTag.textContent = 'Unread';
+            statusTag.className = 'govuk-tag govuk-tag--blue';
+          }
+        }
+      });
+    });
+
+    // Toggle Flag/Unflag
+    document.querySelectorAll('.js-flag-toggle-demo').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        const docId = this.getAttribute('data-doc-id');
+        let flagTag = document.getElementById('status-tag-flag-' + docId);
+
+        if (this.textContent.trim() === 'Flag') {
+          this.textContent = 'Unflag';
+          if (flagTag) flagTag.style.visibility = 'visible';
+        } else {
+          this.textContent = 'Flag';
+          if (flagTag) flagTag.style.visibility = 'hidden';
+        }
+      });
+    });
+
+  });
+</script>
+{% endblock %}

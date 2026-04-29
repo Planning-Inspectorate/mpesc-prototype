@@ -1,0 +1,289 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+  Audit log - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  
+  {# ========================================================== #}
+  {# LEFT COLUMN: SIDE NAVIGATION (1/4 WIDTH)                   #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-one-quarter">
+    <nav class="moj-side-navigation" aria-label="Side navigation">
+      <ul class="moj-side-navigation__list">
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/smart-evidence-marking">Smart evidence marking</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/filters">Filters</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/dynamic-cards">Dynamic cards</a>
+        </li>
+        <li class="moj-side-navigation__item moj-side-navigation__item--active">
+          <a href="/features-and-components/audit-log" aria-current="location">Audit log</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/success-banner">Success banner</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  {# ========================================================== #}
+  {# RIGHT COLUMN: MAIN CONTENT (3/4 WIDTH)                     #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-three-quarters">
+
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Audit log</h1>
+    
+    <p class="govuk-body">
+      Track details of every change made to your case in a table, labelling the time and date and which user made the change.
+    </p>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">When to use this feature</h2>
+    
+    <p class="govuk-body">Use this component to maintain a transparent, chronological history of case modifications. It should be updated immediately after a user:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>creates a new case or uploads documents</li>
+      <li>changes the status of a case</li>
+      <li>adds, updates, or removes contacts or data from a list</li>
+    </ul>
+
+    <p class="govuk-body">This pattern helps improve the user experience and service integrity by:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>recording exactly when an action happened</li>
+      <li>showing who made the change for accountability</li>
+      <li>providing a clear timeline of events for auditing purposes</li>
+    </ul>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How it works</h2>
+
+    {# 1. DEFINE THE VISUAL EXAMPLE #}
+    {% set exampleHtml %}
+      {# Mock data just for the visual demonstration tab #}
+      {% set pagedLogs = [
+        { date: "24 October 2023<br>10:15 am", details: "Site address added", user: "Carol Danvers" },
+        { date: "23 October 2023<br>4:30 pm", details: "Status changed to In progress", user: "Carol Danvers" },
+        { date: "23 October 2023<br>9:00 am", details: "Case created", user: "System Account" }
+      ] %}
+
+      <table class="govuk-table" data-cy="case-history-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 60px;">Date and time</th>
+            <th scope="col" class="govuk-table__header">Details</th>
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-left: 50px; padding-right: 120px;">User</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% if pagedLogs and pagedLogs.length > 0 %}
+            {% for log in pagedLogs %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 60px;">{{ log.date | safe }}</td>
+                <td class="govuk-table__cell">{{ log.details }}</td>
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-left: 50px; padding-right: 20px;">{{ log.user }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell" colspan="3">No history recorded yet.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    {% endset %}
+
+    {# 2. DEFINE THE NUNJUCKS CODE (Wrapped in RAW so it doesn't execute!) #}
+    {% set nunjucksCode %}
+{% raw %}
+<table class="govuk-table" data-cy="case-history-table">
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 60px;">Date and time</th>
+      <th scope="col" class="govuk-table__header">Details</th>
+      <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-left: 50px; padding-right: 120px;">User</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    
+    {% if pagedLogs and pagedLogs.length > 0 %}
+      
+      {% for log in pagedLogs %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 60px;" data-cy="history-date-{{ loop.index0 }}">{{ log.date | safe }}</td>
+          <td class="govuk-table__cell" data-cy="history-details-{{ loop.index0 }}">{{ log.details }}</td>
+          <td class="govuk-table__cell" style="white-space: nowrap; padding-left: 50px; padding-right: 20px;" data-cy="history-user-{{ loop.index0 }}">{{ log.user }}</td>
+        </tr>
+      {% endfor %}
+
+    {% else %}
+      
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell" colspan="3" data-cy="history-empty">No history recorded yet.</td>
+      </tr>
+
+    {% endif %}
+
+  </tbody>
+</table>
+{% endraw %}
+    {% endset %}
+
+    {# 3. DEFINE THE ROUTE/JS CODE #}
+    {% set routesCode %}
+// 1. The Helper Function (Located in helpers.js)
+function addAuditLog(req, caseRef, details) {
+  let cases = req.session.data['cases'] || [];
+  let targetCase = cases.find(c => c.reference === caseRef);
+
+  if (targetCase) {
+    if (!targetCase.auditLog) targetCase.auditLog = [];
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+
+    // Pushes the new log to the TOP of the array
+    targetCase.auditLog.unshift({
+      date: `${dateStr}<br>${timeStr}`,
+      details: details,
+      user: req.session.data['currentUser'] || "User Account"
+    });
+
+    targetCase.lastModified = `${dateStr} at ${timeStr}`;
+    targetCase.lastModifiedBy = req.session.data['currentUser'] || "User Account";
+  }
+}
+
+// 2. Calling it in a route (Example)
+router.post('/cases/site-address/commit', function(req, res) {
+  var ref = req.query.ref;
+  
+  // ... your logic to save the site address data ...
+  
+  // Trigger the audit log
+  addAuditLog(req, ref, "Site address added");
+  
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+    {% endset %}
+
+    {# 4. BUILD THE TAB CONTENT BLOCKS #}
+    {% set tab1Example %}
+      <div class="app-example-wrapper" style="border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;">
+        {{ exampleHtml | safe }}
+      </div>
+    {% endset %}
+
+    {% set tab2Nunjucks %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ nunjucksCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {% set tab3Routes %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ routesCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {# 5. RENDER THE GOV.UK TABS COMPONENT #}
+    {{ govukTabs({
+      items: [
+        {
+          label: "Example",
+          id: "example",
+          panel: { html: tab1Example }
+        },
+        {
+          label: "Nunjucks",
+          id: "nunjucks",
+          panel: { html: tab2Nunjucks }
+        },
+        {
+          label: "Routes & Helpers",
+          id: "routes",
+          panel: { html: tab3Routes }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How to implement</h2>
+    <ol class="govuk-list govuk-list--number">
+      <li>Ensure the <code>addAuditLog</code> helper is present in your <code>helpers.js</code> file and properly exported at the bottom of the script.</li>
+      <li>At the top of your routing file, import the helper: <code>const { addAuditLog } = require('../helpers');</code></li>
+      <li>Inside your POST route, immediately after successfully pushing or saving data to the case, call the helper: <code>addAuditLog(req, ref, "Description of the change");</code>.</li>
+      <li>On the front-end view, map the <code>pagedLogs</code> (or <code>currentCase.auditLog</code>) array into the table component. Use the <code>| safe</code> filter on the date output so the HTML line-breaks render correctly.</li>
+    </ol>
+
+  </div>
+</div>
+
+{# ========================================================== #}
+{# LOCAL JAVASCRIPT: COPY BUTTON FUNCTIONALITY                #}
+{# ========================================================== #}
+<script>
+  function copyCodeSnippet(button) {
+    // Find the closest <code> block to the clicked button
+    const container = button.closest('div');
+    const codeElement = container.querySelector('code');
+    
+    if (codeElement) {
+      // Copy the text to the clipboard
+      navigator.clipboard.writeText(codeElement.innerText).then(() => {
+        // Change button text to confirm
+        const originalText = button.innerText;
+        button.innerText = "Copied";
+        
+        // Change it back after 2 seconds
+        setTimeout(() => {
+          button.innerText = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  }
+</script>
+{% endblock %}

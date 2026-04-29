@@ -1,0 +1,772 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+  /* --- MOJ FILTER & LAYOUT STYLES (Applies to all examples) --- */
+  .custom-filter-layout { display: flex; gap: 0; }
+  .custom-filter-column { flex: 0 0 100%; max-width: 100%; padding-right: 0; }
+  .moj-filter-layout__filter { border: none !important; }
+  .moj-filter__options { margin-top: -1px; padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6; background: #fff; }
+  .moj-filter__options > .govuk-button:first-child { display: none !important; }
+  .moj-filter__header { background-color: #b1b4b6; }
+  .moj-filter__selected { background-color: #f3f2f1; padding: 20px; }
+  
+  /* Accordion styles */
+  .govuk-details__summary::before {
+      clip-path: polygon(6.38% 22.63%, 49.5% 65.75%, 92.63% 22.63%, 100% 30%, 50% 80%, 0% 30%);
+      background-color: black; color: black; width: 3px; height: 3px;
+  }
+  .govuk-details[open] > .govuk-details__summary::before {
+      clip-path: polygon(0% 71.88%, 49.5% 22.63%, 98.5% 71.88%, 91.63% 78.71%, 50% 36.88%, 7.37% 79.29%);
+      width: 3px; height: 3px;
+  }
+  .custom-details-summary { padding: 15px 10px 15px 35px; width: 100%; box-sizing: border-box; }
+  .filtersText { font-weight: normal; color: #1d70b8; text-decoration: none; }
+  .filters-accordion { border-top: 1px solid #b1b4b6; }
+  .filters-accordion:last-of-type { border-bottom: 1px solid #b1b4b6; }
+  .govuk-details__text { border-left: none !important; padding-left: 0 !important; margin-left: 0 !important; padding-bottom: 10px !important; }
+
+  /* --- HORIZONTAL FILTER SPECIFIC STYLES --- */
+  .moj-filter-horizontal .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 20px; }
+  .moj-filter-horizontal .checkbox-grid .govuk-checkboxes__item { border-bottom: 1px solid #b1b4b6; padding-bottom: 10px; margin-bottom: 10px; }
+  @media (max-width: 768px) { .moj-filter-horizontal .checkbox-grid { grid-template-columns: 1fr; } }
+
+  /* ========================================================== */
+  /* BUG FIXES: WRAPPING AND PILL ICONS                         */
+  /* ========================================================== */
+  
+  /* 1. Prevent 'Selected filters' and 'Clear filters' from wrapping */
+  .moj-filter__selected-heading {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    margin-bottom: 15px;
+  }
+  .moj-filter__heading-title, .moj-filter__heading-action { 
+    margin: 0 !important; 
+    flex: 0 0 auto !important; 
+  }
+  .moj-filter__heading-title h2, .moj-filter__heading-action p, .moj-filter__heading-action a {
+    white-space: nowrap !important; 
+    margin: 0 !important;
+  }
+
+  /* 2. Reliable Inline SVG for the Pill 'X' Icon */
+  .moj-filter__tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding-right: 8px !important;
+  }
+  .moj-filter__tag::after {
+    content: "" !important;
+    display: inline-block !important;
+    width: 14px !important; 
+    height: 14px !important; 
+    margin-left: 8px !important;
+    /* Draws a black X using inline SVG data */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important; 
+    background-position: center !important; 
+    background-size: contain !important;
+  }
+  .moj-filter__tag:hover::after {
+    /* Draws a white X on hover using inline SVG data */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") !important;
+  }
+
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+  Filters - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% block content %}
+{%- from "moj/components/filter/macro.njk" import mojFilter -%}
+{%- from "govuk/components/checkboxes/macro.njk" import govukCheckboxes -%}
+{%- from "govuk/components/button/macro.njk" import govukButton -%}
+
+<div class="govuk-grid-row">
+  
+  {# ========================================================== #}
+  {# LEFT COLUMN: SIDE NAVIGATION (1/4 WIDTH)                   #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-one-quarter">
+    <nav class="moj-side-navigation" aria-label="Side navigation">
+      <ul class="moj-side-navigation__list">
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/smart-evidence-marking">Smart evidence marking</a>
+        </li>
+        <li class="moj-side-navigation__item moj-side-navigation__item--active">
+          <a href="/features-and-components/filters" aria-current="location">Filters</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/dynamic-cards">Dynamic cards</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/audit-log">Audit log</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/success-banner">Success banner</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  {# ========================================================== #}
+  {# RIGHT COLUMN: MAIN CONTENT (3/4 WIDTH)                     #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-three-quarters">
+
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Filters</h1>
+    
+    <p class="govuk-body">
+      Use filters to help users narrow down a list of results. There are 3 common filter layouts in this prototype. Choose the one that best meets user needs and the context of the page.
+    </p>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">When to use filters</h2>
+    <p class="govuk-body">Use filters when users need to:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>narrow down a long list of results</li>
+      <li>find specific items based on known criteria</li>
+      <li>combine filters with search to refine results</li>
+    </ul>
+
+    <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+
+
+    {# ========================================================== #}
+    {# 1. SHORT VERTICAL FILTER                                   #}
+    {# ========================================================== #}
+    <h2 class="govuk-heading-l">1. Short vertical filter</h2>
+    <p class="govuk-body">Use this layout when filtering a simple list (like documents in a folder) where there are only 1 or 2 small categories to filter by. It fits perfectly in a 1/3 width left-hand column.</p>
+
+    {# Visual Example (Static Mock) #}
+    {% set shortExampleHtml %}
+      <div style="max-width: 350px;">
+        {% set filterOptionsHtml %}
+          {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
+          <div class="govuk-!-margin-bottom-6">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Select read status</h2>
+            {{ govukCheckboxes({ name: "mockRead", classes: "govuk-checkboxes--small", items: [ { value: "Read", html: "Read <span class='govuk-!-text-color-secondary'>(4)</span>", checked: true }, { value: "Unread", html: "Unread <span class='govuk-!-text-color-secondary'>(12)</span>" } ] }) }}
+          </div>
+        {% endset %}
+        
+        {{ mojFilter({
+          heading: { text: "Filter" },
+          selectedFilters: {
+            heading: { text: "Selected filters" },
+            clearLink: {
+              text: "Clear filters",
+              href: "#",
+              classes: "govuk-!-font-size-16"
+            },
+            categories: [
+              {
+                heading: { text: "Read status" },
+                items: [ { text: "Read", href: "#" } ]
+              }
+            ]
+          },
+          optionsHtml: filterOptionsHtml
+        }) }}
+      </div>
+    {% endset %}
+
+    {# Nunjucks Code #}
+    {% set shortNunjucksCode %}
+{% raw %}
+<form method="get" action="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}">
+  <input type="hidden" name="ref" value="{{ currentCase.reference }}">
+  <input type="hidden" name="isFilterSubmit" value="true">
+
+<div class="moj-filter-layout custom-filter-layout">
+  {% if folder.documents and folder.documents.length > 0 %}
+  <div class="custom-filter-column">
+
+    {%- set filterOptionsHtml %}
+      {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
+      <div class="govuk-!-margin-bottom-0">
+        
+        {# --- SECTION 1: READ STATUS --- #}
+        <div class="govuk-!-margin-bottom-6">
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Select read status</h2>
+          {{ govukCheckboxes({
+            idPrefix: "fileReadStatus", name: "fileReadStatus", classes: "govuk-checkboxes--small",
+            items: [
+              { value: "Read", html: "Read <span id='count-read'>" ~ getCount(folder.documents, 'readStatus', 'Read') ~ "</span>", checked: true if data['fileReadStatus'] and ("Read" in data['fileReadStatus']) },
+              { value: "Unread", html: "Unread <span id='count-unread'>" ~ getCount(folder.documents, 'readStatus', 'Unread') ~ "</span>", checked: true if data['fileReadStatus'] and ("Unread" in data['fileReadStatus']) }
+            ]
+          }) }}
+        </div>
+      </div>
+    {% endset -%}
+
+    {# --- GENERATE THE SELECTED PILLS --- #}
+    {% set filterCategories = [] %}
+
+    {% if data['fileReadStatus'] %}
+      {% set readItems = [] %}
+      {% set readList = data['fileReadStatus'] if data['fileReadStatus'] | is_array else [data['fileReadStatus']] %}
+      {% for item in readList %}
+        {% if item and item != "_unchecked" %}
+          {% set readItems = (readItems.push({ text: item, href: "/remove-filter/fileReadStatus/" + item }), readItems) %}
+        {% endif %}
+      {% endfor %}
+      {% if readItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Read status" }, items: readItems }), filterCategories) %}{% endif %}
+    {% endif %}
+    
+    {{ mojFilter({
+      heading: { text: "Filter" },
+      selectedFilters: {
+        heading: { text: "Selected filters" },
+        clearLink: {
+          text: "Clear filters",
+          href: "/clear-filters",
+          classes: "govuk-!-font-size-16"
+        },
+        categories: filterCategories
+      },
+      optionsHtml: filterOptionsHtml
+    }) }}
+  </div>
+  {% endif %}
+</div>
+</form>
+{% endraw %}
+    {% endset %}
+
+    {# CSS Code #}
+    {% set filterCssCode %}
+/* --- MOJ FILTER & LAYOUT STYLES --- */
+.moj-filter__header { background-color: #b1b4b6; }
+.moj-filter__selected { background-color: #f3f2f1; }
+.moj-filter__heading-action a { font-size: 16px !important; font-weight: normal; }
+.custom-filter-layout { display: flex; gap: 0; }
+.custom-filter-column { flex: 0 0 31%; max-width: 31%; padding-right: 0; }
+.custom-content-column { flex: 0 0 69%; max-width: 69%; padding-left: 30px; }
+.moj-filter { width: 100%; }
+.moj-filter-layout__filter { border: none !important; }
+.moj-filter__options { margin-top: -1px; padding: 20px; box-shadow: inset 0 0 0 1px #b1b4b6 }
+
+/* Hide the hardcoded MOJ Apply Filters button at the top */
+.moj-filter__options > .govuk-button:first-child { display: none !important; }
+
+/* FIX: Prevent 'Selected filters' and 'Clear filters' from wrapping */
+.moj-filter__selected-heading {
+  display: flex !important; justify-content: space-between !important; align-items: center !important; flex-wrap: nowrap !important; margin-bottom: 15px;
+}
+.moj-filter__heading-title, .moj-filter__heading-action { margin: 0 !important; flex: 0 0 auto !important; }
+.moj-filter__heading-title h2, .moj-filter__heading-action p, .moj-filter__heading-action a { white-space: nowrap !important; margin: 0 !important; }
+
+/* FIX: Reliable Inline SVG for the Pill 'X' Icon */
+.moj-filter__tag { display: inline-flex !important; align-items: center !important; padding-right: 8px !important; }
+.moj-filter__tag::after {
+  content: "" !important; display: inline-block !important; width: 14px !important; height: 14px !important; margin-left: 8px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: center !important; background-size: contain !important;
+}
+.moj-filter__tag:hover::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") !important; }
+    {% endset %}
+
+    {{ govukTabs({
+      items: [
+        { label: "Example", id: "short-example", panel: { html: "<div class='app-example-wrapper' style='border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;'>" + shortExampleHtml | safe + "</div>" } },
+        { label: "Nunjucks", id: "short-nunjucks", panel: { html: "<div style='position: relative; margin-top: 20px;'><button class='govuk-button govuk-button--secondary' onclick='copyCodeSnippet(this)' style='position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;'>Copy</button><pre class='app-code-block' style='background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;'><code>" + shortNunjucksCode | escape + "</code></pre></div>" } },
+        { label: "CSS", id: "short-css", panel: { html: "<div style='position: relative; margin-top: 20px;'><button class='govuk-button govuk-button--secondary' onclick='copyCodeSnippet(this)' style='position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;'>Copy</button><pre class='app-code-block' style='background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;'><code>" + filterCssCode | escape + "</code></pre></div>" } }
+      ]
+    }) }}
+
+    <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+
+
+    {# ========================================================== #}
+    {# 2. LONG VERTICAL FILTER                                    #}
+    {# ========================================================== #}
+    <h2 class="govuk-heading-l">2. Long vertical filter</h2>
+    <p class="govuk-body">Use this layout for complex dashboards (like All Cases) that have massive lists of filter checkboxes. It uses accordion styles to compress the page height so the user doesn't suffer scroll fatigue, and includes a local keyword search to filter long categories.</p>
+
+    {# Visual Example (Static Mock) #}
+    {% set longExampleHtml %}
+      <div style="max-width: 350px;">
+        {% set filterOptionsHtml %}
+          {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
+          <div style="padding-bottom:10px;"><a href="#" id="doc-toggle-all" class="govuk-link govuk-body-s">Show all sections</a></div>
+          <div class="govuk-!-margin-bottom-0">
+            <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion doc-accordion">
+              <summary class="govuk-details__summary custom-details-summary"><span class="govuk-details__summary-text filtersText">Case work area</span></summary>
+              <div class="govuk-details__text">
+                <div class="govuk-!-margin-top-3">
+                  {{ govukCheckboxes({ name: "mockArea", classes: "govuk-checkboxes--small", items: [ { value: "1", text: "Planning, Environmental", checked: true }, { value: "2", text: "Rights of Way" } ] }) }}
+                </div>
+              </div>
+            </details>
+            <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion doc-accordion" open>
+              <summary class="govuk-details__summary custom-details-summary"><span class="govuk-details__summary-text filtersText">Subtype</span></summary>
+              <div class="govuk-details__text">
+                <input id="doc-subtype-search" class="app-list-filter__filter-input govuk-input govuk-!-margin-bottom-3" type="text" placeholder="Find subtype..." aria-controls="doc-subtype-container" onkeydown="return event.key != 'Enter';" style="width: 100%;">
+                <div id="doc-subtype-container" class="govuk-!-margin-top-3">
+                  {{ govukCheckboxes({ name: "mockType", classes: "govuk-checkboxes--small", items: [ { value: "1", text: "Drought Permits", checked: true }, { value: "2", text: "Housing" }, { value: "3", text: "Purchase Notices" }, { value: "4", text: "Wayleaves" } ] }) }}
+                </div>
+              </div>
+            </details>
+          </div>
+        {% endset %}
+
+        {{ mojFilter({
+          heading: { text: "Filter" },
+          selectedFilters: {
+            heading: { text: "Selected filters" },
+            clearLink: {
+              text: "Clear filters",
+              href: "#",
+              classes: "govuk-!-font-size-16"
+            },
+            categories: [
+              {
+                heading: { text: "Case work area" },
+                items: [ { text: "Planning, Environmental", href: "#" } ]
+              },
+              {
+                heading: { text: "Subtype" },
+                items: [ { text: "Drought Permits", href: "#" } ]
+              }
+            ]
+          },
+          optionsHtml: filterOptionsHtml
+        }) }}
+      </div>
+    {% endset %}
+
+    {# Nunjucks Code #}
+    {% set longNunjucksCode %}
+{% raw %}
+<form method="get" action="/cases-filter">
+<div class="moj-filter-layout custom-filter-layout">
+  <div class="custom-filter-column">
+
+    {%- set filterOptionsHtml %}
+      {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-4 govuk-!-width-full" }) }}
+      <div style="padding-bottom:10px;"><a href="#" id="toggle-all-sections" class="govuk-link govuk-body-s">Show all sections</a></div>
+
+      <div class="govuk-!-margin-bottom-0">
+        
+        {# --- ACCORDION 1: CASE WORK AREA --- #}
+        <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion">
+          <summary class="govuk-details__summary custom-details-summary">
+            <span class="govuk-details__summary-text filtersText">Case work area</span>
+          </summary>
+          <div class="govuk-details__text">
+            <div id="area-container" class="govuk-!-margin-top-3">
+              {{ govukCheckboxes({
+                idPrefix: "area", name: "area", classes: "govuk-checkboxes--small",
+                items: [
+                  { value: "planning", text: "Planning " + getCount(allCases, 'areaValue', 'planning') }
+                ]
+              }) }}
+            </div>
+          </div>
+        </details>
+
+        {# --- ACCORDION 2: SUBTYPE (With Search) --- #}
+        <details class="govuk-details govuk-!-margin-bottom-0 filters-accordion">
+          <summary class="govuk-details__summary custom-details-summary">
+            <span class="govuk-details__summary-text filtersText">Subtype</span>
+          </summary>
+          <div class="govuk-details__text">
+            
+            <label for="subtype-filter" class="govuk-visually-hidden">Find subtype</label>
+            <input id="subtype-filter" class="app-list-filter__filter-input govuk-input govuk-!-margin-bottom-3" type="text" placeholder="Find subtype..." aria-controls="subtype-container" onkeydown="return event.key != 'Enter';" style="width: 100%;">
+
+            <div class="app-list-filter__container" id="subtype-container" style="margin-top: 0;">
+              {{ govukCheckboxes({
+                idPrefix: "subtype-drought", name: "subtype", classes: "govuk-checkboxes--small",
+                fieldset: { legend: { text: "Drought", classes: "govuk-fieldset__legend--s" } },
+                items: [
+                  { value: "drought-permits", text: "Drought Permits" },
+                  { value: "drought-orders", text: "Drought Orders" }
+                ]
+              }) }}
+            </div>
+          </div>
+        </details>
+
+      </div>
+    {% endset -%}
+    
+    {# --- GENERATE THE SELECTED PILLS --- #}
+    {% set filterCategories = [] %}
+
+    {% if data['area'] %}
+      {% set areaItems = [] %}
+      {% set areaList = data['area'] if data['area'] | is_array else [data['area']] %}
+      {% for item in areaList %}
+        {% if item and item != "_unchecked" %}
+          {% set areaItems = (areaItems.push({ text: item, href: "/remove-filter/area/" + item }), areaItems) %}
+        {% endif %}
+      {% endfor %}
+      {% if areaItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Case work area" }, items: areaItems }), filterCategories) %}{% endif %}
+    {% endif %}
+
+    {{ mojFilter({
+      heading: { text: "Filter" },
+      selectedFilters: {
+        heading: { text: "Selected filters" },
+        clearLink: {
+          text: "Clear filters",
+          href: "/clear-filters",
+          classes: "govuk-!-font-size-16"
+        },
+        categories: filterCategories
+      },
+      optionsHtml: filterOptionsHtml
+    }) }}
+  </div>
+</div>
+</form>
+
+<script>
+  // Add keyword search logic to make the input box filter the checkboxes below it
+  const filterInputs = document.querySelectorAll('.app-list-filter__filter-input');
+  filterInputs.forEach(input => {
+    input.addEventListener('keyup', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const targetContainer = document.getElementById(e.target.getAttribute('aria-controls'));
+      
+      if (targetContainer) {
+        const items = targetContainer.querySelectorAll('.govuk-checkboxes__item');
+        items.forEach(item => {
+          const label = item.textContent.toLowerCase();
+          item.style.display = label.includes(searchTerm) ? '' : 'none';
+        });
+      }
+    });
+  });
+</script>
+{% endraw %}
+    {% endset %}
+
+    {# CSS Code #}
+    {% set longCssCode %}
+/* --- ACCORDION STYLES (Add this along with the standard vertical CSS above) --- */
+.govuk-details__summary::before {
+    clip-path: polygon(6.38% 22.63%, 49.5% 65.75%, 92.63% 22.63%, 100% 30%, 50% 80%, 0% 30%);
+    background-color: black; color: black; width: 3px; height: 3px;
+}
+.govuk-details[open] > .govuk-details__summary::before {
+    clip-path: polygon(0% 71.88%, 49.5% 22.63%, 98.5% 71.88%, 91.63% 78.71%, 50% 36.88%, 7.37% 79.29%);
+    width: 3px; height: 3px;
+}
+.custom-details-summary { padding: 15px 10px 15px 35px; width: 100%; box-sizing: border-box; }
+.filtersText { font-weight: normal; color: #1d70b8; text-decoration: none; }
+.filtersText:hover { color: #003078; text-decoration: underline; text-decoration-thickness: 2px; }
+.filters-accordion { border-top: 1px solid #b1b4b6; }
+.filters-accordion:last-of-type { border-bottom: 1px solid #b1b4b6; }
+.govuk-details { border-left: none; padding-left: 0; }
+.govuk-details__text { border-left: none !important; padding-left: 0 !important; margin-left: 0 !important; padding-bottom: 10px !important; }
+    {% endset %}
+
+    {{ govukTabs({
+      items: [
+        { label: "Example", id: "long-example", panel: { html: "<div class='app-example-wrapper' style='border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;'>" + longExampleHtml | safe + "</div>" } },
+        { label: "Nunjucks", id: "long-nunjucks", panel: { html: "<div style='position: relative; margin-top: 20px;'><button class='govuk-button govuk-button--secondary' onclick='copyCodeSnippet(this)' style='position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;'>Copy</button><pre class='app-code-block' style='background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;'><code>" + longNunjucksCode | escape + "</code></pre></div>" } },
+        { label: "CSS", id: "long-css", panel: { html: "<div style='position: relative; margin-top: 20px;'><button class='govuk-button govuk-button--secondary' onclick='copyCodeSnippet(this)' style='position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;'>Copy</button><pre class='app-code-block' style='background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;'><code>" + filterCssCode | escape + "\n\n" + longCssCode | escape + "</code></pre></div>" } }
+      ]
+    }) }}
+
+    <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+
+
+    {# ========================================================== #}
+    {# 3. HORIZONTAL FILTER                                       #}
+    {# ========================================================== #}
+    <h2 class="govuk-heading-l">3. Horizontal filter</h2>
+    <p class="govuk-body">Show filters above the results when the page layout does not allow for a left-hand panel, or the results table needs to span the full width of the page. The CSS grid layout ensures the options automatically flow neatly into columns.</p>
+
+    {# Visual Example (Static Mock) #}
+    {% set horizontalExampleHtml %}
+      <div class="moj-filter-horizontal">
+        <button type="button" id="doc-horizontal-toggle" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-4">Hide status filter</button>
+        <div id="doc-horizontal-panel" style="border: 1px solid #b1b4b6; padding: 20px;">
+          
+          {% set filterOptionsHtml %}
+            {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-6 govuk-!-margin-top-2", attributes: { style: "width: 31%; min-width: 200px;" } }) }}
+            <div class="govuk-form-group govuk-!-margin-bottom-4">
+              <label class="govuk-label govuk-!-font-weight-bold">Search status</label>
+              <input class="govuk-input govuk-!-width-one-half" type="text">
+            </div>
+            
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Select status</legend>
+            
+            {# FIX: The grid class is applied directly to the macro! #}
+            {{ govukCheckboxes({ name: "h1", classes: "govuk-checkboxes--small checkbox-grid", items: [ 
+              { value: "1", text: "Ready to start", checked: true }, 
+              { value: "2", text: "In progress" }, 
+              { value: "3", text: "Closed" },
+              { value: "4", text: "New case" },
+              { value: "5", text: "Validated" },
+              { value: "6", text: "Invalid" },
+              { value: "7", text: "Allocate inspector" },
+              { value: "8", text: "Ready for inspector" },
+              { value: "9", text: "Decision issued" }
+            ] }) }}
+          {% endset %}
+
+          {{ mojFilter({
+            heading: { text: "Filter" },
+            selectedFilters: {
+              heading: { text: "Selected filters" },
+              clearLink: {
+                text: "Clear filters",
+                href: "#",
+                classes: "govuk-!-font-size-16"
+              },
+              categories: [
+                {
+                  heading: { text: "Status" },
+                  items: [ { text: "Ready to start", href: "#" } ]
+                }
+              ]
+            },
+            optionsHtml: filterOptionsHtml
+          }) }}
+
+        </div>
+      </div>
+    {% endset %}
+
+    {# Nunjucks Code #}
+    {% set horizontalNunjucksCode %}
+{% raw %}
+<button type="button" id="toggle-filter-btn" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-4">Hide status filter</button>
+
+<div id="filter-panel">
+  <form action="/assigned-to-me/filter" method="post" novalidate>
+    
+    {%- set filterOptionsHtml %}
+      {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-bottom-6 govuk-!-margin-top-2", attributes: { style: "width: 31%; min-width: 200px;" } }) }}
+      
+      <div class="govuk-form-group govuk-!-margin-bottom-4">
+        <label class="govuk-label govuk-!-font-weight-bold" for="status-filter">Search status</label>
+        <input id="status-filter" class="app-list-filter__filter-input govuk-input govuk-!-width-one-half" type="text" aria-controls="status-container" onkeydown="return event.key != 'Enter';">
+      </div>
+
+      <div class="app-list-filter__container" id="status-container">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Select status</legend>
+        
+        {# FIX: Grid class applied here #}
+        {{ govukCheckboxes({
+          idPrefix: "statusFilter", name: "statusFilter", 
+          classes: "govuk-checkboxes--small checkbox-grid",
+          items: [
+            { value: "Ready to start", text: "Ready to start " + getCount(allCases, 'Ready to start') },
+            { value: "In progress", text: "In progress " + getCount(allCases, 'In progress') },
+            { value: "Closed", text: "Closed " + getCount(allCases, 'Closed') },
+            { value: "New case", text: "New case " + getCount(allCases, 'New case') },
+            { value: "Validated", text: "Validated " + getCount(allCases, 'Validated') },
+            { value: "Invalid", text: "Invalid " + getCount(allCases, 'Invalid') },
+            { value: "Allocate inspector", text: "Allocate inspector " + getCount(allCases, 'Allocate inspector') },
+            { value: "Ready for inspector", text: "Ready for inspector " + getCount(allCases, 'Ready for inspector') },
+            { value: "Decision issued", text: "Decision issued " + getCount(allCases, 'Decision issued') }
+          ]
+        }) }}
+      </div>
+    {% endset -%}
+
+    {# --- GENERATE THE SELECTED PILLS --- #}
+    {% set filterCategories = [] %}
+
+    {% if currentStatusFilter %}
+      {% set statItems = [] %}
+      {% for item in currentStatusFilter %}
+        {% if item and item != "_unchecked" %}
+          {% set statItems = (statItems.push({ text: item, href: "/remove-filter/status/" + item }), statItems) %}
+        {% endif %}
+      {% endfor %}
+      {% if statItems.length > 0 %}{% set filterCategories = (filterCategories.push({ heading: { text: "Status" }, items: statItems }), filterCategories) %}{% endif %}
+    {% endif %}
+
+    {{ mojFilter({
+      heading: { text: "Filter" },
+      selectedFilters: {
+        heading: { text: "Selected filters" },
+        clearLink: {
+          text: "Clear filters",
+          href: "/clear-filter",
+          classes: "govuk-!-font-size-16"
+        },
+        categories: filterCategories
+      },
+      optionsHtml: filterOptionsHtml
+    }) }}
+
+  </form>
+</div>
+
+<script>
+  // Filter panel toggle logic
+  const toggleBtn = document.getElementById('toggle-filter-btn');
+  const filterPanel = document.getElementById('filter-panel');
+  
+  if (toggleBtn && filterPanel) {
+    toggleBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (filterPanel.style.display === 'none') {
+        filterPanel.style.display = 'block';
+        toggleBtn.textContent = 'Hide status filter';
+      } else {
+        filterPanel.style.display = 'none';
+        toggleBtn.textContent = 'Show status filter';
+      }
+    });
+  }
+</script>
+{% endraw %}
+    {% endset %}
+
+    {# CSS Code #}
+    {% set horizontalCssCode %}
+/* --- MOJ HORIZONTAL FILTER STYLES --- */
+/* FIX: Using !important ensures the GOV.UK block styling is overridden to create the 3 columns */
+.checkbox-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; column-gap: 20px; width: 100%; }
+.checkbox-grid .govuk-checkboxes__item { border-bottom: 1px solid #b1b4b6; padding-bottom: 10px; margin-bottom: 10px; float: none !important; }
+
+/* Drop to 1 column on mobile */
+@media (max-width: 768px) { 
+  .checkbox-grid { grid-template-columns: 1fr !important; } 
+}
+
+/* ========================================================== */
+/* BUG FIXES: WRAPPING AND PILL ICONS (Add to all layouts)    */
+/* ========================================================== */
+
+/* 1. Prevent 'Selected filters' and 'Clear filters' from wrapping */
+.moj-filter__selected-heading {
+  display: flex !important; justify-content: space-between !important; align-items: center !important; flex-wrap: nowrap !important; margin-bottom: 15px;
+}
+.moj-filter__heading-title, .moj-filter__heading-action { margin: 0 !important; flex: 0 0 auto !important; }
+.moj-filter__heading-title h2, .moj-filter__heading-action p, .moj-filter__heading-action a { white-space: nowrap !important; margin: 0 !important; }
+
+/* 2. Reliable Inline SVG for the Pill 'X' Icon */
+.moj-filter__tag { display: inline-flex !important; align-items: center !important; padding-right: 8px !important; }
+.moj-filter__tag::after {
+  content: "" !important; display: inline-block !important; width: 14px !important; height: 14px !important; margin-left: 8px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: center !important; background-size: contain !important;
+}
+.moj-filter__tag:hover::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E") !important;
+}
+    {% endset %}
+
+    {{ govukTabs({
+      items: [
+        { label: "Example", id: "horizontal-example", panel: { html: "<div class='app-example-wrapper' style='border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;'>" + horizontalExampleHtml | safe + "</div>" } },
+        { label: "Nunjucks", id: "horizontal-nunjucks", panel: { html: "<div style='position: relative; margin-top: 20px;'><button class='govuk-button govuk-button--secondary' onclick='copyCodeSnippet(this)' style='position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;'>Copy</button><pre class='app-code-block' style='background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;'><code>" + horizontalNunjucksCode | escape + "</code></pre></div>" } },
+        { label: "CSS", id: "horizontal-css", panel: { html: "<div style='position: relative; margin-top: 20px;'><button class='govuk-button govuk-button--secondary' onclick='copyCodeSnippet(this)' style='position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;'>Copy</button><pre class='app-code-block' style='background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;'><code>" + horizontalCssCode | escape + "</code></pre></div>" } }
+      ]
+    }) }}
+
+  </div>
+</div>
+
+{# ========================================================== #}
+{# LOCAL JAVASCRIPT: COPY BUTTON & DOCUMENTATION DEMOS        #}
+{# ========================================================== #}
+<script>
+  // 1. Copy Code Snippet functionality
+  function copyCodeSnippet(button) {
+    const container = button.closest('div');
+    const codeElement = container.querySelector('code');
+    if (codeElement) {
+      navigator.clipboard.writeText(codeElement.innerText).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Copied";
+        setTimeout(() => { button.innerText = originalText; }, 2000);
+      }).catch(err => { console.error('Failed to copy text: ', err); });
+    }
+  }
+
+  // 2. Demo functionality for the "Long Vertical" local search
+  document.addEventListener('DOMContentLoaded', function() {
+    const docSubtypeSearch = document.getElementById('doc-subtype-search');
+    if (docSubtypeSearch) {
+      docSubtypeSearch.addEventListener('keyup', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const targetContainer = document.getElementById('doc-subtype-container');
+        if (targetContainer) {
+          const items = targetContainer.querySelectorAll('.govuk-checkboxes__item');
+          items.forEach(item => {
+            const label = item.textContent.toLowerCase();
+            item.style.display = label.includes(searchTerm) ? '' : 'none';
+          });
+        }
+      });
+    }
+
+    // 3. Demo functionality for "Long Vertical" show/hide all sections
+    const docToggleAll = document.getElementById('doc-toggle-all');
+    if (docToggleAll) {
+      let allOpen = true;
+      docToggleAll.addEventListener('click', function(e) {
+        e.preventDefault();
+        allOpen = !allOpen;
+        const allDetails = document.querySelectorAll('.doc-accordion');
+        allDetails.forEach(details => {
+          if (allOpen) { details.setAttribute('open', ''); } 
+          else { details.removeAttribute('open'); }
+        });
+        docToggleAll.textContent = allOpen ? "Hide all sections" : "Show all sections";
+      });
+    }
+
+    // 4. Demo functionality for the "Horizontal" toggle button
+    const docHorizontalToggle = document.getElementById('doc-horizontal-toggle');
+    const docHorizontalPanel = document.getElementById('doc-horizontal-panel');
+    if (docHorizontalToggle && docHorizontalPanel) {
+      docHorizontalToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (docHorizontalPanel.style.display === 'none') {
+          docHorizontalPanel.style.display = 'block';
+          docHorizontalToggle.textContent = 'Hide status filter';
+        } else {
+          docHorizontalPanel.style.display = 'none';
+          docHorizontalToggle.textContent = 'Show status filter';
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+  Success banner - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  
+  {# ========================================================== #}
+  {# LEFT COLUMN: SIDE NAVIGATION (1/4 WIDTH)                   #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-one-quarter">
+    <nav class="moj-side-navigation" aria-label="Side navigation">
+      <ul class="moj-side-navigation__list">
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/smart-evidence-marking">Smart evidence marking</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/filters">Filters</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/dynamic-cards">Dynamic cards</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/audit-log">Audit log</a>
+        </li>
+        <li class="moj-side-navigation__item moj-side-navigation__item--active">
+          <a href="/features-and-components/success-banner" aria-current="location">Success banner</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  {# ========================================================== #}
+  {# RIGHT COLUMN: MAIN CONTENT (3/4 WIDTH)                     #}
+  {# ========================================================== #}
+  <div class="govuk-grid-column-three-quarters">
+
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Success banner</h1>
+    
+    <p class="govuk-body">
+      Success banners confirm to the user that an action has been completed, featuring a dynamic anchor link to jump straight to the edited section.
+    </p>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">When to use this feature</h2>
+    
+    <p class="govuk-body">Use this component immediately after a user:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>saves data from an "Add to list" pattern</li>
+      <li>adds, updates, or removes an item in a complex array</li>
+    </ul>
+
+    <p class="govuk-body">This pattern helps improve the user experience by:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>providing immediate reassurance that their action was successful</li>
+      <li>reducing scroll fatigue by allowing them to jump straight back down to the exact summary card they were interacting with</li>
+    </ul>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How it works</h2>
+
+    {# 1. DEFINE THE VISUAL EXAMPLE #}
+    {% set exampleHtml %}
+      {% set bannerHtmlDemo %}
+        <p class="govuk-notification-banner__heading">
+          Case has been updated.
+          <a class="govuk-notification-banner__link govuk-!-font-weight-heavy" href="#example-section">Return to section</a>
+        </p>
+      {% endset %}
+
+      {{ govukNotificationBanner({
+        html: bannerHtmlDemo,
+        disableAutoFocus: true,
+        type: "success"
+      }) }}
+    {% endset %}
+
+    {# 2. DEFINE THE NUNJUCKS CODE (Wrapped in RAW so it doesn't execute!) #}
+    {% set nunjucksCode %}
+{% raw %}
+{% if flashSection %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {% set bannerHtml %}
+        <p class="govuk-notification-banner__heading">
+          Case has been updated.
+          <a class="govuk-notification-banner__link govuk-!-font-weight-heavy" href="#{{ flashSection }}">Return to section</a>
+        </p>
+      {% endset %}
+
+      {{ govukNotificationBanner({
+        html: bannerHtml,
+        type: "success"
+      }) }}
+    </div>
+  </div>
+{% endif %}
+{% endraw %}
+    {% endset %}
+
+    {# 3. DEFINE THE ROUTE/JS CODE #}
+    {% set routesCode %}
+// 1. Where the save happens (e.g. site-address.js)
+router.post('/cases/site-address/commit', function(req, res) {
+  // ... save logic ...
+  req.session.flashSection = "site-address"; // Pass the target HTML ID
+  res.redirect('/cases/case-details?ref=' + ref);
+});
+
+// 2. The main case details route (case-details.js)
+router.get('/cases/case-details', function(req, res) {
+  let ref = req.query.ref;
+  if (ref) req.session.data['ref'] = ref;
+
+  let foundCase = getCase(req);
+  if (!foundCase) return res.redirect('/cases-page');
+
+  // Grab the flash message target if an edit was just made
+  let sectionToJumpTo = req.session.flashSection;
+
+  // Delete the flash state immediately so the banner doesn't stick on refresh
+  req.session.flashSection = null; 
+
+  res.render('cases/case-details', { 
+    currentCase: foundCase,       
+    flashSection: sectionToJumpTo 
+  });
+});
+    {% endset %}
+
+    {# 4. BUILD THE TAB CONTENT BLOCKS #}
+    {% set tab1Example %}
+      <div class="app-example-wrapper" style="border: 1px solid #b1b4b6; padding: 30px; margin-top: 20px; background-color: #ffffff;">
+        {{ exampleHtml | safe }}
+      </div>
+    {% endset %}
+
+    {% set tab2Nunjucks %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ nunjucksCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {% set tab3Routes %}
+      <div style="position: relative; margin-top: 20px;">
+        <button class="govuk-button govuk-button--secondary" onclick="copyCodeSnippet(this)" style="position: absolute; top: 10px; right: 10px; margin-bottom: 0; z-index: 10;">Copy</button>
+        <pre class="app-code-block" style="background-color: #f3f2f1; padding: 15px; padding-top: 50px; overflow-x: auto; border-left: 5px solid #1d70b8; margin: 0;"><code>{{ routesCode | escape }}</code></pre>
+      </div>
+    {% endset %}
+
+    {# 5. RENDER THE GOV.UK TABS COMPONENT #}
+    {{ govukTabs({
+      items: [
+        {
+          label: "Example",
+          id: "example",
+          panel: { html: tab1Example }
+        },
+        {
+          label: "Nunjucks",
+          id: "nunjucks",
+          panel: { html: tab2Nunjucks }
+        },
+        {
+          label: "Routes",
+          id: "routes",
+          panel: { html: tab3Routes }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">How to implement</h2>
+    <ol class="govuk-list govuk-list--number">
+      <li>When a user saves an update in a sub-route, set <code>req.session.flashSection</code> to the exact `id` of the HTML element you want the user to anchor to on the main page (e.g., <code>"site-address"</code>).</li>
+      <li>Redirect the user back to the main case details hub.</li>
+      <li>The <code>case-details.js</code> router will catch the variable, pass it to the Nunjucks template as <code>flashSection</code>, and immediately wipe it from the session so the banner doesn't persist if the user refreshes the page.</li>
+      <li>The Nunjucks template detects the <code>flashSection</code> variable, triggers the banner, and injects the ID directly into the <code>href="#&#123;&#123; flashSection &#125;&#125;"</code> anchor link.</li>
+    </ol>
+
+  </div>
+</div>
+
+{# ========================================================== #}
+{# LOCAL JAVASCRIPT: COPY BUTTON FUNCTIONALITY                #}
+{# ========================================================== #}
+<script>
+  function copyCodeSnippet(button) {
+    // Find the closest <code> block to the clicked button
+    const container = button.closest('div');
+    const codeElement = container.querySelector('code');
+    
+    if (codeElement) {
+      // Copy the text to the clipboard
+      navigator.clipboard.writeText(codeElement.innerText).then(() => {
+        // Change button text to confirm
+        const originalText = button.innerText;
+        button.innerText = "Copied";
+        
+        // Change it back after 2 seconds
+        setTimeout(() => {
+          button.innerText = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  }
+</script>
+{% endblock %}
