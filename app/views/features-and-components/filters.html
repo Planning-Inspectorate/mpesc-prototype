@@ -50,7 +50,7 @@
   @media (max-width: 768px) { .moj-filter-horizontal .checkbox-grid { grid-template-columns: 1fr; } }
 
   /* ========================================================== */
-  /* BUG FIXES: WRAPPING AND PILL ICONS                         */
+  /* WRAPPING AND PILL ICONS                         */
   /* ========================================================== */
   
   /* 1. Prevent 'Selected filters' and 'Clear filters' from wrapping */
@@ -70,7 +70,7 @@
     margin: 0 !important;
   }
 
-  /* 2. Reliable Inline SVG for the Pill 'X' Icon */
+  /* 2. Inline SVG for the Pill 'X' Icon */
   .moj-filter__tag {
     display: inline-flex !important;
     align-items: center !important;
@@ -140,6 +140,9 @@
         </li>
         <li class="moj-side-navigation__item">
           <a href="/features-and-components/success-banner">Success banner</a>
+        </li>
+        <li class="moj-side-navigation__item">
+          <a href="/features-and-components/working-draft-array">Working draft array</a>
         </li>
       </ul>
     </nav>
@@ -284,14 +287,14 @@
 /* Hide the hardcoded MOJ Apply Filters button at the top */
 .moj-filter__options > .govuk-button:first-child { display: none !important; }
 
-/* FIX: Prevent 'Selected filters' and 'Clear filters' from wrapping */
+/* Prevent 'Selected filters' and 'Clear filters' from wrapping */
 .moj-filter__selected-heading {
   display: flex !important; justify-content: space-between !important; align-items: center !important; flex-wrap: nowrap !important; margin-bottom: 15px;
 }
 .moj-filter__heading-title, .moj-filter__heading-action { margin: 0 !important; flex: 0 0 auto !important; }
 .moj-filter__heading-title h2, .moj-filter__heading-action p, .moj-filter__heading-action a { white-space: nowrap !important; margin: 0 !important; }
 
-/* FIX: Reliable Inline SVG for the Pill 'X' Icon */
+/* Inline SVG for the Pill 'X' Icon */
 .moj-filter__tag { display: inline-flex !important; align-items: center !important; padding-right: 8px !important; }
 .moj-filter__tag::after {
   content: "" !important; display: inline-block !important; width: 14px !important; height: 14px !important; margin-left: 8px !important;
