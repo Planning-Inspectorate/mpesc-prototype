@@ -31,7 +31,7 @@
       padding-top: 10px;
       padding-bottom: 10px;
     }
-    
+
     .pins-service-nav__list {
       flex-direction: column;
       gap: 10px;
@@ -42,7 +42,8 @@
 <div class="pins-header-demo">
   <header role="banner">
     <div class="govuk-width-container">
-      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
+        style="width:auto; vertical-align:middle;">
     </div>
   </header>
 </div>
@@ -50,25 +51,26 @@
 {% endblock %}
 
 {% block pageTitle %}
-  MPESC Prototype - Home
+MPESC Prototype - Home
 {% endblock %}
 
 {% block content %}
 
 {# --- SUCCESS BANNER --- #}
 {% if successBanner %}
-  {% set successHtml %}
-    <h3 class="govuk-notification-banner__heading">
-      <a class="govuk-notification-banner__link" href="/cases/manage-folders/view/{{ successBanner.id }}/{{ successBanner.slug }}?ref={{ currentCase.reference }}">
-        {{ successBanner.name }}
-      </a> created
-    </h3>
-  {% endset %}
+{% set successHtml %}
+<h3 class="govuk-notification-banner__heading">
+  <a class="govuk-notification-banner__link"
+    href="/cases/manage-folders/view/{{ successBanner.id }}/{{ successBanner.slug }}?ref={{ currentCase.reference }}">
+    {{ successBanner.name }}
+  </a> created
+</h3>
+{% endset %}
 
-  {{ govukNotificationBanner({
-    html: successHtml,
-    type: "success"
-  }) }}
+{{ govukNotificationBanner({
+html: successHtml,
+type: "success"
+}) }}
 {% endif %}
 
 <div class="govuk-grid-row">
@@ -80,7 +82,7 @@
       <h2 class="govuk-tabs__title">
         Section links
       </h2>
-      
+
       {# --- TAB NAVIGATION --- #}
       <ul class="govuk-tabs__list">
         <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
@@ -95,392 +97,438 @@
       </ul>
 
       {# ========================================================== #}
-      {# TAB 1: USER JOURNEYS                                       #}
+      {# TAB 1: USER JOURNEYS #}
       {# ========================================================== #}
       <div class="govuk-tabs__panel" id="current-service">
         <h2 class="govuk-heading-l">Test scenarios and user journeys</h2>
-        <p class="govuk-body">Select a scenario below to jump straight into a case, create your own case, or see individual user journeys.</p>
-        <p class="govuk-inset-text">Session data is stored temporarily and some features may not work as expected in certain browsers.</p>
-        
+        <p class="govuk-body">Select a scenario below to jump straight into a case, create your own case, or see
+          individual user journeys.</p>
+        <p class="govuk-inset-text">Session data is stored temporarily and some features may not work as expected in
+          certain browsers.</p>
+
         <br>
 
         {# --- DEFINE ACCORDION CONTENT BLOCKS --- #}
 
         {# SECTION 1: MAIN CASEWORK NAVIGATION #}
         {% set section1Html %}
-          <p class="govuk-body">Go to the main navigation and creation flows.</p>
-          <ul class="govuk-task-list govuk-!-margin-bottom-0">
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases-page">All cases</a>
-                <div class="govuk-task-list__hint">
-                  View the master list of cases. Includes dynamic filtering by case work area, case type and subtype, plus pagination.
-                </div>
+        <p class="govuk-body">Go to the main navigation and creation flows.</p>
+        <ul class="govuk-task-list govuk-!-margin-bottom-0">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases-page">All cases</a>
+              <div class="govuk-task-list__hint">
+                View the master list of cases. Includes dynamic filtering by case work area, case type and subtype, plus
+                pagination.
               </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/assigned-to-me/my-cases">Assigned to me</a>
-                <div class="govuk-task-list__hint">
-                   View cases assigned only to you or see cases assigned to another case officer or inspector.
-                </div>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/assigned-to-me/my-cases">Assigned to me</a>
+              <div class="govuk-task-list__hint">
+                View cases assigned only to you or see cases assigned to another case officer or inspector.
               </div>
-            </li>
-             <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/create-case-start">Create a new case</a>
-                <div class="govuk-task-list__hint">
-                  Generate a new case manually with complete edit control, where answers will temporarily persist in the session.
-                </div>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/create-case-start">Create a new case</a>
+              <div class="govuk-task-list__hint">
+                Generate a new case manually with complete edit control, where answers will temporarily persist in the
+                session.
               </div>
-            </li>
-          </ul>
+            </div>
+          </li>
+        </ul>
         {% endset %}
 
         {# SECTION 2: FEATURES #}
         {% set section2Html %}
-          <p class="govuk-body">Explore the core features driving this prototype.</p>
-          <ul class="govuk-task-list govuk-!-margin-bottom-0" id="features-and-components">
-            
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/features-and-components/smart-evidence-marking">Smart evidence marking</a>
-                <div class="govuk-task-list__hint">
-                  Features that allow a user to read or unread, flag or unflag files related to the case. These status' are visible only to the user.
-                </div>
-              </div>
-            </li>
+        <p class="govuk-body">Explore the core features driving this prototype.</p>
+        <ul class="govuk-task-list govuk-!-margin-bottom-0" id="features-and-components">
 
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/features-and-components/filters">Filters</a>
-                <div class="govuk-task-list__hint">
-                  Three filters enhanced upon from NSIP, MoJ, and Appeals services that apply to short or long filter lists.
-                </div>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/features-and-components/smart-evidence-marking">Smart
+                evidence marking</a>
+              <div class="govuk-task-list__hint">
+                Features that allow a user to read or unread, flag or unflag files related to the case. These status'
+                are visible only to the user.
               </div>
-            </li>
+            </div>
+          </li>
 
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/features-and-components/dynamic-cards">Dynamic cards</a>
-                <div class="govuk-task-list__hint">
-                  Dynamically add summary cards and anchor links to a case details page when adding data from an add to list pattern.
-                </div>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/features-and-components/filters">Filters</a>
+              <div class="govuk-task-list__hint">
+                Three filters enhanced upon from NSIP, MoJ, and Appeals services that apply to short or long filter
+                lists.
               </div>
-            </li>
+            </div>
+          </li>
 
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/features-and-components/audit-log">Audit log</a>
-                <div class="govuk-task-list__hint">
-                  Track details of every change made to your case in a table, labelling the time and date and which user made the change.
-                </div>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/features-and-components/dynamic-cards">Dynamic
+                cards</a>
+              <div class="govuk-task-list__hint">
+                Dynamically add summary cards and anchor links to a case details page when adding data from an add to
+                list pattern.
               </div>
-            </li>
+            </div>
+          </li>
 
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/features-and-components/success-banner">Success banner</a>
-                <div class="govuk-task-list__hint">
-                  Success banner with an anchor link to jump straight to the section you edited.
-                </div>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/features-and-components/audit-log">Audit log</a>
+              <div class="govuk-task-list__hint">
+                Track details of every change made to your case in a table, labelling the time and date and which user
+                made the change.
               </div>
-            </li>
+            </div>
+          </li>
 
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/features-and-components/working-draft-array">Working draft array</a>
-                <div class="govuk-task-list__hint">
-                  Add to list array logic to mimic how data is handled in dev enivronments, enforcing the user to save data to the database before it appears on the case.
-                </div>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/features-and-components/success-banner">Success
+                banner</a>
+              <div class="govuk-task-list__hint">
+                Success banner with an anchor link to jump straight to the section you edited.
               </div>
-            </li>
+            </div>
+          </li>
 
-          </ul>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/features-and-components/working-draft-array">Working
+                draft array</a>
+              <div class="govuk-task-list__hint">
+                Add to list array logic to mimic how data is handled in dev enivronments, enforcing the user to save
+                data to the database before it appears on the case.
+              </div>
+            </div>
+          </li>
+
+        </ul>
         {% endset %}
 
         {# SECTION 3: SPECIFIC ADD TO LIST JOURNEYS #}
         {% set section3Html %}
-          <p class="govuk-body">Jump directly into the empty states for the multi-step add to list flows.</p>
-          <ul class="govuk-task-list govuk-!-margin-bottom-0">
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/applicants/hub?ref=CPO/HOU/10012">Check applicant or appellant details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/overview-procedures/start?ref=CPO/HOU/10012">Check procedure details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/related-cases/start?ref=CPO/HOU/10012">Check related cases details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/linked-cases/start?ref=CPO/HOU/10012">Check linked cases details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/edit/check-inspectors-first?ref=CPO/HOU/10012">Check inspector details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/objectors/start?ref=CPO/HOU/10012">Check objectors details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/contacts/start?ref=CPO/HOU/10012">Check contacts details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/site-address/start?ref=CPO/HOU/10012">Check site address details</a>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/outcomes/start?ref=CPO/HOU/10012">Check outcome overview details</a>
-              </div>
-            </li>
-          </ul>
+        <p class="govuk-body">Jump directly into the empty states for the multi-step add to list flows.</p>
+        <ul class="govuk-task-list govuk-!-margin-bottom-0">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/applicants/hub?ref=CPO/HOU/10012">Check applicant
+                or appellant details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="/cases/overview-procedures/start?ref=CPO/HOU/10012">Check procedure details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/related-cases/start?ref=CPO/HOU/10012">Check
+                related cases details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/linked-cases/start?ref=CPO/HOU/10012">Check
+                linked cases details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="/cases/edit/check-inspectors-first?ref=CPO/HOU/10012">Check inspector details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/objectors/start?ref=CPO/HOU/10012">Check
+                objectors details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/contacts/start?ref=CPO/HOU/10012">Check contacts
+                details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/site-address/start?ref=CPO/HOU/10012">Check site
+                address details</a>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/outcomes/start?ref=CPO/HOU/10012">Check outcome
+                overview details</a>
+            </div>
+          </li>
+        </ul>
         {% endset %}
 
         {# SECTION 4: PROTOTYPE UTILITIES #}
         {% set section4Html %}
-         <p class="govuk-body">Use this section to generate dummy data to test filters or to see table functionality.</p>
-          <ul class="govuk-task-list govuk-!-margin-bottom-0">
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/generate-dummy">Generate 130 dummy cases</a>
-                <div class="govuk-task-list__hint">
-                  Instantly populate the prototype with 130 randomized cases to test case pagination and search scale.
-                </div>
+        <p class="govuk-body">Use this section to generate dummy data to test filters or to see table functionality.</p>
+        <ul class="govuk-task-list govuk-!-margin-bottom-0">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/cases/generate-dummy">Generate 130 dummy cases</a>
+              <div class="govuk-task-list__hint">
+                Instantly populate the prototype with 130 randomized cases to test case pagination and search scale.
               </div>
-              <div class="govuk-task-list__status">
-                <strong class="govuk-tag govuk-tag--yellow">Utility</strong>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--yellow">Utility</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="/cases/manage-folders/view/f1/initial-documentation/generate-dummy?ref=CPO/HOU/10012">Generate 65
+                dummy files</a>
+              <div class="govuk-task-list__hint">
+                Instantly populate the 'Initial documentation' folder in the CPO case with 65 files to test document
+                pagination and bulk actions.
               </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/cases/manage-folders/view/f1/initial-documentation/generate-dummy?ref=CPO/HOU/10012">Generate 65 dummy files</a>
-                <div class="govuk-task-list__hint">
-                  Instantly populate the 'Initial documentation' folder in the CPO case with 65 files to test document pagination and bulk actions.
-                </div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--yellow">Utility</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="/manage-prototype/clear-data">Clear all session data</a>
+              <div class="govuk-task-list__hint">
+                Wipe all edits, uploads, and created cases to reset the prototype back to its default state.
               </div>
-              <div class="govuk-task-list__status">
-                <strong class="govuk-tag govuk-tag--yellow">Utility</strong>
-              </div>
-            </li>
-            <li class="govuk-task-list__item govuk-task-list__item--with-link">
-              <div class="govuk-task-list__name-and-hint">
-                <a class="govuk-link govuk-task-list__link" href="/manage-prototype/clear-data">Clear all session data</a>
-                <div class="govuk-task-list__hint">
-                  Wipe all edits, uploads, and created cases to reset the prototype back to its default state.
-                </div>
-              </div>
-              <div class="govuk-task-list__status">
-                <strong class="govuk-tag govuk-tag--red">Warning</strong>
-              </div>
-            </li>
-          </ul>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--red">Warning</strong>
+            </div>
+          </li>
+        </ul>
         {% endset %}
 
         {# --- RENDER THE ACCORDION --- #}
         {{ govukAccordion({
-          id: "journeys-accordion",
-          items: [
-            {
-              heading: { text: "1. Main casework navigation" },
-              content: { html: section1Html },
-              expanded: true
-            },
-            {
-              heading: { text: "2. Features and components" },
-              content: { html: section2Html },
-              expanded: false
-            },
-            {
-              heading: { text: "3. Specific add to list journeys" },
-              content: { html: section3Html },
-              expanded: false
-            },
-            {
-              heading: { text: "4. Prototype utilities" },
-              content: { html: section4Html },
-              expanded: false
-            }
-          ]
+        id: "journeys-accordion",
+        items: [
+        {
+        heading: { text: "1. Main casework navigation" },
+        content: { html: section1Html },
+        expanded: true
+        },
+        {
+        heading: { text: "2. Features and components" },
+        content: { html: section2Html },
+        expanded: false
+        },
+        {
+        heading: { text: "3. Specific add to list journeys" },
+        content: { html: section3Html },
+        expanded: false
+        },
+        {
+        heading: { text: "4. Prototype utilities" },
+        content: { html: section4Html },
+        expanded: false
+        }
+        ]
         }) }}
 
       </div>
-        
+
       {# ========================================================== #}
-      {# TAB 2: UPCOMING FEATURES                                   #}
+      {# TAB 2: UPCOMING FEATURES #}
       {# ========================================================== #}
       <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="features">
         <h2 class="govuk-heading-l">Upcoming features</h2>
-        
+        <ul class="govuk-task-list">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="features-and-components/subfolder-count/index.html">Document management improvements</a>
+              <div class="govuk-task-list__hint">Usability improvements to show count of subfolder contents.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--blue">To do</strong>
+            </div>
+          </li>
+        </ul>
+
         {{ govukDetails({
-          summaryText: "In development or considered",
-          html: '
-            <ul class="govuk-task-list">
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Task lists</a>
-                  <div class="govuk-task-list__hint">Task list to indicate to users what actions they need to complete.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Add to list branching contact user journey.</a>
-                  <div class="govuk-task-list__hint">Branching for if the user requires recording joint groups or individuals.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
-                </div>
-              </li>
-              
-            </ul>
-          '
+        summaryText: "In development or considered",
+        html: '
+        <ul class="govuk-task-list">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Task lists</a>
+              <div class="govuk-task-list__hint">Task list to indicate to users what actions they need to complete.
+              </div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Add to list branching contact user journey.</a>
+              <div class="govuk-task-list__hint">Branching for if the user requires recording joint groups or
+                individuals.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
+            </div>
+          </li>
+
+        </ul>
+        '
         }) }}
 
         {{ govukDetails({
-          summaryText: "Previously added",
-          html: '
-            <ul class="govuk-task-list">
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Linked and lead case</a>
-                  <div class="govuk-task-list__hint">Add linked cases and a notification banner to add a lead case.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">17 April 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Download all contacts</a>
-                  <div class="govuk-task-list__hint">Download CSV file containing contacts, objectors, and applicant/appellant contacts.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">30 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Smart Evidence Marking</a>
-                  <div class="govuk-task-list__hint">Flag and unflag, read and unread, specific files and filter by them.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">23 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">View another case officer or inspectors case.</a>
-                  <div class="govuk-task-list__hint">See cases that are assigned to another case officer or inspector.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">22 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Assigned to me tab</a>
-                  <div class="govuk-task-list__hint">See cases that are assigned to you</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">19 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Download case button</a>
-                  <div class="govuk-task-list__hint">Mock download for all files related to the case</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">10 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Bulk file actions</a>
-                  <div class="govuk-task-list__hint">Bulk select, delete, and download files</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">8 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Manage case files</a>
-                  <div class="govuk-task-list__hint">Manage case files with ability to create folders, upload files, move, edit, and delete.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">5 March 2026</strong>
-                </div>
-              </li>
-              <li class="govuk-task-list__item govuk-task-list__item--with-link">
-                <div class="govuk-task-list__name-and-hint">
-                  <a class="govuk-link govuk-task-list__link" href="#">Case audit log</a>
-                  <div class="govuk-task-list__hint">Track all changes made to a case in a chronological order, and by who.</div>
-                </div>
-                <div class="govuk-task-list__status">
-                  <strong class="govuk-tag govuk-tag--green">4 March 2026</strong>
-                </div>
-              </li>
-            </ul>
-          '
+        summaryText: "Previously added",
+        html: '
+        <ul class="govuk-task-list">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Linked and lead case</a>
+              <div class="govuk-task-list__hint">Add linked cases and a notification banner to add a lead case.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">17 April 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Download all contacts</a>
+              <div class="govuk-task-list__hint">Download CSV file containing contacts, objectors, and
+                applicant/appellant contacts.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">30 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Smart Evidence Marking</a>
+              <div class="govuk-task-list__hint">Flag and unflag, read and unread, specific files and filter by them.
+              </div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">23 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">View another case officer or inspectors case.</a>
+              <div class="govuk-task-list__hint">See cases that are assigned to another case officer or inspector.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">22 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Assigned to me tab</a>
+              <div class="govuk-task-list__hint">See cases that are assigned to you</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">19 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Download case button</a>
+              <div class="govuk-task-list__hint">Mock download for all files related to the case</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">10 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Bulk file actions</a>
+              <div class="govuk-task-list__hint">Bulk select, delete, and download files</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">8 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Manage case files</a>
+              <div class="govuk-task-list__hint">Manage case files with ability to create folders, upload files, move,
+                edit, and delete.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">5 March 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link" href="#">Case audit log</a>
+              <div class="govuk-task-list__hint">Track all changes made to a case in a chronological order, and by who.
+              </div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">4 March 2026</strong>
+            </div>
+          </li>
+        </ul>
+        '
         }) }}
 
-    
+
       </div>
 
       {# ========================================================== #}
-      {# TAB 3: BUGS                                                #}
+      {# TAB 3: BUGS #}
       {# ========================================================== #}
       <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="bugs-and-issues">
         <h2 class="govuk-heading-l">Bugs and issues</h2>
-        
+
         <ul class="govuk-task-list">
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
               <a class="govuk-link govuk-task-list__link" href="#">Live deployed prototype issues</a>
-              <div class="govuk-task-list__hint"> 
-                
+              <div class="govuk-task-list__hint">
+
                 <p class="govuk-task-list__hint govuk-!-margin-bottom-4">Reported on 4 March 2026</p>
-                
-                <p class="govuk-body govuk-!-margin-bottom-1">If you create data on the prototype and leave it for 5 minutes, any new data you create
-                  will not persist. This issue is related to Azure session management. If you clear the data at manage-prototype/clear-data, you can start the session fresh and the service will
-                work as intended.</p>
-                
+
+                <p class="govuk-body govuk-!-margin-bottom-1">If you create data on the prototype and leave it for 5
+                  minutes, any new data you create
+                  will not persist. This issue is related to Azure session management. If you clear the data at
+                  manage-prototype/clear-data, you can start the session fresh and the service will
+                  work as intended.</p>
+
               </div>
             </div>
             <div class="govuk-task-list__status">
               <strong class="govuk-tag govuk-tag--blue" style="text-align: center;">Azure</strong>
             </div>
           </li>
-        
+
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
               <a class="govuk-link govuk-task-list__link" href="#">Live deployed prototype issues</a>
-              <div class="govuk-task-list__hint"> 
-                
+              <div class="govuk-task-list__hint">
+
                 <p class="govuk-task-list__hint govuk-!-margin-bottom-4">Fixed on 4 March 2026</p>
-                
-                <p class="govuk-body govuk-!-margin-bottom-1">There are currently ongoing issues with the live deployed prototype. This issues are known to persist only on the deployed version
-                   — Local hosting works as intended:</p>
+
+                <p class="govuk-body govuk-!-margin-bottom-1">There are currently ongoing issues with the live deployed
+                  prototype. This issues are known to persist only on the deployed version
+                  — Local hosting works as intended:</p>
                 <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-3">
                   <li>Data being cleared when filling in the 'create a case' flow.</li>
                   <li>Data not persisting correctly in some browser sessions.</li>
@@ -493,17 +541,18 @@
               <strong class="govuk-tag govuk-tag--green">Fixed</strong>
             </div>
           </li>
-        
+
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
               <a class="govuk-link govuk-task-list__link" href="#">Live deployed prototype issues</a>
-              <div class="govuk-task-list__hint"> 
-                
+              <div class="govuk-task-list__hint">
+
                 <p class="govuk-task-list__hint govuk-!-margin-bottom-4">Fixed on 3 March 2026</p>
-                
-                <p class="govuk-body govuk-!-margin-bottom-1">There are currently ongoing issues with the live deployed prototype. This issues are known to persist only on the deployed version
-                   — Local hosting works as intended:</p>
+
+                <p class="govuk-body govuk-!-margin-bottom-1">There are currently ongoing issues with the live deployed
+                  prototype. This issues are known to persist only on the deployed version
+                  — Local hosting works as intended:</p>
                 <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-3">
                   <li>MOJ stylesheets not loading correctly due to Azure security restrictions.</li>
                 </ul>
@@ -515,7 +564,7 @@
           </li>
 
         </ul>
-        
+
       </div>
     </div>
 
