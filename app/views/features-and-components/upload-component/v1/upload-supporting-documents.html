@@ -1,0 +1,64 @@
+{% extends "layouts/main.html" %}
+
+{% set pageName = "" %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+
+    <div class="govuk-grid-column-two-thirds">
+
+        <a href="javascript:history.back()" class="govuk-back-link">Back</a>
+
+
+        <input type="hidden" name="_csrf" value="">
+        <h1 class="govuk-heading-l">
+            Upload files in Start Date Letters folder
+        </h1>
+        <p class="govuk-body">Each file must be:
+        </p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>BMP, DBF, DOC, DOCX, DOTX, GIF, HTML, JPEG, JPG, M4V, MOV, MP3, MP4, MPEG, MSG, ODS, ODT, PDF, PNG,
+                PPT, PPTX, PRJ, PUB,
+                RTF, SHP, SHX, TIF, TIFF, TXT, XLS, XLSM, XLSX
+            </li>
+            <li>smaller than 250MB
+            </li>
+
+        </ul>
+
+
+        <p class="govuk-body">
+            The total combined size of your uploaded files must be smaller than 1GB.
+
+        </p>
+        <p class="govuk-body">The file name can only include:
+        </p>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>Letters, numbers, hyphens, underscores, brackets, ampersand and single apostrophes
+            </li>
+
+        </ul>
+
+
+
+        {% from "features-and-components/upload-component/v1/components/multi-file-upload/multi-file-upload.njk" import
+        uploadArea %}
+
+        {{ uploadArea({
+        label: " ",
+        hint: " "
+        }) }}
+
+    </div>
+
+</div>
+
+
+<a href="/features-and-components/upload-component/index.html" class="govuk-button">
+    Upload
+</a>
+
+
+{% endblock %}
