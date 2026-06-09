@@ -1,0 +1,61 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+
+    Example case
+
+{% endblock %}
+
+{% block content %}
+
+    {% if data.query.success == "changed" %}
+
+        {{ govukNotificationBanner({
+
+type: "success",
+
+text: "Case note changed"
+
+}) }}
+
+    {% endif %}
+
+    {% if data.query.success == "removed" %}
+
+        {{ govukNotificationBanner({
+
+type: "success",
+
+text: "Case note removed"
+
+}) }}
+
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Example case</h1>
+
+    <h2 class="govuk-heading-m">Case notes</h2>
+
+    {% if data.note %}
+
+        <p class="govuk-body">{{ data.note }}</p>
+
+    {% else %}
+
+        <p class="govuk-body govuk-hint">No case notes added</p>
+
+    {% endif %}
+
+    <ul class="govuk-list govuk-list--inline">
+
+        <li>
+            <a href="change-note">Change</a>
+        </li>
+
+        <li>
+            <a href="remove-note">Remove</a>
+        </li>
+
+    </ul>
+
+{% endblock %}

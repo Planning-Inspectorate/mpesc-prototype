@@ -454,5 +454,9 @@ router.get('/cases/generate-dummy', function (req, res) {
 
 module.exports = router;
 
+//New feature: case notes (edit and remove)
 
+const caseNotesRoutes = require('./sub-routes/features/case-notes')
+
+caseNotesRoutes(router)
 
