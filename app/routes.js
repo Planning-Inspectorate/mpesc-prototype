@@ -73,6 +73,7 @@ require('./sub-routes/overview-outcome');
 require('./sub-routes/procedures');
 require('./sub-routes/case-details');
 require('./sub-routes/all-case-notes');
+require('./sub-routes/features/case-notes');
 
 
 // --- IMPORT ADD TO LIST ROUTERS ---
@@ -453,10 +454,4 @@ router.get('/cases/generate-dummy', function (req, res) {
 
 
 module.exports = router;
-
-//New feature: case notes (edit and remove)
-
-const caseNotesRoutes = require('./sub-routes/features/case-notes')
-
-caseNotesRoutes(router)
 

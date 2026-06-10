@@ -1,1 +1,51 @@
+{% extends "layouts/main.html" %}
 
+{% block pageTitle %}
+Change note
+{% endblock %}
+
+{% block beforeContent %}
+    {{ govukBackLink({ text: "Back", href: "/features-and-components/case-notes?ref=" + ref + "#case-notes" }) }}
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+
+            <h1 class="govuk-heading-l govuk-!-margin-bottom-3">Change note</h1>
+
+            {{ govukWarningText({ text: "You should only change minor parts of the note such as typos." }) }}
+
+            {% if error %}
+                {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          { text: "Enter a case note", href: "#updatedNote" }
+        ]
+      }) }}
+            {% endif %}
+
+            <form action="/features-and-components/case-notes/change?ref={{ ref }}" method="post" novalidate>
+                {{ govukTextarea({
+        id: "updatedNote",
+        name: "updatedNote",
+        label: {
+          text: "Edit case note",
+          classes: "govuk-visually-hidden"
+        },
+        value: noteText,
+        errorMessage: { text: "Enter a case note" } if error else null
+      }) }}
+
+                <input type="hidden" name="index" value="{{ index }}">
+
+                {{ govukButton({ text: "Save changes" }) }}
+
+                <p class="govuk-body govuk-!-margin-top-2">
+                    <a class="govuk-link" href="/features-and-components/case-notes?ref={{ ref }}#case-notes">Cancel</a>
+                </p>
+            </form>
+
+        </div>
+    </div>
+{% endblock %}
