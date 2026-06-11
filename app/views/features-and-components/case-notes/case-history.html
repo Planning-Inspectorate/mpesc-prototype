@@ -1,0 +1,164 @@
+{% extends "layouts/main.html" %}
+{%- from "govuk/components/pagination/macro.njk" import govukPagination -%}
+
+{% set currentCase = null %}
+{% if data['cases'] %}
+  {% for case in data['cases'] %}
+    {% if case.reference == data['ref'] %}
+      {% set currentCase = case %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{# ========================================================== #}
+{# PAGINATION LOGIC                                           #}
+{# ========================================================== #}
+{% set allLogs = currentCase.auditLog or [] %}
+{% set totalLogs = allLogs.length %}
+
+{# 1. Get settings from URL or set defaults #}
+{% set itemsPerPage = (data['itemsPerPage'] | default(25)) | int %}
+{% set currentPage = (data['page'] | default(1)) | int %}
+
+{# 2. Math for start/end items #}
+{% set totalPages = (totalLogs / itemsPerPage) | round(0, "ceil") %}
+{% if totalPages == 0 %}{% set totalPages = 1 %}{% endif %}
+
+{% set startIndex = (currentPage - 1) * itemsPerPage %}
+{% set endIndex = startIndex + itemsPerPage %}
+
+{% set startItem = startIndex + 1 if totalLogs > 0 else 0 %}
+{% set endItem = endIndex if endIndex < totalLogs else totalLogs %}
+
+{# 3. Create the sliced array for the current page #}
+{% set pagedLogs = [] %}
+{% for log in allLogs %}
+  {% if loop.index0 >= startIndex and loop.index0 < endIndex %}
+    {% set pagedLogs = (pagedLogs.push(log), pagedLogs) %}
+  {% endif %}
+{% endfor %}
+
+{# 4. Build GOV.UK Pagination macro objects #}
+{% set pageItems = [] %}
+{% if totalPages > 1 %}
+  {% for i in range(1, totalPages + 1) %}
+    {% set pageItems = (pageItems.push({
+      number: i,
+      href: "?ref=" + currentCase.reference + "&itemsPerPage=" + itemsPerPage + "&page=" + i,
+      current: (i == currentPage)
+    }), pageItems) %}
+  {% endfor %}
+{% endif %}
+
+{% set prevLink = "?ref=" + currentCase.reference + "&itemsPerPage=" + itemsPerPage + "&page=" + (currentPage - 1) if currentPage > 1 else null %}
+{% set nextLink = "?ref=" + currentCase.reference + "&itemsPerPage=" + itemsPerPage + "&page=" + (currentPage + 1) if currentPage < totalPages else null %}
+{# ========================================================== #}
+
+
+{% block pageTitle %}
+  {{ currentCase.reference }} - Case history
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back to case details",
+    href: "/cases/case-details?ref=" + currentCase.reference
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  {# --- ROW 1: HEADER --- #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+      <span class="govuk-caption-m">{{ currentCase.reference }}</span>
+      <h1 class="govuk-heading-l">
+        Case history
+      </h1>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      
+      {# --- RESULTS PER PAGE & COUNTER --- #}
+      <div id="pagination-header" class="govuk-!-margin-bottom-4">
+        <p class="govuk-body govuk-!-margin-bottom-2">
+          Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalLogs }}</strong> results
+        </p>
+
+        {% if totalLogs > 0 %}
+          <p class="pins-pagination-options govuk-!-margin-bottom-0">
+              <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+              {% if itemsPerPage == 25 %}
+                  <span class="govuk-body">25</span>
+              {% else %}
+                  <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=25">25</a>
+              {% endif %}
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              {% if itemsPerPage == 50 %}
+                  <span class="govuk-body">50</span>
+              {% else %}
+                  <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=50">50</a>
+              {% endif %}
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              {% if itemsPerPage == 100 %}
+                  <span class="govuk-body">100</span>
+              {% else %}
+                  <a class="govuk-link--no-visited-state" href="?ref={{ currentCase.reference }}&itemsPerPage=100">100</a>
+              {% endif %}
+          </p>
+        {% endif %}
+      </div>
+
+      {# --- THE AUDIT TABLE --- #}
+      <table class="govuk-table" data-cy="case-history-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            {# Date column: locked width with a 60px gap on the right #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 60px;">Date and time</th>
+            {# Details column stretches to fill the middle #}
+            <th scope="col" class="govuk-table__header">Details</th>
+            {# User column: locked width, 50px gap on the left, 20px gap on the right #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-left: 50px; padding-right: 120px;">User</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          
+          {% if pagedLogs and pagedLogs.length > 0 %}
+            
+            {# Loop through PAGED logic array instead of the whole log #}
+            {% for log in pagedLogs %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 60px;" data-cy="history-date-{{ loop.index0 }}">{{ log.date | safe }}</td>
+                <td class="govuk-table__cell" data-cy="history-details-{{ loop.index0 }}">{{ log.details }}</td>
+                <td class="govuk-table__cell" style="white-space: nowrap; padding-left: 50px; padding-right: 20px;" data-cy="history-user-{{ loop.index0 }}">{{ log.user }}</td>
+              </tr>
+            {% endfor %}
+
+          {% else %}
+            
+            {# Fallback if the case is brand new and has no history yet #}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell" colspan="3" data-cy="history-empty">No history recorded yet.</td>
+            </tr>
+
+          {% endif %}
+
+        </tbody>
+      </table>
+
+      {# --- BOTTOM PAGE PAGINATION BUTTONS --- #}
+      {% if pageItems.length > 1 %}
+        {{ govukPagination({
+          previous: prevLink and { href: prevLink },
+          next: nextLink and { href: nextLink },
+          items: pageItems
+        }) }}
+      {% endif %}
+
+    </div>
+  </div>
+
+{% endblock %}

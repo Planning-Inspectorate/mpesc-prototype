@@ -265,7 +265,13 @@ module.exports = {
       ],
       
       lastModified: "15 December 2025",
-      lastModifiedBy: "Steve Waterfield"
+      lastModifiedBy: "Steve Waterfield",
+      
+      auditLog: [
+        
+        { date: "15 December 2025<br>9:00am", details: "Case closed and archived.", user: "Steve Waterfield" },
+        { date: "12 December 2025<br>3:30pm", details: "Decision issued to all parties.", user: "System" }
+      ],
     },
 
     {

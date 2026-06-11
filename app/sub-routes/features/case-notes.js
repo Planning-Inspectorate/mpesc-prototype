@@ -47,7 +47,7 @@ router.post('/features-and-components/case-notes/add', function (req, res) {
       editedDate: null
     });
 
-    addAuditLog(req, ref, 'Case note added');
+    addAuditLog(req, ref, 'Case note added: ' + comment);
   }
 
   req.session.flashSection = 'case-notes';
@@ -92,10 +92,11 @@ router.post('/features-and-components/case-notes/change', function (req, res) {
 
   const now = new Date();
   const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const oldNote = note.text;
 
   currentCase.caseNotes[index].text = updatedNote.trim();
   currentCase.caseNotes[index].editedDate = tableDateStr;
-  addAuditLog(req, ref, 'Case note updated');
+  addAuditLog(req, ref, 'Case note updated from "' + oldNote + '" to "' + updatedNote.trim() + '" ');
   req.session.flashSection = 'case-notes';
 
   res.redirect('/features-and-components/case-notes?ref=' + encodeURIComponent(ref));
@@ -113,10 +114,11 @@ router.post('/features-and-components/case-notes/update', function (req, res) {
   if (note && updatedNote && updatedNote.trim() !== '') {
     const now = new Date();
     const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const oldNote = note.text;
 
     currentCase.caseNotes[index].text = updatedNote.trim();
     currentCase.caseNotes[index].editedDate = tableDateStr;
-    addAuditLog(req, ref, 'Case note updated');
+    addAuditLog(req, ref, 'Case note updated from "' + oldNote + '" to "' + updatedNote.trim() + '" ');
     req.session.flashSection = 'case-notes';
     return res.redirect('/features-and-components/case-notes?ref=' + encodeURIComponent(ref));
   }
@@ -152,7 +154,7 @@ router.post('/features-and-components/case-notes/remove', function (req, res) {
   if (!note) return res.redirect('/features-and-components/case-notes?ref=' + encodeURIComponent(ref) + '#case-notes');
 
   currentCase.caseNotes.splice(index, 1);
-  addAuditLog(req, ref, 'Case note removed');
+  addAuditLog(req, ref, 'Case note removed: ' + note.text);
   req.session.flashSection = 'case-notes';
 
   res.redirect('/features-and-components/case-notes?ref=' + encodeURIComponent(ref));
