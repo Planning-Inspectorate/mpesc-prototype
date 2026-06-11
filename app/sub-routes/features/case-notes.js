@@ -43,7 +43,8 @@ router.post('/features-and-components/case-notes/add', function (req, res) {
       meta: `${timeStr} on ${metaDateStr} by ${userStr}`,
       tableDate: tableDateStr,
       tableTime: timeStr,
-      tableUser: userStr
+      tableUser: userStr,
+      editedDate: null
     });
 
     addAuditLog(req, ref, 'Case note added');
@@ -89,7 +90,11 @@ router.post('/features-and-components/case-notes/change', function (req, res) {
     });
   }
 
+  const now = new Date();
+  const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
   currentCase.caseNotes[index].text = updatedNote.trim();
+  currentCase.caseNotes[index].editedDate = tableDateStr;
   addAuditLog(req, ref, 'Case note updated');
   req.session.flashSection = 'case-notes';
 
@@ -106,7 +111,11 @@ router.post('/features-and-components/case-notes/update', function (req, res) {
   const note = currentCase.caseNotes && currentCase.caseNotes[index];
 
   if (note && updatedNote && updatedNote.trim() !== '') {
+    const now = new Date();
+    const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
     currentCase.caseNotes[index].text = updatedNote.trim();
+    currentCase.caseNotes[index].editedDate = tableDateStr;
     addAuditLog(req, ref, 'Case note updated');
     req.session.flashSection = 'case-notes';
     return res.redirect('/features-and-components/case-notes?ref=' + encodeURIComponent(ref));

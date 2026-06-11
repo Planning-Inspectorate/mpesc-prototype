@@ -1,7 +1,8 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-    {{ currentCase.reference }} - Case details - Manage a Case
+    {{ currentCase.reference }}
+    - Case details - Manage a Case
 {% endblock %}
 
 {% block beforeContent %}
@@ -34,8 +35,8 @@
                     {% set bannerHtml %}
 
                     <p class="govuk-notification-banner__heading">
-            Case has been updated.
-            <a class="govuk-notification-banner__link govuk-!-font-weight-heavy" href="#{{ flashSection }}">Return to section</a>
+                        Case has been updated.
+                        <a class="govuk-notification-banner__link govuk-!-font-weight-heavy" href="#{{ flashSection }}">Return to section</a>
                     </p>
                     {% endset %}
 
@@ -126,7 +127,9 @@
                     <span class="govuk-accordion__section-toggle" data-nosnippet="">
                         <span class="govuk-accordion__section-toggle-focus">
                             <span id="toggle-chevron" class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span>
-                            <span id="toggle-text" class="govuk-accordion__section-toggle-text" style="text-decoration: underline;">Show {{ hiddenCount }} more sections</span>
+                            <span id="toggle-text" class="govuk-accordion__section-toggle-text" style="text-decoration: underline;">Show
+                                {{ hiddenCount }}
+                                more sections</span>
                         </span>
                     </span>
                 </a>
@@ -146,8 +149,9 @@
                             {% for proc in currentCase.overviewProcedures %}
                                 <li>
                                     <a href="#procedure-{{ loop.index }}" class="govuk-link govuk-link--no-visited-state">
-                                        {{ proc.type or "Procedure " + loop.index }} ({{ proc.status or "No status" }})
-                </a>
+                                        {{ proc.type or "Procedure " + loop.index }}
+                                        ({{ proc.status or "No status" }})
+                                    </a>
                                 </li>
                             {% endfor %}
                         {% endif %}
@@ -234,8 +238,8 @@
 
                                             <p class="govuk-body">
                                                 <a href="/features-and-components/case-notes?ref={{ currentCase.reference }}#case-notes" class="govuk-link">
-                    Cancel
-                  </a>
+                                                    Cancel
+                                                </a>
                                             </p>
 
                                         </form>
@@ -248,21 +252,21 @@
                                         </p>
 
                                         <p class="govuk-hint govuk-!-margin-bottom-2">
-                                            {{ note.meta }}
+                                            {{ note.meta }}{% if note.editedDate %} (Changed {{ note.editedDate }}){% endif %}
                                         </p>
 
                                         <ul class="govuk-list govuk-list--inline govuk-!-margin-bottom-6">
 
                                             <li>
                                                 <a href="/features-and-components/case-notes/change?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">
-                    Change
-                  </a>
+                                                    Change
+                                                </a>
                                             </li>
 
                                             <li>
                                                 <a href="/features-and-components/case-notes/remove?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">
-                    Remove
-                  </a>
+                                                    Remove
+                                                </a>
                                             </li>
 
                                         </ul>
@@ -279,8 +283,8 @@
                         {% if currentCase.caseNotes.length > 4 %}
                             <p class="govuk-body govuk-!-text-align-centre">
                                 <a class="govuk-link" href="#">
-            Show all notes
-          </a>
+                                    Show all notes
+                                </a>
                             </p>
                         {% endif %}
 
@@ -364,7 +368,9 @@
                     <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
                         {% for proc in currentCase.overviewProcedures %}
                             {% if loop.index <= 3 %}
-                                <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
+                                <li>{{ proc.type }}
+                                    -
+                                    {{ proc.status or "Status not set" }}</li>
                             {% endif %}
                         {% endfor %}
                     </ul>
@@ -378,7 +384,9 @@
                             <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-0">
                                 {% for proc in currentCase.overviewProcedures %}
                                     {% if loop.index > 3 %}
-                                        <li>{{ proc.type }} - {{ proc.status or "Status not set" }}</li>
+                                        <li>{{ proc.type }}
+                                            -
+                                            {{ proc.status or "Status not set" }}</li>
                                     {% endif %}
                                 {% endfor %}
                             </ul>
@@ -389,13 +397,15 @@
 
                         {# Show more link #}
                         <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0" id="show-more-link">
-                            <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='block'; this.parentElement.style.display='none'; return false;">Show {{ hiddenCount }} more</a>
+                            <a href="#" class="govuk-link" onclick="document.getElementById('more-procs').style.display='block'; this.parentElement.style.display='none'; return false;">Show
+                                {{ hiddenCount }}
+                                more</a>
                         </p>
                     {% endif %}
 
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- RELATED CASES HTML --- #}
@@ -407,8 +417,8 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- LINKED CASES HTML --- #}
@@ -420,23 +430,24 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- LEAD CASE LOGIC --- #}
                 {% set leadCaseText %}
                 {% if currentCase.isLinked == false %}
-      This case is not linked
-    {% elif currentCase.leadCase %}
+                    This case is not linked
+                {% elif currentCase.leadCase %}
                     {% if currentCase.leadCase == currentCase.reference %}
-                        {{ currentCase.leadCase }} (Current case)
-      {% else %}
+                        {{ currentCase.leadCase }}
+                        (Current case)
+                    {% else %}
                         {{ currentCase.leadCase }}
                     {% endif %}
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- SET OUT THE SUMMARY CARD ROWS --- #}
@@ -538,8 +549,10 @@
                 {# --- ABEYANCE PERIOD DATE FORMATTING --- #}
                 {% set abeyanceHtml %}
                 {% if currentCase.abeyancePeriod %}
-      Start: {{ currentCase.abeyancePeriod.startDate.formatted }}<br>
-      End: {{ currentCase.abeyancePeriod.endDate.formatted if currentCase.abeyancePeriod.endDate else "Not provided" }}
+                    Start:
+                    {{ currentCase.abeyancePeriod.startDate.formatted }}<br>
+                    End:
+                    {{ currentCase.abeyancePeriod.endDate.formatted if currentCase.abeyancePeriod.endDate else "Not provided" }}
                 {% endif %}
                 {% endset %}
 
@@ -606,7 +619,9 @@
               extra.style.display = 'none';
               link.innerText = 'Show {{ currentCase.applicants.length - 2 }} more';
             }
-          ">Show {{ currentCase.applicants.length - 2 }} more</a>
+          ">Show
+                                {{ currentCase.applicants.length - 2 }}
+                                more</a>
                         </p>
 
                         {# --- Hidden list for extra applicants --- #}
@@ -656,8 +671,8 @@
                     {% endif %}
 
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- SITE ADDRESSES HTML --- #}
@@ -696,7 +711,9 @@
             extra.style.display = 'none';
             link.innerText = 'Show {{ currentCase.siteAddresses.length - 1 }} more';
           }
-        ">Show {{ currentCase.siteAddresses.length - 1 }} more</a>
+        ">Show
+                            {{ currentCase.siteAddresses.length - 1 }}
+                            more</a>
                     </p>
 
                     {# --- Extra site addresses hidden if more than one --- #}
@@ -705,7 +722,8 @@
                             {% for i in range(1, currentCase.siteAddresses.length) %}
                                 {% set addr = currentCase.siteAddresses[i] %}
                                 <li class="{% if i > 1 %}govuk-!-margin-top-4{% endif %}">
-                                    <strong>Plot {{ i + 1 }}</strong><br>
+                                    <strong>Plot
+                                        {{ i + 1 }}</strong><br>
                                     {{ addr.addressLine1 }}
                                     {% if addr.addressLine1 %}<br>{% endif %}
                                     {{ addr.addressLine2 }}
@@ -745,8 +763,8 @@
 
                     {# --- EMPTY STATE --- #}
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- SET OUT THE SUMMARY CARD ROWS --- #}
@@ -855,8 +873,8 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- SET OUT THE SUMMARY CARD ROWS --- #}
@@ -914,8 +932,8 @@
                     {{ months[monthNum - 1] }}
                     {{ currentCase.receivedYear }}
                 {% else %}
-      -
-    {% endif %}
+                    -
+                {% endif %}
                 {% endset %}
 
                 {# --- SET OUT THE SUMMARY CARD ROWS --- #}
@@ -1262,14 +1280,14 @@
                                         <dt class="govuk-summary-list__key">Originator</dt>
                                         <dd class="govuk-summary-list__value">
                                             {% if outcome.originator == "Inspector" %}
-                Inspector<br>
+                                                Inspector<br>
                                                 <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.inspectorName }}</span>
                                             {% elseif outcome.originator == "Officer" %}
-                Case officer<br>
+                                                Case officer<br>
                                                 <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-text-color-secondary">{{ outcome.officerName }}</span>
                                             {% else %}
-                Secretary of State
-              {% endif %}
+                                                Secretary of State
+                                            {% endif %}
                                         </dd>
                                     </div>
 
@@ -1408,7 +1426,8 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-l">Case not found</h1>
-                <p class="govuk-body">We could not find a case with reference: <strong>{{ data['ref'] }}</strong>
+                <p class="govuk-body">We could not find a case with reference:
+                    <strong>{{ data['ref'] }}</strong>
                 </p>
                 <p class="govuk-body">
                     <a class="govuk-link" href="/cases/create-a-case/questions/casework-area">Start a new case</a>

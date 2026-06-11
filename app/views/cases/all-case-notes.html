@@ -48,6 +48,7 @@
             
             <td class="govuk-table__cell">
               {{ note.tableUser | default("User Account") }}
+              {% if note.editedDate %}<br><span class="govuk-body-s">(Changed {{ note.editedDate }})</span>{% endif %}
             </td>
           </tr>
           {% endfor %}
