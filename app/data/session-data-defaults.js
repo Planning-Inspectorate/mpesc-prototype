@@ -269,8 +269,8 @@ module.exports = {
       
       auditLog: [
         
-        { date: "15 December 2025<br>9:00am", details: "Case closed and archived.", user: "Steve Waterfield" },
-        { date: "12 December 2025<br>3:30pm", details: "Decision issued to all parties.", user: "System" }
+        { date: "15 December 2025<br>9:00am", details: "Case note added: Case closed and archived.", user: "Steve Waterfield" },
+        { date: "12 December 2025<br>3:30pm", details: "Case note added: Decision issued to all parties.", user: "System" }
       ],
     },
 
