@@ -1,0 +1,62 @@
+{% extends "layouts/main.njk" %}
+{% set serviceName %}
+Crown Developments prototype
+{% endset%}
+
+{% block content %}
+
+<div class="govuk-width-container">
+  <div class="govuk-grid-row">
+
+    <div class="govuk-grid-column-two-thirds">
+
+      <h1 class="govuk-heading-l">Filter redesign</h1>
+
+      <h2 class="govuk-heading-m">Feature description</h2>
+      <ul class="govuk-list">
+
+        <li>Filter redesign due to accessibility audit</li>
+      </ul>
+
+      <h3 class="govuk-heading-s">Jira links</h3>
+      <ul class="govuk-list">
+        <li>
+          <a href="https://pins-ds.atlassian.net/browse/CROWN-1608">CROWN-1608</a>
+        </li>
+      </ul>
+
+      <div class="govuk-tabs" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">
+          Contents
+        </h2>
+        <ul class="govuk-tabs__list">
+
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#version-1">
+              Version 1
+            </a>
+          </li>
+          <!--[VERSION 2] <li class="govuk-tabs__list-item govuk-tabs__list-item--selected"> <a class="govuk-tabs__tab" href="#version-2"> Version 2 </a> </li>-->
+        </ul>
+
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="version-1">
+          <h2 class="govuk-heading-m">Version 1</h2>
+         
+          <ul class="govuk-list govuk-list--bullet">
+            <li>
+              <a href="v1/manage-folders?ref=COM/WCL/10088" class="govuk-link">File management</a>
+            </li>
+          </ul>
+
+
+          <!--<div class="govuk-tabs__panel" id="version-2"> <h2 class="govuk-heading-m">[Version title]</h2> <ul class="govuk-list govuk-list--bullet"> <li>[Description]</li> </ul> <a href="" Class="govuk-button">[Link to prototype]</a> <details class="govuk-details"> <summary class="govuk-details__summary"> <span class="govuk-details__summary-text"> Page list </span> </summary> <div class="govuk-details__text"> <ul class="govuk-list"> <li><a href="" class="govuk-link"> [Links to pages]</a></li> </ul> </div> </details> <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible"> </div>-->
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
