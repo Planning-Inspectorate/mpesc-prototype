@@ -342,7 +342,10 @@ href: "/cases-page"
     {% if currentCase.linkedCases and currentCase.linkedCases.length > 0 %}
     <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
       {% for item in currentCase.linkedCases %}
-      <li>{{ item.reference }}</li>
+      <li>
+        {{ item.reference }}
+        {% if currentCase.leadCase and item.reference == currentCase.leadCase %}(lead){% endif %}
+      </li>
       {% endfor %}
     </ul>
     {% else %}
