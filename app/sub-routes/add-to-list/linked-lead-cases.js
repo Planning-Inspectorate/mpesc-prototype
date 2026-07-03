@@ -128,7 +128,7 @@ router.get('/cases/linked-cases/step-1', function (req, res) {
       var existingItem = draftList.find(i => i.id === id);
       req.session.data['tempLinkedCase'] = existingItem ? JSON.parse(JSON.stringify(existingItem)) : { id: id };
     } else {
-      req.session.data['tempLinkedCase'] = { id: null, reference: '', isLeadCase: false };
+      req.session.data['tempLinkedCase'] = { id: null, reference: '', isLeadCase: null };
     }
   }
 
@@ -192,11 +192,15 @@ router.get('/cases/linked-cases/step-2', function (req, res) {
     ? `/cases/linked-cases/hub?ref=${ref}`
     : `/cases/linked-cases/start?ref=${ref}`;
 
+  var selectedLeadValue = (typeof temp.isLeadCase === 'boolean')
+    ? (temp.isLeadCase ? 'yes' : 'no')
+    : null;
+
   res.render('cases/add-to-list/linked-cases/linked-case-lead-question', {
     ref: ref,
     id: id,
     backUrl: backUrl,
-    isLeadCase: temp.isLeadCase
+    selectedLeadValue: selectedLeadValue
   });
 });
 
@@ -208,12 +212,16 @@ router.post('/cases/linked-cases/step-2', function (req, res) {
   var temp = req.session.data['tempLinkedCase'] || { id: id || null, reference: '', isLeadCase: false };
 
   if (!leadSelection) {
+    var selectedLeadValue = (typeof temp.isLeadCase === 'boolean')
+      ? (temp.isLeadCase ? 'yes' : 'no')
+      : null;
+
     return res.render('cases/add-to-list/linked-cases/linked-case-lead-question', {
       ref: ref,
       id: id,
       backUrl: (draftList.length > 0) ? `/cases/linked-cases/hub?ref=${ref}` : `/cases/linked-cases/start?ref=${ref}`,
       errorIsLeadCase: "Select whether this case is the lead case",
-      isLeadCase: temp.isLeadCase
+      selectedLeadValue: selectedLeadValue
     });
   }
 
