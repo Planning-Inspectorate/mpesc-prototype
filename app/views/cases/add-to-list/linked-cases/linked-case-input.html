@@ -27,17 +27,52 @@
           {% if id %}Edit{% else %}Add{% endif %} linked case details
         </h1>
 
-        {{ govukInput({
-          label: { text: "Linked case reference" },
-          id: "linkedCaseRef",
-          name: "linkedCaseRef",
-          value: value,
-          errorMessage: errorMessage if error else null
-        }) }}
+        <div class="govuk-form-group {% if error %}govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="linkedCaseRef-autocomplete">
+            Linked case reference
+          </label>
+          <div id="linkedCaseRef-container"></div>
+          <input type="hidden" id="linkedCaseRef" name="linkedCaseRef" value="{{ value }}">
+          {% if error %}
+            <p id="linkedCaseRef-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ errorMessage.text }}
+            </p>
+          {% endif %}
+        </div>
 
         {{ govukButton({ text: "Continue" }) }}
       </form>
 
     </div>
   </div>
+{% endblock %}
+
+{% block pageScripts %}
+<link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+<script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+<script>
+  const caseReferences = {{ caseReferences | safe }};
+
+  accessibleAutocomplete({
+    element: document.querySelector('#linkedCaseRef-container'),
+    id: 'linkedCaseRef-autocomplete',
+    name: 'linkedCaseRef-autocomplete',
+    source: caseReferences,
+    defaultValue: "{{ value | escape }}",
+    showAllValues: false,
+    confirmOnBlur: false,
+    autoselect: true,
+    onConfirm: function(chosen) {
+      document.querySelector('input[name="linkedCaseRef"]').value = chosen || '';
+    }
+  });
+
+  const hiddenInput = document.querySelector('input[name="linkedCaseRef"]');
+  const autocompleteInput = document.getElementById('linkedCaseRef-autocomplete');
+  if (autocompleteInput && hiddenInput) {
+    autocompleteInput.addEventListener('input', function() {
+      hiddenInput.value = autocompleteInput.value;
+    });
+  }
+</script>
 {% endblock %}
