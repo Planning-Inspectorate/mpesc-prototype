@@ -31,13 +31,13 @@
           <label class="govuk-label govuk-label--m" for="linkedCaseRef-autocomplete">
             Linked case reference
           </label>
-          <div id="linkedCaseRef-container"></div>
-          <input type="hidden" id="linkedCaseRef" name="linkedCaseRef" value="{{ value }}">
           {% if error %}
             <p id="linkedCaseRef-error" class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ errorMessage.text }}
             </p>
           {% endif %}
+          <div id="linkedCaseRef-container"></div>
+          <input type="hidden" id="linkedCaseRef" name="linkedCaseRef" value="{{ value }}">
         </div>
 
         {{ govukButton({ text: "Continue" }) }}
@@ -58,6 +58,7 @@
     id: 'linkedCaseRef-autocomplete',
     name: 'linkedCaseRef-autocomplete',
     source: caseReferences,
+    inputClasses: 'govuk-input{% if error %} govuk-input--error{% endif %}',
     defaultValue: "{{ value | escape }}",
     showAllValues: false,
     confirmOnBlur: false,
@@ -73,6 +74,10 @@
     autocompleteInput.addEventListener('input', function() {
       hiddenInput.value = autocompleteInput.value;
     });
+
+    {% if error %}
+      autocompleteInput.setAttribute('aria-describedby', 'linkedCaseRef-error');
+    {% endif %}
   }
 </script>
 {% endblock %}
