@@ -394,9 +394,27 @@ router.post('/is-lead-case-answer', function(req, res) {
 
 router.post('/lead-case-reference-answer', function(req, res) {
   var refInput = req.body['leadCaseReference'];
-  if (!refInput || refInput.trim() === "") return res.render('cases/create-a-case/questions/lead-case-reference', { errorLeadCaseReference: "Enter the lead case reference" });
+  var validReferences = (req.session.data['cases'] || [])
+    .map(c => c.reference)
+    .filter(Boolean);
 
-  req.session.data['leadCaseReference'] = refInput.trim();
+  if (!refInput || refInput.trim() === "") {
+    return res.render('cases/create-a-case/questions/lead-case-reference', {
+      errorLeadCaseReference: "Enter the lead case reference",
+      data: { leadCaseReference: "" }
+    });
+  }
+
+  var normalizedRef = refInput.trim();
+  var foundValidRef = validReferences.some(r => r.toLowerCase() === normalizedRef.toLowerCase());
+  if (!foundValidRef) {
+    return res.render('cases/create-a-case/questions/lead-case-reference', {
+      errorLeadCaseReference: "Enter a valid case reference",
+      data: { leadCaseReference: normalizedRef }
+    });
+  }
+
+  req.session.data['leadCaseReference'] = normalizedRef;
   res.redirect('/cases/create-a-case/check-your-answers');
 });
 

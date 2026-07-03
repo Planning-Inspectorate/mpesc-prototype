@@ -160,6 +160,10 @@ router.post('/cases/linked-cases/step-1', function (req, res) {
     ? `/cases/linked-cases/hub?ref=${ref}`
     : `/cases/linked-cases/start?ref=${ref}`;
 
+  var validReferences = (req.session.data['cases'] || [])
+    .map(c => c.reference)
+    .filter(Boolean);
+
   if (!req.session.data['tempLinkedCase']) {
     req.session.data['tempLinkedCase'] = { id: id || null, reference: '', isLeadCase: false };
   }
@@ -172,11 +176,25 @@ router.post('/cases/linked-cases/step-1', function (req, res) {
       error: true,
       errorMessage: { text: "Enter linked case reference" },
       backUrl: backUrl,
-      caseReferences: JSON.stringify((req.session.data['cases'] || []).map(c => c.reference).filter(Boolean).sort())
+      caseReferences: JSON.stringify(validReferences)
     });
   }
 
-  req.session.data['tempLinkedCase'].reference = val.trim();
+  var normalizedVal = val.trim();
+  var foundValidRef = validReferences.some(r => r.toLowerCase() === normalizedVal.toLowerCase());
+  if (!foundValidRef) {
+    return res.render('cases/add-to-list/linked-cases/linked-case-input', {
+      ref: ref,
+      id: id,
+      value: val,
+      error: true,
+      errorMessage: { text: "Enter a valid case reference" },
+      backUrl: backUrl,
+      caseReferences: JSON.stringify(validReferences)
+    });
+  }
+
+  req.session.data['tempLinkedCase'].reference = normalizedVal;
   req.session.data['tempLinkedCase'].id = id || req.session.data['tempLinkedCase'].id;
 
   res.redirect(`/cases/linked-cases/step-2?ref=${ref}&id=${id || ''}`);
