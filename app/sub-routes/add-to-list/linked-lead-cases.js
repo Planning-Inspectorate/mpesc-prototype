@@ -310,7 +310,7 @@ router.post('/cases/linked-cases/commit', function (req, res) {
         ref: ref,
         linkedCases: draftLinked,
         error: true,
-        errorMessage: { text: "You cannot save with more than 1 lead case" }
+        errorMessage: { text: "Only 1 lead case can be added" }
       });
     }
 
