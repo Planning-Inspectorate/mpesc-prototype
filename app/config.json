@@ -1,7 +1,7 @@
 {
-  "serviceName": "Manage planning, environmental and specialist casework",
+  "serviceName": "Manage planning, environmental and specialist casework prototype",
   "plugins": {
-    "govuk-frontend": {
+     "govuk-frontend": {
       "rebrand": true
     }
   }

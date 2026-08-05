@@ -1,0 +1,90 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+{% if errorList %}Error: {% endif %}Rename file - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({
+text: "Back",
+href: "/features-and-components/file-rename/v1/view?ref=" + currentCase.reference + "&folderId=" + folder.id
+}) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        {% if errorList %}
+        {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+        }) }}
+        {% endif %}
+
+        <form method="post" novalidate>
+            <input type="hidden" name="ref" value="{{ currentCase.reference }}">
+            <input type="hidden" name="folderId" value="{{ folder.id }}">
+            <input type="hidden" name="docId" value="{{ doc.id }}">
+
+            {% set renameError = null %}
+            {% if errorMessage %}
+            {% set renameError = { text: errorMessage } %}
+            {% endif %}
+
+            <style>
+                .file-rename-input-wrapper {
+                    position: relative;
+                }
+
+                .file-rename-input-wrapper .govuk-input {
+                    padding-right: 7rem;
+                }
+
+                .file-rename-input-wrapper .file-rename-extension {
+                    position: absolute;
+                    right: 1rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #0b0c0c;
+                    background: #fff;
+                    padding: 0 0.25rem;
+                    pointer-events: none;
+                    white-space: nowrap;
+                }
+            </style>
+
+            <div class="govuk-form-group{% if renameError %} govuk-form-group--error{% endif %}">
+                <label class="govuk-label govuk-label--l" for="newName">Rename file</label>
+                {% if renameError %}
+                <span id="newName-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span> {{ renameError.text }}
+                </span>
+                {% endif %}
+
+                <div class="file-rename-input-wrapper">
+                    <input class="govuk-input{% if renameError %} govuk-input--error{% endif %}" id="newName"
+                        name="newName" type="text" value="{{ newName }}"
+                        aria-describedby="newName-hint{% if renameError %} newName-error{% endif %}">
+                    {% if extension %}
+                    <span class="file-rename-extension">{{ extension }}</span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="govuk-button-group">
+                {{ govukButton({ text: "Save" }) }}
+            </div>
+
+            <p class="govuk-hint">
+                <a class="govuk-link"
+                    href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}">
+                    Cancel and return to files
+                </a>
+            </p>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
