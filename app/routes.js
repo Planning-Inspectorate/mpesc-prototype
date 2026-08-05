@@ -1,5 +1,5 @@
 const govukPrototypeKit = require('govuk-prototype-kit')
-const {applyAzureHostingFix} = require('./azure-hosting-fix');
+const { applyAzureHostingFix } = require('./azure-hosting-fix');
 applyAzureHostingFix();
 const router = govukPrototypeKit.requests.setupRouter()
 
@@ -82,26 +82,26 @@ require('./sub-routes/add-to-list/linked-lead-cases');
 require('./sub-routes/add-to-list/inspectors');
 require('./sub-routes/add-to-list/applicants');
 require('./sub-routes/add-to-list/site-address');
-require('./sub-routes/add-to-list/overview-procedures'); 
+require('./sub-routes/add-to-list/overview-procedures');
 require('./sub-routes/add-to-list/objectors');
 require('./sub-routes/add-to-list/contacts');
 require('./sub-routes/add-to-list/outcomes');
 
 
 // --- IMPORT SHARED HELPERS ---
-const { 
-  getCase, 
-  addAuditLog, 
-  validateAndSaveAddress, 
-  validateAndSaveDate, 
-  validateAndSaveDateTime, 
+const {
+  getCase,
+  addAuditLog,
+  validateAndSaveAddress,
+  validateAndSaveDate,
+  validateAndSaveDateTime,
   validateAndSaveNumber,
   findFolderDeep,
-  getDefaultFolders 
+  getDefaultFolders
 } = require('./helpers');
 
 // Feature demo route: ensure folders exist when viewing the demo manage-folders page
-router.get('/features-and-components/filter-redesign/v1/manage-folders', function(req, res) {
+router.get('/features-and-components/filter-redesign/v1/manage-folders', function (req, res) {
   var ref = req.query.ref;
   var cases = req.session.data['cases'] || [];
   var currentCase = cases.find(x => x.reference === ref);
@@ -113,7 +113,7 @@ router.get('/features-and-components/filter-redesign/v1/manage-folders', functio
   }
 
   var successBanner = req.session.data['folderCreated'];
-  var deleteBanner = req.session.data['folderDeleted']; 
+  var deleteBanner = req.session.data['folderDeleted'];
   if (successBanner) delete req.session.data['folderCreated'];
   if (deleteBanner) delete req.session.data['folderDeleted'];
 
@@ -125,7 +125,7 @@ router.get('/features-and-components/filter-redesign/v1/manage-folders', functio
 });
 
 // Feature demo route: folder view (loads seeded folders & documents)
-router.get('/features-and-components/filter-redesign/v1/view', function(req, res) {
+router.get('/features-and-components/filter-redesign/v1/view', function (req, res) {
   var ref = req.query.ref;
   var folderId = req.query.folderId;
   var cases = req.session.data['cases'] || [];
@@ -234,16 +234,16 @@ router.get('/features-and-components/filter-redesign/v1/view', function(req, res
 // --- 1. VIEW ASSIGNED CASES ---
 router.get('/assigned-to-me', function (req, res) {
   var allCases = req.session.data['cases'] || [];
-  
+
   // SIMULATED LOGIN: Hardcode the active user here
   var loggedInUser = "Carol Danvers";
-  
+
   // Did they use the "Search for a user" feature?
   var searchedUser = req.session.data['viewingUser'];
-  
+
   // Active user is the searched user, otherwise default to logged-in user
   var activeUser = searchedUser || loggedInUser;
-  
+
   // Boolean to tell the UI if we are looking at our own queue
   var isViewingOwnCases = (!searchedUser || searchedUser === loggedInUser);
 
@@ -251,19 +251,19 @@ router.get('/assigned-to-me', function (req, res) {
   var userCases = allCases.filter(c => {
     var cOfficer = c.caseOfficer || c['case-officer'];
     if (cOfficer === activeUser) return true;
-    
+
     if (c.inspectors && c.inspectors.length > 0) {
-       return c.inspectors.some(i => i.name === activeUser);
+      return c.inspectors.some(i => i.name === activeUser);
     } else if (c.inspector === activeUser) {
-       return true;
+      return true;
     }
-    
+
     return false;
   });
 
   // FILTER 2: Apply Status Filter
   var statusFilter = req.session.data['statusFilter'];
-  if (statusFilter && typeof statusFilter === 'string') statusFilter = [statusFilter]; 
+  if (statusFilter && typeof statusFilter === 'string') statusFilter = [statusFilter];
   else if (!statusFilter) statusFilter = [];
 
   var filteredCases = userCases;
@@ -275,11 +275,11 @@ router.get('/assigned-to-me', function (req, res) {
   }
 
   // --- PAGINATION MATH ---
-  const totalCasesCount = filteredCases.length; 
-  
+  const totalCasesCount = filteredCases.length;
+
   let itemsPerPage = parseInt(req.query.itemsPerPage || req.session.data['assignedItemsPerPage'], 10);
-  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25; 
-  req.session.data['assignedItemsPerPage'] = itemsPerPage; 
+  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25;
+  req.session.data['assignedItemsPerPage'] = itemsPerPage;
 
   let currentPage = parseInt(req.query.page || 1, 10);
   if (isNaN(currentPage) || currentPage <= 0) currentPage = 1;
@@ -289,7 +289,7 @@ router.get('/assigned-to-me', function (req, res) {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  
+
   // Cut the massive list down to just the 25 items for this specific page
   const paginatedCases = filteredCases.slice(startIndex, endIndex);
 
@@ -312,17 +312,17 @@ router.get('/assigned-to-me', function (req, res) {
   res.render('assigned-to-me', {
     filteredCases: paginatedCases, // <-- Pass the sliced array instead of the full array
     currentStatusFilter: statusFilter,
-    totalCasesCount: totalCasesCount, 
-    activeUserName: activeUser, 
+    totalCasesCount: totalCasesCount,
+    activeUserName: activeUser,
     isViewingOwnCases: isViewingOwnCases,
-    
+
     // Pass pagination variables to the HTML
     itemsPerPage: itemsPerPage,
     startItem: totalCasesCount === 0 ? 0 : startIndex + 1,
     endItem: Math.min(endIndex, totalCasesCount),
     pageItems: paginationItems,
-    prevLink: currentPage > 1 ? "/assigned-to-me?page=" + (currentPage - 1) : null, 
-    nextLink: currentPage < totalPages ? "/assigned-to-me?page=" + (currentPage + 1) : null 
+    prevLink: currentPage > 1 ? "/assigned-to-me?page=" + (currentPage - 1) : null,
+    nextLink: currentPage < totalPages ? "/assigned-to-me?page=" + (currentPage + 1) : null
   });
 });
 
@@ -347,22 +347,22 @@ router.get('/assigned-to-me/search-user', (req, res) => res.render('assigned-to-
 
 router.post('/assigned-to-me/search-user', function (req, res) {
   var val = req.body.assignedUser;
-  
+
   if (!val || val.trim() === "") {
-    return res.render('assigned-to-me-search', { error: true, errorMessage: { text: "Select a case officer or inspector" }});
+    return res.render('assigned-to-me-search', { error: true, errorMessage: { text: "Select a case officer or inspector" } });
   }
 
   // Valid user list
   var officers = [
     "Charlotte Morphet", "Kieran De La Cruz", "Edward Mitchell", "Sarah Tudor", "Steve Waterfield",
-    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester", 
+    "Alex Hudd", "Harry Wood", "Rob Davis", "Deborah Board", "(Service Account) Automated Tester",
     "Owen Woodwards", "Tony Stark", "Steve Rogers", "Natasha Romanoff", "Bruce Banner",
-    "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange", 
+    "Thor Odinson", "Wanda Maximoff", "Peter Parker", "Carol Danvers", "Stephen Strange",
     "T'Challa", "Clint Barton", "Sam Wilson", "Bucky Barnes", "Scott Lang", "Hope van Dyne"
   ];
-  
+
   if (!officers.includes(val)) {
-     return res.render('assigned-to-me-search', { value: val, error: true, errorMessage: { text: "Select a case officer or inspector" }});   
+    return res.render('assigned-to-me-search', { value: val, error: true, errorMessage: { text: "Select a case officer or inspector" } });
   }
 
   // Save the selected user and wipe any existing status filters to show a fresh list
@@ -384,26 +384,25 @@ router.get('/assigned-to-me/my-cases', function (req, res) {
 // NAV ITEM 2: ALL CASES PAGE (With Filtering & Pagination)
 // ==============================================================================
 
-// Catch BOTH the normal page load (/cases-page) and the filter submission (/cases-filter)
-router.get(['/cases-page', '/cases-filter'], function (req, res) {
+function renderCasesPage(req, res, viewName, routeBase) {
   let cases = req.session.data['cases'] || [];
 
   // --- 1. SYNC URL TO SESSION (If form was submitted) ---
   const isFormSubmit = req.query.isFilterSubmit === 'true';
-  
+
   if (isFormSubmit) {
     req.session.data['area'] = req.query.area;
     req.session.data['type'] = req.query.type;
-    req.session.data['status'] = req.query.status; 
+    req.session.data['status'] = req.query.status;
     req.session.data['searchCriteria'] = req.query.searchCriteria;
 
     // Express array limit fix (forces single items into arrays)
     let rawSubtypes = req.query.subtype;
-    req.session.data['subtype'] = (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes)) 
+    req.session.data['subtype'] = (rawSubtypes && typeof rawSubtypes === 'object' && !Array.isArray(rawSubtypes))
       ? Object.values(rawSubtypes) : rawSubtypes;
 
     let rawStatuses = req.query.status;
-    req.session.data['status'] = (rawStatuses && typeof rawStatuses === 'object' && !Array.isArray(rawStatuses)) 
+    req.session.data['status'] = (rawStatuses && typeof rawStatuses === 'object' && !Array.isArray(rawStatuses))
       ? Object.values(rawStatuses) : rawStatuses;
   }
 
@@ -413,7 +412,7 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
     let val = req.session.data[categoryName];
     if (val && typeof val === 'object' && !Array.isArray(val)) {
       val = Object.values(val);
-      req.session.data[categoryName] = val; 
+      req.session.data[categoryName] = val;
     }
     return [].concat(val || []).filter(item => item && item !== '_unchecked');
   };
@@ -421,7 +420,7 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   const areas = cleanArray('area');
   const types = cleanArray('type');
   const subtypes = cleanArray('subtype');
-  const statuses = cleanArray('status'); 
+  const statuses = cleanArray('status');
   const search = req.session.data['searchCriteria'] || "";
 
   // --- 3. APPLY CATEGORY FILTERS (AND Logic) ---
@@ -446,8 +445,8 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   if (search) {
     cases = cases.filter(c => {
       // Safely extract applicant names to make them searchable
-      let applicantsString = Array.isArray(c.applicants) 
-        ? c.applicants.map(a => `${a.firstName || ""} ${a.lastName || ""} ${a.companyName || ""}`).join(" ") 
+      let applicantsString = Array.isArray(c.applicants)
+        ? c.applicants.map(a => `${a.firstName || ""} ${a.lastName || ""} ${a.companyName || ""}`).join(" ")
         : "";
 
       // Concatenate all searchable fields into one massive string
@@ -457,11 +456,11 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   }
 
   // --- 5. PAGINATION MATH ---
-  const totalCasesCount = cases.length; 
-  
+  const totalCasesCount = cases.length;
+
   let itemsPerPage = parseInt(req.query.itemsPerPage || req.session.data['itemsPerPage'], 10);
-  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25; 
-  req.session.data['itemsPerPage'] = itemsPerPage; 
+  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25;
+  req.session.data['itemsPerPage'] = itemsPerPage;
 
   let currentPage = parseInt(req.query.page || 1, 10);
   if (isNaN(currentPage) || currentPage <= 0) currentPage = 1;
@@ -485,28 +484,41 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   let previousPage = null;
   for (let i of pagesToShow) {
     if (previousPage && i - previousPage > 1) paginationItems.push({ ellipsis: true });
-    paginationItems.push({ number: i, current: (i === currentPage), href: "/cases-filter?page=" + i });
+    paginationItems.push({ number: i, current: (i === currentPage), href: `${routeBase}/cases-filter?page=${i}` });
     previousPage = i;
   }
 
   // --- 6. RENDER ---
-  res.render('cases-page', { 
-    cases: paginatedCases, 
+  res.render(viewName, {
+    cases: paginatedCases,
     searchTerm: search,
     totalCases: totalCasesCount,
     itemsPerPage: itemsPerPage,
     startItem: totalCasesCount === 0 ? 0 : startIndex + 1,
     endItem: Math.min(endIndex, totalCasesCount),
     pageItems: paginationItems,
-    prevLink: currentPage > 1 ? "/cases-filter?page=" + (currentPage - 1) : null, 
-    nextLink: currentPage < totalPages ? "/cases-filter?page=" + (currentPage + 1) : null 
+    prevLink: currentPage > 1 ? `${routeBase}/cases-filter?page=${currentPage - 1}` : null,
+    nextLink: currentPage < totalPages ? `${routeBase}/cases-filter?page=${currentPage + 1}` : null,
+    casesFilterPath: `${routeBase}/cases-filter`,
+    casesRemoveFilterPathPrefix: `${routeBase}/cases/remove-filter`,
+    casesClearFiltersPath: `${routeBase}/cases/clear-filters`,
+    casesClearSearchPath: `${routeBase}/cases/clear-search`
   });
+}
+
+// Catch BOTH the normal page load (/cases-page) and the filter submission (/cases-filter)
+router.get(['/cases-page', '/cases-filter'], function (req, res) {
+  renderCasesPage(req, res, 'cases-page', '');
+});
+
+router.get(['/features-and-components/filter-redesign/v2/cases-page', '/features-and-components/filter-redesign/v2/cases-filter'], function (req, res) {
+  renderCasesPage(req, res, 'features-and-components/filter-redesign/v2/cases-page', '/features-and-components/filter-redesign/v2');
 });
 
 // --- 7. FILTER REMOVAL ACTIONS ---
-router.get('/cases/remove-filter/:filterCategory/:filterValue', function(req, res) {
-  let category = req.params.filterCategory; 
-  let valueToRemove = req.params.filterValue; 
+router.get(['/cases/remove-filter/:filterCategory/:filterValue', '/features-and-components/filter-redesign/v2/cases/remove-filter/:filterCategory/:filterValue'], function (req, res) {
+  let category = req.params.filterCategory;
+  let valueToRemove = req.params.filterValue;
   let currentFilters = req.session.data[category];
 
   if (currentFilters) {
@@ -516,21 +528,33 @@ router.get('/cases/remove-filter/:filterCategory/:filterValue', function(req, re
       req.session.data[category] = null;
     }
   }
-  res.redirect('/cases-filter'); 
+
+  const redirectPath = req.path.includes('/features-and-components/filter-redesign/v2/')
+    ? '/features-and-components/filter-redesign/v2/cases-filter'
+    : '/cases-filter';
+  res.redirect(redirectPath);
 });
 
-router.get('/cases/clear-filters', function (req, res) {
+router.get(['/cases/clear-filters', '/features-and-components/filter-redesign/v2/cases/clear-filters'], function (req, res) {
   req.session.data['area'] = "";
   req.session.data['type'] = "";
   req.session.data['subtype'] = "";
-  req.session.data['status'] = ""; 
+  req.session.data['status'] = "";
   req.session.data['searchCriteria'] = "";
-  res.redirect('/cases-filter');
+
+  const redirectPath = req.path.includes('/features-and-components/filter-redesign/v2/')
+    ? '/features-and-components/filter-redesign/v2/cases-filter'
+    : '/cases-filter';
+  res.redirect(redirectPath);
 });
 
-router.get('/cases/clear-search', function (req, res) {
+router.get(['/cases/clear-search', '/features-and-components/filter-redesign/v2/cases/clear-search'], function (req, res) {
   req.session.data['searchCriteria'] = "";
-  res.redirect('/cases-filter');
+
+  const redirectPath = req.path.includes('/features-and-components/filter-redesign/v2/')
+    ? '/features-and-components/filter-redesign/v2/cases-filter'
+    : '/cases-filter';
+  res.redirect(redirectPath);
 });
 
 // ==============================================================================
