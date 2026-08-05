@@ -32,8 +32,6 @@ href: "/features-and-components/file-rename/v1/view?ref=" + currentCase.referenc
             {% set renameError = { text: errorMessage } %}
             {% endif %}
 
-            <span class="govuk-caption-l">Rename file</span>
-
             <style>
                 .file-rename-input-wrapper {
                     position: relative;
@@ -57,7 +55,7 @@ href: "/features-and-components/file-rename/v1/view?ref=" + currentCase.referenc
             </style>
 
             <div class="govuk-form-group{% if renameError %} govuk-form-group--error{% endif %}">
-                <label class="govuk-label govuk-label--l" for="newName">File name</label>
+                <label class="govuk-label govuk-label--l" for="newName">Rename file</label>
                 {% if renameError %}
                 <span id="newName-error" class="govuk-error-message">
                     <span class="govuk-visually-hidden">Error:</span> {{ renameError.text }}
@@ -76,7 +74,7 @@ href: "/features-and-components/file-rename/v1/view?ref=" + currentCase.referenc
             </div>
 
             <div class="govuk-button-group">
-                {{ govukButton({ text: "Save and return" }) }}
+                {{ govukButton({ text: "Save" }) }}
             </div>
 
             <p class="govuk-hint">
