@@ -74,6 +74,7 @@ require('./sub-routes/procedures');
 require('./sub-routes/case-details');
 require('./sub-routes/all-case-notes');
 require('./sub-routes/features/case-notes');
+require('./sub-routes/features/file-rename');
 
 
 // --- IMPORT ADD TO LIST ROUTERS ---
