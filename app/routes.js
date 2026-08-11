@@ -74,6 +74,7 @@ require('./sub-routes/procedures');
 require('./sub-routes/case-details');
 require('./sub-routes/all-case-notes');
 require('./sub-routes/features/case-notes');
+require('./sub-routes/features/filter-redesign');
 
 
 // --- IMPORT ADD TO LIST ROUTERS ---
@@ -95,137 +96,8 @@ const {
   validateAndSaveAddress,
   validateAndSaveDate,
   validateAndSaveDateTime,
-  validateAndSaveNumber,
-  findFolderDeep,
-  getDefaultFolders
+  validateAndSaveNumber
 } = require('./helpers');
-
-// Feature demo route: ensure folders exist when viewing the demo manage-folders page
-router.get('/features-and-components/filter-redesign/v1/manage-folders', function (req, res) {
-  var ref = req.query.ref;
-  var cases = req.session.data['cases'] || [];
-  var currentCase = cases.find(x => x.reference === ref);
-  if (!currentCase) return res.redirect('/');
-
-  if (!currentCase.folders) {
-    var caseType = currentCase.type || currentCase.caseType || "";
-    currentCase.folders = getDefaultFolders(caseType);
-  }
-
-  var successBanner = req.session.data['folderCreated'];
-  var deleteBanner = req.session.data['folderDeleted'];
-  if (successBanner) delete req.session.data['folderCreated'];
-  if (deleteBanner) delete req.session.data['folderDeleted'];
-
-  res.render('features-and-components/filter-redesign/v1/manage-folders', {
-    currentCase: currentCase,
-    successBanner: successBanner,
-    deleteBanner: deleteBanner
-  });
-});
-
-// Feature demo route: folder view (loads seeded folders & documents)
-router.get('/features-and-components/filter-redesign/v1/view', function (req, res) {
-  var ref = req.query.ref;
-  var folderId = req.query.folderId;
-  var cases = req.session.data['cases'] || [];
-  var currentCase = cases.find(x => x.reference === ref);
-  if (!currentCase) return res.redirect('/');
-
-  if (!currentCase.folders) {
-    var caseType = currentCase.type || currentCase.caseType || "";
-    currentCase.folders = getDefaultFolders(caseType);
-  }
-
-  // Pick the requested folder or default to the first
-  var found = folderId ? findFolderDeep(currentCase.folders, folderId) : null;
-  var folder = found ? found.target : (currentCase.folders.length > 0 ? currentCase.folders[0] : null);
-  var parentFolder = found ? found.parent : null;
-
-  if (!folder) return res.redirect(`/features-and-components/filter-redesign/v1/manage-folders?ref=${ref}`);
-
-  // Banners and transient messages
-  var successBanner = req.session.data['folderCreated'];
-  var renameBanner = req.session.data['folderRenamed'];
-  var deleteBanner = req.session.data['folderDeleted'];
-  var updateBanner = req.session.data['updateBanner'];
-  var moveBanner = req.session.data['filesMovedBanner'];
-  var downloadBanner = req.session.data['filesDownloadedBanner'];
-  var bulkDeleteBanner = req.session.data['filesBulkDeletedBanner'];
-  var moveFileError = req.session.data['moveFileError'];
-
-  if (successBanner) delete req.session.data['folderCreated'];
-  if (renameBanner) delete req.session.data['folderRenamed'];
-  if (deleteBanner) delete req.session.data['folderDeleted'];
-  if (updateBanner) delete req.session.data['updateBanner'];
-  if (moveBanner) delete req.session.data['filesMovedBanner'];
-  if (downloadBanner) delete req.session.data['filesDownloadedBanner'];
-  if (bulkDeleteBanner) delete req.session.data['filesBulkDeletedBanner'];
-
-  var errorList = null;
-  if (moveFileError) { errorList = [{ text: moveFileError, href: "#checkboxes-all" }]; delete req.session.data['moveFileError']; }
-
-  // Pagination
-  var documents = folder.documents || [];
-  const totalDocsCount = documents.length;
-
-  let rawItems = req.query.itemsPerPage || req.session.data['folderItemsPerPage'];
-  let itemsPerPage = parseInt(rawItems, 10);
-  if (isNaN(itemsPerPage) || itemsPerPage <= 0) itemsPerPage = 25;
-  req.session.data['folderItemsPerPage'] = itemsPerPage;
-
-  let rawPage = req.query.page || 1;
-  let currentPage = parseInt(rawPage, 10);
-  if (isNaN(currentPage) || currentPage <= 0) currentPage = 1;
-
-  const totalPages = Math.ceil(totalDocsCount / itemsPerPage) || 1;
-  if (currentPage > totalPages) currentPage = totalPages;
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedDocuments = documents.slice(startIndex, endIndex);
-
-  let paginationItems = [];
-  let pagesToShow = [];
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || i === currentPage || i === currentPage - 1 || i === currentPage + 1) {
-      pagesToShow.push(i);
-    }
-  }
-
-  let previousPage = null;
-  let baseUrl = `/features-and-components/filter-redesign/v1/view?ref=${ref}` + (folderId ? `&folderId=${folder.id}` : '');
-  for (let i of pagesToShow) {
-    if (previousPage && i - previousPage > 1) paginationItems.push({ ellipsis: true });
-    paginationItems.push({ number: i, current: (i === currentPage), href: `${baseUrl}&page=${i}` });
-    previousPage = i;
-  }
-
-  res.render('features-and-components/filter-redesign/v1/view', {
-    currentCase: currentCase,
-    folder: folder,
-    parentFolder: parentFolder,
-    successBanner: successBanner,
-    renameBanner: renameBanner,
-    deleteBanner: deleteBanner,
-    updateBanner: updateBanner,
-    moveBanner: moveBanner,
-    downloadBanner: downloadBanner,
-    bulkDeleteBanner: bulkDeleteBanner,
-    errorList: errorList,
-    paginatedDocuments: paginatedDocuments,
-    totalDocs: totalDocsCount,
-    folderTotalDocs: (folder.documents || []).length,
-    itemsPerPage: itemsPerPage,
-    startItem: totalDocsCount === 0 ? 0 : startIndex + 1,
-    endItem: Math.min(endIndex, totalDocsCount),
-    pageItems: paginationItems,
-    prevLink: currentPage > 1 ? `${baseUrl}&page=${currentPage - 1}` : null,
-    nextLink: currentPage < totalPages ? `${baseUrl}&page=${currentPage + 1}` : null
-  });
-});
-
-
 
 // ==============================================================================
 // NAV ITEM 1: ASSIGNED TO ME
@@ -511,12 +383,8 @@ router.get(['/cases-page', '/cases-filter'], function (req, res) {
   renderCasesPage(req, res, 'cases-page', '');
 });
 
-router.get(['/features-and-components/filter-redesign/v2/cases-page', '/features-and-components/filter-redesign/v2/cases-filter'], function (req, res) {
-  renderCasesPage(req, res, 'features-and-components/filter-redesign/v2/cases-page', '/features-and-components/filter-redesign/v2');
-});
-
 // --- 7. FILTER REMOVAL ACTIONS ---
-router.get(['/cases/remove-filter/:filterCategory/:filterValue', '/features-and-components/filter-redesign/v2/cases/remove-filter/:filterCategory/:filterValue'], function (req, res) {
+router.get('/cases/remove-filter/:filterCategory/:filterValue', function (req, res) {
   let category = req.params.filterCategory;
   let valueToRemove = req.params.filterValue;
   let currentFilters = req.session.data[category];
@@ -529,32 +397,23 @@ router.get(['/cases/remove-filter/:filterCategory/:filterValue', '/features-and-
     }
   }
 
-  const redirectPath = req.path.includes('/features-and-components/filter-redesign/v2/')
-    ? '/features-and-components/filter-redesign/v2/cases-filter'
-    : '/cases-filter';
-  res.redirect(redirectPath);
+  res.redirect('/cases-filter');
 });
 
-router.get(['/cases/clear-filters', '/features-and-components/filter-redesign/v2/cases/clear-filters'], function (req, res) {
+router.get('/cases/clear-filters', function (req, res) {
   req.session.data['area'] = "";
   req.session.data['type'] = "";
   req.session.data['subtype'] = "";
   req.session.data['status'] = "";
   req.session.data['searchCriteria'] = "";
 
-  const redirectPath = req.path.includes('/features-and-components/filter-redesign/v2/')
-    ? '/features-and-components/filter-redesign/v2/cases-filter'
-    : '/cases-filter';
-  res.redirect(redirectPath);
+  res.redirect('/cases-filter');
 });
 
-router.get(['/cases/clear-search', '/features-and-components/filter-redesign/v2/cases/clear-search'], function (req, res) {
+router.get('/cases/clear-search', function (req, res) {
   req.session.data['searchCriteria'] = "";
 
-  const redirectPath = req.path.includes('/features-and-components/filter-redesign/v2/')
-    ? '/features-and-components/filter-redesign/v2/cases-filter'
-    : '/cases-filter';
-  res.redirect(redirectPath);
+  res.redirect('/cases-filter');
 });
 
 // ==============================================================================
