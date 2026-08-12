@@ -1,0 +1,661 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+    /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+    .pins-header-demo,
+    .pins-service-nav,
+    .pins-footer {
+        font-family: Arial, Helvetica, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* PINS HEADER */
+    .pins-header-demo {
+        padding-top: 24px;
+        padding-bottom: 24px;
+        background: #f3f2f1;
+        border-bottom: 10px solid #13A19B;
+    }
+
+    /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+    .pins-header-demo,
+    .pins-service-nav,
+    .pins-footer {
+        font-family: Arial, Helvetica, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* PINS HEADER */
+    .pins-header-demo {
+        padding-top: 24px;
+        padding-bottom: 24px;
+        background: #f3f2f1;
+        border-bottom: 10px solid #13A19B;
+    }
+
+    /* NAVIGATION BAR */
+    .pins-service-nav {
+        background: #f3f2f1;
+        font-size: 16px;
+        color: #0b0c0c;
+    }
+
+    .pins-service-nav__container {
+        display: flex;
+        align-items: center;
+        justify-content: left;
+        background: #f3f2f1;
+        min-height: 50px;
+    }
+
+    /* MPESC */
+    .pins-service-nav__title {
+        background: #f3f2f1;
+        font-weight: bold;
+        margin-right: 30px;
+        color: #0b0c0c;
+        text-decoration: none;
+        padding-left: 0;
+    }
+
+    .pins-service-nav__title,
+    .pins-service-nav__title:link,
+    .pins-service-nav__title:visited {
+        color: #0b0c0c;
+        text-decoration: none;
+        border-bottom: 0px solid transparent;
+        transition: color 0.2s, border-bottom-color 0.2s;
+    }
+
+    /* NAVIGATION LIST */
+    .pins-service-nav__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+    }
+
+    .pins-service-nav__item {
+        display: inline;
+    }
+
+    /* LINKS AND HOVER STATES*/
+    .pins-service-nav__link,
+    .pins-service-nav__link:link,
+    .pins-service-nav__link:visited {
+        color: #0b0c0c;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        padding-bottom: 12px;
+        transition: color 0.2s, border-bottom-color 0.2s;
+    }
+
+    .pins-service-nav__link:hover {
+        color: #000000;
+        text-decoration: none;
+        padding-bottom: 12px;
+        border-bottom-color: #000000;
+    }
+
+    .pins-service-nav__title:hover {
+        color: #0b0c0c;
+        text-decoration: none;
+        border-bottom-color: #0b0c0c;
+    }
+
+    /* LINK ACTIVE STATES */
+    .pins-service-nav__item--active .pins-service-nav__link {
+        font-weight: bold;
+        color: #000000;
+        text-decoration: none;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #000000;
+    }
+
+    /* BROWSER RESPONSIVENESS */
+    @media (max-width: 600px) {
+        .pins-service-nav__container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .pins-service-nav__list {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+<div class="pins-header-demo">
+    <header role="banner">
+        <div class="govuk-width-container">
+            <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
+                style="width:auto; vertical-align:middle;">
+        </div>
+    </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+Dynamic cards - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% set currentArea = "cases" %}
+{% set currentPage = "overview" %}
+
+{% block content %}
+
+
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <span class="govuk-caption-m">PUR/10045</span>
+        <h1 class="govuk-heading-l govuk-!-margin-bottom-4">
+            Land at 14 High Street, Manchester (Generated)
+        </h1>
+
+
+
+        <div class="govuk-button-group">
+
+            <a href="/cases/manage-folders?ref=PUR/10045" role="button" draggable="false"
+                class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                Manage case files
+            </a>
+
+            <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary"
+                data-module="govuk-button">
+                Download this case
+            </a>
+
+        </div>
+
+        {% include "/features-and-components/new-subnav/v1/components/sub-nav.njk" %}
+
+
+        <h2 class="govuk-heading-m">
+            Overview
+        </h2>
+
+        <dl class="govuk-summary-list" id="overview">
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Case type
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Purchase Notices
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href=""><span class="govuk-visually-hidden"> case
+                            type (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Subtype
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    -
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href=""><span class="govuk-visually-hidden"> subtype
+                            (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Act
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Town and Country Planning Act 1990, 78
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/act?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden">
+                            act (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Consent sought
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Town and Country Planning Act 1990, 78
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/consent-sought?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> consent sought (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Priority
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    High
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/priority?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden">
+                            priority (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Inspector band
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Band 2
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/inspector-band?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> inspector band (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Procedure
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+
+                        <li>Hearing - Scheduled</li>
+
+
+                        <li>Site visit - Completed</li>
+
+
+                    </ul>
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/overview-procedures/hub?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> procedure (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Related case(s)
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+
+                        <li>PUR/10044</li>
+
+                    </ul>
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/related-cases/hub?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> related cases (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Linked case(s)
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    -
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/linked-cases/start?ref=PUR/10045">Add<span
+                            class="govuk-visually-hidden">
+                            linked cases (Overview)</span></a>
+
+                </dd>
+
+            </div>
+
+
+            <h2 class="govuk-heading-m govuk-!-padding-top-6">
+                Case details
+            </h2>
+
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Case reference
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    PUR/10045
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    External reference
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    MAN-APP-2026-001
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/external-reference?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> external reference (Case
+                            details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Historical reference
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    HIST-9901-A
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href=""><span class="govuk-visually-hidden"> (Case
+                            details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Case name
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Land at 14 High Street, Manchester (Generated)
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/case-name?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> case name (Case details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Case status
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    In progress
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/case-status?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> case status (Case details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Abeyance period
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    -
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/abeyance-period?ref=PUR/10045">Add<span
+                            class="govuk-visually-hidden"> (Case details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Advertised modification status
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Advertised modification 1
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/modification-status?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> modification status (Case
+                            details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Who is the applicant or appellant?
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+
+
+
+                        <li class="">
+
+                            <div><strong>Michael Chang</strong></div>
+
+                            <div>High Street Retail Ltd</div>
+
+
+                            <div>1 Corporate Way</div>
+
+                            <div>London</div>
+
+                            <div>WC1X 8JZ</div>
+
+
+                            <div>m.chang@highstreetretail.co.uk</div>
+                            <div>07700 900 123</div>
+                        </li>
+
+
+
+
+                        <li class="govuk-!-margin-top-4">
+
+                            <div><strong>Elena Rostova</strong></div>
+
+                            <div>High Street Retail Ltd</div>
+
+
+
+
+
+
+
+
+
+                            <div>e.rostova@highstreetretail.co.uk</div>
+
+                        </li>
+
+
+                    </ul>
+
+
+
+
+
+                    <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+                        <a href="javascript:void(0);" id="toggle-applicants" class="govuk-link" onclick="
+                      var extra = document.getElementById('extra-applicants');
+                      var link = document.getElementById('toggle-applicants');
+                      if(extra.style.display === 'none') {
+                        extra.style.display = 'block';
+                        link.innerText = 'Hide';
+                      } else {
+                        extra.style.display = 'none';
+                        link.innerText = 'Show 1 more';
+                      }
+                    ">Show 1 more</a>
+                    </p>
+
+
+                    <div id="extra-applicants" style="display: none;">
+                        <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0 govuk-!-margin-top-4">
+
+
+                            <li class="">
+
+                                <div><strong>David Smith</strong></div>
+
+                                <div>Smith &amp; Sons Legal Reps</div>
+
+
+
+
+
+
+
+
+
+
+
+                            </li>
+
+                        </ul>
+                    </div>
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/applicants/hub?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> applicant details (Case
+                            details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Site address
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+                        <li>14 High Street<br>Manchester<br>Greater Manchester<br>M1 1DZ</li>
+                    </ul>
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/site-address/hub?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> site address (Case details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Site location
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Grid Ref: SJ 839 983
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/site-location?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> site location (Case details)</span></a>
+
+                </dd>
+
+            </div>
+
+
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Authority (LPA, OMA, CRA)
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Manchester City Council
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/authority?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> authority (Case details)</span></a>
+
+                </dd>
+
+            </div>
+
+    </div>
+</div>
+
+
+
+
+{% endblock %}

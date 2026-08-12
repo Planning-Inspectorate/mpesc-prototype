@@ -1,0 +1,235 @@
+{% extends "layouts/main.html" %}
+
+{% block header %}
+
+<style>
+    /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+    .pins-header-demo,
+    .pins-service-nav,
+    .pins-footer {
+        font-family: Arial, Helvetica, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* PINS HEADER */
+    .pins-header-demo {
+        padding-top: 24px;
+        padding-bottom: 24px;
+        background: #f3f2f1;
+        border-bottom: 10px solid #13A19B;
+    }
+
+    /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+    .pins-header-demo,
+    .pins-service-nav,
+    .pins-footer {
+        font-family: Arial, Helvetica, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* PINS HEADER */
+    .pins-header-demo {
+        padding-top: 24px;
+        padding-bottom: 24px;
+        background: #f3f2f1;
+        border-bottom: 10px solid #13A19B;
+    }
+
+    /* NAVIGATION BAR */
+    .pins-service-nav {
+        background: #f3f2f1;
+        font-size: 16px;
+        color: #0b0c0c;
+    }
+
+    .pins-service-nav__container {
+        display: flex;
+        align-items: center;
+        justify-content: left;
+        background: #f3f2f1;
+        min-height: 50px;
+    }
+
+    /* MPESC */
+    .pins-service-nav__title {
+        background: #f3f2f1;
+        font-weight: bold;
+        margin-right: 30px;
+        color: #0b0c0c;
+        text-decoration: none;
+        padding-left: 0;
+    }
+
+    .pins-service-nav__title,
+    .pins-service-nav__title:link,
+    .pins-service-nav__title:visited {
+        color: #0b0c0c;
+        text-decoration: none;
+        border-bottom: 0px solid transparent;
+        transition: color 0.2s, border-bottom-color 0.2s;
+    }
+
+    /* NAVIGATION LIST */
+    .pins-service-nav__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+    }
+
+    .pins-service-nav__item {
+        display: inline;
+    }
+
+    /* LINKS AND HOVER STATES*/
+    .pins-service-nav__link,
+    .pins-service-nav__link:link,
+    .pins-service-nav__link:visited {
+        color: #0b0c0c;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        padding-bottom: 12px;
+        transition: color 0.2s, border-bottom-color 0.2s;
+    }
+
+    .pins-service-nav__link:hover {
+        color: #000000;
+        text-decoration: none;
+        padding-bottom: 12px;
+        border-bottom-color: #000000;
+    }
+
+    .pins-service-nav__title:hover {
+        color: #0b0c0c;
+        text-decoration: none;
+        border-bottom-color: #0b0c0c;
+    }
+
+    /* LINK ACTIVE STATES */
+    .pins-service-nav__item--active .pins-service-nav__link {
+        font-weight: bold;
+        color: #000000;
+        text-decoration: none;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #000000;
+    }
+
+    /* BROWSER RESPONSIVENESS */
+    @media (max-width: 600px) {
+        .pins-service-nav__container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .pins-service-nav__list {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+<div class="pins-header-demo">
+    <header role="banner">
+        <div class="govuk-width-container">
+            <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
+                style="width:auto; vertical-align:middle;">
+        </div>
+    </header>
+</div>
+
+{% endblock %}
+
+{% block pageTitle %}
+Dynamic cards - Features and components
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back to prototype home", href: "/index" }) }}
+{% endblock %}
+
+{% set currentArea = "cases" %}
+{% set currentPage = "team" %}
+
+{% block content %}
+
+
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <span class="govuk-caption-m">PUR/10045</span>
+        <h1 class="govuk-heading-l govuk-!-margin-bottom-4">
+            Land at 14 High Street, Manchester (Generated)
+        </h1>
+
+
+
+        <div class="govuk-button-group">
+
+            <a href="/cases/manage-folders?ref=PUR/10045" role="button" draggable="false"
+                class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                Manage case files
+            </a>
+
+            <a href="#" role="button" draggable="false" class="govuk-button govuk-button--secondary"
+                data-module="govuk-button">
+                Download this case
+            </a>
+
+        </div>
+
+        {% include "/features-and-components/new-subnav/v1/components/sub-nav.njk" %}
+
+        <dl class="govuk-summary-list" id="overview">
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Case officer
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    Kieran De La Cruz
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/edit/case-officer?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden">
+                            case officer (Team)</span></a>
+
+                </dd>
+
+            </div>
+
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Inspector(s)
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+
+                        <li>
+                            Sarah Tudor<br>
+                            12 February 2026
+                        </li>
+
+                    </ul>
+                </dd>
+
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/cases/inspectors/check-inspectors?ref=PUR/10045">Change<span
+                            class="govuk-visually-hidden"> inspectors (Team)</span></a>
+
+                </dd>
+
+            </div>
+        </dl>
+    </div>
+</div>
+
+
+{% endblock %}
