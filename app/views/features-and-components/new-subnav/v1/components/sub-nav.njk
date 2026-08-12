@@ -1,0 +1,44 @@
+<style>
+    .external::after {}
+
+    .moj-sub-navigation__item--active .moj-sub-navigation__link {
+        font-weight: bold;
+        border-bottom: #11A19A 5px solid;
+    }
+
+    .moj-sub-navigation__link[aria-current=page]::before {
+        background-color: #ffffff;
+    }
+</style>
+
+<nav class="moj-sub-navigation" aria-label="Sub navigation">
+    <ul class="moj-sub-navigation__list">
+        <li class="moj-sub-navigation__item {% if currentPage == 'overview' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" {% if currentPage == 'overview' %} aria-current="page" {% endif %}href="/features-and-components/new-subnav/v1/overview">Overview</a>
+        </li>
+
+        <li class="moj-sub-navigation__item {% if currentPage == 'team' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" href="/features-and-components/new-subnav/v1/team" {% if currentPage == 'team' %} aria-current="page" {% endif %}>Team</a>
+        </li>
+
+        <li class="moj-sub-navigation__item {% if currentPage == 'timetable' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" href="/features-and-components/new-subnav/v1/timetable" {% if currentPage == 'timetable' %} aria-current="page" {% endif %}>Timetable</a>
+        </li>
+
+        <li class="moj-sub-navigation__item {% if currentPage == 'contacts' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" href="/features-and-components/new-subnav/v1/contacts" {% if currentPage == 'contacts' %} aria-current="page" {% endif %}>Contacts</a>
+        </li>
+
+        <li class="moj-sub-navigation__item {% if currentPage == 'invoicing' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" href="/features-and-components/new-subnav/v1/invoicing" {% if currentPage == 'invoicing' %} aria-current="page" {% endif %}>Invoicing</a>
+        </li>
+        <li class="moj-sub-navigation__item {% if currentPage == 'history' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" href="/features-and-components/new-subnav/v1/history" {% if currentPage == 'history' %} aria-current="page" {% endif %}>History</a>
+        </li>
+        <li class="moj-sub-navigation__item {% if currentPage == 'case-notes' %}moj-sub-navigation__item--active{% endif %}">
+            <a class="moj-sub-navigation__link" href="/features-and-components/new-subnav/v1/case-notes" {% if currentPage == 'case-notes' %} aria-current="page" {% endif %}>Case notes</a>
+        </li>
+
+    </ul>
+
+</nav>
