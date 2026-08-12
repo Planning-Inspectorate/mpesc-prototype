@@ -276,6 +276,7 @@ router.post('/features-and-components/file-rename/v1/rename', function (req, res
 
   const errors = [];
   let errorMessage = null;
+  const allowedFileNamePattern = /^(?!.*'')[A-Za-z0-9._()&' -]+$/;
 
   if (!baseName) {
     errorMessage = 'Enter a file name';
@@ -283,8 +284,8 @@ router.post('/features-and-components/file-rename/v1/rename', function (req, res
   } else if (baseName.length > 100) {
     errorMessage = 'File name must be 100 characters or fewer';
     errors.push({ text: errorMessage, href: '#newName' });
-  } else if (!/^[\x20-\x7E]+$/.test(baseName)) {
-    errorMessage = 'File name must only contain standard characters';
+  } else if (!allowedFileNamePattern.test(baseName)) {
+    errorMessage = 'File name can only include letters, numbers, spaces, dots, hyphens, underscores, brackets, ampersands and single apostrophes';
     errors.push({ text: errorMessage, href: '#newName' });
   }
 
