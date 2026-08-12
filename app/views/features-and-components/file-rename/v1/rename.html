@@ -32,27 +32,6 @@ href: "/features-and-components/file-rename/v1/view?ref=" + currentCase.referenc
             {% set renameError = { text: errorMessage } %}
             {% endif %}
 
-            <style>
-                .file-rename-input-wrapper {
-                    position: relative;
-                }
-
-                .file-rename-input-wrapper .govuk-input {
-                    padding-right: 7rem;
-                }
-
-                .file-rename-input-wrapper .file-rename-extension {
-                    position: absolute;
-                    right: 1rem;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: #0b0c0c;
-                    background: #fff;
-                    padding: 0 0.25rem;
-                    pointer-events: none;
-                    white-space: nowrap;
-                }
-            </style>
 
             <div class="govuk-form-group{% if renameError %} govuk-form-group--error{% endif %}">
                 <label class="govuk-label govuk-label--l" for="newName">Rename file</label>
@@ -62,28 +41,29 @@ href: "/features-and-components/file-rename/v1/view?ref=" + currentCase.referenc
                 </span>
                 {% endif %}
 
-                <div class="file-rename-input-wrapper">
+                <div class="govuk-input__wrapper">
                     <input class="govuk-input{% if renameError %} govuk-input--error{% endif %}" id="newName"
                         name="newName" type="text" value="{{ newName }}"
                         aria-describedby="newName-hint{% if renameError %} newName-error{% endif %}">
                     {% if extension %}
-                    <span class="file-rename-extension">{{ extension }}</span>
+                    <div class="govuk-input__suffix" aria-hidden="true">{{ extension }}</div>
                     {% endif %}
                 </div>
 
-            </div>
 
-            <div class="govuk-button-group">
-                {{ govukButton({ text: "Save" }) }}
-            </div>
+                <div class="govuk-button-group govuk-!-margin-top-4">
+                    {{ govukButton({ text: "Save" }) }}
+                </div>
 
-            <p class="govuk-hint">
-                <a class="govuk-link"
-                    href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}">
-                    Cancel and return to files
-                </a>
-            </p>
+
         </form>
+
+        <p class="govuk-hint">
+            <a class="govuk-link"
+                href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}">
+                Cancel and return to files
+            </a>
+        </p>
 
     </div>
 </div>
