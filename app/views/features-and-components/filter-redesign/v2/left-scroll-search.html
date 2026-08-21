@@ -129,7 +129,7 @@ Case list
 
         <div class="govuk-checkboxes__item">
           <input class="govuk-checkboxes__input" id="select-all-peas" name="type" type="checkbox" value="PEAS"
-            data-select-all-target="peas-container">
+            data-select-all-target="peas-container" data-group-label="Planning, Environmental and Applications">
           <label class="govuk-label govuk-checkboxes__label" for="select-all-peas">
             Select all (175)
           </label>
@@ -319,7 +319,7 @@ Case list
         data-govuk-checkboxes-init="">
         <div class="govuk-checkboxes__item">
           <input class="govuk-checkboxes__input" id="select-all-rowcl" name="type" type="checkbox" value="ROWandCL"
-            data-select-all-target="rowcl-container">
+            data-select-all-target="rowcl-container" data-group-label="Rights of Way and Common Land">
           <label class="govuk-label govuk-checkboxes__label" for="select-all-rowcl">
             Select all (129)
           </label>
@@ -898,20 +898,35 @@ Case list
       checkbox.dataset.filterIndex = String(index);
     });
 
-    // 'Select all' checkboxes check/uncheck every checkbox in their linked scroll container
+    // 'Select all' checkboxes check/uncheck every checkbox in their linked scroll container, and stay in sync
+    var selectAllGroups = [];
     document.querySelectorAll('[data-select-all-target]').forEach(function (selectAll) {
+      var target = document.getElementById(selectAll.dataset.selectAllTarget);
+      if (!target) {
+        return;
+      }
+      var descendants = Array.prototype.slice.call(target.querySelectorAll('.govuk-checkboxes__input'));
+      var directTypeCheckboxes = Array.prototype.slice.call(target.querySelectorAll('input[name="type"]'));
+      selectAllGroups.push({ parent: selectAll, children: descendants });
+
       selectAll.addEventListener('change', function () {
-        var target = document.getElementById(selectAll.dataset.selectAllTarget);
-        if (!target) {
-          return;
-        }
-        target.querySelectorAll('.govuk-checkboxes__input').forEach(function (child) {
+        descendants.forEach(function (child) {
           child.checked = selectAll.checked;
+        });
+      });
+
+      directTypeCheckboxes.forEach(function (typeCheckbox) {
+        typeCheckbox.addEventListener('change', function () {
+          var allChecked = directTypeCheckboxes.every(function (c) { return c.checked; });
+          var noneChecked = directTypeCheckboxes.every(function (c) { return !c.checked; });
+          selectAll.checked = allChecked;
+          selectAll.indeterminate = !allChecked && !noneChecked;
         });
       });
     });
 
     // Selecting a parent type checkbox also selects its sub types, and keeps the parent in sync
+    var parentChildGroups = [];
     document.querySelectorAll('.container input[name="type"]').forEach(function (parentCheckbox) {
       var item = parentCheckbox.closest('.govuk-checkboxes__item');
       var childInset = item && item.nextElementSibling && item.nextElementSibling.classList.contains('child-inset')
@@ -920,7 +935,8 @@ Case list
       if (!childInset) {
         return;
       }
-      var subCheckboxes = childInset.querySelectorAll('input[name="subType"]');
+      var subCheckboxes = Array.prototype.slice.call(childInset.querySelectorAll('input[name="subType"]'));
+      parentChildGroups.push({ parent: parentCheckbox, children: subCheckboxes });
 
       parentCheckbox.addEventListener('change', function () {
         subCheckboxes.forEach(function (subCheckbox) {
@@ -961,6 +977,9 @@ Case list
     }
 
     function labelFor(checkbox) {
+      if (checkbox.dataset.groupLabel) {
+        return checkbox.dataset.groupLabel;
+      }
       var label = document.querySelector('label[for="' + checkbox.id + '"]');
       var text = label ? label.textContent : checkbox.value;
       return text.trim().replace(/\s*\(\d+\)\s*$/, '');
@@ -989,10 +1008,45 @@ Case list
 
     function snapshotCheckedFilters() {
       appliedFilters = [];
+      var consumedCheckboxes = [];
+
+      // Show one chip for a 'select all' section instead of one chip per type and sub type within it.
+      selectAllGroups.forEach(function (group) {
+        var allChildrenChecked = group.children.length > 0 && group.children.every(function (c) { return c.checked; });
+        if (!group.parent.checked || !allChildrenChecked) {
+          return;
+        }
+        consumedCheckboxes.push(group.parent);
+        consumedCheckboxes = consumedCheckboxes.concat(group.children);
+        appliedFilters.push({
+          indexes: [group.parent.dataset.filterIndex].concat(group.children.map(function (c) { return c.dataset.filterIndex; })),
+          label: labelFor(group.parent),
+          category: categoryFor(group.parent)
+        });
+      });
+
+      // Show one chip for a parent whose sub types are all selected, instead of one chip per sub type.
+      parentChildGroups.forEach(function (group) {
+        if (consumedCheckboxes.indexOf(group.parent) !== -1) {
+          return;
+        }
+        var allChildrenChecked = group.children.length > 0 && group.children.every(function (c) { return c.checked; });
+        if (!group.parent.checked || !allChildrenChecked) {
+          return;
+        }
+        consumedCheckboxes.push(group.parent);
+        consumedCheckboxes = consumedCheckboxes.concat(group.children);
+        appliedFilters.push({
+          indexes: [group.parent.dataset.filterIndex].concat(group.children.map(function (c) { return c.dataset.filterIndex; })),
+          label: labelFor(group.parent),
+          category: categoryFor(group.parent)
+        });
+      });
+
       filterCheckboxes.forEach(function (checkbox) {
-        if (checkbox.checked) {
+        if (checkbox.checked && consumedCheckboxes.indexOf(checkbox) === -1) {
           appliedFilters.push({
-            index: checkbox.dataset.filterIndex,
+            indexes: [checkbox.dataset.filterIndex],
             label: labelFor(checkbox),
             category: categoryFor(checkbox)
           });
@@ -1094,10 +1148,12 @@ Case list
 
       appliedFilters.forEach(function (filter) {
         chipsList.appendChild(buildChip(filter.category + ': ' + filter.label, function () {
-          var checkbox = document.querySelector('[data-filter-index="' + filter.index + '"]');
-          if (checkbox) {
-            checkbox.checked = false;
-          }
+          filter.indexes.forEach(function (index) {
+            var checkbox = document.querySelector('[data-filter-index="' + index + '"]');
+            if (checkbox) {
+              checkbox.checked = false;
+            }
+          });
           navigateWithCurrentState();
         }));
       });
