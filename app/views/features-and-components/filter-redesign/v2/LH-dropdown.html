@@ -1,0 +1,913 @@
+{% set activePage = "all-cases" %}
+
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Case list - Planning Inspectorate Portal
+{% endblock %}
+
+{% block content %}
+{%- from "moj/components/filter/macro.njk" import mojFilter -%}
+{%- from "govuk/components/checkboxes/macro.njk" import govukCheckboxes -%}
+{%- from "govuk/components/button/macro.njk" import govukButton -%}
+{%- from "govuk/components/input/macro.njk" import govukInput -%}
+{%- from "govuk/components/pagination/macro.njk" import govukPagination -%}
+
+{# Get the master list of all cases (unfiltered) #}
+{% set allCases = data['cases'] or [] %}
+
+{% set selectedAreaValues = [] %}
+{% set selectedTypeValues = [] %}
+{% set selectedSubtypeValues = [] %}
+{% if data['area'] %}
+{% if data['area'] | is_array %}
+{% set selectedAreaValues = data['area'] %}
+{% else %}
+{% set selectedAreaValues = [data['area']] %}
+{% endif %}
+{% endif %}
+{% if data['type'] %}
+{% if data['type'] | is_array %}
+{% set selectedTypeValues = data['type'] %}
+{% else %}
+{% set selectedTypeValues = [data['type']] %}
+{% endif %}
+{% endif %}
+{% if data['subtype'] %}
+{% if data['subtype'] | is_array %}
+{% set selectedSubtypeValues = data['subtype'] %}
+{% else %}
+{% set selectedSubtypeValues = [data['subtype']] %}
+{% endif %}
+{% endif %}
+
+{% set hasStatusFilter = false %}
+{% if data['status'] %}
+{% if data['status'] | is_array %}
+{% set statusValues = [] %}
+{% for item in data['status'] %}
+{% if item and item != '_unchecked' %}
+{% set statusValues = (statusValues.push(item), statusValues) %}
+{% endif %}
+{% endfor %}
+{% set hasStatusFilter = statusValues.length > 0 %}
+{% else %}
+{% set hasStatusFilter = data['status'] != '_unchecked' %}
+{% endif %}
+{% endif %}
+
+{% set hasAppliedFilters = selectedAreaValues.length > 0 or selectedTypeValues.length > 0 or
+selectedSubtypeValues.length > 0 or hasStatusFilter %}
+
+<h1 class="govuk-heading-l">Case list</h1>
+
+<style>
+  /* --- MOJ FILTER & LAYOUT STYLES --- */
+  .moj-filter__header {
+    background-color: #ffffff;
+  }
+
+  .moj-filter__selected {
+    background-color: #ffffff;
+  }
+
+  .moj-filter__heading-action a {
+    font-size: 16px !important;
+    font-weight: normal;
+  }
+
+  .custom-filter-layout {
+    display: flex;
+    gap: 0;
+  }
+
+  .custom-filter-column {
+    flex: 0 0 31%;
+    max-width: 31%;
+    padding-right: 0;
+  }
+
+  .custom-content-column {
+    flex: 0 0 69%;
+    max-width: 69%;
+    padding-left: 30px;
+  }
+
+  .moj-filter {
+    width: 100%;
+    box-shadow: none !important;
+  }
+
+  .moj-filter-layout__filter {
+    border: none !important;
+  }
+
+  .moj-filter__options {
+    margin-top: -1px;
+    padding: 0px 20px;
+    box-shadow: inset 0 0 0 1px #b1b4b6
+  }
+
+  /* HIDE THE HARDCODED MOJ APPLY FILTERS BUTTON AT THE TOP (so we can use full-width one instead) */
+  .moj-filter__options>.govuk-button:first-child {
+    display: none !important;
+  }
+
+  /* --- ACCORDION STYLES --- */
+  .govuk-details__summary::before {
+    clip-path: polygon(6.38% 22.63%, 49.5% 65.75%, 92.63% 22.63%, 100% 30%, 50% 80%, 0% 30%);
+    background-color: black;
+    color: black;
+    width: 3px;
+    height: 3px;
+  }
+
+  .govuk-details[open]>.govuk-details__summary::before {
+    clip-path: polygon(0% 71.88%, 49.5% 22.63%, 98.5% 71.88%, 91.63% 78.71%, 50% 36.88%, 7.37% 79.29%);
+    width: 3px;
+    height: 3px;
+  }
+
+  .custom-details-summary {
+    padding: 15px 10px 15px 35px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filtersText {
+    font-weight: normal;
+    color: #1d70b8;
+    text-decoration: none;
+  }
+
+  .filtersText:hover {
+    color: #003078;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .filter-dropdown:last-of-type {
+    border-bottom: 1px solid #b1b4b6;
+  }
+
+  .filter-accordion {
+    border-top: 1px solid #b1b4b6;
+  }
+
+  .autocomplete__input {
+    font-size: 16px !important;
+  }
+
+  .autocomplete__option {
+    font-size: 16px !important;
+  }
+
+  .govuk-details {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  /* Remove default grey border and padding completely */
+  .govuk-details__text {
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    padding-bottom: 10px !important;
+  }
+
+  .moj-filter__selected {
+    box-shadow: none;
+  }
+
+  .moj-filter__options {
+    box-shadow: none;
+
+  }
+
+  .app-list-filter__container {
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .autocomplete__wrapper {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .autocomplete__input {
+    width: 100%;
+  }
+
+  .autocomplete__input[disabled] {
+    background-color: #f3f2f1;
+    color: #6f777b;
+    cursor: not-allowed;
+  }
+
+  .autocomplete__menu {
+    max-height: 240px;
+    overflow: auto;
+  }
+
+  .filter-dropdown {
+    position: relative;
+    margin-bottom: 14px;
+  }
+
+  .filter-dropdown .govuk-details__summary {
+    display: block;
+    border: 2px solid #0b0c0c;
+    margin-bottom: 0;
+    padding: 10px 40px 10px 12px;
+    position: relative;
+    background: #fff;
+  }
+
+  .filter-dropdown .govuk-details__summary::before {
+    display: none !important;
+  }
+
+  .filter-dropdown .govuk-details__summary::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-right: 3px solid #0b0c0c;
+    border-bottom: 3px solid #0b0c0c;
+    transform: translateY(-70%) rotate(45deg);
+  }
+
+  .filter-dropdown[open] .govuk-details__summary::after {
+    transform: translateY(-40%) rotate(225deg);
+  }
+
+  .filter-select-summary {
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+  }
+
+  .filter-select-summary .govuk-details__summary-text {
+    color: #0b0c0c;
+    text-decoration: none;
+    display: block;
+  }
+
+  .filter-search-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .filter-search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 36px;
+  }
+
+  .filter-search-wrapper .autocomplete__dropdown-arrow-down {
+    display: block;
+    position: absolute;
+    right: 12px;
+    top: 11px;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .filter-search-wrapper .autocomplete__dropdown-arrow-down::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 5px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #0b0c0c;
+  }
+
+  .filter-dropdown .govuk-details__text {
+    position: absolute;
+    top: calc(100% - 2px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 2px solid #0b0c0c;
+    border-top: 0;
+    z-index: 100;
+    padding: 10px !important;
+    max-height: 360px;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  .status-accordion .govuk-details__text {
+    position: static;
+    border: 0;
+    max-height: none;
+    overflow: visible;
+    padding: 0 0 10px 0 !important;
+  }
+
+  .moj-filter__heading-title h2 {
+    margin-bottom: 0px;
+  }
+</style>
+
+<form method="get" action="{{ casesFilterPath }}">
+
+  <input type="hidden" name="filter-submit" value="true">
+  <input type="hidden" name="isFilterSubmit" value="true">
+
+  <div class="moj-filter-layout custom-filter-layout">
+
+    {# ========================================================== #}
+    {# LEFT COLUMN: THE FILTER (31% width) #}
+    {# ========================================================== #}
+    <div class="custom-filter-column">
+
+      {%- set filterOptionsHtml %}
+
+      <div class="govuk-!-margin-bottom-0">
+        <details class="govuk-details govuk-!-margin-bottom-0 filter-accordion">
+          <summary class="govuk-details__summary custom-details-summary">
+            <span class="govuk-details__summary-text filtersText">Case type</span>
+          </summary>
+          <div class="govuk-details__text">
+            <details class="govuk-details govuk-!-margin-bottom-0 filter-dropdown">
+              <summary class="govuk-details__summary filter-select-summary">
+                <span class="govuk-details__summary-text">All case work areas</span>
+              </summary>
+              <div class="govuk-details__text">
+                <!-- <label class="govuk-label govuk-label--s" for="area-search">Search case work area</label>
+                <div class="filter-search-wrapper autocomplete__wrapper">
+                  <input id="area-search"
+                    class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
+                    type="text" placeholder="Search case work area" aria-controls="area-container"
+                    onkeydown="return event.key != 'Enter';">
+                  <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+                </div> -->
+                <div class="app-list-filter__container" id="area-container">
+                  <div class="govuk-checkboxes govuk-checkboxes--small">
+                    {% for option in [
+                    { value: "planning-environmental-and-applications", label: "Planning, Environmental and
+                    Applications"
+                    },
+                    { value: "rights-of-way-and-common-land", label: "Rights of Way and Common Land" }
+                    ] %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="area-{{ option.value }}" name="area" type="checkbox"
+                        value="{{ option.value }}" {% if option.value in selectedAreaValues %}checked{% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="area-{{ option.value }}">{{ option.label
+                        }}</label>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="govuk-details govuk-!-margin-bottom-0 filter-dropdown">
+              <summary class="govuk-details__summary filter-select-summary">
+                <span class="govuk-details__summary-text">All case types</span>
+              </summary>
+              <div class="govuk-details__text">
+                <!-- <label class="govuk-label govuk-label--s" for="type-search">Search case type</label>
+                <div class="filter-search-wrapper autocomplete__wrapper">
+                  <input id="type-search"
+                    class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
+                    type="text" placeholder="Search case type" aria-controls="type-container"
+                    onkeydown="return event.key != 'Enter';">
+                  <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+                </div> -->
+                <div class="app-list-filter__container" id="type-container">
+                  <div class="govuk-checkboxes govuk-checkboxes--small">
+                    {% for option in [
+                    { value: "drought", label: "Drought" },
+                    { value: "housing-and-planning-cpos", label: "Housing and Planning CPOs" },
+                    { value: "other-secretary-of-state-casework", label: "Other Secretary of State casework" },
+                    { value: "purchase-notices", label: "Purchase Notices" },
+                    { value: "wayleaves", label: "Wayleaves" },
+                    { value: "coastal-access", label: "Coastal Access" },
+                    { value: "common-land", label: "Common Land" },
+                    { value: "rights-of-way", label: "Rights of Way" }
+                    ] %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="type-{{ option.value }}" name="type" type="checkbox"
+                        value="{{ option.value }}" {% if option.value in selectedTypeValues %}checked{% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="type-{{ option.value }}">{{ option.label
+                        }}</label>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                <p id="type-no-options" class="govuk-body-s govuk-!-margin-top-2 govuk-!-colour-muted"
+                  style="display:none;">Select one or more case work areas to narrow the available case types.</p>
+              </div>
+            </details>
+
+            <details class="govuk-details govuk-!-margin-bottom-0 filter-dropdown">
+              <summary class="govuk-details__summary filter-select-summary">
+                <span class="govuk-details__summary-text">All subtypes</span>
+              </summary>
+              <div class="govuk-details__text">
+
+                <div class="app-list-filter__container" id="subtype-container">
+                  <div class="govuk-checkboxes govuk-checkboxes--small">
+                    {% for option in [
+                    { value: "drought-permits", label: "Drought Permits" },
+                    { value: "drought-orders", label: "Drought Orders" },
+                    { value: "housing", label: "Housing" },
+                    { value: "planning", label: "Planning" },
+                    { value: "ad-hoc", label: "Ad hoc" },
+                    { value: "defra-cpo", label: "DEFRA CPO" },
+                    { value: "desnz-cpo", label: "DESNZ CPO" },
+                    { value: "dft-cpo", label: "DfT CPO" },
+                    { value: "ad-hoc-cpo", label: "Ad hoc CPO" },
+                    { value: "advert", label: "Advert" },
+                    { value: "completion-notice", label: "Completion notice" },
+                    { value: "discontinuance-notice", label: "Discontinuance notice" },
+                    { value: "modification-to-planning-permission", label: "Modification to planning permission" },
+                    { value: "review-of-mineral-permission", label: "Review of mineral permission" },
+                    { value: "revocation-of-planning-permission", label: "Revocation of planning permission" },
+                    { value: "other", label: "Other" },
+                    { value: "new-lines", label: "New lines" },
+                    { value: "tree-lopping", label: "Tree lopping" },
+                    { value: "wayleaves", label: "Wayleaves" },
+                    { value: "coastal-access-appeal", label: "Coastal access appeal" },
+                    { value: "notice-appeal", label: "Notice appeal" },
+                    { value: "objection", label: "Objection" },
+                    { value: "restriction-appeal-access-land", label: "Restriction appeal (access land)" },
+                    { value: "commons-for-ecclesiastical-purposes", label: "Commons for Ecclesiastical Purposes" },
+                    { value: "commons-in-greater-london", label: "Commons in Greater London" },
+                    { value: "compulsory-purchase-of-common-land", label: "Compulsory Purchase of Common Land" },
+                    { value: "deregistration-and-exchange", label: "Deregistration & Exchange" },
+                    { value: "inclosure", label: "Inclosure" },
+                    { value: "inclosure-obsolescent-functions", label: "Inclosure : obsolescent functions" },
+                    { value: "land-exchange", label: "Land Exchange" },
+                    { value: "local-acts-and-provisional-order-confirmation-acts", label: "Local Acts and Provisional
+                    Order Confirmation Acts" },
+                    { value: "public-access-to-commons-limitations-and-restrictions", label: "Public Access to Commons -
+                    limitations and restrictions" },
+                    { value: "referred-applications-from-commons-registration-authorities", label: "Referred
+                    applications
+                    from Commons Registration Authorities" },
+                    { value: "scheme-of-management", label: "Scheme of Management" },
+                    { value: "stint-rates", label: "Stint Rates" },
+                    { value: "works-on-common-land", label: "Works on Common Land" },
+                    { value: "works-on-common-land-national-trust", label: "Works on Common Land (National Trust)" },
+                    { value: "dispensation-for-serving-notice-ha80", label: "Dispensation for Serving Notice HA80" },
+                    { value: "dispensation-for-serving-notice-tcpa90", label: "Dispensation for Serving Notice TCPA90"
+                    },
+                    { value: "dispensation-for-serving-notice-wca81", label: "Dispensation for Serving Notice WCA81" },
+                    { value: "opposed-definitive-map-modification-order-dmmo", label: "Opposed Definitive Map
+                    Modification
+                    Order (DMMO)" },
+                    { value: "opposed-public-path-order-ppo-ha80", label: "Opposed Public Path Order (PPO) HA80" },
+                    { value: "opposed-public-path-order-ppo-tcpa90", label: "Opposed Public Path Order (PPO) TCPA90" },
+                    { value: "schedule-14-appeal", label: "Schedule 14 Appeal" },
+                    { value: "schedule-14-direction", label: "Schedule 14 Direction" },
+                    { value: "schedule-13a-appeal", label: "Schedule 13A Appeal" }
+                    ] %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="subtype-{{ option.value }}" name="subtype"
+                        type="checkbox" value="{{ option.value }}" {% if option.value in selectedSubtypeValues
+                        %}checked{% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="subtype-{{ option.value }}">{{
+                        option.label
+                        }}</label>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                <p id="subtype-no-options" class="govuk-body-s govuk-!-margin-top-2 govuk-!-colour-muted"
+                  style="display:none;">Select one or more case types to narrow the available subtypes.</p>
+              </div>
+            </details>
+
+          </div>
+        </details>
+
+        <details class="govuk-details govuk-!-margin-bottom-0 filter-accordion status-accordion">
+          <summary class="govuk-details__summary custom-details-summary">
+            <span class="govuk-details__summary-text filtersText">Status</span>
+          </summary>
+          <div class="govuk-details__text">
+            <div class="app-list-filter__container" id="status-container" style="margin-top: 0;">
+              {{ govukCheckboxes({
+              idPrefix: "status", name: "status", classes: "govuk-checkboxes--small",
+              items: [
+              { value: "Ready to start", text: "Ready to start", checked: true if data['status'] and ("Ready to start"
+              in data['status']) },
+              { value: "LPA questionnaire", text: "LPA questionnaire", checked: true if data['status'] and ("LPA
+              questionnaire" in data['status']) },
+              { value: "New case", text: "New case", checked: true if data['status'] and ("New case" in data['status'])
+              },
+              { value: "Validated", text: "Validated", checked: true if data['status'] and ("Validated" in
+              data['status']) },
+              { value: "Invalid", text: "Invalid", checked: true if data['status'] and ("Invalid" in data['status']) },
+              { value: "Rejected", text: "Rejected", checked: true if data['status'] and ("Rejected" in data['status'])
+              },
+              { value: "Inform parties", text: "Inform parties", checked: true if data['status'] and ("Inform parties"
+              in data['status']) },
+              { value: "Allocate inspector", text: "Allocate inspector", checked: true if data['status'] and ("Allocate
+              inspector" in data['status']) },
+              { value: "In progress", text: "In progress", checked: true if data['status'] and ("In progress" in
+              data['status']) },
+              { value: "Ready for inspector", text: "Ready for inspector", checked: true if data['status'] and ("Ready
+              for inspector" in data['status']) },
+              { value: "Decision/recommendation issued", text: "Decision/recommendation issued", checked: true if
+              data['status'] and ("Decision/recommendation issued" in data['status']) },
+              { value: "Despatch", text: "Despatch", checked: true if data['status'] and ("Despatch" in data['status'])
+              },
+              { value: "Final check", text: "Final check", checked: true if data['status'] and ("Final check" in
+              data['status']) },
+              { value: "Closed", text: "Closed", checked: true if data['status'] and ("Closed" in data['status']) },
+              { value: "Cancelled", text: "Cancelled", checked: true if data['status'] and ("Cancelled" in
+              data['status']) },
+              { value: "Paused/on hold", text: "Paused/on hold", checked: true if data['status'] and ("Paused/on hold"
+              in data['status']) },
+              { value: "Withdrawn", text: "Withdrawn", checked: true if data['status'] and ("Withdrawn" in
+              data['status']) },
+              { value: "In abeyance", text: "In abeyance", checked: true if data['status'] and ("In abeyance" in
+              data['status']) },
+              { value: "Closed - opened in error", text: "Closed - opened in error", checked: true if data['status'] and
+              ("Closed - opened in error" in data['status']) }
+              ]
+              }) }}
+            </div>
+          </div>
+        </details>
+      </div>
+      {# --- Apply filters button --- #}
+      {{ govukButton({ text: "Apply filters", classes: "govuk-!-margin-top-4" }) }}
+      {% if hasAppliedFilters %}
+      <p class="govuk-body govuk-!-margin-top-1 govuk-!-margin-bottom-4">
+        <a class="govuk-link govuk-link--no-visited-state" href="{{ casesClearFiltersPath }}">Clear filters</a>
+      </p>
+      {% endif %}
+    </div>
+
+    {% endset -%}
+
+    {{ mojFilter({
+    heading: { text: "Filters" },
+    optionsHtml: filterOptionsHtml
+    }) }}
+
+    {# ========================================================== #}
+    {# RIGHT COLUMN: RESULTS TABLE (69%) #}
+    {# ========================================================== #}
+    <div class="custom-content-column">
+
+      {# --- MAIN SEARCH BAR --- #}
+      <div class="govuk-form-group">
+        <h1 style="padding-top: 10px" class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--m" id="search-label" for="search-input">
+            Search cases
+          </label>
+        </h1>
+        <div id="search-hint" class="govuk-hint">
+          To find a specific case, search by reference, historical reference, <br> case name, applicant, status or
+          local
+          authority.
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: flex-start; width: 100%;">
+          <div style="flex-grow: 1;">
+            <input class="govuk-input govuk-!-width-full" id="search-input" value="{{ searchTerm }}"
+              name="searchCriteria" type="text">
+          </div>
+          {{ govukButton({
+          text: "Search",
+          classes: "govuk-!-margin-bottom-0"
+          }) }}
+        </div>
+
+        {# --- CONDITIONAL CLEAR SEARCH LINK --- #}
+        {% if searchTerm %}
+        <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+          <a href="{{ casesClearSearchPath }}" class="govuk-!-font-size-16">Clear search</a>
+        </p>
+        {% endif %}
+
+      </div>
+
+      <br>
+
+      {% if cases and cases.length > 0 %}
+
+      {# --- RESULTS HEADER & PAGINATION --- #}
+      <div id="pagination-header" class="govuk-!-margin-bottom-6">
+
+
+        <p class="govuk-body govuk-!-margin-bottom-2">
+          Showing <strong>{{ startItem }}</strong> to <strong>{{ endItem }}</strong> of <strong>{{ totalCases
+            }}</strong> results
+        </p>
+
+        <p class="pins-pagination-options govuk-!-margin-bottom-0">
+          <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+          {% if itemsPerPage == 25 %}
+          <span class="govuk-body">25</span>
+          {% else %}
+          <a class="govuk-link--no-visited-state" href="{{ casesFilterPath }}?itemsPerPage=25"
+            data-pagination="25">25</a>
+          {% endif %}
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          {% if itemsPerPage == 50 %}
+          <span class="govuk-body">50</span>
+          {% else %}
+          <a class="govuk-link--no-visited-state" href="{{ casesFilterPath }}?itemsPerPage=50"
+            data-pagination="50">50</a>
+          {% endif %}
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          {% if itemsPerPage == 100 %}
+          <span class="govuk-body">100</span>
+          {% else %}
+          <a class="govuk-link--no-visited-state" href="{{ casesFilterPath }}?itemsPerPage=100"
+            data-pagination="100">100</a>
+          {% endif %}
+        </p>
+
+      </div>
+
+      {# --- THE DATA TABLE --- #}
+      <table class="govuk-table" data-module="moj-sortable-table" style="width: 100%;">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            {# 1. Reference: Locked width, no wrapping #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;"
+              aria-sort="none">Reference</th>
+
+            {# 2. Case name: Auto-stretches to fill all available remaining space #}
+            <th scope="col" class="govuk-table__header" aria-sort="none">Case name</th>
+
+            {# 3. Received date: Locked width, no wrapping #}
+            <th scope="col" class="govuk-table__header" style="white-space: nowrap; width: 1%; padding-right: 20px;"
+              aria-sort="none">Received</th>
+
+            {# 4. Status: Fixed smaller width to free up space #}
+            <th scope="col" class="govuk-table__header" style="width: 15%;" aria-sort="none">Status</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for c in cases %}
+          <tr class="govuk-table__row">
+
+            <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+              <a class="govuk-link" href="/cases/case-details?ref={{ c.reference }}">
+                {{ c.reference }}
+              </a>
+            </td>
+
+            <td class="govuk-table__cell">{{ c.caseName }}</td>
+
+            <td class="govuk-table__cell" style="white-space: nowrap; padding-right: 20px;">
+              {% if c.caseReceivedDate and c.caseReceivedDate.formatted %}
+              {{ c.caseReceivedDate.formatted }}
+              {% elif c.receivedDay and c.receivedMonth and c.receivedYear %}
+              {{ c.receivedDay }}/{{ c.receivedMonth }}/{{ c.receivedYear }}
+              {% elif c['case-received-date-day'] %}
+              {{ c['case-received-date-day'] }}/{{ c['case-received-date-month'] }}/{{ c['case-received-date-year'] }}
+              {% endif %}
+            </td>
+
+            <td class="govuk-table__cell">{{ c.caseStatus if c.caseStatus else "" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% else %}
+
+      {# --- ZERO MATCHES STATE (Table and Pagination Completely Hidden) --- #}
+      <div class="govuk-!-margin-bottom-6">
+        {% if data['area'] or data['type'] or data['subtype'] or data['status'] or data['searchCriteria'] %}
+        <h2 class="govuk-heading-m">No results found</h2>
+        <p class="govuk-body">No cases match your selected filters. Try <a href="/cases/clear-filters"
+            class="govuk-link">clearing your filters</a> or changing your search criteria.</p>
+        {% else %}
+        <h2 class="govuk-heading-m">No cases found</h2>
+        <p class="govuk-body">There are currently no cases in the database.</p>
+        {% endif %}
+      </div>
+
+      {% endif %}
+
+      {# Footer Pagination #}
+      {% if pageItems.length > 1 %}
+      {{ govukPagination({
+      previous: prevLink and { href: prevLink },
+      next: nextLink and { href: nextLink },
+      items: pageItems
+      }) }}
+      {% endif %}
+
+    </div>
+  </div>
+</form>
+
+{# ========================================================== #}
+{# LOCAL JAVASCRIPT: FILTER DROPDOWNS & SEARCH #}
+{# ========================================================== #}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const typeAreaMap = {
+      drought: 'planning-environmental-and-applications',
+      'housing-and-planning-cpos': 'planning-environmental-and-applications',
+      'other-secretary-of-state-casework': 'planning-environmental-and-applications',
+      'purchase-notices': 'planning-environmental-and-applications',
+      wayleaves: 'planning-environmental-and-applications',
+      'coastal-access': 'rights-of-way-and-common-land',
+      'common-land': 'rights-of-way-and-common-land',
+      'rights-of-way': 'rights-of-way-and-common-land'
+    };
+
+    const subtypeTypeMap = {
+      'drought-permits': 'drought',
+      'drought-orders': 'drought',
+      housing: 'housing-and-planning-cpos',
+      planning: 'housing-and-planning-cpos',
+      'ad-hoc': 'housing-and-planning-cpos',
+      'defra-cpo': 'other-secretary-of-state-casework',
+      'desnz-cpo': 'other-secretary-of-state-casework',
+      'dft-cpo': 'other-secretary-of-state-casework',
+      'ad-hoc-cpo': 'other-secretary-of-state-casework',
+      advert: 'other-secretary-of-state-casework',
+      'completion-notice': 'other-secretary-of-state-casework',
+      'discontinuance-notice': 'other-secretary-of-state-casework',
+      'modification-to-planning-permission': 'other-secretary-of-state-casework',
+      'review-of-mineral-permission': 'other-secretary-of-state-casework',
+      'revocation-of-planning-permission': 'other-secretary-of-state-casework',
+      other: 'other-secretary-of-state-casework',
+      'new-lines': 'wayleaves',
+      'tree-lopping': 'wayleaves',
+      wayleaves: 'wayleaves',
+      'coastal-access-appeal': 'coastal-access',
+      'notice-appeal': 'coastal-access',
+      objection: 'coastal-access',
+      'restriction-appeal-access-land': 'coastal-access',
+      'commons-for-ecclesiastical-purposes': 'common-land',
+      'commons-in-greater-london': 'common-land',
+      'compulsory-purchase-of-common-land': 'common-land',
+      'deregistration-and-exchange': 'common-land',
+      inclosure: 'common-land',
+      'inclosure-obsolescent-functions': 'common-land',
+      'land-exchange': 'common-land',
+      'local-acts-and-provisional-order-confirmation-acts': 'common-land',
+      'public-access-to-commons-limitations-and-restrictions': 'common-land',
+      'referred-applications-from-commons-registration-authorities': 'common-land',
+      'scheme-of-management': 'common-land',
+      'stint-rates': 'common-land',
+      'works-on-common-land': 'common-land',
+      'works-on-common-land-national-trust': 'common-land',
+      'dispensation-for-serving-notice-ha80': 'rights-of-way',
+      'dispensation-for-serving-notice-tcpa90': 'rights-of-way',
+      'dispensation-for-serving-notice-wca81': 'rights-of-way',
+      'opposed-definitive-map-modification-order-dmmo': 'rights-of-way',
+      'opposed-public-path-order-ppo-ha80': 'rights-of-way',
+      'opposed-public-path-order-ppo-tcpa90': 'rights-of-way',
+      'schedule-14-appeal': 'rights-of-way',
+      'schedule-14-direction': 'rights-of-way',
+      'schedule-13a-appeal': 'rights-of-way'
+    };
+
+    const filterSearchTerms = {
+      area: '',
+      type: '',
+      subtype: ''
+    };
+
+    function getCheckedValues(name) {
+      return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(input => input.value);
+    }
+
+    function updateFilterVisibility(containerId, shouldShowItemFn, noOptionsId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const items = container.querySelectorAll('.govuk-checkboxes__item');
+      let visibleCount = 0;
+      items.forEach(item => {
+        const input = item.querySelector('input');
+        const visible = shouldShowItemFn(input);
+        if (!visible) {
+          input.checked = false;
+          item.style.display = 'none';
+        } else {
+          item.style.display = '';
+          visibleCount += 1;
+        }
+      });
+      if (noOptionsId) {
+        const noOptions = document.getElementById(noOptionsId);
+        if (noOptions) {
+          noOptions.style.display = visibleCount === 0 ? '' : 'none';
+        }
+      }
+    }
+
+    function applySearch(containerId, searchTerm) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const items = container.querySelectorAll('.govuk-checkboxes__item');
+      items.forEach(item => {
+        const label = item.textContent.toLowerCase();
+        const matches = label.includes(searchTerm.toLowerCase());
+        item.style.display = matches ? '' : 'none';
+      });
+    }
+
+    function configureSearch(inputId, containerId, field) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      input.addEventListener('keyup', function () {
+        filterSearchTerms[field] = input.value;
+        applySearch(containerId, filterSearchTerms[field]);
+      });
+    }
+
+    function updateTypeOptions() {
+      const selectedAreas = getCheckedValues('area');
+      updateFilterVisibility('type-container', input => {
+        const typeValue = input.value;
+        return selectedAreas.length === 0 || selectedAreas.includes(typeAreaMap[typeValue]);
+      }, 'type-no-options');
+      applySearch('type-container', filterSearchTerms.type);
+    }
+
+    function updateSubtypeOptions() {
+      const selectedTypes = getCheckedValues('type');
+      updateFilterVisibility('subtype-container', input => {
+        const subtypeValue = input.value;
+        return selectedTypes.length === 0 || selectedTypes.includes(subtypeTypeMap[subtypeValue]);
+      }, 'subtype-no-options');
+      applySearch('subtype-container', filterSearchTerms.subtype);
+    }
+
+    function attachCheckboxListeners() {
+      const areaCheckboxes = document.querySelectorAll('input[name="area"]');
+      const typeCheckboxes = document.querySelectorAll('input[name="type"]');
+
+      areaCheckboxes.forEach(input => {
+        input.addEventListener('change', function () {
+          updateTypeOptions();
+          updateSubtypeOptions();
+        });
+      });
+
+      typeCheckboxes.forEach(input => {
+        input.addEventListener('change', function () {
+          updateSubtypeOptions();
+        });
+      });
+    }
+
+    configureSearch('area-search', 'area-container', 'area');
+    configureSearch('type-search', 'type-container', 'type');
+    configureSearch('subtype-search', 'subtype-container', 'subtype');
+
+    updateTypeOptions();
+    updateSubtypeOptions();
+    attachCheckboxListeners();
+
+    // Keep dropdown behavior select-like: one open at a time and close when clicking outside.
+    const floatingDropdowns = document.querySelectorAll('.filter-dropdown');
+
+    floatingDropdowns.forEach(dropdown => {
+      dropdown.addEventListener('toggle', function () {
+        if (dropdown.open) {
+          floatingDropdowns.forEach(other => {
+            if (other !== dropdown) {
+              other.open = false;
+            }
+          });
+        }
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      floatingDropdowns.forEach(dropdown => {
+        if (!dropdown.contains(event.target)) {
+          dropdown.open = false;
+        }
+      });
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        floatingDropdowns.forEach(dropdown => {
+          dropdown.open = false;
+        });
+      }
+    });
+
+  });
+</script>
+{% endblock %}
