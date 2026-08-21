@@ -343,14 +343,14 @@ selectedSubtypeValues.length > 0 or hasStatusFilter %}
                 <span class="govuk-details__summary-text">All case work areas</span>
               </summary>
               <div class="govuk-details__text">
-                <label class="govuk-label govuk-label--s" for="area-search">Search case work area</label>
+                <!-- <label class="govuk-label govuk-label--s" for="area-search">Search case work area</label>
                 <div class="filter-search-wrapper autocomplete__wrapper">
                   <input id="area-search"
                     class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
                     type="text" placeholder="Search case work area" aria-controls="area-container"
                     onkeydown="return event.key != 'Enter';">
                   <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
-                </div>
+                </div> -->
                 <div class="app-list-filter__container" id="area-container">
                   <div class="govuk-checkboxes govuk-checkboxes--small">
                     {% for option in [
@@ -376,14 +376,14 @@ selectedSubtypeValues.length > 0 or hasStatusFilter %}
                 <span class="govuk-details__summary-text">All case types</span>
               </summary>
               <div class="govuk-details__text">
-                <label class="govuk-label govuk-label--s" for="type-search">Search case type</label>
+                <!-- <label class="govuk-label govuk-label--s" for="type-search">Search case type</label>
                 <div class="filter-search-wrapper autocomplete__wrapper">
                   <input id="type-search"
                     class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
                     type="text" placeholder="Search case type" aria-controls="type-container"
                     onkeydown="return event.key != 'Enter';">
                   <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
-                </div>
+                </div> -->
                 <div class="app-list-filter__container" id="type-container">
                   <div class="govuk-checkboxes govuk-checkboxes--small">
                     {% for option in [
@@ -415,14 +415,7 @@ selectedSubtypeValues.length > 0 or hasStatusFilter %}
                 <span class="govuk-details__summary-text">All subtypes</span>
               </summary>
               <div class="govuk-details__text">
-                <label class="govuk-label govuk-label--s" for="subtype-search">Search subtype</label>
-                <div class="filter-search-wrapper autocomplete__wrapper">
-                  <input id="subtype-search"
-                    class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
-                    type="text" placeholder="Search subtype" aria-controls="subtype-container"
-                    onkeydown="return event.key != 'Enter';">
-                  <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
-                </div>
+
                 <div class="app-list-filter__container" id="subtype-container">
                   <div class="govuk-checkboxes govuk-checkboxes--small">
                     {% for option in [

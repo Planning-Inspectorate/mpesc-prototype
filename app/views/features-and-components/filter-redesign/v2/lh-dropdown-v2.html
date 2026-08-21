@@ -1,0 +1,496 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Case list
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third-from-desktop">
+    <details class="govuk-details govuk-!-margin-bottom-0 filter-dropdown">
+      <summary class="govuk-details__summary filter-select-summary">
+        <span class="govuk-details__summary-text">All case work areas</span>
+      </summary>
+      <div class="govuk-details__text">
+        <label class="govuk-label govuk-label--s" for="area-search">Search case work area</label>
+        <div class="filter-search-wrapper autocomplete__wrapper">
+          <input id="area-search"
+            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input" type="text"
+            placeholder="Search case work area" aria-controls="area-container" onkeydown="return event.key != 'Enter';">
+          <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+        </div>
+        <div class="app-list-filter__container" id="area-container">
+          <div class="govuk-checkboxes govuk-checkboxes--small">
+            {% for option in [
+            { value: "planning-environmental-and-applications", label: "Planning, Environmental and
+            Applications"
+            },
+            { value: "rights-of-way-and-common-land", label: "Rights of Way and Common Land" }
+            ] %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="area-{{ option.value }}" name="area" type="checkbox"
+                value="{{ option.value }}" {% if option.value in selectedAreaValues %}checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="area-{{ option.value }}">{{ option.label
+                }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="govuk-details govuk-!-margin-bottom-0 filter-dropdown">
+      <summary class="govuk-details__summary filter-select-summary">
+        <span class="govuk-details__summary-text">All case types</span>
+      </summary>
+      <div class="govuk-details__text">
+        <label class="govuk-label govuk-label--s" for="type-search">Search case type</label>
+        <div class="filter-search-wrapper autocomplete__wrapper">
+          <input id="type-search"
+            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input" type="text"
+            placeholder="Search case type" aria-controls="type-container" onkeydown="return event.key != 'Enter';">
+          <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+        </div>
+        <div class="app-list-filter__container" id="type-container">
+          <div class="govuk-checkboxes govuk-checkboxes--small">
+            {% for option in [
+            { value: "drought", label: "Drought" },
+            { value: "housing-and-planning-cpos", label: "Housing and Planning CPOs" },
+            { value: "other-secretary-of-state-casework", label: "Other Secretary of State casework" },
+            { value: "purchase-notices", label: "Purchase Notices" },
+            { value: "wayleaves", label: "Wayleaves" },
+            { value: "coastal-access", label: "Coastal Access" },
+            { value: "common-land", label: "Common Land" },
+            { value: "rights-of-way", label: "Rights of Way" }
+            ] %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="type-{{ option.value }}" name="type" type="checkbox"
+                value="{{ option.value }}" {% if option.value in selectedTypeValues %}checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="type-{{ option.value }}">{{ option.label
+                }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <p id="type-no-options" class="govuk-body-s govuk-!-margin-top-2 govuk-!-colour-muted" style="display:none;">
+          Select
+          one or more case work areas to narrow the available case types.</p>
+      </div>
+    </details>
+
+    <details class="govuk-details govuk-!-margin-bottom-0 filter-dropdown">
+      <summary class="govuk-details__summary filter-select-summary">
+        <span class="govuk-details__summary-text">All subtypes</span>
+      </summary>
+      <div class="govuk-details__text">
+        <label class="govuk-label govuk-label--s" for="subtype-search">Search subtype</label>
+        <div class="filter-search-wrapper autocomplete__wrapper">
+          <input id="subtype-search"
+            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input" type="text"
+            placeholder="Search subtype" aria-controls="subtype-container" onkeydown="return event.key != 'Enter';">
+          <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+        </div>
+        <div class="app-list-filter__container" id="subtype-container">
+          <div class="govuk-checkboxes govuk-checkboxes--small">
+            {% for option in [
+            { value: "drought-permits", label: "Drought Permits" },
+            { value: "drought-orders", label: "Drought Orders" },
+            { value: "housing", label: "Housing" },
+            { value: "planning", label: "Planning" },
+            { value: "ad-hoc", label: "Ad hoc" },
+            { value: "defra-cpo", label: "DEFRA CPO" },
+            { value: "desnz-cpo", label: "DESNZ CPO" },
+            { value: "dft-cpo", label: "DfT CPO" },
+            { value: "ad-hoc-cpo", label: "Ad hoc CPO" },
+            { value: "advert", label: "Advert" },
+            { value: "completion-notice", label: "Completion notice" },
+            { value: "discontinuance-notice", label: "Discontinuance notice" },
+            { value: "modification-to-planning-permission", label: "Modification to planning permission" },
+            { value: "review-of-mineral-permission", label: "Review of mineral permission" },
+            { value: "revocation-of-planning-permission", label: "Revocation of planning permission" },
+            { value: "other", label: "Other" },
+            { value: "new-lines", label: "New lines" },
+            { value: "tree-lopping", label: "Tree lopping" },
+            { value: "wayleaves", label: "Wayleaves" },
+            { value: "coastal-access-appeal", label: "Coastal access appeal" },
+            { value: "notice-appeal", label: "Notice appeal" },
+            { value: "objection", label: "Objection" },
+            { value: "restriction-appeal-access-land", label: "Restriction appeal (access land)" },
+            { value: "commons-for-ecclesiastical-purposes", label: "Commons for Ecclesiastical Purposes" },
+            { value: "commons-in-greater-london", label: "Commons in Greater London" },
+            { value: "compulsory-purchase-of-common-land", label: "Compulsory Purchase of Common Land" },
+            { value: "deregistration-and-exchange", label: "Deregistration & Exchange" },
+            { value: "inclosure", label: "Inclosure" },
+            { value: "inclosure-obsolescent-functions", label: "Inclosure : obsolescent functions" },
+            { value: "land-exchange", label: "Land Exchange" },
+            { value: "local-acts-and-provisional-order-confirmation-acts", label: "Local Acts and Provisional
+            Order Confirmation Acts" },
+            { value: "public-access-to-commons-limitations-and-restrictions", label: "Public Access to Commons -
+            limitations and restrictions" },
+            { value: "referred-applications-from-commons-registration-authorities", label: "Referred
+            applications
+            from Commons Registration Authorities" },
+            { value: "scheme-of-management", label: "Scheme of Management" },
+            { value: "stint-rates", label: "Stint Rates" },
+            { value: "works-on-common-land", label: "Works on Common Land" },
+            { value: "works-on-common-land-national-trust", label: "Works on Common Land (National Trust)" },
+            { value: "dispensation-for-serving-notice-ha80", label: "Dispensation for Serving Notice HA80" },
+            { value: "dispensation-for-serving-notice-tcpa90", label: "Dispensation for Serving Notice TCPA90"
+            },
+            { value: "dispensation-for-serving-notice-wca81", label: "Dispensation for Serving Notice WCA81" },
+            { value: "opposed-definitive-map-modification-order-dmmo", label: "Opposed Definitive Map
+            Modification
+            Order (DMMO)" },
+            { value: "opposed-public-path-order-ppo-ha80", label: "Opposed Public Path Order (PPO) HA80" },
+            { value: "opposed-public-path-order-ppo-tcpa90", label: "Opposed Public Path Order (PPO) TCPA90" },
+            { value: "schedule-14-appeal", label: "Schedule 14 Appeal" },
+            { value: "schedule-14-direction", label: "Schedule 14 Direction" },
+            { value: "schedule-13a-appeal", label: "Schedule 13A Appeal" }
+            ] %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subtype-{{ option.value }}" name="subtype" type="checkbox"
+                value="{{ option.value }}" {% if option.value in selectedSubtypeValues %}checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="subtype-{{ option.value }}">{{
+                option.label
+                }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <p id="subtype-no-options" class="govuk-body-s govuk-!-margin-top-2 govuk-!-colour-muted" style="display:none;">
+          Select one or more case types to narrow the available subtypes.</p>
+      </div>
+    </details>
+
+  </div>
+  <div class="govuk-grid-column-two-thirds-from-desktop">
+    <h1 class="govuk-heading-l">
+      Case list
+    </h1>
+    <form id="search-bar-form" method="GET">
+      <div class="govuk-form-group">
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--m" id="search-label" for="search-input">
+            Search cases
+          </label>
+        </h1>
+        <div id="search-hint" class="govuk-hint">
+          To find a specific case, search by reference, historical reference, case name, applicant or local authority.
+        </div>
+        <div class="pins-row-inline">
+          <input class="govuk-input govuk-input--width-30" id="search-input" value="" name="searchCriteria" type="text">
+
+
+
+          <button type="submit" class="govuk-button govuk-button" data-module="govuk-button" id="search-button"
+            data-govuk-button-init="">
+            Search
+          </button>
+        </div>
+
+      </div>
+
+    </form>
+    <div id="pagination">
+      <p class="govuk-body govuk-clearfix">
+        <span>
+          Showing <strong>1</strong> to <strong>25</strong>
+          of <strong>309</strong> results
+        </span>
+        <span class="pins-pagination-options">
+          <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+          <span class="govuk-body">25</span>
+
+          &nbsp;&nbsp;|&nbsp;&nbsp; <a class="govuk-link--no-visited-state" href="?itemsPerPage=50"
+            data-pagination="50">50</a>
+
+          &nbsp;&nbsp;|&nbsp;&nbsp; <a class="govuk-link--no-visited-state" href="?itemsPerPage=100"
+            data-pagination="100">100</a>
+
+
+        </span>
+      </p>
+
+
+
+
+      <table class="govuk-table" data-module="moj-sortable-table" data-moj-sortable-table-init="">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header govuk-!-width-one-fifth" aria-sort="none"><button type="button"
+                data-index="0">Reference<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                  viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button></th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none"><button type="button"
+                data-index="1">Case name<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                  viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button></th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="descending"><button
+                type="button" data-index="2">Received<svg width="22" height="22" focusable="false" aria-hidden="true"
+                  role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z" fill="currentColor"></path>
+                </svg></button></th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none"><button type="button"
+                data-index="3">Status<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                  viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button></th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="SOS/REV/00001"><a class="govuk-link" target="_blank"
+                href="/cases/d8f8de3a-c2cd-46a0-b4d5-986018a02bd0">SOS/REV/00001</a></td>
+            <td class="govuk-table__cell">Revocation of planning permission on development 123</td>
+            <td class="govuk-table__cell" data-sort-value="11841894000000">04 Apr 2345</td>
+            <td class="govuk-table__cell">Validated</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="SOS/ENG/10001"><a class="govuk-link" target="_blank"
+                href="/cases/ab311bbd-a98f-418b-a00c-107a45e54aa6">SOS/ENG/10001</a></td>
+            <td class="govuk-table__cell">test</td>
+            <td class="govuk-table__cell" data-sort-value="11840601600000">20 Mar 2345</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="MCA/CAA/00002"><a class="govuk-link" target="_blank"
+                href="/cases/ed9c96e0-476c-4fb3-8aef-96f428253847">MCA/CAA/00002</a></td>
+            <td class="govuk-table__cell">Coastal access appeal 123: Kent Coastline</td>
+            <td class="govuk-table__cell" data-sort-value="7972642800000">24 Aug 2222</td>
+            <td class="govuk-table__cell"></td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/PPH/00002"><a class="govuk-link" target="_blank"
+                href="/cases/1ca122c3-7367-4547-99ad-c1172d0a5838">ROW/PPH/00002</a></td>
+            <td class="govuk-table__cell">Somerset Route 11</td>
+            <td class="govuk-table__cell" data-sort-value="7955971200000">12 Feb 2222</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="MCA/NOT/00001"><a class="govuk-link" target="_blank"
+                href="/cases/031bf41b-73b6-4512-bcca-56cc22327f58">MCA/NOT/00001</a></td>
+            <td class="govuk-table__cell">Notice appeal test case</td>
+            <td class="govuk-table__cell" data-sort-value="7955971200000">12 Feb 2222</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/SNW/00001"><a class="govuk-link" target="_blank"
+                href="/cases/d9f10a79-171d-40b3-b05c-db5827a276bf">ROW/SNW/00001</a></td>
+            <td class="govuk-table__cell">test</td>
+            <td class="govuk-table__cell" data-sort-value="5139590400000">13 Nov 2132</td>
+            <td class="govuk-table__cell">Validated</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10029"><a class="govuk-link" target="_blank"
+                href="/cases/758083e2-86c3-41ab-9ea2-7dcb5c5170fe">WAY/LIN/10029</a></td>
+            <td class="govuk-table__cell">Auto-New lines-01/06/26-11:43</td>
+            <td class="govuk-table__cell" data-sort-value="3667507200000">21 Mar 2086</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10013"><a class="govuk-link" target="_blank"
+                href="/cases/d510de10-8dfd-41b2-a708-d33231875c8a">WAY/LIN/10013</a></td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-18:07</td>
+            <td class="govuk-table__cell" data-sort-value="3630096000000">12 Jan 2085</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="COM/WCL/10001"><a class="govuk-link" target="_blank"
+                href="/cases/1eddd499-14c7-452d-a0fa-c2625808229e">COM/WCL/10001</a></td>
+            <td class="govuk-table__cell">Auto-Works on Common Land-19/05/26-15:00</td>
+            <td class="govuk-table__cell" data-sort-value="3586806000000">30 Aug 2083</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10027"><a class="govuk-link" target="_blank"
+                href="/cases/20307d49-3e43-4391-a13e-accb329da000">ROW/DMM/10027</a></td>
+            <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:10</td>
+            <td class="govuk-table__cell" data-sort-value="3438979200000">23 Dec 2078</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10011"><a class="govuk-link" target="_blank"
+                href="/cases/58679bb6-c50e-426c-8f78-08c1355f306f">ROW/S14D/10011</a></td>
+            <td class="govuk-table__cell">Auto-Schedule 14 Direction-08/06/26-16:08</td>
+            <td class="govuk-table__cell" data-sort-value="3424546800000">09 Jul 2078</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10029"><a class="govuk-link" target="_blank"
+                href="/cases/61b8feac-c695-4609-b9b2-b29c506d0ba6">ROW/DMM/10029</a></td>
+            <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:24</td>
+            <td class="govuk-table__cell" data-sort-value="3384630000000">03 Apr 2077</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10036"><a class="govuk-link" target="_blank"
+                href="/cases/85b17773-574e-406c-801d-00ff939dd628">WAY/LIN/10036</a></td>
+            <td class="govuk-table__cell">Auto-New lines-24/07/26-19:31</td>
+            <td class="govuk-table__cell" data-sort-value="3329593200000">06 Jul 2075</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10010"><a class="govuk-link" target="_blank"
+                href="/cases/f51d6b6e-0790-494c-a8fd-22ad7bc70608">ROW/S14D/10010</a></td>
+            <td class="govuk-table__cell">Auto-Schedule 14 Direction-02/06/26-12:57</td>
+            <td class="govuk-table__cell" data-sort-value="3305228400000">27 Sep 2074</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10036"><a class="govuk-link" target="_blank"
+                href="/cases/fa06a4a3-4e2b-4ea9-bb0d-e3aaa6fa500f">ROW/DMM/10036</a></td>
+            <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-16:04</td>
+            <td class="govuk-table__cell" data-sort-value="3261769200000">12 May 2073</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="MCA/RES/10003"><a class="govuk-link" target="_blank"
+                href="/cases/035a8ef4-1acd-41dc-866b-04ea384783de">MCA/RES/10003</a></td>
+            <td class="govuk-table__cell">Auto-Restriction appeal (access land)-24/07/26-19:27</td>
+            <td class="govuk-table__cell" data-sort-value="3065126400000">17 Feb 2067</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10017"><a class="govuk-link" target="_blank"
+                href="/cases/c5b59d91-d8df-480c-8fc4-856ac338469f">ROW/DMM/10017</a></td>
+            <td class="govuk-table__cell">Auto-Opposed (DMMO)-04/06/26-13:18</td>
+            <td class="govuk-table__cell" data-sort-value="2983388400000">16 Jul 2064</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10004"><a class="govuk-link" target="_blank"
+                href="/cases/8bbd45f8-d8c4-4dd3-94a0-11b8b9b18312">WAY/LIN/10004</a></td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-14:28</td>
+            <td class="govuk-table__cell" data-sort-value="2625091200000">09 Mar 2053</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10003"><a class="govuk-link" target="_blank"
+                href="/cases/2b192e6c-f07a-41ca-b2a6-798e0e2764d1">ROW/S14D/10003</a></td>
+            <td class="govuk-table__cell">Auto-Schedule 14 Direction-02/06/26-11:05</td>
+            <td class="govuk-table__cell" data-sort-value="2529014400000">21 Feb 2050</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10032"><a class="govuk-link" target="_blank"
+                href="/cases/c290c6e0-3fd7-4851-a2d8-5ee11fdbfd6a">ROW/DMM/10032</a></td>
+            <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:47</td>
+            <td class="govuk-table__cell" data-sort-value="2515359600000">16 Sep 2049</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10003"><a class="govuk-link" target="_blank"
+                href="/cases/adf01021-9684-408b-87f5-ccb5234f01b2">WAY/LIN/10003</a></td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-12:14</td>
+            <td class="govuk-table__cell" data-sort-value="2388956400000">14 Sep 2045</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10031"><a class="govuk-link" target="_blank"
+                href="/cases/214cb8e4-f287-4a06-aa57-a190b1b5608e">ROW/DMM/10031</a></td>
+            <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:43</td>
+            <td class="govuk-table__cell" data-sort-value="2372457600000">07 Mar 2045</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10006"><a class="govuk-link" target="_blank"
+                href="/cases/5cb140aa-70ae-4ee3-8895-c9523b3f4905">WAY/LIN/10006</a></td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-17:19</td>
+            <td class="govuk-table__cell" data-sort-value="2250370800000">24 Apr 2041</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10020"><a class="govuk-link" target="_blank"
+                href="/cases/a2644e9e-75b4-4dfc-aedb-bfcc9db2a80d">WAY/LIN/10020</a></td>
+            <td class="govuk-table__cell">Auto-New lines-22/05/26-15:07</td>
+            <td class="govuk-table__cell" data-sort-value="2248988400000">08 Apr 2041</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10016"><a class="govuk-link" target="_blank"
+                href="/cases/a6ebd5c4-f7a5-4234-8561-f003a10f925e">WAY/LIN/10016</a></td>
+            <td class="govuk-table__cell">Auto-New lines-19/05/26-14:51</td>
+            <td class="govuk-table__cell" data-sort-value="2231362800000">16 Sep 2040</td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+        </tbody>
+      </table>
+      <div aria-atomic="true" aria-live="polite" class="govuk-visually-hidden" role="status"></div>
+
+
+    </div>
+
+
+    <nav class="govuk-pagination" aria-label="Pagination">
+      <ul class="govuk-pagination__list">
+        <li class="govuk-pagination__item govuk-pagination__item--current">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=1" aria-label="Page 1" aria-current="page">
+            1
+          </a>
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=2" aria-label="Page 2">
+            2
+          </a>
+        </li>
+        <li class="govuk-pagination__item govuk-pagination__item--ellipsis">
+          ⋯
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=13" aria-label="Page 13">
+            13
+          </a>
+        </li>
+      </ul>
+      <div class="govuk-pagination__next">
+        <a class="govuk-link govuk-pagination__link" href="/cases?page=2" rel="next">
+          <span class="govuk-pagination__link-title">
+            Next<span class="govuk-visually-hidden"> page</span>
+          </span>
+          <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
+            height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+            <path
+              d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+            </path>
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+  </div>
+</div>
+
+{% endblock %}
