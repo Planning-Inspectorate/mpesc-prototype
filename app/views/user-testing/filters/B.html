@@ -1,0 +1,1401 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Option B{% endblock %}
+{% block header %}
+{% set activeFilterOption = 'B' %}
+<p class="govuk-body govuk-!-margin-0">Choose option:
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'A' %} govuk-button--secondary{% endif %}"
+    href="A.html">Option A</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'B' %} govuk-button--secondary{% endif %}"
+    href="B.html">Option B</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'C' %} govuk-button--secondary{% endif %}"
+    href="C.html">Option C</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'D' %} govuk-button--secondary{% endif %}"
+    href="D.html">Option D</a>
+</p>
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+  /* NAVIGATION BAR */
+  .pins-service-nav {
+    background: #f3f2f1;
+    font-size: 16px;
+    color: #0b0c0c;
+  }
+
+  .pins-service-nav__container {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    background: #f3f2f1;
+    min-height: 50px;
+  }
+
+  /* MPESC */
+  .pins-service-nav__title {
+    background: #f3f2f1;
+    font-weight: bold;
+    margin-right: 30px;
+    color: #0b0c0c;
+    text-decoration: none;
+    padding-left: 0;
+  }
+
+  .pins-service-nav__title,
+  .pins-service-nav__title:link,
+  .pins-service-nav__title:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 0px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  /* NAVIGATION LIST */
+  .pins-service-nav__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+  }
+
+  .pins-service-nav__item {
+    display: inline;
+  }
+
+  /* LINKS AND HOVER STATES*/
+  .pins-service-nav__link,
+  .pins-service-nav__link:link,
+  .pins-service-nav__link:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 12px;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  .pins-service-nav__link:hover {
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom-color: #000000;
+  }
+
+  .pins-service-nav__title:hover {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom-color: #0b0c0c;
+  }
+
+  /* LINK ACTIVE STATES */
+  .pins-service-nav__item--active .pins-service-nav__link {
+    font-weight: bold;
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #000000;
+  }
+
+  /* BROWSER RESPONSIVENESS */
+  @media (max-width: 600px) {
+    .pins-service-nav__container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .pins-service-nav__list {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
+        style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+<nav class="pins-service-nav" aria-label="Service navigation">
+  <div class="govuk-width-container pins-service-nav__container">
+    <a href="/index" class="pins-service-nav__title">MPESC</a>
+    <ul class="pins-service-nav__list">
+      <li
+        class="pins-service-nav__item {% if activePage == 'assigned-to-me' %}pins-service-nav__item--active{% endif %}">
+        <a href="/assigned-to-me/my-cases" class="pins-service-nav__link">Assigned to me</a>
+      </li>
+      <li class="pins-service-nav__item {% if activePage == 'all-cases' %}pins-service-nav__item--active{% endif %}">
+        <a href="/cases-page" class="pins-service-nav__link">All cases</a>
+      </li>
+      <li class="pins-service-nav__item {% if activePage == 'create-case' %}pins-service-nav__item--active{% endif %}">
+        <a href="/create-case-start" class="pins-service-nav__link">Create a case</a>
+      </li>
+      <li class="pins-service-nav__item">
+        <a href="#" class="pins-service-nav__link">Sign out</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="govuk-width-container">
+  {{ govukPhaseBanner({
+  tag: {
+  text: "BETA"
+  },
+  html: '<span class="govuk-!-font-size-16">This is a new service. Help us improve it and
+    <a class="govuk-link" href="https://forms.cloud.microsoft/e/dC8AUkxZnC" target="_blank"
+      rel="noopener noreferrer">give your feedback (opens in a new tab).</a></span>'
+  }) }}
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .govuk-checkboxes__input {
+    background-color: white !important;
+  }
+
+  #subtype-search::placeholder {
+    font-size: 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 275px;
+    height: 400px;
+    border: 1px solid #00000061;
+    margin: 0px;
+    padding: 0px 10px;
+    overflow-y: scroll;
+    background-color: white;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .content {
+    width: 100%;
+    height: auto;
+    padding: 0px;
+  }
+
+  .child-inset {
+    padding-left: 10px;
+    border-left: 3px solid #ccc;
+  }
+
+  .govuk-checkboxes__item {
+    margin: 0px !important;
+    padding: 0px !important;
+  }
+
+  .govuk-label {
+    margin: 0px !important;
+    padding: 0px !important;
+  }
+
+  .govuk-button {
+    margin-top: 10px;
+  }
+
+  .govuk-label {
+    font-size: 16px !important;
+  }
+
+  .heading-4 {
+    margin-top: 20px;
+    margin-bottom: 0px;
+    font-weight: 600 !important;
+  }
+
+  .applied-filters-section {
+    margin-bottom: 20px;
+  }
+
+  .applied-filters-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 10px 0;
+    padding: 0;
+  }
+
+  .applied-filter-chip {
+    display: inline-flex;
+  }
+
+  .applied-filter-chip__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #f3f2f1;
+    border: 1px solid #0b0c0c;
+
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.2;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .applied-filter-chip__button:hover {
+    background-color: #dbdad9;
+  }
+
+  .applied-filter-chip__remove {
+    font-weight: 700;
+  }
+
+  .filter-panel {
+    background-color: #F3F3F3;
+    padding: 20px;
+  }
+</style>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+
+    <h1 class="govuk-heading-xl">
+      Case list
+    </h1>
+
+  </div>
+</div>
+<div class="govuk-grid-row">
+
+  <div class="govuk-grid-column-one-third-from-desktop">
+
+    <div class="filter-panel">
+      <h2 class="govuk-heading-l">Filters</h2>
+
+
+      <h3 class="govuk-heading-m">Case type</h3>
+
+      <h4 class="govuk-body heading-4">Planning, Environmental and Applications</h4>
+      <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes"
+        data-govuk-checkboxes-init="">
+
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="select-all-peas" name="type" type="checkbox" value="PEAS"
+            data-select-all-target="peas-container" data-group-label="Planning, Environmental and Applications">
+          <label class="govuk-label govuk-checkboxes__label" for="select-all-peas">
+            Select all (175)
+          </label>
+
+        </div>
+      </div>
+      <div class="container" id="peas-container">
+
+        <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
+          <input id="subtype-search"
+            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input" type="text"
+            placeholder="Search subtype" aria-controls="subtype-container" onkeydown="return event.key != 'Enter';">
+          <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+        </div>
+        <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+          data-govuk-checkboxes-init="">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-drought" name="type" type="checkbox" value="drought">
+            <label class="govuk-label govuk-checkboxes__label" for="type-drought">
+              Drought (48)
+            </label>
+
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-drought" name="subType" type="checkbox"
+                value="drought-permits">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-drought">
+                Drought Permits (9)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-drought-2" name="subType" type="checkbox"
+                value="drought-orders">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-drought-2">
+                Drought Orders (39)
+              </label>
+            </div>
+          </div>
+
+
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-2" name="type"
+              type="checkbox" value="housing-planning-cpos">
+            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-2">
+              Housing and Planning CPOs (51)
+            </label>
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos" name="subType" type="checkbox"
+                value="housing">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos">
+                Housing (42)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos-2" name="subType" type="checkbox"
+                value="planning-sub">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos-2">
+                Planning (6)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos-3" name="subType" type="checkbox"
+                value="adhoc">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos-3">
+                Ad hoc (3)
+              </label>
+            </div>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-3" name="type"
+              type="checkbox" value="other-sos-casework">
+            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-3">
+              Other Secretary of State casework (14)
+            </label>
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework" name="subType" type="checkbox"
+                value="defra-cpo">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework">
+                DEFRA CPO (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-2" name="subType" type="checkbox"
+                value="desnz-cpo">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-2">
+                DESNZ CPO (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-3" name="subType" type="checkbox"
+                value="dft-cpo">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-3">
+                DfT CPO (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-4" name="subType" type="checkbox"
+                value="ad-hoc-cpo">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-4">
+                Ad hoc CPO (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-5" name="subType" type="checkbox"
+                value="advert">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-5">
+                Advert (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-6" name="subType" type="checkbox"
+                value="completion-notice">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-6">
+                Completion notice (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-7" name="subType" type="checkbox"
+                value="discontinuance-notice">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-7">
+                Discontinuance notice (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-8" name="subType" type="checkbox"
+                value="modification-to-pp">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-8">
+                Modification to planning permission (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-9" name="subType" type="checkbox"
+                value="review-of-mineral-pp">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-9">
+                Review of mineral permission (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-10" name="subType" type="checkbox"
+                value="revocation">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-10">
+                Revocation (3)
+              </label>
+            </div>
+          </div>
+
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-4" name="type"
+              type="checkbox" value="purchase-notices">
+            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-4">
+              Purchase Notices (20)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-5" name="type"
+              type="checkbox" value="wayleaves">
+            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-5">
+              Wayleaves (42)
+            </label>
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-wayleaves" name="subType" type="checkbox"
+                value="new-lines">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves">
+                New lines (37)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-wayleaves-2" name="subType" type="checkbox"
+                value="tree-lopping">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves-2">
+                Tree lopping (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-wayleaves-3" name="subType" type="checkbox"
+                value="wayleaves-generic">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves-3">
+                Wayleaves (3)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4 class="govuk-body heading-4">Rights of Way and Common Land</h4>
+      <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+        data-govuk-checkboxes-init="">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="select-all-rowcl" name="type" type="checkbox" value="ROWandCL"
+            data-select-all-target="rowcl-container" data-group-label="Rights of Way and Common Land">
+          <label class="govuk-label govuk-checkboxes__label" for="select-all-rowcl">
+            Select all (129)
+          </label>
+        </div>
+      </div>
+
+      <div class="container" id="rowcl-container">
+        <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
+          <input id="subtype-search"
+            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input" type="text"
+            placeholder="Search subtype" aria-controls="subtype-container" onkeydown="return event.key != 'Enter';">
+          <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+        </div>
+        <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+          data-govuk-checkboxes-init="">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land" name="type" type="checkbox"
+              value="coastal-access">
+            <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land">
+              Coastal Access (12)
+            </label>
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-coastal-access" name="subType" type="checkbox"
+                value="coastal-access-appeal">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access">
+                Coastal access appeal (5)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-coastal-access-2" name="subType" type="checkbox"
+                value="notice-appeal">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-2">
+                Notice appeal (3)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-coastal-access-3" name="subType" type="checkbox"
+                value="objection">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-3">
+                Objection (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-coastal-access-4" name="subType" type="checkbox"
+                value="restriction-appeal">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-4">
+                Restriction appeal (access land) (3)
+              </label>
+            </div>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land-2" name="type" type="checkbox"
+              value="common-land">
+            <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land-2">
+              Common Land (20)
+            </label>
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land" name="subType" type="checkbox"
+                value="commons-ecclesiastical">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land">
+                Commons for Ecclesiastical Purposes (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-2" name="subType" type="checkbox"
+                value="commons-greater-london">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-2">
+                Commons in Greater London (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-3" name="subType" type="checkbox"
+                value="compulsory-purchase-cl">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-3">
+                Compulsory Purchase of Common Land (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-4" name="subType" type="checkbox"
+                value="deregistration-exchange">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-4">
+                Deregistration &amp; Exchange (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-5" name="subType" type="checkbox"
+                value="inclosure">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-5">
+                Inclosure (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-6" name="subType" type="checkbox"
+                value="inclosure-obsolescent">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-6">
+                Inclosure : obsolescent functions (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-7" name="subType" type="checkbox"
+                value="land-exchange">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-7">
+                Land Exchange (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-8" name="subType" type="checkbox"
+                value="local-acts">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-8">
+                Local Acts and Provisional Order Confirmation Acts (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-9" name="subType" type="checkbox"
+                value="public-access-limitations">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-9">
+                Public Access to Commons - limitations and restrictions (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-10" name="subType" type="checkbox"
+                value="referred-applications">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-10">
+                Referred applications from Commons Registration Authorities (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-11" name="subType" type="checkbox"
+                value="scheme-of-management">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-11">
+                Scheme of Management (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-12" name="subType" type="checkbox"
+                value="stint-rates">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-12">
+                Stint Rates (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-13" name="subType" type="checkbox"
+                value="works-common-land">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-13">
+                Works on Common Land (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-common-land-14" name="subType" type="checkbox"
+                value="works-common-land-nt">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-14">
+                Works on Common Land (National Trust) (2)
+              </label>
+            </div>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land-3" name="type" type="checkbox"
+              value="rights-of-way">
+            <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land-3">
+              Rights of Way (97)
+            </label>
+          </div>
+          <div class="child-inset">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way" name="subType" type="checkbox"
+                value="dispensation-ha80">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way">
+                Dispensation for Serving Notice HA80 (3)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-2" name="subType" type="checkbox"
+                value="dispensation-tcpa90">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-2">
+                Dispensation for Serving Notice TCPA90 (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-3" name="subType" type="checkbox"
+                value="dispensation-wca81">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-3">
+                Dispensation for Serving Notice WCA81 (1)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-4" name="subType" type="checkbox"
+                value="opposed-dmmo">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-4">
+                Opposed Definitive Map Modification Order (DMMO) (73)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-5" name="subType" type="checkbox"
+                value="opposed-ppo-ha80">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-5">
+                Opposed Public Path Order (PPO) HA80 (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-6" name="subType" type="checkbox"
+                value="opposed-ppo-tcpa90">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-6">
+                Opposed Public Path Order (PPO) TCPA90 (0)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-7" name="subType" type="checkbox"
+                value="schedule-14-appeal">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-7">
+                Schedule 14 Appeal (2)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-8" name="subType" type="checkbox"
+                value="schedule-14-direction">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-8">
+                Schedule 14 Direction (12)
+              </label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="subType-rights-of-way-9" name="subType" type="checkbox"
+                value="schedule-13-a-appeal">
+              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-9">
+                Schedule 13A Appeal (0)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+      <h3 class="govuk-heading-m">Status</h3>
+      <div class="container">
+        <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
+          <input id="subtype-search"
+            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input" type="text"
+            placeholder="Search subtype" aria-controls="subtype-container" onkeydown="return event.key != 'Enter';">
+          <span class="autocomplete__dropdown-arrow-down" aria-hidden="true"></span>
+        </div>
+        <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+          data-govuk-checkboxes-init="">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root" name="status" type="checkbox" value="new-case">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root">
+              New case (275)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-2" name="status" type="checkbox" value="validated">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-2">
+              Validated (4)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-3" name="status" type="checkbox" value="invalid">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-3">
+              Invalid (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-4" name="status" type="checkbox" value="rejected">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-4">
+              Rejected (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-5" name="status" type="checkbox"
+              value="inform-parties">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-5">
+              Inform parties (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-6" name="status" type="checkbox"
+              value="allocate-inspector">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-6">
+              Allocate inspector (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-7" name="status" type="checkbox"
+              value="arrange-event">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-7">
+              Arrange event (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-8" name="status" type="checkbox" value="in-progress">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-8">
+              In progress (2)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-9" name="status" type="checkbox"
+              value="ready-for-inspector">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-9">
+              Ready for inspector (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-10" name="status" type="checkbox" value="event">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-10">
+              Event (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-11" name="status" type="checkbox"
+              value="decision-recommendation-issued">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-11">
+              Decision / recommendation issued (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-12" name="status" type="checkbox" value="despatch">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-12">
+              Despatch (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-13" name="status" type="checkbox"
+              value="final-check">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-13">
+              Final check (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-14" name="status" type="checkbox" value="closed">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-14">
+              Closed (8)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-15" name="status" type="checkbox" value="cancelled">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-15">
+              Cancelled (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-16" name="status" type="checkbox"
+              value="paused-on-hold">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-16">
+              Paused / on hold (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-17" name="status" type="checkbox" value="withdrawn">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-17">
+              Withdrawn (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-18" name="status" type="checkbox"
+              value="in-abeyance">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-18">
+              In abeyance (1)
+            </label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="status-root-19" name="status" type="checkbox"
+              value="closed-opened-in-error">
+            <label class="govuk-label govuk-checkboxes__label" for="status-root-19">
+              Closed - opened in error (1)
+            </label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button" data-test-id="submit-button"
+        data-govuk-button-init="">
+        Apply filters
+      </button>
+
+    </div>
+  </div>
+
+  <div class="govuk-grid-column-two-thirds-from-desktop">
+
+    <form id="search-bar-form" method="GET">
+
+      <h1 class="govuk-!-padding-bottom-4 govuk-label-wrapper">
+        <label class="govuk-label--l" id="search-label" for="search-input">
+          Search cases
+        </label>
+      </h1>
+      <div id="search-hint" class="govuk-hint">
+        To find a specific case, search by reference, historical reference, case name, applicant or local authority.
+      </div>
+      <div class="pins-row-inline">
+        <input class="govuk-input govuk-input--width-30" id="search-input" value="" name="searchCriteria" type="text">
+
+
+
+        <button type="submit" class="govuk-button govuk-button" data-module="govuk-button" id="search-button"
+          data-govuk-button-init="">
+          Search
+        </button>
+      </div>
+
+
+    </form>
+
+    <div id="applied-filters-section" class="applied-filters-section" hidden>
+      <h3 class="govuk-heading-s">Applied filters</h3>
+      <ul class="applied-filters-chips"></ul>
+      <p class="govuk-body"><a class="govuk-link" href="#" id="clear-search-filters">Clear search and filters</a></p>
+    </div>
+
+    <div id="pagination">
+      <p class="govuk-body">
+        Showing <strong id="results-from">1</strong> to <strong id="results-to">25</strong>
+        of <strong id="results-total">304</strong> results
+      </p>
+      <p class="govuk-body"> <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+        <span class="govuk-body">25</span>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp; <a class="govuk-link--no-visited-state" href="?itemsPerPage=50"
+          data-pagination="50">50</a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp; <a class="govuk-link--no-visited-state" href="?itemsPerPage=100"
+          data-pagination="100">100</a>
+
+
+      </p>
+    </div>
+    <table class="govuk-table" data-module="moj-sortable-table" data-moj-sortable-table-init="">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-!-width-one-fifth" aria-sort="none"><button type="button"
+              data-index="0">Reference<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+              </svg></button></th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none"><button type="button"
+              data-index="1">Case name<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+              </svg></button></th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="descending"><button
+              type="button" data-index="2">Received<svg width="22" height="22" focusable="false" aria-hidden="true"
+                role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z" fill="currentColor"></path>
+              </svg></button></th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none"><button type="button"
+              data-index="3">Status<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+              </svg></button></th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      </tbody>
+    </table>
+    <p class="govuk-body" id="no-results-message" hidden>No cases match the applied filters and search.</p>
+    <div aria-atomic="true" aria-live="polite" class="govuk-visually-hidden" role="status"></div>
+
+
+
+
+    <nav class="govuk-pagination" aria-label="Pagination">
+      <ul class="govuk-pagination__list">
+        <li class="govuk-pagination__item govuk-pagination__item--current">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=1" aria-label="Page 1" aria-current="page">
+            1
+          </a>
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=2" aria-label="Page 2">
+            2
+          </a>
+        </li>
+        <li class="govuk-pagination__item govuk-pagination__item--ellipsis">
+          ⋯
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=13" aria-label="Page 13">
+            13
+          </a>
+        </li>
+      </ul>
+      <div class="govuk-pagination__next">
+        <a class="govuk-link govuk-pagination__link" href="/cases?page=2" rel="next">
+          <span class="govuk-pagination__link-title">
+            Next<span class="govuk-visually-hidden"> page</span>
+          </span>
+          <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
+            height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+            <path
+              d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+            </path>
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+  </div>
+</div>
+</div>
+
+<script>
+  (function () {
+    var MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var STATUS_LABELS = {
+      'new-case': 'New case', validated: 'Validated', invalid: 'Invalid', rejected: 'Rejected',
+      'inform-parties': 'Inform parties', 'allocate-inspector': 'Allocate inspector', 'arrange-event': 'Arrange event',
+      'in-progress': 'In progress', 'ready-for-inspector': 'Ready for inspector', event: 'Event',
+      'decision-recommendation-issued': 'Decision / recommendation issued', despatch: 'Despatch',
+      'final-check': 'Final check', closed: 'Closed', cancelled: 'Cancelled', 'paused-on-hold': 'Paused / on hold',
+      withdrawn: 'Withdrawn', 'in-abeyance': 'In abeyance', 'closed-opened-in-error': 'Closed - opened in error'
+    };
+
+    // Reads the "(NN)" count already shown against a checkbox's label, so the badges stay the single source of truth.
+    function countForLabel(id) {
+      var label = document.querySelector('label[for="' + id + '"]');
+      var match = label && label.textContent.match(/\((\d+)\)/);
+      return match ? parseInt(match[1], 10) : 0;
+    }
+
+    function typeCode(value) {
+      return (value.match(/[a-z]/gi) || []).slice(0, 3).join('').toUpperCase() || 'GEN';
+    }
+
+    function formatDate(date) {
+      return String(date.getDate()).padStart(2, '0') + ' ' + MONTH_NAMES[date.getMonth()] + ' ' + date.getFullYear();
+    }
+
+    // Dummy per-row records, generated so counts always match the filter badge numbers - no empty categories.
+    var rowMetadata = [];
+    var refCounter = 0;
+    var now = Date.now();
+    var dayMs = 24 * 60 * 60 * 1000;
+
+    function addRows(typeValue, subTypeValue, count) {
+      for (var i = 0; i < count; i += 1) {
+        refCounter += 1;
+        var receivedDate = new Date(now - (refCounter * 29 + 3) * dayMs);
+        rowMetadata.push({
+          type: typeValue,
+          subType: subTypeValue,
+          status: null,
+          reference: typeCode(typeValue) + '/' + typeCode(subTypeValue || typeValue) + '/' + String(refCounter).padStart(5, '0'),
+          name: 'Auto-' + (subTypeValue || typeValue) + '-' + refCounter,
+          receivedDate: receivedDate
+        });
+      }
+    }
+
+    // Leaf sub type checkboxes drive most of the rows; their parent type is the preceding checkbox item.
+    document.querySelectorAll('.container input[name="subType"]').forEach(function (subCheckbox) {
+      var childInset = subCheckbox.closest('.child-inset');
+      var parentItem = childInset && childInset.previousElementSibling;
+      var parentCheckbox = parentItem && parentItem.querySelector('input[name="type"]');
+      addRows(parentCheckbox ? parentCheckbox.value : null, subCheckbox.value, countForLabel(subCheckbox.id));
+    });
+
+    // Type checkboxes with no sub types (e.g. Purchase Notices) generate their own rows.
+    document.querySelectorAll('.container input[name="type"]').forEach(function (typeCheckbox) {
+      var item = typeCheckbox.closest('.govuk-checkboxes__item');
+      var hasChildInset = item && item.nextElementSibling && item.nextElementSibling.classList.contains('child-inset');
+      if (!hasChildInset) {
+        addRows(typeCheckbox.value, null, countForLabel(typeCheckbox.id));
+      }
+    });
+
+    // Distribute statuses across every row so each status badge count matches exactly, with none left empty.
+    (function assignStatuses() {
+      var statusPool = [];
+      document.querySelectorAll('input[name="status"]').forEach(function (statusCheckbox) {
+        var count = countForLabel(statusCheckbox.id);
+        for (var i = 0; i < count; i += 1) {
+          statusPool.push(statusCheckbox.value);
+        }
+      });
+      rowMetadata.forEach(function (row, index) {
+        row.status = statusPool[index % statusPool.length] || null;
+      });
+    })();
+
+    var filterCheckboxes = document.querySelectorAll('.govuk-grid-column-one-third-from-desktop .govuk-checkboxes__input');
+    filterCheckboxes.forEach(function (checkbox, index) {
+      checkbox.dataset.filterIndex = String(index);
+    });
+
+    // 'Select all' checkboxes check/uncheck every checkbox in their linked scroll container, and stay in sync
+    var selectAllGroups = [];
+    document.querySelectorAll('[data-select-all-target]').forEach(function (selectAll) {
+      var target = document.getElementById(selectAll.dataset.selectAllTarget);
+      if (!target) {
+        return;
+      }
+      var descendants = Array.prototype.slice.call(target.querySelectorAll('.govuk-checkboxes__input'));
+      var directTypeCheckboxes = Array.prototype.slice.call(target.querySelectorAll('input[name="type"]'));
+      selectAllGroups.push({ parent: selectAll, children: descendants });
+
+      selectAll.addEventListener('change', function () {
+        descendants.forEach(function (child) {
+          child.checked = selectAll.checked;
+        });
+      });
+
+      directTypeCheckboxes.forEach(function (typeCheckbox) {
+        typeCheckbox.addEventListener('change', function () {
+          var allChecked = directTypeCheckboxes.every(function (c) { return c.checked; });
+          var noneChecked = directTypeCheckboxes.every(function (c) { return !c.checked; });
+          selectAll.checked = allChecked;
+          selectAll.indeterminate = !allChecked && !noneChecked;
+        });
+      });
+    });
+
+    // Selecting a parent type checkbox also selects its sub types, and keeps the parent in sync
+    var parentChildGroups = [];
+    document.querySelectorAll('.container input[name="type"]').forEach(function (parentCheckbox) {
+      var item = parentCheckbox.closest('.govuk-checkboxes__item');
+      var childInset = item && item.nextElementSibling && item.nextElementSibling.classList.contains('child-inset')
+        ? item.nextElementSibling
+        : null;
+      if (!childInset) {
+        return;
+      }
+      var subCheckboxes = Array.prototype.slice.call(childInset.querySelectorAll('input[name="subType"]'));
+      parentChildGroups.push({ parent: parentCheckbox, children: subCheckboxes });
+
+      parentCheckbox.addEventListener('change', function () {
+        subCheckboxes.forEach(function (subCheckbox) {
+          subCheckbox.checked = parentCheckbox.checked;
+        });
+      });
+
+      subCheckboxes.forEach(function (subCheckbox) {
+        subCheckbox.addEventListener('change', function () {
+          var allChecked = Array.prototype.every.call(subCheckboxes, function (c) { return c.checked; });
+          var noneChecked = Array.prototype.every.call(subCheckboxes, function (c) { return !c.checked; });
+          parentCheckbox.checked = allChecked;
+          parentCheckbox.indeterminate = !allChecked && !noneChecked;
+        });
+      });
+    });
+
+    var applyFiltersButton = document.querySelector('[data-test-id="submit-button"]');
+    var searchForm = document.getElementById('search-bar-form');
+    var searchInput = document.getElementById('search-input');
+    var appliedSection = document.getElementById('applied-filters-section');
+    var chipsList = appliedSection.querySelector('.applied-filters-chips');
+    var clearLink = document.getElementById('clear-search-filters');
+    var table = document.querySelector('.govuk-table');
+    var tbody = table.querySelector('tbody');
+    var noResultsMessage = document.getElementById('no-results-message');
+    var paginationInfo = document.getElementById('pagination');
+    var paginationNav = document.querySelector('.govuk-pagination');
+    var resultsFrom = document.getElementById('results-from');
+    var resultsTo = document.getElementById('results-to');
+    var resultsTotal = document.getElementById('results-total');
+
+    var appliedFilters = [];
+    var appliedSearch = null;
+
+    function categoryFor(checkbox) {
+      return checkbox.name === 'status' ? 'Status' : 'Case type';
+    }
+
+    function labelFor(checkbox) {
+      if (checkbox.dataset.groupLabel) {
+        return checkbox.dataset.groupLabel;
+      }
+      var label = document.querySelector('label[for="' + checkbox.id + '"]');
+      var text = label ? label.textContent : checkbox.value;
+      return text.trim().replace(/\s*\(\d+\)\s*$/, '');
+    }
+
+    function escapeHtml(value) {
+      var div = document.createElement('div');
+      div.textContent = value;
+      return div.innerHTML;
+    }
+
+    function buildChip(text, onRemove) {
+      var item = document.createElement('li');
+      item.className = 'applied-filter-chip';
+
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'applied-filter-chip__button';
+      button.setAttribute('aria-label', 'Remove filter ' + text);
+      button.innerHTML = '<span>' + escapeHtml(text) + '</span><span class="applied-filter-chip__remove" aria-hidden="true">x</span>';
+      button.addEventListener('click', onRemove);
+
+      item.appendChild(button);
+      return item;
+    }
+
+    function snapshotCheckedFilters() {
+      appliedFilters = [];
+      var consumedCheckboxes = [];
+
+      // Show one chip for a 'select all' section instead of one chip per type and sub type within it.
+      selectAllGroups.forEach(function (group) {
+        var allChildrenChecked = group.children.length > 0 && group.children.every(function (c) { return c.checked; });
+        if (!group.parent.checked || !allChildrenChecked) {
+          return;
+        }
+        consumedCheckboxes.push(group.parent);
+        consumedCheckboxes = consumedCheckboxes.concat(group.children);
+        appliedFilters.push({
+          indexes: [group.parent.dataset.filterIndex].concat(group.children.map(function (c) { return c.dataset.filterIndex; })),
+          label: labelFor(group.parent),
+          category: categoryFor(group.parent)
+        });
+      });
+
+      // Show one chip for a parent whose sub types are all selected, instead of one chip per sub type.
+      parentChildGroups.forEach(function (group) {
+        if (consumedCheckboxes.indexOf(group.parent) !== -1) {
+          return;
+        }
+        var allChildrenChecked = group.children.length > 0 && group.children.every(function (c) { return c.checked; });
+        if (!group.parent.checked || !allChildrenChecked) {
+          return;
+        }
+        consumedCheckboxes.push(group.parent);
+        consumedCheckboxes = consumedCheckboxes.concat(group.children);
+        appliedFilters.push({
+          indexes: [group.parent.dataset.filterIndex].concat(group.children.map(function (c) { return c.dataset.filterIndex; })),
+          label: labelFor(group.parent),
+          category: categoryFor(group.parent)
+        });
+      });
+
+      filterCheckboxes.forEach(function (checkbox) {
+        if (checkbox.checked && consumedCheckboxes.indexOf(checkbox) === -1) {
+          appliedFilters.push({
+            indexes: [checkbox.dataset.filterIndex],
+            label: labelFor(checkbox),
+            category: categoryFor(checkbox)
+          });
+        }
+      });
+    }
+
+    // Builds the query string for the current checkbox/search state and reloads the page with it.
+    function navigateWithCurrentState() {
+      var params = new URLSearchParams();
+      filterCheckboxes.forEach(function (checkbox) {
+        if (checkbox.checked) {
+          params.append('f', checkbox.dataset.filterIndex);
+        }
+      });
+      var searchValue = searchInput.value.trim();
+      if (searchValue) {
+        params.set('searchCriteria', searchValue);
+      }
+      window.location.search = params.toString();
+    }
+
+    function getItemsPerPage() {
+      var value = parseInt(new URLSearchParams(window.location.search).get('itemsPerPage'), 10);
+      return [25, 50, 100].indexOf(value) !== -1 ? value : 25;
+    }
+
+    function getPage() {
+      return Math.max(1, parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1);
+    }
+
+    function renderTableRows(rows) {
+      tbody.innerHTML = rows.map(function (row) {
+        return '<tr class="govuk-table__row">' +
+          '<td class="govuk-table__cell" data-sort-value="' + escapeHtml(row.reference) + '">' +
+          '<a class="govuk-link" target="_blank" href="#">' + escapeHtml(row.reference) + '</a></td>' +
+          '<td class="govuk-table__cell">' + escapeHtml(row.name) + '</td>' +
+          '<td class="govuk-table__cell" data-sort-value="' + row.receivedDate.getTime() + '">' + formatDate(row.receivedDate) + '</td>' +
+          '<td class="govuk-table__cell">' + escapeHtml(STATUS_LABELS[row.status] || '') + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function applyRowFiltering() {
+      var selectedTypes = [];
+      var selectedSubTypes = [];
+      var selectedStatuses = [];
+
+      filterCheckboxes.forEach(function (checkbox) {
+        if (!checkbox.checked) {
+          return;
+        }
+        if (checkbox.name === 'type') {
+          selectedTypes.push(checkbox.value);
+        } else if (checkbox.name === 'subType') {
+          selectedSubTypes.push(checkbox.value);
+        } else if (checkbox.name === 'status') {
+          selectedStatuses.push(checkbox.value);
+        }
+      });
+
+      var keyword = appliedSearch ? appliedSearch.toLowerCase() : '';
+
+      var filteredRows = rowMetadata.filter(function (row) {
+        // Matching on the parent type also matches every one of its sub types.
+        var typeMatch = (selectedTypes.length === 0 && selectedSubTypes.length === 0) ||
+          selectedTypes.indexOf(row.type) !== -1 ||
+          (row.subType && selectedSubTypes.indexOf(row.subType) !== -1);
+        var statusMatch = selectedStatuses.length === 0 || selectedStatuses.indexOf(row.status) !== -1;
+        var searchMatch = !keyword || (row.reference + ' ' + row.name).toLowerCase().indexOf(keyword) !== -1;
+        return typeMatch && statusMatch && searchMatch;
+      });
+
+      var totalResults = filteredRows.length;
+      var itemsPerPage = getItemsPerPage();
+      var totalPages = Math.max(1, Math.ceil(totalResults / itemsPerPage));
+      var currentPage = Math.min(getPage(), totalPages);
+      var startIndex = (currentPage - 1) * itemsPerPage;
+      var pageRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
+      var hasResults = totalResults > 0;
+
+      renderTableRows(pageRows);
+
+      resultsFrom.textContent = hasResults ? String(startIndex + 1) : '0';
+      resultsTo.textContent = hasResults ? String(startIndex + pageRows.length) : '0';
+      resultsTotal.textContent = String(totalResults);
+      noResultsMessage.hidden = hasResults;
+      table.hidden = !hasResults;
+      if (paginationInfo) {
+        paginationInfo.hidden = !hasResults;
+      }
+      if (paginationNav) {
+        paginationNav.hidden = !hasResults || appliedFilters.length > 0 || !!appliedSearch;
+      }
+    }
+
+    function render() {
+      chipsList.innerHTML = '';
+
+      appliedFilters.forEach(function (filter) {
+        chipsList.appendChild(buildChip(filter.category + ': ' + filter.label, function () {
+          filter.indexes.forEach(function (index) {
+            var checkbox = document.querySelector('[data-filter-index="' + index + '"]');
+            if (checkbox) {
+              checkbox.checked = false;
+            }
+          });
+          navigateWithCurrentState();
+        }));
+      });
+
+      if (appliedSearch) {
+        chipsList.appendChild(buildChip('Keywords: ' + appliedSearch, function () {
+          searchInput.value = '';
+          navigateWithCurrentState();
+        }));
+      }
+
+      appliedSection.hidden = appliedFilters.length === 0 && !appliedSearch;
+      applyRowFiltering();
+    }
+
+    function restoreStateFromUrl() {
+      var urlParams = new URLSearchParams(window.location.search);
+      var selectedIndexes = urlParams.getAll('f');
+
+      filterCheckboxes.forEach(function (checkbox) {
+        checkbox.checked = selectedIndexes.indexOf(checkbox.dataset.filterIndex) !== -1;
+      });
+
+      var searchValue = urlParams.get('searchCriteria') || '';
+      searchInput.value = searchValue;
+      appliedSearch = searchValue || null;
+
+      snapshotCheckedFilters();
+      render();
+    }
+
+    if (applyFiltersButton) {
+      applyFiltersButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        navigateWithCurrentState();
+      });
+    }
+
+    if (searchForm) {
+      searchForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        navigateWithCurrentState();
+      });
+    }
+
+    clearLink.addEventListener('click', function (event) {
+      event.preventDefault();
+      window.location.href = window.location.pathname;
+    });
+
+    restoreStateFromUrl();
+  })();
+</script>
+
+{% endblock %}

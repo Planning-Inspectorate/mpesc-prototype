@@ -1,0 +1,746 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Option C
+{% endblock %}
+{% block header %}
+{% set activeFilterOption = 'C' %}
+<p class="govuk-body govuk-!-margin-0">Choose option:
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'A' %} govuk-button--secondary{% endif %}"
+    href="A.html">Option A</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'B' %} govuk-button--secondary{% endif %}"
+    href="B.html">Option B</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'C' %} govuk-button--secondary{% endif %}"
+    href="C.html">Option C</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'D' %} govuk-button--secondary{% endif %}"
+    href="D.html">Option D</a>
+</p>
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+  /* NAVIGATION BAR */
+  .pins-service-nav {
+    background: #f3f2f1;
+    font-size: 16px;
+    color: #0b0c0c;
+  }
+
+  .pins-service-nav__container {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    background: #f3f2f1;
+    min-height: 50px;
+  }
+
+  /* MPESC */
+  .pins-service-nav__title {
+    background: #f3f2f1;
+    font-weight: bold;
+    margin-right: 30px;
+    color: #0b0c0c;
+    text-decoration: none;
+    padding-left: 0;
+  }
+
+  .pins-service-nav__title,
+  .pins-service-nav__title:link,
+  .pins-service-nav__title:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 0px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  /* NAVIGATION LIST */
+  .pins-service-nav__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+  }
+
+  .pins-service-nav__item {
+    display: inline;
+  }
+
+  /* LINKS AND HOVER STATES*/
+  .pins-service-nav__link,
+  .pins-service-nav__link:link,
+  .pins-service-nav__link:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 12px;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  .pins-service-nav__link:hover {
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom-color: #000000;
+  }
+
+  .pins-service-nav__title:hover {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom-color: #0b0c0c;
+  }
+
+  /* LINK ACTIVE STATES */
+  .pins-service-nav__item--active .pins-service-nav__link {
+    font-weight: bold;
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #000000;
+  }
+
+  /* BROWSER RESPONSIVENESS */
+  @media (max-width: 600px) {
+    .pins-service-nav__container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .pins-service-nav__list {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
+        style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+<nav class="pins-service-nav" aria-label="Service navigation">
+  <div class="govuk-width-container pins-service-nav__container">
+    <a href="/index" class="pins-service-nav__title">MPESC</a>
+    <ul class="pins-service-nav__list">
+      <li
+        class="pins-service-nav__item {% if activePage == 'assigned-to-me' %}pins-service-nav__item--active{% endif %}">
+        <a href="/assigned-to-me/my-cases" class="pins-service-nav__link">Assigned to me</a>
+      </li>
+      <li class="pins-service-nav__item {% if activePage == 'all-cases' %}pins-service-nav__item--active{% endif %}">
+        <a href="/cases-page" class="pins-service-nav__link">All cases</a>
+      </li>
+      <li class="pins-service-nav__item {% if activePage == 'create-case' %}pins-service-nav__item--active{% endif %}">
+        <a href="/create-case-start" class="pins-service-nav__link">Create a case</a>
+      </li>
+      <li class="pins-service-nav__item">
+        <a href="#" class="pins-service-nav__link">Sign out</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="govuk-width-container">
+  {{ govukPhaseBanner({
+  tag: {
+  text: "BETA"
+  },
+  html: '<span class="govuk-!-font-size-16">This is a new service. Help us improve it and
+    <a class="govuk-link" href="https://forms.cloud.microsoft/e/dC8AUkxZnC" target="_blank"
+      rel="noopener noreferrer">give your feedback (opens in a new tab).</a></span>'
+  }) }}
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+  .applied-filters-section {
+    margin-bottom: 20px;
+  }
+
+  .applied-filters-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 10px 0;
+    padding: 0;
+  }
+
+  .applied-filter-chip {
+    display: inline-flex;
+  }
+
+  .applied-filter-chip__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #f3f2f1;
+    border: 1px solid #0b0c0c;
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.2;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .applied-filter-chip__button:hover {
+    background-color: #dbdad9;
+  }
+
+  .applied-filter-chip__remove {
+    font-weight: 700;
+  }
+</style>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">
+      Case list
+    </h1>
+    <form id="search-bar-form" method="GET">
+      <div class="govuk-form-group">
+        <h1 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--m" id="search-label" for="search-input">
+            Search cases
+          </label>
+        </h1>
+        <div id="search-hint" class="govuk-hint">
+          To find a specific case, search by reference, historical reference, case name, applicant or local authority.
+        </div>
+        <div class="pins-row-inline">
+          <input class="govuk-input govuk-input--width-30" id="search-input" value="" name="searchCriteria" type="text">
+
+          <button type="submit" class="govuk-button govuk-button" data-module="govuk-button" id="search-button"
+            data-govuk-button-init="">
+            Search
+          </button>
+        </div>
+        <a class="govuk-body govuk-link" href="filter-page" id="filter-these-results-link">Filter these results</a>
+      </div>
+
+    </form>
+
+    <div id="applied-filters-section" class="applied-filters-section" hidden>
+      <h3 class="govuk-heading-s">Applied filters</h3>
+      <ul class="applied-filters-chips"></ul>
+      <p class="govuk-body"><a class="govuk-link" href="#" id="clear-search-filters">Clear search and filters</a></p>
+    </div>
+
+    <div id="pagination">
+      <p class="govuk-body govuk-clearfix">
+        <span>
+          Showing <strong id="results-from">1</strong> to <strong id="results-to">25</strong>
+          of <strong id="results-total">304</strong> results
+        </span>
+        <span class="pins-pagination-options">
+          <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+          <span class="govuk-body">25</span>
+
+          &nbsp;&nbsp;|&nbsp;&nbsp; <a class="govuk-link--no-visited-state" href="?itemsPerPage=50"
+            data-pagination="50">50</a>
+
+          &nbsp;&nbsp;|&nbsp;&nbsp; <a class="govuk-link--no-visited-state" href="?itemsPerPage=100"
+            data-pagination="100">100</a>
+
+
+        </span>
+      </p>
+
+
+
+
+      <table class="govuk-table" data-module="moj-sortable-table" data-moj-sortable-table-init="">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header govuk-!-width-one-fifth" aria-sort="none"><button type="button"
+                data-index="0">Reference<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                  viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button></th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none"><button type="button"
+                data-index="1">Case name<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                  viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button></th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="descending"><button
+                type="button" data-index="2">Received<svg width="22" height="22" focusable="false" aria-hidden="true"
+                  role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z" fill="currentColor"></path>
+                </svg></button></th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none"><button type="button"
+                data-index="3">Status<svg width="22" height="22" focusable="false" aria-hidden="true" role="img"
+                  viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button></th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        </tbody>
+      </table>
+      <p class="govuk-body" id="no-results-message" hidden>No cases match the applied filters and search.</p>
+      <div aria-atomic="true" aria-live="polite" class="govuk-visually-hidden" role="status"></div>
+
+
+    </div>
+
+
+    <nav class="govuk-pagination" aria-label="Pagination">
+      <ul class="govuk-pagination__list">
+        <li class="govuk-pagination__item govuk-pagination__item--current">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=1" aria-label="Page 1" aria-current="page">
+            1
+          </a>
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=2" aria-label="Page 2">
+            2
+          </a>
+        </li>
+        <li class="govuk-pagination__item govuk-pagination__item--ellipsis">
+          ⋯
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=13" aria-label="Page 13">
+            13
+          </a>
+        </li>
+      </ul>
+      <div class="govuk-pagination__next">
+        <a class="govuk-link govuk-pagination__link" href="/cases?page=2" rel="next">
+          <span class="govuk-pagination__link-title">
+            Next<span class="govuk-visually-hidden"> page</span>
+          </span>
+          <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
+            height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+            <path
+              d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+            </path>
+          </svg>
+        </a>
+      </div>
+    </nav>
+
+  </div>
+</div>
+
+<script>
+  (function () {
+    // Case type/sub type/status catalog - keep these values, labels and counts in sync with filter-page.html.
+    var CATALOG = [
+      {
+        value: 'pea', label: 'Planning, Environmental and Applications',
+        types: [
+          {
+            value: 'drought', label: 'Drought', subTypes: [
+              { value: 'drought-permits', label: 'Drought Permits', count: 9 },
+              { value: 'drought-orders', label: 'Drought Orders', count: 39 }
+            ]
+          },
+          {
+            value: 'housing-planning-cpos', label: 'Housing and Planning CPOs', subTypes: [
+              { value: 'housing', label: 'Housing', count: 42 },
+              { value: 'planning', label: 'Planning', count: 6 },
+              { value: 'ad-hoc', label: 'Ad hoc', count: 3 }
+            ]
+          },
+          {
+            value: 'other-sos-casework', label: 'Other Secretary of State casework', subTypes: [
+              { value: 'defra-cpo', label: 'DEFRA CPO', count: 2 },
+              { value: 'desnz-cpo', label: 'DESNZ CPO', count: 1 },
+              { value: 'dft-cpo', label: 'DfT CPO', count: 1 },
+              { value: 'ad-hoc-cpo', label: 'Ad hoc CPO', count: 1 },
+              { value: 'advert', label: 'Advert', count: 1 },
+              { value: 'completion-notice', label: 'Completion notice', count: 1 },
+              { value: 'discontinuance-notice', label: 'Discontinuance notice', count: 2 },
+              { value: 'modification-to-planning-permission', label: 'Modification to planning permission', count: 1 },
+              { value: 'review-of-mineral-permission', label: 'Review of mineral permission', count: 1 },
+              { value: 'revocation', label: 'Revocation', count: 3 }
+            ]
+          },
+          { value: 'purchase-notices', label: 'Purchase Notices', count: 20, subTypes: [] },
+          {
+            value: 'wayleaves', label: 'Wayleaves', subTypes: [
+              { value: 'new-lines', label: 'New lines', count: 37 },
+              { value: 'tree-lopping', label: 'Tree lopping', count: 2 },
+              { value: 'wayleaves-generic', label: 'Wayleaves', count: 3 }
+            ]
+          }
+        ]
+      },
+      {
+        value: 'rowcl', label: 'Rights of Way and Common Land',
+        types: [
+          {
+            value: 'coastal-access', label: 'Coastal Access', subTypes: [
+              { value: 'coastal-access-appeal', label: 'Coastal access appeal', count: 5 },
+              { value: 'notice-appeal', label: 'Notice appeal', count: 3 },
+              { value: 'objection', label: 'Objection', count: 1 },
+              { value: 'restriction-appeal-access-land', label: 'Restriction appeal (access land)', count: 3 }
+            ]
+          },
+          {
+            value: 'common-land', label: 'Common Land', subTypes: [
+              { value: 'commons-for-ecclesiastical-purposes', label: 'Commons for Ecclesiastical Purposes', count: 1 },
+              { value: 'commons-in-greater-london', label: 'Commons in Greater London', count: 1 },
+              { value: 'compulsory-purchase-of-common-land', label: 'Compulsory Purchase of Common Land', count: 1 },
+              { value: 'deregistration-exchange', label: 'Deregistration & Exchange', count: 2 },
+              { value: 'inclosure', label: 'Inclosure', count: 2 },
+              { value: 'inclosure-obsolescent-functions', label: 'Inclosure : obsolescent functions', count: 1 },
+              { value: 'land-exchange', label: 'Land Exchange', count: 2 },
+              { value: 'local-acts-and-provisional-order-confirmation-acts', label: 'Local Acts and Provisional Order Confirmation Acts', count: 1 },
+              { value: 'public-access-to-commons-limitations-and-restrictions', label: 'Public Access to Commons - limitations and restrictions', count: 1 },
+              { value: 'referred-applications-from-commons-registration-authorities', label: 'Referred applications from Commons Registration Authorities', count: 2 },
+              { value: 'scheme-of-management', label: 'Scheme of Management', count: 1 },
+              { value: 'stint-rates', label: 'Stint Rates', count: 2 },
+              { value: 'works-on-common-land', label: 'Works on Common Land', count: 1 },
+              { value: 'works-on-common-land-national-trust', label: 'Works on Common Land (National Trust)', count: 2 }
+            ]
+          },
+          {
+            value: 'rights-of-way', label: 'Rights of Way', subTypes: [
+              { value: 'dispensation-for-serving-notice-ha80', label: 'Dispensation for Serving Notice HA80', count: 3 },
+              { value: 'dispensation-for-serving-notice-tcpa90', label: 'Dispensation for Serving Notice TCPA90', count: 2 },
+              { value: 'dispensation-for-serving-notice-wca81', label: 'Dispensation for Serving Notice WCA81', count: 1 },
+              { value: 'opposed-definitive-map-modification-order-dmmo', label: 'Opposed Definitive Map Modification Order (DMMO)', count: 73 },
+              { value: 'opposed-public-path-order-ppo-ha80', label: 'Opposed Public Path Order (PPO) HA80', count: 2 },
+              { value: 'opposed-public-path-order-ppo-tcpa90', label: 'Opposed Public Path Order (PPO) TCPA90', count: 1 },
+              { value: 'schedule-14-appeal', label: 'Schedule 14 Appeal', count: 2 },
+              { value: 'schedule-14-direction', label: 'Schedule 14 Direction', count: 12 },
+              { value: 'schedule-13a-appeal', label: 'Schedule 13A Appeal', count: 1 }
+            ]
+          }
+        ]
+      }
+    ];
+
+    var STATUSES = [
+      { value: 'new-case', label: 'New case', count: 275 },
+      { value: 'validated', label: 'Validated', count: 4 },
+      { value: 'invalid', label: 'Invalid', count: 1 },
+      { value: 'rejected', label: 'Rejected', count: 1 },
+      { value: 'inform-parties', label: 'Inform parties', count: 1 },
+      { value: 'allocate-inspector', label: 'Allocate inspector', count: 1 },
+      { value: 'arrange-event', label: 'Arrange event', count: 1 },
+      { value: 'in-progress', label: 'In progress', count: 2 },
+      { value: 'ready-for-inspector', label: 'Ready for inspector', count: 1 },
+      { value: 'event', label: 'Event', count: 1 },
+      { value: 'decision-recommendation-issued', label: 'Decision / recommendation issued', count: 1 },
+      { value: 'despatch', label: 'Despatch', count: 1 },
+      { value: 'final-check', label: 'Final check', count: 1 },
+      { value: 'closed', label: 'Closed', count: 8 },
+      { value: 'cancelled', label: 'Cancelled', count: 1 },
+      { value: 'paused-on-hold', label: 'Paused / on hold', count: 1 },
+      { value: 'withdrawn', label: 'Withdrawn', count: 1 },
+      { value: 'in-abeyance', label: 'In abeyance', count: 1 },
+      { value: 'closed-opened-in-error', label: 'Closed - opened in error', count: 1 }
+    ];
+
+    var MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var STATUS_LABELS = {};
+    STATUSES.forEach(function (s) { STATUS_LABELS[s.value] = s.label; });
+
+    function typeCode(value) {
+      return (value.match(/[a-z]/gi) || []).slice(0, 3).join('').toUpperCase() || 'GEN';
+    }
+
+    function formatDate(date) {
+      return String(date.getDate()).padStart(2, '0') + ' ' + MONTH_NAMES[date.getMonth()] + ' ' + date.getFullYear();
+    }
+
+    function escapeHtml(value) {
+      var div = document.createElement('div');
+      div.textContent = value;
+      return div.innerHTML;
+    }
+
+    // Generate dummy rows so every filter combination shows a count consistent with its badge in filter-page.html.
+    var rowMetadata = [];
+    var refCounter = 0;
+    var now = Date.now();
+    var dayMs = 24 * 60 * 60 * 1000;
+
+    function addRows(typeValue, subTypeValue, count) {
+      for (var i = 0; i < count; i += 1) {
+        refCounter += 1;
+        var receivedDate = new Date(now - (refCounter * 29 + 3) * dayMs);
+        rowMetadata.push({
+          type: typeValue,
+          subType: subTypeValue,
+          status: null,
+          reference: typeCode(typeValue) + '/' + typeCode(subTypeValue || typeValue) + '/' + String(refCounter).padStart(5, '0'),
+          name: 'Auto-' + (subTypeValue || typeValue) + '-' + refCounter,
+          receivedDate: receivedDate
+        });
+      }
+    }
+
+    CATALOG.forEach(function (group) {
+      group.types.forEach(function (type) {
+        if (type.subTypes.length === 0) {
+          addRows(type.value, null, type.count);
+        } else {
+          type.subTypes.forEach(function (subType) {
+            addRows(type.value, subType.value, subType.count);
+          });
+        }
+      });
+    });
+
+    (function assignStatuses() {
+      var statusPool = [];
+      STATUSES.forEach(function (status) {
+        for (var i = 0; i < status.count; i += 1) {
+          statusPool.push(status.value);
+        }
+      });
+      rowMetadata.forEach(function (row, index) {
+        row.status = statusPool[index % statusPool.length] || null;
+      });
+    })();
+
+    function renderTableRows(rows) {
+      var tbody = document.querySelector('.govuk-table tbody');
+      tbody.innerHTML = rows.map(function (row) {
+        return '<tr class="govuk-table__row">' +
+          '<td class="govuk-table__cell" data-sort-value="' + escapeHtml(row.reference) + '">' +
+          '<a class="govuk-link" target="_blank" href="#">' + escapeHtml(row.reference) + '</a></td>' +
+          '<td class="govuk-table__cell">' + escapeHtml(row.name) + '</td>' +
+          '<td class="govuk-table__cell" data-sort-value="' + row.receivedDate.getTime() + '">' + formatDate(row.receivedDate) + '</td>' +
+          '<td class="govuk-table__cell">' + escapeHtml(STATUS_LABELS[row.status] || '') + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function buildChip(text, onRemove) {
+      var item = document.createElement('li');
+      item.className = 'applied-filter-chip';
+
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'applied-filter-chip__button';
+      button.setAttribute('aria-label', 'Remove filter ' + text);
+      button.innerHTML = '<span>' + escapeHtml(text) + '</span><span class="applied-filter-chip__remove" aria-hidden="true">x</span>';
+      button.addEventListener('click', onRemove);
+
+      item.appendChild(button);
+      return item;
+    }
+
+    function getItemsPerPage() {
+      var value = parseInt(new URLSearchParams(window.location.search).get('itemsPerPage'), 10);
+      return [25, 50, 100].indexOf(value) !== -1 ? value : 25;
+    }
+
+    function getPage() {
+      return Math.max(1, parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1);
+    }
+
+    // Builds a new URL, optionally overriding the page/itemsPerPage, and optionally removing specific values.
+    function buildUrl(overrides, removals) {
+      var params = new URLSearchParams(window.location.search);
+      ['type', 'subType', 'status'].forEach(function (param) {
+        var cleaned = params.getAll(param).filter(function (v) { return v && v !== '_unchecked'; });
+        params.delete(param);
+        cleaned.forEach(function (v) { params.append(param, v); });
+      });
+      (removals || []).forEach(function (removal) {
+        var remaining = params.getAll(removal.param).filter(function (v) { return v !== removal.value; });
+        params.delete(removal.param);
+        remaining.forEach(function (v) { params.append(removal.param, v); });
+      });
+      Object.keys(overrides || {}).forEach(function (key) {
+        params.set(key, overrides[key]);
+      });
+      var query = params.toString();
+      return query ? ('?' + query) : '';
+    }
+
+    function render() {
+      var params = new URLSearchParams(window.location.search);
+      // GOV.UK Prototype Kit auto-injects a '_unchecked' fallback value into every submitted checkbox group
+      function cleanValues(values) {
+        return values.filter(function (v) { return v && v !== '_unchecked'; });
+      }
+
+      var selectedTypes = cleanValues(params.getAll('type'));
+      var selectedSubTypes = cleanValues(params.getAll('subType'));
+      var selectedStatuses = cleanValues(params.getAll('status'));
+      var searchCriteria = (params.get('searchCriteria') || '').trim();
+      var keyword = searchCriteria.toLowerCase();
+
+      var filteredRows = rowMetadata.filter(function (row) {
+        var typeMatch = (selectedTypes.length === 0 && selectedSubTypes.length === 0) ||
+          selectedTypes.indexOf(row.type) !== -1 ||
+          (row.subType && selectedSubTypes.indexOf(row.subType) !== -1);
+        var statusMatch = selectedStatuses.length === 0 || selectedStatuses.indexOf(row.status) !== -1;
+        var searchMatch = !keyword || (row.reference + ' ' + row.name).toLowerCase().indexOf(keyword) !== -1;
+        return typeMatch && statusMatch && searchMatch;
+      });
+
+      var totalResults = filteredRows.length;
+      var itemsPerPage = getItemsPerPage();
+      var totalPages = Math.max(1, Math.ceil(totalResults / itemsPerPage));
+      var currentPage = Math.min(getPage(), totalPages);
+      var startIndex = (currentPage - 1) * itemsPerPage;
+      var pageRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
+      var hasResults = totalResults > 0;
+      var hasFiltersOrSearch = selectedTypes.length > 0 || selectedSubTypes.length > 0 || selectedStatuses.length > 0 || !!keyword;
+
+      renderTableRows(pageRows);
+
+      document.getElementById('results-from').textContent = hasResults ? String(startIndex + 1) : '0';
+      document.getElementById('results-to').textContent = hasResults ? String(startIndex + pageRows.length) : '0';
+      document.getElementById('results-total').textContent = String(totalResults);
+      document.getElementById('no-results-message').hidden = hasResults;
+      document.querySelector('.govuk-table').hidden = !hasResults;
+      document.getElementById('pagination').hidden = !hasResults;
+
+      var paginationNav = document.querySelector('.govuk-pagination');
+      if (paginationNav) {
+        paginationNav.hidden = !hasResults || hasFiltersOrSearch;
+      }
+
+      renderChips(selectedTypes, selectedSubTypes, selectedStatuses, searchCriteria);
+      syncFilterFormState(selectedTypes, selectedSubTypes, selectedStatuses, searchCriteria);
+
+      document.querySelectorAll('[data-pagination]').forEach(function (link) {
+        link.href = buildUrl({ itemsPerPage: link.dataset.pagination, page: '1' });
+      });
+    }
+
+    // Show one chip per fully-selected group/type, and one chip per remaining sub type/type/status.
+    function renderChips(selectedTypes, selectedSubTypes, selectedStatuses, keyword) {
+      var appliedSection = document.getElementById('applied-filters-section');
+      var chipsList = appliedSection.querySelector('.applied-filters-chips');
+      chipsList.innerHTML = '';
+
+      var chips = [];
+
+      function isTypeFullySelected(type) {
+        return type.subTypes.length === 0
+          ? selectedTypes.indexOf(type.value) !== -1
+          : type.subTypes.every(function (st) { return selectedSubTypes.indexOf(st.value) !== -1; });
+      }
+
+      CATALOG.forEach(function (group) {
+        var groupFullySelected = group.types.every(isTypeFullySelected);
+        if (groupFullySelected) {
+          chips.push({
+            category: 'Case type',
+            label: group.label,
+            removals: group.types.reduce(function (acc, type) {
+              acc.push({ param: 'type', value: type.value });
+              type.subTypes.forEach(function (st) { acc.push({ param: 'subType', value: st.value }); });
+              return acc;
+            }, [])
+          });
+          return;
+        }
+
+        group.types.forEach(function (type) {
+          if (isTypeFullySelected(type) && type.subTypes.length > 0) {
+            chips.push({
+              category: 'Case type',
+              label: type.label,
+              removals: [{ param: 'type', value: type.value }].concat(
+                type.subTypes.map(function (st) { return { param: 'subType', value: st.value }; })
+              )
+            });
+            return;
+          }
+
+          if (type.subTypes.length === 0) {
+            if (selectedTypes.indexOf(type.value) !== -1) {
+              chips.push({ category: 'Case type', label: type.label, removals: [{ param: 'type', value: type.value }] });
+            }
+            return;
+          }
+
+          type.subTypes.forEach(function (st) {
+            if (selectedSubTypes.indexOf(st.value) !== -1) {
+              chips.push({ category: 'Case type', label: st.label, removals: [{ param: 'subType', value: st.value }] });
+            }
+          });
+        });
+      });
+
+      selectedStatuses.forEach(function (statusValue) {
+        chips.push({ category: 'Status', label: STATUS_LABELS[statusValue] || statusValue, removals: [{ param: 'status', value: statusValue }] });
+      });
+
+      chips.forEach(function (chip) {
+        chipsList.appendChild(buildChip(chip.category + ': ' + chip.label, function () {
+          window.location.href = buildUrl({ page: '1' }, chip.removals);
+        }));
+      });
+
+      if (keyword) {
+        chipsList.appendChild(buildChip('Keywords: ' + keyword, function () {
+          window.location.href = buildUrl({ page: '1', searchCriteria: '' });
+        }));
+      }
+
+      appliedSection.hidden = chips.length === 0 && !keyword;
+    }
+
+    // Carry the currently applied filters into the search form and the 'Filter these results' link.
+    function syncFilterFormState(selectedTypes, selectedSubTypes, selectedStatuses, keyword) {
+      var form = document.getElementById('search-bar-form');
+      form.querySelectorAll('input[data-filter-carry]').forEach(function (el) { el.remove(); });
+
+      function carry(paramName, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = paramName;
+        input.value = value;
+        input.setAttribute('data-filter-carry', 'true');
+        form.appendChild(input);
+      }
+
+      selectedTypes.forEach(function (v) { carry('type', v); });
+      selectedSubTypes.forEach(function (v) { carry('subType', v); });
+      selectedStatuses.forEach(function (v) { carry('status', v); });
+
+      document.getElementById('search-input').value = keyword;
+      document.getElementById('filter-these-results-link').href = 'filter-page' + buildUrl({});
+    }
+
+    document.getElementById('clear-search-filters').addEventListener('click', function (event) {
+      event.preventDefault();
+      window.location.href = window.location.pathname;
+    });
+
+    render();
+  })();
+</script>
+
+{% endblock %}
