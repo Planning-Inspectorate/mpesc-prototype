@@ -1,0 +1,1281 @@
+{% extends "layouts/main.html" %} {% block pageTitle %} Option D {% endblock %}
+{% block header %}
+{% set activeFilterOption = 'D' %}
+<p class="govuk-body govuk-!-margin-0">Choose option:
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'A' %} govuk-button--secondary{% endif %}"
+    href="A.html">Option A</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'B' %} govuk-button--secondary{% endif %}"
+    href="B.html">Option B</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'C' %} govuk-button--secondary{% endif %}"
+    href="C.html">Option C</a>
+  <a class="govuk-button govuk-!-margin-1{% if activeFilterOption != 'D' %} govuk-button--secondary{% endif %}"
+    href="D.html">Option D</a>
+</p>
+<style>
+  /* APPLY GOV.UK FONT TO PINS ELEMENTS */
+  .pins-header-demo,
+  .pins-service-nav,
+  .pins-footer {
+    font-family: Arial, Helvetica, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* PINS HEADER */
+  .pins-header-demo {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background: #f3f2f1;
+    border-bottom: 10px solid #13A19B;
+  }
+
+  /* NAVIGATION BAR */
+  .pins-service-nav {
+    background: #f3f2f1;
+    font-size: 16px;
+    color: #0b0c0c;
+  }
+
+  .pins-service-nav__container {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    background: #f3f2f1;
+    min-height: 50px;
+  }
+
+  /* MPESC */
+  .pins-service-nav__title {
+    background: #f3f2f1;
+    font-weight: bold;
+    margin-right: 30px;
+    color: #0b0c0c;
+    text-decoration: none;
+    padding-left: 0;
+  }
+
+  .pins-service-nav__title,
+  .pins-service-nav__title:link,
+  .pins-service-nav__title:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 0px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  /* NAVIGATION LIST */
+  .pins-service-nav__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+  }
+
+  .pins-service-nav__item {
+    display: inline;
+  }
+
+  /* LINKS AND HOVER STATES*/
+  .pins-service-nav__link,
+  .pins-service-nav__link:link,
+  .pins-service-nav__link:visited {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 12px;
+    transition: color 0.2s, border-bottom-color 0.2s;
+  }
+
+  .pins-service-nav__link:hover {
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom-color: #000000;
+  }
+
+  .pins-service-nav__title:hover {
+    color: #0b0c0c;
+    text-decoration: none;
+    border-bottom-color: #0b0c0c;
+  }
+
+  /* LINK ACTIVE STATES */
+  .pins-service-nav__item--active .pins-service-nav__link {
+    font-weight: bold;
+    color: #000000;
+    text-decoration: none;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #000000;
+  }
+
+  /* BROWSER RESPONSIVENESS */
+  @media (max-width: 600px) {
+    .pins-service-nav__container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .pins-service-nav__list {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>
+
+<div class="pins-header-demo">
+  <header role="banner">
+    <div class="govuk-width-container">
+      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
+        style="width:auto; vertical-align:middle;">
+    </div>
+  </header>
+</div>
+
+<nav class="pins-service-nav" aria-label="Service navigation">
+  <div class="govuk-width-container pins-service-nav__container">
+    <a href="/index" class="pins-service-nav__title">MPESC</a>
+    <ul class="pins-service-nav__list">
+      <li
+        class="pins-service-nav__item {% if activePage == 'assigned-to-me' %}pins-service-nav__item--active{% endif %}">
+        <a href="/assigned-to-me/my-cases" class="pins-service-nav__link">Assigned to me</a>
+      </li>
+      <li class="pins-service-nav__item {% if activePage == 'all-cases' %}pins-service-nav__item--active{% endif %}">
+        <a href="/cases-page" class="pins-service-nav__link">All cases</a>
+      </li>
+      <li class="pins-service-nav__item {% if activePage == 'create-case' %}pins-service-nav__item--active{% endif %}">
+        <a href="/create-case-start" class="pins-service-nav__link">Create a case</a>
+      </li>
+      <li class="pins-service-nav__item">
+        <a href="#" class="pins-service-nav__link">Sign out</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="govuk-width-container">
+  {{ govukPhaseBanner({
+  tag: {
+  text: "BETA"
+  },
+  html: '<span class="govuk-!-font-size-16">This is a new service. Help us improve it and
+    <a class="govuk-link" href="https://forms.cloud.microsoft/e/dC8AUkxZnC" target="_blank"
+      rel="noopener noreferrer">give your feedback (opens in a new tab).</a></span>'
+  }) }}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .govuk-radios__label::before {
+    width: 24px;
+    height: 24px;
+  }
+
+  .govuk-radios__input:checked+.govuk-radios__label::after {
+    width: 0;
+    height: 0;
+    border: 6px solid currentColor;
+    top: 8px;
+    left: 8px;
+  }
+
+  .govuk-radios__label {
+    padding-left: 10px;
+    min-height: 24px;
+    padding-top: 0;
+    top: -8px;
+  }
+
+  .govuk-radios__input {
+    width: 24px;
+    height: 24px;
+  }
+</style>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    <h2 class="govuk-heading-m">Filter</h2>
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+          <h3 class="govuk-fieldset__heading govuk-heading-xs">Casework area</h3>
+        </legend>
+
+        <div class="govuk-radios" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="casework-area" name="caseworkArea" type="radio" />
+            <label class="govuk-label govuk-radios__label" for="casework-area">
+              Planning, Environmental and Applications
+            </label>
+          </div>
+
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="casework-area-2" name="caseworkArea" type="radio" />
+            <label class="govuk-label govuk-radios__label" for="casework-area-2">
+              Rights of Way and Common Land
+            </label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <h3 class="govuk-heading-s">Status</h3>
+    <div class="container">
+      <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+        data-govuk-checkboxes-init="">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root" name="status" type="checkbox" value="new-case" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root">
+            New case (188)
+          </label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-2" name="status" type="checkbox" value="validated" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-2">
+            Validated (4)
+          </label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-3" name="status" type="checkbox" value="invalid" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-3">
+            Invalid (1)
+          </label>
+        </div>
+
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-6" name="status" type="checkbox"
+            value="allocate-inspector" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-6">
+            Allocate inspector (1)
+          </label>
+        </div>
+
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-8" name="status" type="checkbox" value="n-progress" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-8">
+            In progress (2)
+          </label>
+        </div>
+
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-11" name="status" type="checkbox"
+            value="decision-recommendation-issued" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-11">
+            Decision / recommendation issued (1)
+          </label>
+        </div>
+
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-13" name="status" type="checkbox"
+            value="final-check" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-13">
+            Final check (1)
+          </label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-14" name="status" type="checkbox" value="closed" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-14">
+            Closed (8)
+          </label>
+        </div>
+
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="status-root-19" name="status" type="checkbox"
+            value="closed-opened-in-error" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-19">
+            Closed - opened in error (1)
+          </label>
+        </div>
+      </div>
+    </div>
+    <button type="submit" class="govuk-button" data-module="govuk-button" data-test-id="submit-button"
+      data-govuk-button-init="">
+      Apply filters
+    </button>
+  </div>
+
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Case list</h1>
+    <h2 class="govuk-label-wrapper">
+      <label class="govuk-label govuk-label--m" id="search-label" for="search-input">
+        Search cases
+      </label>
+    </h2>
+
+    <div id="search-hint" class="govuk-hint">
+      To find a specific case, search by reference, historical reference, case
+      name, applicant or local authority.
+    </div>
+
+    <div class="pins-row-inline">
+      <input class="govuk-input" id="search-input" value="" name="searchCriteria" type="text" />
+
+      <button type="submit" class="govuk-button govuk-button govuk-!-margin-top-2" data-module="govuk-button"
+        id="search-button" data-govuk-button-init="">
+        Search
+      </button>
+    </div>
+    <div id="pagination">
+      <p class="govuk-body govuk-clearfix">
+        <span>
+          Showing <strong>1</strong> to <strong>25</strong> of
+          <strong>309</strong> results </span><br /><br />
+        <span class="pins-pagination-options">
+          <span><strong>Results per page</strong></span>
+
+          <span class="govuk-body">25</span>
+
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          <a class="govuk-link--no-visited-state" href="?itemsPerPage=50" data-pagination="50">50</a>
+
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          <a class="govuk-link--no-visited-state" href="?itemsPerPage=100" data-pagination="100">100</a>
+        </span>
+      </p>
+
+      <table class="govuk-table" data-module="moj-sortable-table" data-moj-sortable-table-init="">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header govuk-!-width-one-fifth" aria-sort="none">
+              <button type="button" data-index="0">
+                Reference<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22"
+                  fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">
+              <button type="button" data-index="1">
+                Case name<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22"
+                  fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="descending">
+              <button type="button" data-index="2">
+                Received<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22"
+                  fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z" fill="currentColor"></path>
+                </svg>
+              </button>
+            </th>
+            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">
+              <button type="button" data-index="3">
+                Status<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22"
+                  fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="SOS/REV/00001">
+              <a class="govuk-link" target="_blank" href="/cases/d8f8de3a-c2cd-46a0-b4d5-986018a02bd0">SOS/REV/00001</a>
+            </td>
+            <td class="govuk-table__cell">
+              Revocation of planning permission on development 123
+            </td>
+            <td class="govuk-table__cell" data-sort-value="11841894000000">
+              04 Apr 2345
+            </td>
+            <td class="govuk-table__cell">Validated</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="SOS/ENG/10001">
+              <a class="govuk-link" target="_blank" href="/cases/ab311bbd-a98f-418b-a00c-107a45e54aa6">SOS/ENG/10001</a>
+            </td>
+            <td class="govuk-table__cell">test</td>
+            <td class="govuk-table__cell" data-sort-value="11840601600000">
+              20 Mar 2345
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="MCA/CAA/00002">
+              <a class="govuk-link" target="_blank" href="/cases/ed9c96e0-476c-4fb3-8aef-96f428253847">MCA/CAA/00002</a>
+            </td>
+            <td class="govuk-table__cell">
+              Coastal access appeal 123: Kent Coastline
+            </td>
+            <td class="govuk-table__cell" data-sort-value="7972642800000">
+              24 Aug 2222
+            </td>
+            <td class="govuk-table__cell"></td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/PPH/00002">
+              <a class="govuk-link" target="_blank" href="/cases/1ca122c3-7367-4547-99ad-c1172d0a5838">ROW/PPH/00002</a>
+            </td>
+            <td class="govuk-table__cell">Somerset Route 11</td>
+            <td class="govuk-table__cell" data-sort-value="7955971200000">
+              12 Feb 2222
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="MCA/NOT/00001">
+              <a class="govuk-link" target="_blank" href="/cases/031bf41b-73b6-4512-bcca-56cc22327f58">MCA/NOT/00001</a>
+            </td>
+            <td class="govuk-table__cell">Notice appeal test case</td>
+            <td class="govuk-table__cell" data-sort-value="7955971200000">
+              12 Feb 2222
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/SNW/00001">
+              <a class="govuk-link" target="_blank" href="/cases/d9f10a79-171d-40b3-b05c-db5827a276bf">ROW/SNW/00001</a>
+            </td>
+            <td class="govuk-table__cell">test</td>
+            <td class="govuk-table__cell" data-sort-value="5139590400000">
+              13 Nov 2132
+            </td>
+            <td class="govuk-table__cell">Validated</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10029">
+              <a class="govuk-link" target="_blank" href="/cases/758083e2-86c3-41ab-9ea2-7dcb5c5170fe">WAY/LIN/10029</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-01/06/26-11:43</td>
+            <td class="govuk-table__cell" data-sort-value="3667507200000">
+              21 Mar 2086
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10013">
+              <a class="govuk-link" target="_blank" href="/cases/d510de10-8dfd-41b2-a708-d33231875c8a">WAY/LIN/10013</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-18:07</td>
+            <td class="govuk-table__cell" data-sort-value="3630096000000">
+              12 Jan 2085
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="COM/WCL/10001">
+              <a class="govuk-link" target="_blank" href="/cases/1eddd499-14c7-452d-a0fa-c2625808229e">COM/WCL/10001</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Works on Common Land-19/05/26-15:00
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3586806000000">
+              30 Aug 2083
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10027">
+              <a class="govuk-link" target="_blank" href="/cases/20307d49-3e43-4391-a13e-accb329da000">ROW/DMM/10027</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Opposed (DMMO)-08/06/26-12:10
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3438979200000">
+              23 Dec 2078
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10011">
+              <a class="govuk-link" target="_blank"
+                href="/cases/58679bb6-c50e-426c-8f78-08c1355f306f">ROW/S14D/10011</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Schedule 14 Direction-08/06/26-16:08
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3424546800000">
+              09 Jul 2078
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10029">
+              <a class="govuk-link" target="_blank" href="/cases/61b8feac-c695-4609-b9b2-b29c506d0ba6">ROW/DMM/10029</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Opposed (DMMO)-08/06/26-12:24
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3384630000000">
+              03 Apr 2077
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10036">
+              <a class="govuk-link" target="_blank" href="/cases/85b17773-574e-406c-801d-00ff939dd628">WAY/LIN/10036</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-24/07/26-19:31</td>
+            <td class="govuk-table__cell" data-sort-value="3329593200000">
+              06 Jul 2075
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10010">
+              <a class="govuk-link" target="_blank"
+                href="/cases/f51d6b6e-0790-494c-a8fd-22ad7bc70608">ROW/S14D/10010</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Schedule 14 Direction-02/06/26-12:57
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3305228400000">
+              27 Sep 2074
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10036">
+              <a class="govuk-link" target="_blank" href="/cases/fa06a4a3-4e2b-4ea9-bb0d-e3aaa6fa500f">ROW/DMM/10036</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Opposed (DMMO)-08/06/26-16:04
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3261769200000">
+              12 May 2073
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="MCA/RES/10003">
+              <a class="govuk-link" target="_blank" href="/cases/035a8ef4-1acd-41dc-866b-04ea384783de">MCA/RES/10003</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Restriction appeal (access land)-24/07/26-19:27
+            </td>
+            <td class="govuk-table__cell" data-sort-value="3065126400000">
+              17 Feb 2067
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10017">
+              <a class="govuk-link" target="_blank" href="/cases/c5b59d91-d8df-480c-8fc4-856ac338469f">ROW/DMM/10017</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Opposed (DMMO)-04/06/26-13:18
+            </td>
+            <td class="govuk-table__cell" data-sort-value="2983388400000">
+              16 Jul 2064
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10004">
+              <a class="govuk-link" target="_blank" href="/cases/8bbd45f8-d8c4-4dd3-94a0-11b8b9b18312">WAY/LIN/10004</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-14:28</td>
+            <td class="govuk-table__cell" data-sort-value="2625091200000">
+              09 Mar 2053
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10003">
+              <a class="govuk-link" target="_blank"
+                href="/cases/2b192e6c-f07a-41ca-b2a6-798e0e2764d1">ROW/S14D/10003</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Schedule 14 Direction-02/06/26-11:05
+            </td>
+            <td class="govuk-table__cell" data-sort-value="2529014400000">
+              21 Feb 2050
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10032">
+              <a class="govuk-link" target="_blank" href="/cases/c290c6e0-3fd7-4851-a2d8-5ee11fdbfd6a">ROW/DMM/10032</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Opposed (DMMO)-08/06/26-12:47
+            </td>
+            <td class="govuk-table__cell" data-sort-value="2515359600000">
+              16 Sep 2049
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10003">
+              <a class="govuk-link" target="_blank" href="/cases/adf01021-9684-408b-87f5-ccb5234f01b2">WAY/LIN/10003</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-12:14</td>
+            <td class="govuk-table__cell" data-sort-value="2388956400000">
+              14 Sep 2045
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10031">
+              <a class="govuk-link" target="_blank" href="/cases/214cb8e4-f287-4a06-aa57-a190b1b5608e">ROW/DMM/10031</a>
+            </td>
+            <td class="govuk-table__cell">
+              Auto-Opposed (DMMO)-08/06/26-12:43
+            </td>
+            <td class="govuk-table__cell" data-sort-value="2372457600000">
+              07 Mar 2045
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10006">
+              <a class="govuk-link" target="_blank" href="/cases/5cb140aa-70ae-4ee3-8895-c9523b3f4905">WAY/LIN/10006</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-18/05/26-17:19</td>
+            <td class="govuk-table__cell" data-sort-value="2250370800000">
+              24 Apr 2041
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10020">
+              <a class="govuk-link" target="_blank" href="/cases/a2644e9e-75b4-4dfc-aedb-bfcc9db2a80d">WAY/LIN/10020</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-22/05/26-15:07</td>
+            <td class="govuk-table__cell" data-sort-value="2248988400000">
+              08 Apr 2041
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10016">
+              <a class="govuk-link" target="_blank" href="/cases/a6ebd5c4-f7a5-4234-8561-f003a10f925e">WAY/LIN/10016</a>
+            </td>
+            <td class="govuk-table__cell">Auto-New lines-19/05/26-14:51</td>
+            <td class="govuk-table__cell" data-sort-value="2231362800000">
+              16 Sep 2040
+            </td>
+            <td class="govuk-table__cell">New case</td>
+          </tr>
+        </tbody>
+      </table>
+      <div aria-atomic="true" aria-live="polite" class="govuk-visually-hidden" role="status"></div>
+    </div>
+
+    <nav class="govuk-pagination" aria-label="Pagination">
+      <ul class="govuk-pagination__list">
+        <li class="govuk-pagination__item govuk-pagination__item--current">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=1" aria-label="Page 1" aria-current="page">
+            1
+          </a>
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=2" aria-label="Page 2">
+            2
+          </a>
+        </li>
+        <li class="govuk-pagination__item govuk-pagination__item--ellipsis">
+          ⋯
+        </li>
+        <li class="govuk-pagination__item">
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=13" aria-label="Page 13">
+            13
+          </a>
+        </li>
+      </ul>
+      <div class="govuk-pagination__next">
+        <a class="govuk-link govuk-pagination__link" href="/cases?page=2" rel="next">
+          <span class="govuk-pagination__link-title">
+            Next<span class="govuk-visually-hidden"> page</span>
+          </span>
+          <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
+            height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+            <path
+              d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+            </path>
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var chipStyles = document.createElement('style')
+    chipStyles.textContent = '.applied-filters-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding-left: 0; } .applied-filter-chip__button { font-size: 16px; }'
+    document.head.appendChild(chipStyles)
+
+    var caseworkRadios = document.querySelectorAll(
+      'input[name="caseworkArea"]'
+    )
+    var caseworkGroup = document.querySelector(
+      'input[name="caseworkArea"]'
+    ).closest('.govuk-radios')
+    var subOptions = document.createElement('fieldset')
+    var legend = document.createElement('legend')
+    var heading = document.createElement('h3')
+    var subOptionsRadios = document.createElement('div')
+
+    subOptions.className = 'govuk-fieldset'
+    subOptions.id = 'casework-area-options'
+    subOptions.hidden = true
+    legend.className = 'govuk-fieldset__legend govuk-fieldset__legend--s'
+    heading.className = 'govuk-fieldset__heading govuk-!-margin-top-5'
+    heading.textContent = 'Case type'
+    legend.appendChild(heading)
+    subOptions.appendChild(legend)
+    subOptionsRadios.className = 'govuk-radios'
+    subOptions.appendChild(subOptionsRadios)
+    caseworkGroup.closest('fieldset').insertAdjacentElement('afterend', subOptions)
+
+    var subtypeOptions = document.createElement('fieldset')
+    var subtypeLegend = document.createElement('legend')
+    var subtypeHeading = document.createElement('h3')
+    var subtypeCheckboxes = document.createElement('div')
+
+    subtypeOptions.className = 'govuk-fieldset'
+    subtypeOptions.id = 'casework-subtype-options'
+    subtypeOptions.hidden = true
+    subtypeLegend.className = 'govuk-fieldset__legend govuk-fieldset__legend--s'
+    subtypeHeading.className = 'govuk-fieldset__heading govuk-!-margin-top-5'
+    subtypeHeading.textContent = 'Subtype'
+    subtypeLegend.appendChild(subtypeHeading)
+    subtypeOptions.appendChild(subtypeLegend)
+    subtypeCheckboxes.className = 'govuk-checkboxes govuk-checkboxes--small content'
+    subtypeOptions.appendChild(subtypeCheckboxes)
+    subOptions.insertAdjacentElement('afterend', subtypeOptions)
+
+    var options = {
+      planning: [
+        'Drought',
+        'Housing and Planning CPOs',
+        'Other Secretary of State casework',
+        'Purchase Notices',
+        'Wayleaves'
+      ],
+      rightsOfWay: ['Coastal Access', 'Common Land', 'Rights of Way']
+    }
+
+    var subtypeLists = {
+      Drought: ['Drought Permits', 'Drought Orders'],
+      'Housing and Planning CPOs': ['Housing', 'Planning', 'Ad hoc'],
+      'Other Secretary of State casework': [
+        'DEFRA CPO',
+        'DESNZ CPO',
+        'DfT CPO',
+        'Ad hoc CPO',
+        'Advert',
+        'Completion notice',
+        'Discontinuance notice',
+        'Modification to planning permission',
+        'Review of mineral permission',
+        'Revocation of planning permission',
+        'Other'
+      ],
+      Wayleaves: ['New lines', 'Tree lopping', 'Wayleaves'],
+      'Coastal Access': [
+        'Coastal access appeal',
+        'Notice appeal',
+        'Objection',
+        'Restriction appeal (access land)'
+      ],
+      'Common Land': [
+        'Commons for Ecclesiastical Purposes',
+        'Commons in Greater London',
+        'Compulsory Purchase of Common Land',
+        'Deregistration & Exchange',
+        'Inclosure',
+        'Inclosure : obsolescent functions',
+        'Land Exchange',
+        'Local Acts and Provisional Order Confirmation Acts',
+        'Public Access to Commons - limitations and restrictions',
+        'Referred applications from Commons Registration Authorities',
+        'Scheme of Management',
+        'Stint Rates',
+        'Works on Common Land',
+        'Works on Common Land (National Trust)'
+      ],
+      'Rights of Way': [
+        'Dispensation for Serving Notice HA80',
+        'Dispensation for Serving Notice TCPA90',
+        'Dispensation for Serving Notice WCA81',
+        'Opposed Definitive Map Modification Order (DMMO)',
+        'Opposed Public Path Order (PPO) HA80',
+        'Opposed Public Path Order (PPO) TCPA90',
+        'Schedule 14 Appeal',
+        'Schedule 14 Direction',
+        'Schedule 13A Appeal'
+      ]
+    }
+
+    function showSubtypeOptions(optionList) {
+      subtypeCheckboxes.innerHTML = ''
+      subtypeOptions.hidden = !optionList
+
+      if (!optionList) {
+        return
+      }
+
+      optionList.forEach(function (option, index) {
+        var item = document.createElement('div')
+        var input = document.createElement('input')
+        var label = document.createElement('label')
+        var id = 'casework-subtype-option-' + index
+
+        item.className = 'govuk-checkboxes__item'
+        input.className = 'govuk-checkboxes__input'
+        input.id = id
+        input.name = 'caseworkSubtype'
+        input.type = 'checkbox'
+        input.value = option
+        label.className = 'govuk-label govuk-checkboxes__label'
+        label.htmlFor = id
+        label.textContent = option
+
+        item.appendChild(input)
+        item.appendChild(label)
+        subtypeCheckboxes.appendChild(item)
+      })
+    }
+
+    function showOptions(optionList) {
+      subOptionsRadios.innerHTML = ''
+      subOptions.hidden = false
+
+      optionList.forEach(function (option, index) {
+        var item = document.createElement('div')
+        var input = document.createElement('input')
+        var label = document.createElement('label')
+        var id = 'casework-area-option-' + index
+
+        item.className = 'govuk-radios__item'
+        input.className = 'govuk-radios__input'
+        input.id = id
+        input.name = 'caseworkAreaOption'
+        input.type = 'radio'
+        input.value = option
+        label.className = 'govuk-label govuk-radios__label'
+        label.htmlFor = id
+        label.textContent = option
+
+        item.appendChild(input)
+        item.appendChild(label)
+        subOptionsRadios.appendChild(item)
+      })
+    }
+
+    caseworkRadios.forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        showOptions(radio.id === 'casework-area' ? options.planning : options.rightsOfWay)
+        showSubtypeOptions(null)
+      })
+    })
+
+    subOptionsRadios.addEventListener('change', function (event) {
+      showSubtypeOptions(subtypeLists[event.target.value])
+    })
+  })()
+</script>
+
+<script>
+    (function () {
+      var areaRadios = Array.prototype.slice.call(
+        document.querySelectorAll('input[name="caseworkArea"]')
+      )
+      var caseTypeRadios = document.querySelector('#casework-area-options .govuk-radios')
+      var subtypeCheckboxes = document.querySelector('#casework-subtype-options .govuk-checkboxes')
+      var statusCheckboxes = Array.prototype.slice.call(
+        document.querySelectorAll('input[name="status"]')
+      )
+      var searchInput = document.getElementById('search-input')
+      var searchButton = document.getElementById('search-button')
+      var applyButton = document.querySelector('[data-test-id="submit-button"]')
+      var table = document.querySelector('.govuk-table')
+      var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'))
+      var pagination = document.getElementById('pagination')
+      var paginationNav = document.querySelector('.govuk-pagination')
+      var query = new URLSearchParams(window.location.search)
+      var statuses = [
+        'new-case',
+        'validated',
+        'invalid',
+        'allocate-inspector',
+        'in-progress',
+        'decision-recommendation-issued',
+        'final-check',
+        'closed',
+        'closed-opened-in-error'
+      ]
+      var statusLabels = {
+        'new-case': 'New case',
+        'validated': 'Validated',
+        'invalid': 'Invalid',
+        'allocate-inspector': 'Allocate inspector',
+        'in-progress': 'In progress',
+        'decision-recommendation-issued': 'Decision / recommendation issued',
+        'final-check': 'Final check',
+        'closed': 'Closed',
+        'closed-opened-in-error': 'Closed - opened in error'
+      }
+      var subtypeLists = {
+        Drought: ['Drought Permits', 'Drought Orders'],
+        'Housing and Planning CPOs': ['Housing', 'Planning', 'Ad hoc'],
+        'Other Secretary of State casework': [
+          'DEFRA CPO', 'DESNZ CPO', 'DfT CPO', 'Ad hoc CPO', 'Advert',
+          'Completion notice', 'Discontinuance notice',
+          'Modification to planning permission', 'Review of mineral permission',
+          'Revocation of planning permission', 'Other'
+        ],
+        Wayleaves: ['New lines', 'Tree lopping', 'Wayleaves'],
+        'Coastal Access': [
+          'Coastal access appeal', 'Notice appeal', 'Objection',
+          'Restriction appeal (access land)'
+        ],
+        'Common Land': [
+          'Commons for Ecclesiastical Purposes', 'Commons in Greater London',
+          'Compulsory Purchase of Common Land', 'Deregistration & Exchange',
+          'Inclosure', 'Inclosure : obsolescent functions', 'Land Exchange',
+          'Local Acts and Provisional Order Confirmation Acts',
+          'Public Access to Commons - limitations and restrictions',
+          'Referred applications from Commons Registration Authorities',
+          'Scheme of Management', 'Stint Rates', 'Works on Common Land',
+          'Works on Common Land (National Trust)'
+        ],
+        'Rights of Way': [
+          'Dispensation for Serving Notice HA80',
+          'Dispensation for Serving Notice TCPA90',
+          'Dispensation for Serving Notice WCA81',
+          'Opposed Definitive Map Modification Order (DMMO)',
+          'Opposed Public Path Order (PPO) HA80',
+          'Opposed Public Path Order (PPO) TCPA90', 'Schedule 14 Appeal',
+          'Schedule 14 Direction', 'Schedule 13A Appeal'
+        ]
+      }
+
+      function metadataFor(reference, index) {
+        if (index === 1) return { area: 'planning', type: 'Drought', subtype: 'Drought Permits' }
+        if (index === 4) return { area: 'planning', type: 'Housing and Planning CPOs', subtype: 'Housing' }
+        if (index === 15) return { area: 'planning', type: 'Purchase Notices', subtype: null }
+        if (reference.indexOf('WAY/') === 0) return { area: 'planning', type: 'Wayleaves', subtype: 'New lines' }
+        if (reference.indexOf('COM/') === 0) return { area: 'rightsOfWay', type: 'Common Land', subtype: 'Works on Common Land' }
+        if (reference.indexOf('MCA/CAA') === 0) return { area: 'rightsOfWay', type: 'Coastal Access', subtype: 'Coastal access appeal' }
+        if (reference.indexOf('MCA/NOT') === 0) return { area: 'rightsOfWay', type: 'Coastal Access', subtype: 'Notice appeal' }
+        if (reference.indexOf('MCA/RES') === 0) return { area: 'rightsOfWay', type: 'Coastal Access', subtype: 'Restriction appeal (access land)' }
+        if (reference.indexOf('ROW/DMM') === 0) return { area: 'rightsOfWay', type: 'Rights of Way', subtype: 'Opposed Definitive Map Modification Order (DMMO)' }
+        if (reference.indexOf('ROW/S14D') === 0) return { area: 'rightsOfWay', type: 'Rights of Way', subtype: 'Schedule 14 Direction' }
+        if (reference.indexOf('ROW/PPH') === 0) return { area: 'rightsOfWay', type: 'Rights of Way', subtype: 'Opposed Public Path Order (PPO) HA80' }
+        if (reference.indexOf('ROW/') === 0) return { area: 'rightsOfWay', type: 'Rights of Way', subtype: 'Schedule 14 Appeal' }
+        if (reference.indexOf('SOS/REV') === 0) return { area: 'planning', type: 'Other Secretary of State casework', subtype: 'Revocation of planning permission' }
+        if (reference.indexOf('SOS/') === 0) return { area: 'planning', type: 'Other Secretary of State casework', subtype: 'Ad hoc CPO' }
+        if (index % 3 === 0) return { area: 'planning', type: 'Drought', subtype: 'Drought Orders' }
+        return { area: 'planning', type: 'Housing and Planning CPOs', subtype: 'Planning' }
+      }
+
+      var subtypeEntries = Object.keys(subtypeLists).reduce(function (entries, type) {
+        return entries.concat(subtypeLists[type].map(function (subtype) {
+          return [
+            { type: type, subtype: subtype },
+            { type: type, subtype: subtype },
+            { type: type, subtype: subtype, addedInProgress: true }
+          ]
+        }).reduce(function (all, pair) { return all.concat(pair) }, []))
+      }, [])
+      subtypeEntries.push({ type: 'Purchase Notices', subtype: null })
+
+      subtypeEntries.forEach(function (entry, index) {
+        var row = rows[index]
+        if (!row) {
+          row = rows[rows.length - 1].cloneNode(true)
+          table.querySelector('tbody').appendChild(row)
+          rows.push(row)
+        }
+        var referenceCell = row.cells[0]
+        var nameCell = row.cells[1]
+        referenceCell.textContent = 'PRO/' + String(index + 1).padStart(5, '0')
+        nameCell.textContent = entry.subtype + ' prototype case'
+      })
+
+      function baseLabel(label) {
+        return label.textContent.trim().replace(/\s*\(\d+\)$/, '')
+      }
+
+      function setLabelCount(label, count) {
+        label.textContent = baseLabel(label) + ' (' + count + ')'
+      }
+
+      var rowMetadata = rows.map(function (row, index) {
+        var reference = row.cells[0].textContent.trim()
+        var metadata = metadataFor(reference, index)
+        var generatedEntry = subtypeEntries[index]
+        if (generatedEntry) {
+          metadata = {
+            area: optionsForType(generatedEntry.type),
+            type: generatedEntry.type,
+            subtype: generatedEntry.subtype
+          }
+        }
+        metadata.status = generatedEntry && generatedEntry.addedInProgress
+          ? 'in-progress'
+          : statuses[index % statuses.length]
+        row.cells[3].textContent = statusLabels[metadata.status] || metadata.status
+        return metadata
+      })
+
+      function optionsForType(type) {
+        return ['Coastal Access', 'Common Land', 'Rights of Way'].indexOf(type) !== -1
+          ? 'rightsOfWay'
+          : 'planning'
+      }
+
+      var counts = rowMetadata.reduce(function (result, row) {
+        result.area[row.area] = (result.area[row.area] || 0) + 1
+        result.type[row.type] = (result.type[row.type] || 0) + 1
+        if (row.subtype) result.subtype[row.subtype] = (result.subtype[row.subtype] || 0) + 1
+        result.status[row.status] = (result.status[row.status] || 0) + 1
+        return result
+      }, { area: {}, type: {}, subtype: {}, status: {} })
+
+      function updateCounts() {
+        areaRadios.forEach(function (radio) {
+          radio.value = radio.id === 'casework-area' ? 'planning' : 'rightsOfWay'
+          setLabelCount(document.querySelector('label[for="' + radio.id + '"]'), counts.area[radio.value] || 0)
+        })
+        Array.prototype.slice.call(document.querySelectorAll('#casework-area-options label')).forEach(function (label) {
+          setLabelCount(label, counts.type[baseLabel(label)] || 0)
+        })
+        Array.prototype.slice.call(document.querySelectorAll('#casework-subtype-options label')).forEach(function (label) {
+          setLabelCount(label, counts.subtype[baseLabel(label)] || 0)
+        })
+        statusCheckboxes.forEach(function (checkbox) {
+          setLabelCount(document.querySelector('label[for="' + checkbox.id + '"]'), counts.status[checkbox.value] || 0)
+        })
+      }
+
+      function selectedValues(elements) {
+        return elements.filter(function (element) { return element.checked }).map(function (element) { return element.value })
+      }
+
+      function navigateWithCurrentState() {
+        var params = new URLSearchParams()
+        var area = areaRadios.find(function (radio) { return radio.checked })
+        var type = caseTypeRadios && caseTypeRadios.querySelector('input:checked')
+        if (area) params.set('caseworkArea', area.value)
+        if (type) params.set('caseworkType', type.value)
+        selectedValues(subtypeCheckboxes ? Array.prototype.slice.call(subtypeCheckboxes.querySelectorAll('input')) : []).forEach(function (value) { params.append('caseworkSubtype', value) })
+        selectedValues(statusCheckboxes).forEach(function (value) { params.append('status', value) })
+        if (searchInput.value.trim()) params.set('searchCriteria', searchInput.value.trim())
+        window.location.search = params.toString()
+      }
+
+      function getItemsPerPage() {
+        var value = parseInt(query.get('itemsPerPage'), 10)
+        return [25, 50, 100].indexOf(value) !== -1 ? value : 25
+      }
+
+      function getPage() {
+        return Math.max(1, parseInt(query.get('page'), 10) || 1)
+      }
+
+      function renderItemsPerPage(itemsPerPage) {
+        var options = pagination.querySelector('.pins-pagination-options')
+        var sizes = [25, 50, 100]
+        options.innerHTML = '<span>Results per page   </span>'
+        sizes.forEach(function (size, index) {
+          if (index > 0) options.appendChild(document.createTextNode('  |  '))
+          var value = document.createElement(size === itemsPerPage ? 'strong' : 'a')
+          value.textContent = size
+          if (size !== itemsPerPage) {
+            value.className = 'govuk-link--no-visited-state'
+            value.href = '?itemsPerPage=' + size
+            value.dataset.pagination = size
+          }
+          options.appendChild(value)
+        })
+      }
+
+      function renderPagination(total, itemsPerPage, currentPage) {
+        var totalPages = Math.max(1, Math.ceil(total / itemsPerPage))
+        var pageLinks = paginationNav.querySelector('.govuk-pagination__list')
+        var pageNumbers = []
+        var pageIndex
+
+        function pageHref(pageNumber) {
+          var params = new URLSearchParams(window.location.search)
+          params.set('page', pageNumber)
+          params.set('itemsPerPage', itemsPerPage)
+          return '?' + params.toString()
+        }
+
+        if (totalPages > 1) {
+          for (pageIndex = 1; pageIndex <= totalPages; pageIndex += 1) {
+            pageNumbers.push(pageIndex)
+          }
+        }
+
+        pageLinks.innerHTML = pageNumbers.map(function (pageNumber) {
+          var current = pageNumber === currentPage
+          return '<li class="govuk-pagination__item' + (current ? ' govuk-pagination__item--current' : '') + '">' +
+            '<a class="govuk-link govuk-pagination__link" href="' + pageHref(pageNumber) + '" aria-label="Page ' + pageNumber + '"' + (current ? ' aria-current="page"' : '') + '>' + pageNumber + '</a></li>'
+        }).join('')
+
+        var next = paginationNav.querySelector('.govuk-pagination__next')
+        next.hidden = totalPages <= 1 || currentPage >= totalPages
+        if (!next.hidden) {
+          next.querySelector('a').href = pageHref(currentPage + 1)
+        }
+        paginationNav.hidden = totalPages <= 1 || total === 0
+      }
+
+      function addAppliedSection() {
+        var section = document.createElement('div')
+        section.id = 'applied-filters-section'
+        section.className = 'applied-filters-section'
+        section.hidden = true
+        section.innerHTML = '<h3 class="govuk-heading-s">Applied filters</h3><ul class="applied-filters-chips"></ul><p class="govuk-body"><a class="govuk-link" href="#" id="clear-search-filters">Clear search and filters</a></p>'
+        pagination.parentNode.insertBefore(section, pagination)
+        return section
+      }
+
+      function applyFilters() {
+        var area = query.get('caseworkArea')
+        var type = query.get('caseworkType')
+        var subtypes = query.getAll('caseworkSubtype')
+        var selectedStatuses = query.getAll('status')
+        var keyword = (query.get('searchCriteria') || '')
+        var filtered = rowMetadata.filter(function (metadata, index) {
+          var row = rows[index]
+          var searchable = (row.textContent + ' ' + metadata.type + ' ' + (metadata.subtype || ''))
+          return (!area || metadata.area === area) && (!type || metadata.type === type) && (!subtypes.length || subtypes.indexOf(metadata.subtype) !== -1) && (!selectedStatuses.length || selectedStatuses.indexOf(metadata.status) !== -1) && (!keyword || searchable.indexOf(keyword) !== -1)
+        })
+        var total = filtered.length
+        var itemsPerPage = getItemsPerPage()
+        var totalPages = Math.max(1, Math.ceil(total / itemsPerPage))
+        var currentPage = Math.min(getPage(), totalPages)
+        var firstResult = (currentPage - 1) * itemsPerPage
+        var pageRows = filtered.slice(firstResult, firstResult + itemsPerPage)
+        rows.forEach(function (row, index) { row.style.display = pageRows.indexOf(rowMetadata[index]) === -1 ? 'none' : '' })
+        var resultsText = pagination.querySelector('p strong:last-child')
+        var strongs = pagination.querySelectorAll('p:first-child strong')
+        if (strongs.length >= 3) {
+          strongs[0].textContent = total ? String(firstResult + 1) : '0'
+          strongs[1].textContent = total ? String(Math.min(firstResult + itemsPerPage, total)) : '0'
+          strongs[2].textContent = String(total)
+        } else if (resultsText) {
+          resultsText.textContent = String(total)
+        }
+        renderPagination(total, itemsPerPage, currentPage)
+        var noResults = document.getElementById('prototype-no-results') || document.createElement('p')
+        noResults.id = 'prototype-no-results'
+        noResults.className = 'govuk-body'
+        noResults.textContent = 'No cases match the applied filters and search.'
+        noResults.hidden = total !== 0
+        table.parentNode.insertBefore(noResults, table.nextSibling)
+        return { area: area, type: type, subtypes: subtypes, statuses: selectedStatuses, keyword: keyword, total: total }
+      }
+
+      function restoreControls() {
+        var area = query.get('caseworkArea')
+        var type = query.get('caseworkType')
+        areaRadios.forEach(function (radio) {
+          radio.checked = radio.value === area
+          if (radio.checked) radio.dispatchEvent(new Event('change'))
+        })
+        if (type && caseTypeRadios) {
+          var typeInput = Array.prototype.slice.call(caseTypeRadios.querySelectorAll('input')).find(function (input) { return input.value === type })
+          if (typeInput) {
+            typeInput.checked = true
+            typeInput.dispatchEvent(new Event('change'))
+          }
+        }
+        query.getAll('caseworkSubtype').forEach(function (value) {
+          var input = subtypeCheckboxes && Array.prototype.slice.call(subtypeCheckboxes.querySelectorAll('input')).find(function (item) { return item.value === value })
+          if (input) input.checked = true
+        })
+        statusCheckboxes.forEach(function (checkbox) { checkbox.checked = query.getAll('status').indexOf(checkbox.value) !== -1 })
+        searchInput.value = query.get('searchCriteria') || ''
+      }
+
+      function renderApplied(state) {
+        var section = addAppliedSection()
+        var chips = section.querySelector('.applied-filters-chips')
+        var values = []
+        if (state.area) {
+          var areaRadio = areaRadios.find(function (radio) { return radio.value === state.area })
+          var areaLabel = areaRadio && document.querySelector('label[for="' + areaRadio.id + '"]')
+          values.push({
+            key: 'caseworkArea',
+            value: state.area,
+            label: 'Casework area: ' + (areaLabel ? baseLabel(areaLabel) : state.area)
+          })
+        }
+        if (state.type) values.push({ key: 'caseworkType', value: state.type, label: 'Case type: ' + state.type })
+        state.subtypes.forEach(function (value) { values.push({ key: 'caseworkSubtype', value: value, label: 'Subtype: ' + value }) })
+        state.statuses.forEach(function (value) {
+          var statusCheckbox = statusCheckboxes.find(function (checkbox) { return checkbox.value === value })
+          var statusLabel = statusCheckbox && document.querySelector('label[for="' + statusCheckbox.id + '"]')
+          values.push({
+            key: 'status',
+            value: value,
+            label: 'Status: ' + (statusLabel ? baseLabel(statusLabel) : value)
+          })
+        })
+        if (state.keyword) values.push({ key: 'searchCriteria', value: state.keyword, label: 'Keywords: ' + state.keyword })
+        values.forEach(function (filter) {
+          var item = document.createElement('li')
+          var button = document.createElement('button')
+          item.className = 'applied-filter-chip'
+          button.className = 'applied-filter-chip__button'
+          button.type = 'button'
+          button.textContent = filter.label + ' x'
+          button.addEventListener('click', function () {
+            var params = new URLSearchParams(window.location.search)
+            if (filter.key === 'caseworkType') {
+              params.delete('caseworkType')
+              params.delete('caseworkSubtype')
+            } else if (filter.key === 'caseworkSubtype' || filter.key === 'status') {
+              var remaining = params.getAll(filter.key).filter(function (value) { return value !== filter.value })
+              params.delete(filter.key)
+              remaining.forEach(function (value) { params.append(filter.key, value) })
+            } else {
+              params.delete(filter.key)
+            }
+            window.location.search = params.toString()
+          })
+          item.appendChild(button)
+          chips.appendChild(item)
+        })
+        section.hidden = values.length === 0
+        section.querySelector('#clear-search-filters').addEventListener('click', function (event) {
+          event.preventDefault()
+          window.location.href = window.location.pathname
+        })
+      }
+
+      areaRadios.forEach(function (radio) {
+        radio.addEventListener('change', updateCounts)
+      })
+      if (caseTypeRadios) caseTypeRadios.addEventListener('change', updateCounts)
+
+      updateCounts()
+      restoreControls()
+      updateCounts()
+      renderItemsPerPage(getItemsPerPage())
+      renderApplied(applyFilters())
+      if (applyButton) applyButton.addEventListener('click', function (event) { event.preventDefault(); navigateWithCurrentState() })
+      if (searchButton) searchButton.addEventListener('click', function (event) { event.preventDefault(); navigateWithCurrentState() })
+      searchInput.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); navigateWithCurrentState() } })
+      pagination.querySelectorAll('[data-pagination]').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+          event.preventDefault()
+          var params = new URLSearchParams(window.location.search)
+          params.set('itemsPerPage', link.dataset.pagination)
+          params.delete('page')
+          window.location.search = params.toString()
+        })
+      })
+    })()
+</script>
+
+{% endblock %}
