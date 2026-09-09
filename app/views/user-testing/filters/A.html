@@ -142,13 +142,13 @@
     <ul class="pins-service-nav__list">
       <li
         class="pins-service-nav__item {% if activePage == 'assigned-to-me' %}pins-service-nav__item--active{% endif %}">
-        <a href="/assigned-to-me/my-cases" class="pins-service-nav__link">Assigned to me</a>
+        <a href="" class="pins-service-nav__link">Assigned to me</a>
       </li>
       <li class="pins-service-nav__item {% if activePage == 'all-cases' %}pins-service-nav__item--active{% endif %}">
-        <a href="/cases-page" class="pins-service-nav__link">All cases</a>
+        <a href="" class="pins-service-nav__link">All cases</a>
       </li>
       <li class="pins-service-nav__item {% if activePage == 'create-case' %}pins-service-nav__item--active{% endif %}">
-        <a href="/create-case-start" class="pins-service-nav__link">Create a case</a>
+        <a href="" class="pins-service-nav__link">Create a case</a>
       </li>
       <li class="pins-service-nav__item">
         <a href="#" class="pins-service-nav__link">Sign out</a>
@@ -160,11 +160,11 @@
 <div class="govuk-width-container">
   {{ govukPhaseBanner({
   tag: {
-  text: "BETA"
+  text: "Prototype",
+  class: "govuk-tag-magenta"
   },
-  html: '<span class="govuk-!-font-size-16">This is a new service. Help us improve it and
-    <a class="govuk-link" href="https://forms.cloud.microsoft/e/dC8AUkxZnC" target="_blank"
-      rel="noopener noreferrer">give your feedback (opens in a new tab).</a></span>'
+  html: '<span class="govuk-!-font-size-16">This is a prototype so some functionality and links will not work.
+  </span>'
   }) }}
 </div>
 {% endblock %}
