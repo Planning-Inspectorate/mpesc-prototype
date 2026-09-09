@@ -6,34 +6,41 @@
     width: 24px;
     height: 24px;
   }
-  .govuk-radios__input:checked + .govuk-radios__label::after {
+
+  .govuk-radios__input:checked+.govuk-radios__label::after {
     width: 0;
     height: 0;
     border: 6px solid currentColor;
     top: 8px;
     left: 8px;
   }
+
   .govuk-radios__label {
     padding-left: 10px;
     min-height: 24px;
     padding-top: 0;
     top: -8px;
   }
+
   .govuk-radios__input {
     width: 24px;
     height: 24px;
   }
+
   .govuk-checkboxes__input {
     background-color: white !important;
   }
+
   #subtype-search::placeholder {
     font-size: 16px;
   }
+
   #case-type-search {
     margin-top: 6px;
     padding-top: 6px;
     border: 1px solid #0b0c0c;
   }
+
   .container {
     width: 100%;
     max-width: 275px;
@@ -46,37 +53,46 @@
     overflow-x: hidden;
     box-sizing: border-box;
   }
+
   .content {
     width: 100%;
     height: auto;
     padding: 0px;
   }
+
   .child-inset {
     padding-left: 10px;
     border-left: 3px solid #ccc;
   }
+
   .govuk-checkboxes__item {
     margin: 0px !important;
     padding: 0px !important;
   }
+
   .govuk-label {
     margin: 0px !important;
     padding: 0px !important;
   }
+
   .govuk-button {
     margin-top: 10px;
   }
+
   .govuk-label {
     font-size: 16px !important;
   }
+
   .heading-4 {
     margin-top: 20px;
     margin-bottom: 0px;
     font-weight: 600 !important;
   }
+
   .applied-filters-section {
     margin-bottom: 20px;
   }
+
   .applied-filters-chips {
     display: flex;
     flex-wrap: wrap;
@@ -85,9 +101,11 @@
     margin: 10px 0;
     padding: 0;
   }
+
   .applied-filter-chip {
     display: inline-flex;
   }
+
   .applied-filter-chip__button {
     display: inline-flex;
     align-items: center;
@@ -101,12 +119,15 @@
     cursor: pointer;
     white-space: nowrap;
   }
+
   .applied-filter-chip__button:hover {
     background-color: #dbdad9;
   }
+
   .applied-filter-chip__remove {
     font-weight: 700;
   }
+
   .filter-panel {
     background-color: #F3F3F3;
     padding: 20px;
@@ -127,7 +148,8 @@
 
     <h3 class="govuk-heading-s">Status</h3>
     <div class="container">
-      <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes" data-govuk-checkboxes-init="">
+      <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+        data-govuk-checkboxes-init="">
         <div class="govuk-checkboxes__item">
           <input class="govuk-checkboxes__input" id="status-root" name="status" type="checkbox" value="new-case" />
           <label class="govuk-label govuk-checkboxes__label" for="status-root">New case (188)</label>
@@ -141,7 +163,8 @@
           <label class="govuk-label govuk-checkboxes__label" for="status-root-3">Invalid (1)</label>
         </div>
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="status-root-6" name="status" type="checkbox" value="allocate-inspector" />
+          <input class="govuk-checkboxes__input" id="status-root-6" name="status" type="checkbox"
+            value="allocate-inspector" />
           <label class="govuk-label govuk-checkboxes__label" for="status-root-6">Allocate inspector (1)</label>
         </div>
         <div class="govuk-checkboxes__item">
@@ -149,11 +172,14 @@
           <label class="govuk-label govuk-checkboxes__label" for="status-root-8">In progress (2)</label>
         </div>
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="status-root-11" name="status" type="checkbox" value="decision-recommendation-issued" />
-          <label class="govuk-label govuk-checkboxes__label" for="status-root-11">Decision / recommendation issued (1)</label>
+          <input class="govuk-checkboxes__input" id="status-root-11" name="status" type="checkbox"
+            value="decision-recommendation-issued" />
+          <label class="govuk-label govuk-checkboxes__label" for="status-root-11">Decision / recommendation issued
+            (1)</label>
         </div>
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="status-root-13" name="status" type="checkbox" value="final-check" />
+          <input class="govuk-checkboxes__input" id="status-root-13" name="status" type="checkbox"
+            value="final-check" />
           <label class="govuk-label govuk-checkboxes__label" for="status-root-13">Final check (1)</label>
         </div>
         <div class="govuk-checkboxes__item">
@@ -161,12 +187,14 @@
           <label class="govuk-label govuk-checkboxes__label" for="status-root-14">Closed (8)</label>
         </div>
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="status-root-19" name="status" type="checkbox" value="closed-opened-in-error" />
+          <input class="govuk-checkboxes__input" id="status-root-19" name="status" type="checkbox"
+            value="closed-opened-in-error" />
           <label class="govuk-label govuk-checkboxes__label" for="status-root-19">Closed - opened in error (1)</label>
         </div>
       </div>
     </div>
-    <button type="submit" class="govuk-button" data-module="govuk-button" data-test-id="submit-button" data-govuk-button-init="">Apply filters</button>
+    <button type="submit" class="govuk-button" data-module="govuk-button" data-test-id="submit-button"
+      data-govuk-button-init="">Apply filters</button>
   </div>
 
   <div class="govuk-grid-column-two-thirds">
@@ -175,19 +203,21 @@
       <label class="govuk-label govuk-label--m" id="search-label" for="search-input">Search cases</label>
     </h2>
 
-    <div id="search-hint" class="govuk-hint">To find a specific case, search by reference, historical reference, case name, applicant or local authority.</div>
+    <div id="search-hint" class="govuk-hint">To find a specific case, search by reference, historical reference, case
+      name, applicant or local authority.</div>
 
     <div class="pins-row-inline">
       <input class="govuk-input" id="search-input" value="" name="searchCriteria" type="text" />
-      <button type="submit" class="govuk-button govuk-button govuk-!-margin-top-2" data-module="govuk-button" id="search-button" data-govuk-button-init="">Search</button>
+      <button type="submit" class="govuk-button govuk-button govuk-!-margin-top-2" data-module="govuk-button"
+        id="search-button" data-govuk-button-init="">Search</button>
     </div>
 
     <div id="pagination">
       <p class="govuk-body govuk-clearfix">
         <span>Showing <strong>1</strong> to <strong>25</strong> of <strong>309</strong> results</span><br /><br />
         <span class="pins-pagination-options">
-          <span><strong>Results per page</strong></span>   
-          <span class="govuk-body">25</span>
+          <span><strong>Results per page</strong></span>
+          <span class="govuk-body">&nbsp;&nbsp;|&nbsp;&nbsp;25</span>
           &nbsp;&nbsp;|&nbsp;&nbsp;
           <a class="govuk-link--no-visited-state" href="?itemsPerPage=50" data-pagination="50">50</a>
           &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -199,166 +229,206 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header govuk-!-width-one-fifth" aria-sort="none">
-              <button type="button" data-index="0">Reference<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path><path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path></svg></button>
+              <button type="button" data-index="0">Reference<svg width="22" height="22" focusable="false"
+                  aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button>
             </th>
             <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">
-              <button type="button" data-index="1">Case name<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path><path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path></svg></button>
+              <button type="button" data-index="1">Case name<svg width="22" height="22" focusable="false"
+                  aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button>
             </th>
             <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="descending">
-              <button type="button" data-index="2">Received<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z" fill="currentColor"></path></svg></button>
+              <button type="button" data-index="2">Received<svg width="22" height="22" focusable="false"
+                  aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.4375 7L11 15.8687L6.5625 7L15.4375 7Z" fill="currentColor"></path>
+                </svg></button>
             </th>
             <th scope="col" class="govuk-table__header govuk-!-width-one-quarter" aria-sort="none">
-              <button type="button" data-index="3">Status<svg width="22" height="22" focusable="false" aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path><path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path></svg></button>
+              <button type="button" data-index="3">Status<svg width="22" height="22" focusable="false"
+                  aria-hidden="true" role="img" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8.1875 9.5L10.9609 3.95703L13.7344 9.5H8.1875Z" fill="currentColor"></path>
+                  <path d="M13.7344 12.0781L10.9609 17.6211L8.1875 12.0781H13.7344Z" fill="currentColor"></path>
+                </svg></button>
             </th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="SOS/REV/00001"><a class="govuk-link" target="_blank" href="/cases/d8f8de3a-c2cd-46a0-b4d5-986018a02bd0">SOS/REV/00001</a></td>
+            <td class="govuk-table__cell" data-sort-value="SOS/REV/00001"><a class="govuk-link" target="_blank"
+                href="/cases/d8f8de3a-c2cd-46a0-b4d5-986018a02bd0">SOS/REV/00001</a></td>
             <td class="govuk-table__cell">Revocation of planning permission on development 123</td>
             <td class="govuk-table__cell" data-sort-value="11841894000000">04 Apr 2345</td>
             <td class="govuk-table__cell">Validated</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="SOS/ENG/10001"><a class="govuk-link" target="_blank" href="/cases/ab311bbd-a98f-418b-a00c-107a45e54aa6">SOS/ENG/10001</a></td>
+            <td class="govuk-table__cell" data-sort-value="SOS/ENG/10001"><a class="govuk-link" target="_blank"
+                href="/cases/ab311bbd-a98f-418b-a00c-107a45e54aa6">SOS/ENG/10001</a></td>
             <td class="govuk-table__cell">test</td>
             <td class="govuk-table__cell" data-sort-value="11840601600000">20 Mar 2345</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="MCA/CAA/00002"><a class="govuk-link" target="_blank" href="/cases/ed9c96e0-476c-4fb3-8aef-96f428253847">MCA/CAA/00002</a></td>
+            <td class="govuk-table__cell" data-sort-value="MCA/CAA/00002"><a class="govuk-link" target="_blank"
+                href="/cases/ed9c96e0-476c-4fb3-8aef-96f428253847">MCA/CAA/00002</a></td>
             <td class="govuk-table__cell">Coastal access appeal 123: Kent Coastline</td>
             <td class="govuk-table__cell" data-sort-value="7972642800000">24 Aug 2222</td>
             <td class="govuk-table__cell"></td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/PPH/00002"><a class="govuk-link" target="_blank" href="/cases/1ca122c3-7367-4547-99ad-c1172d0a5838">ROW/PPH/00002</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/PPH/00002"><a class="govuk-link" target="_blank"
+                href="/cases/1ca122c3-7367-4547-99ad-c1172d0a5838">ROW/PPH/00002</a></td>
             <td class="govuk-table__cell">Somerset Route 11</td>
             <td class="govuk-table__cell" data-sort-value="7955971200000">12 Feb 2222</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="MCA/NOT/00001"><a class="govuk-link" target="_blank" href="/cases/031bf41b-73b6-4512-bcca-56cc22327f58">MCA/NOT/00001</a></td>
+            <td class="govuk-table__cell" data-sort-value="MCA/NOT/00001"><a class="govuk-link" target="_blank"
+                href="/cases/031bf41b-73b6-4512-bcca-56cc22327f58">MCA/NOT/00001</a></td>
             <td class="govuk-table__cell">Notice appeal test case</td>
             <td class="govuk-table__cell" data-sort-value="7955971200000">12 Feb 2222</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/SNW/00001"><a class="govuk-link" target="_blank" href="/cases/d9f10a79-171d-40b3-b05c-db5827a276bf">ROW/SNW/00001</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/SNW/00001"><a class="govuk-link" target="_blank"
+                href="/cases/d9f10a79-171d-40b3-b05c-db5827a276bf">ROW/SNW/00001</a></td>
             <td class="govuk-table__cell">test</td>
             <td class="govuk-table__cell" data-sort-value="5139590400000">13 Nov 2132</td>
             <td class="govuk-table__cell">Validated</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10029"><a class="govuk-link" target="_blank" href="/cases/758083e2-86c3-41ab-9ea2-7dcb5c5170fe">WAY/LIN/10029</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10029"><a class="govuk-link" target="_blank"
+                href="/cases/758083e2-86c3-41ab-9ea2-7dcb5c5170fe">WAY/LIN/10029</a></td>
             <td class="govuk-table__cell">Auto-New lines-01/06/26-11:43</td>
             <td class="govuk-table__cell" data-sort-value="3667507200000">21 Mar 2086</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10013"><a class="govuk-link" target="_blank" href="/cases/d510de10-8dfd-41b2-a708-d33231875c8a">WAY/LIN/10013</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10013"><a class="govuk-link" target="_blank"
+                href="/cases/d510de10-8dfd-41b2-a708-d33231875c8a">WAY/LIN/10013</a></td>
             <td class="govuk-table__cell">Auto-New lines-18/05/26-18:07</td>
             <td class="govuk-table__cell" data-sort-value="3630096000000">12 Jan 2085</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="COM/WCL/10001"><a class="govuk-link" target="_blank" href="/cases/1eddd499-14c7-452d-a0fa-c2625808229e">COM/WCL/10001</a></td>
+            <td class="govuk-table__cell" data-sort-value="COM/WCL/10001"><a class="govuk-link" target="_blank"
+                href="/cases/1eddd499-14c7-452d-a0fa-c2625808229e">COM/WCL/10001</a></td>
             <td class="govuk-table__cell">Auto-Works on Common Land-19/05/26-15:00</td>
             <td class="govuk-table__cell" data-sort-value="3586806000000">30 Aug 2083</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10027"><a class="govuk-link" target="_blank" href="/cases/20307d49-3e43-4391-a13e-accb329da000">ROW/DMM/10027</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10027"><a class="govuk-link" target="_blank"
+                href="/cases/20307d49-3e43-4391-a13e-accb329da000">ROW/DMM/10027</a></td>
             <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:10</td>
             <td class="govuk-table__cell" data-sort-value="3438979200000">23 Dec 2078</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10011"><a class="govuk-link" target="_blank" href="/cases/58679bb6-c50e-426c-8f78-08c1355f306f">ROW/S14D/10011</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10011"><a class="govuk-link" target="_blank"
+                href="/cases/58679bb6-c50e-426c-8f78-08c1355f306f">ROW/S14D/10011</a></td>
             <td class="govuk-table__cell">Auto-Schedule 14 Direction-08/06/26-16:08</td>
             <td class="govuk-table__cell" data-sort-value="3424546800000">09 Jul 2078</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10029"><a class="govuk-link" target="_blank" href="/cases/61b8feac-c695-4609-b9b2-b29c506d0ba6">ROW/DMM/10029</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10029"><a class="govuk-link" target="_blank"
+                href="/cases/61b8feac-c695-4609-b9b2-b29c506d0ba6">ROW/DMM/10029</a></td>
             <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:24</td>
             <td class="govuk-table__cell" data-sort-value="3384630000000">03 Apr 2077</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10036"><a class="govuk-link" target="_blank" href="/cases/85b17773-574e-406c-801d-00ff939dd628">WAY/LIN/10036</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10036"><a class="govuk-link" target="_blank"
+                href="/cases/85b17773-574e-406c-801d-00ff939dd628">WAY/LIN/10036</a></td>
             <td class="govuk-table__cell">Auto-New lines-24/07/26-19:31</td>
             <td class="govuk-table__cell" data-sort-value="3329593200000">06 Jul 2075</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10010"><a class="govuk-link" target="_blank" href="/cases/f51d6b6e-0790-494c-a8fd-22ad7bc70608">ROW/S14D/10010</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10010"><a class="govuk-link" target="_blank"
+                href="/cases/f51d6b6e-0790-494c-a8fd-22ad7bc70608">ROW/S14D/10010</a></td>
             <td class="govuk-table__cell">Auto-Schedule 14 Direction-02/06/26-12:57</td>
             <td class="govuk-table__cell" data-sort-value="3305228400000">27 Sep 2074</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10036"><a class="govuk-link" target="_blank" href="/cases/fa06a4a3-4e2b-4ea9-bb0d-e3aaa6fa500f">ROW/DMM/10036</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10036"><a class="govuk-link" target="_blank"
+                href="/cases/fa06a4a3-4e2b-4ea9-bb0d-e3aaa6fa500f">ROW/DMM/10036</a></td>
             <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-16:04</td>
             <td class="govuk-table__cell" data-sort-value="3261769200000">12 May 2073</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="MCA/RES/10003"><a class="govuk-link" target="_blank" href="/cases/035a8ef4-1acd-41dc-866b-04ea384783de">MCA/RES/10003</a></td>
+            <td class="govuk-table__cell" data-sort-value="MCA/RES/10003"><a class="govuk-link" target="_blank"
+                href="/cases/035a8ef4-1acd-41dc-866b-04ea384783de">MCA/RES/10003</a></td>
             <td class="govuk-table__cell">Auto-Restriction appeal (access land)-24/07/26-19:27</td>
             <td class="govuk-table__cell" data-sort-value="3065126400000">17 Feb 2067</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10017"><a class="govuk-link" target="_blank" href="/cases/c5b59d91-d8df-480c-8fc4-856ac338469f">ROW/DMM/10017</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10017"><a class="govuk-link" target="_blank"
+                href="/cases/c5b59d91-d8df-480c-8fc4-856ac338469f">ROW/DMM/10017</a></td>
             <td class="govuk-table__cell">Auto-Opposed (DMMO)-04/06/26-13:18</td>
             <td class="govuk-table__cell" data-sort-value="2983388400000">16 Jul 2064</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10004"><a class="govuk-link" target="_blank" href="/cases/8bbd45f8-d8c4-4dd3-94a0-11b8b9b18312">WAY/LIN/10004</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10004"><a class="govuk-link" target="_blank"
+                href="/cases/8bbd45f8-d8c4-4dd3-94a0-11b8b9b18312">WAY/LIN/10004</a></td>
             <td class="govuk-table__cell">Auto-New lines-18/05/26-14:28</td>
             <td class="govuk-table__cell" data-sort-value="2625091200000">09 Mar 2053</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10003"><a class="govuk-link" target="_blank" href="/cases/2b192e6c-f07a-41ca-b2a6-798e0e2764d1">ROW/S14D/10003</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/S14D/10003"><a class="govuk-link" target="_blank"
+                href="/cases/2b192e6c-f07a-41ca-b2a6-798e0e2764d1">ROW/S14D/10003</a></td>
             <td class="govuk-table__cell">Auto-Schedule 14 Direction-02/06/26-11:05</td>
             <td class="govuk-table__cell" data-sort-value="2529014400000">21 Feb 2050</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10032"><a class="govuk-link" target="_blank" href="/cases/c290c6e0-3fd7-4851-a2d8-5ee11fdbfd6a">ROW/DMM/10032</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10032"><a class="govuk-link" target="_blank"
+                href="/cases/c290c6e0-3fd7-4851-a2d8-5ee11fdbfd6a">ROW/DMM/10032</a></td>
             <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:47</td>
             <td class="govuk-table__cell" data-sort-value="2515359600000">16 Sep 2049</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10003"><a class="govuk-link" target="_blank" href="/cases/adf01021-9684-408b-87f5-ccb5234f01b2">WAY/LIN/10003</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10003"><a class="govuk-link" target="_blank"
+                href="/cases/adf01021-9684-408b-87f5-ccb5234f01b2">WAY/LIN/10003</a></td>
             <td class="govuk-table__cell">Auto-New lines-18/05/26-12:14</td>
             <td class="govuk-table__cell" data-sort-value="2388956400000">14 Sep 2045</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10031"><a class="govuk-link" target="_blank" href="/cases/214cb8e4-f287-4a06-aa57-a190b1b5608e">ROW/DMM/10031</a></td>
+            <td class="govuk-table__cell" data-sort-value="ROW/DMM/10031"><a class="govuk-link" target="_blank"
+                href="/cases/214cb8e4-f287-4a06-aa57-a190b1b5608e">ROW/DMM/10031</a></td>
             <td class="govuk-table__cell">Auto-Opposed (DMMO)-08/06/26-12:43</td>
             <td class="govuk-table__cell" data-sort-value="2372457600000">07 Mar 2045</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10006"><a class="govuk-link" target="_blank" href="/cases/5cb140aa-70ae-4ee3-8895-c9523b3f4905">WAY/LIN/10006</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10006"><a class="govuk-link" target="_blank"
+                href="/cases/5cb140aa-70ae-4ee3-8895-c9523b3f4905">WAY/LIN/10006</a></td>
             <td class="govuk-table__cell">Auto-New lines-18/05/26-17:19</td>
             <td class="govuk-table__cell" data-sort-value="2250370800000">24 Apr 2041</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10020"><a class="govuk-link" target="_blank" href="/cases/a2644e9e-75b4-4dfc-aedb-bfcc9db2a80d">WAY/LIN/10020</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10020"><a class="govuk-link" target="_blank"
+                href="/cases/a2644e9e-75b4-4dfc-aedb-bfcc9db2a80d">WAY/LIN/10020</a></td>
             <td class="govuk-table__cell">Auto-New lines-22/05/26-15:07</td>
             <td class="govuk-table__cell" data-sort-value="2248988400000">08 Apr 2041</td>
             <td class="govuk-table__cell">New case</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10016"><a class="govuk-link" target="_blank" href="/cases/a6ebd5c4-f7a5-4234-8561-f003a10f925e">WAY/LIN/10016</a></td>
+            <td class="govuk-table__cell" data-sort-value="WAY/LIN/10016"><a class="govuk-link" target="_blank"
+                href="/cases/a6ebd5c4-f7a5-4234-8561-f003a10f925e">WAY/LIN/10016</a></td>
             <td class="govuk-table__cell">Auto-New lines-19/05/26-14:51</td>
             <td class="govuk-table__cell" data-sort-value="2231362800000">16 Sep 2040</td>
             <td class="govuk-table__cell">New case</td>
@@ -371,7 +441,8 @@
     <nav class="govuk-pagination" aria-label="Pagination">
       <ul class="govuk-pagination__list">
         <li class="govuk-pagination__item govuk-pagination__item--current">
-          <a class="govuk-link govuk-pagination__link" href="/cases?page=1" aria-label="Page 1" aria-current="page">1</a>
+          <a class="govuk-link govuk-pagination__link" href="/cases?page=1" aria-label="Page 1"
+            aria-current="page">1</a>
         </li>
         <li class="govuk-pagination__item">
           <a class="govuk-link govuk-pagination__link" href="/cases?page=2" aria-label="Page 2">2</a>
@@ -384,8 +455,11 @@
       <div class="govuk-pagination__next">
         <a class="govuk-link govuk-pagination__link" href="/cases?page=2" rel="next">
           <span class="govuk-pagination__link-title">Next<span class="govuk-visually-hidden"> page</span></span>
-          <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-            <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+          <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg"
+            height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+            <path
+              d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+            </path>
           </svg>
         </a>
       </div>
@@ -449,7 +523,7 @@
       'Works on Common Land': 'Common Land',
       'Works on Common Land (National Trust)': 'Common Land'
     }
-    
+
     var caseTypes = Object.keys(caseTypeHierarchy).sort()
 
     // Get DOM references
@@ -466,7 +540,7 @@
     // Populate case type checkboxes
     var caseworkAreaH3 = Array.prototype.find.call(
       document.querySelectorAll('h3.govuk-fieldset__heading'),
-      function(h3) { return h3.textContent.indexOf('Case type') !== -1 }
+      function (h3) { return h3.textContent.indexOf('Case type') !== -1 }
     )
     var caseTypeContainer = null
     if (caseworkAreaH3) {
@@ -537,23 +611,132 @@
         checkboxesDiv.querySelectorAll('.govuk-checkboxes__item').forEach(function (item) {
           var label = item.querySelector('label')
           var matches = label.textContent.toLowerCase().indexOf(searchTerm) !== -1
-            item.hidden = !matches
-            item.style.display = matches ? '' : 'none'
+          item.hidden = !matches
+          item.style.display = matches ? '' : 'none'
           if (matches) visibleItems += 1
         })
         caseTypeSearchStatus.hidden = visibleItems !== 0
       })
     }
 
-    // Setup metadata
-    var caseTypeAssignments = ['Housing', 'Ad hoc', 'DEFRA CPO', 'New lines', 'Objection', 'Works on Common Land']
+    // Seeded RNG keeps the generated demo data identical across reloads (e.g. when a filter checkbox navigates the page)
+    function createSeededRandom(seed) {
+      return function () {
+        seed = (seed + 0x6D2B79F5) | 0
+        var t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+      }
+    }
+    var random = createSeededRandom(20260909)
+
+    // Setup metadata - give each case type a varied number of cases (2-30), with a couple of outliers left at 1
+    var singleCountTypes = caseTypes
+      .map(function (type, index) { return index })
+      .sort(function () { return random() - 0.5 })
+      .slice(0, Math.min(2, caseTypes.length))
+
+    var caseTypeAssignments = []
+    caseTypes.forEach(function (type, index) {
+      var count = singleCountTypes.indexOf(index) !== -1 ? 1 : Math.floor(random() * 29) + 2
+      for (var i = 0; i < count; i++) {
+        caseTypeAssignments.push(type)
+      }
+    })
+    for (var shuffleIndex = caseTypeAssignments.length - 1; shuffleIndex > 0; shuffleIndex--) {
+      var swapIndex = Math.floor(random() * (shuffleIndex + 1))
+      var temp = caseTypeAssignments[shuffleIndex]
+      caseTypeAssignments[shuffleIndex] = caseTypeAssignments[swapIndex]
+      caseTypeAssignments[swapIndex] = temp
+    }
+
+    var extraCaseTypes = caseTypeAssignments.slice(rows.length)
+    var tbody = table.querySelector('tbody')
+
+    extraCaseTypes.forEach(function (type, extraIndex) {
+      var reference = 'AUTO/GEN/' + String(20000 + extraIndex)
+      var slug = reference.toLowerCase().replace(/\//g, '-')
+      var sortValue = String(Date.now() - extraIndex * 86400000)
+      var displayDate = new Date(Number(sortValue)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+
+      var row = document.createElement('tr')
+      row.className = 'govuk-table__row'
+
+      var refCell = document.createElement('td')
+      refCell.className = 'govuk-table__cell'
+      refCell.dataset.sortValue = reference
+      var link = document.createElement('a')
+      link.className = 'govuk-link'
+      link.target = '_blank'
+      link.href = '/cases/' + slug
+      link.textContent = reference
+      refCell.appendChild(link)
+
+      var nameCell = document.createElement('td')
+      nameCell.className = 'govuk-table__cell'
+      nameCell.textContent = 'Auto-' + type + '-generated case'
+
+      var dateCell = document.createElement('td')
+      dateCell.className = 'govuk-table__cell'
+      dateCell.dataset.sortValue = sortValue
+      dateCell.textContent = displayDate
+
+      var statusCell = document.createElement('td')
+      statusCell.className = 'govuk-table__cell'
+      statusCell.textContent = 'New case'
+
+      row.appendChild(refCell)
+      row.appendChild(nameCell)
+      row.appendChild(dateCell)
+      row.appendChild(statusCell)
+      tbody.appendChild(row)
+      rows.push(row)
+    })
+
     var statuses = ['new-case', 'validated', 'invalid', 'allocate-inspector', 'in-progress', 'decision-recommendation-issued', 'final-check', 'closed', 'closed-opened-in-error']
+
+    // Give each status a varied share of the total cases, independent of case type, rather than an even round-robin split
+    var statusWeights = statuses.map(function () { return random() * 9 + 1 })
+    var statusWeightTotal = statusWeights.reduce(function (sum, weight) { return sum + weight }, 0)
+    var statusAssignments = []
+    statuses.forEach(function (status, index) {
+      var share = Math.max(1, Math.round((statusWeights[index] / statusWeightTotal) * rows.length))
+      for (var i = 0; i < share; i++) {
+        statusAssignments.push(status)
+      }
+    })
+    while (statusAssignments.length > rows.length) statusAssignments.pop()
+    while (statusAssignments.length < rows.length) statusAssignments.push(statuses[statusAssignments.length % statuses.length])
+    for (var statusShuffleIndex = statusAssignments.length - 1; statusShuffleIndex > 0; statusShuffleIndex--) {
+      var statusSwapIndex = Math.floor(random() * (statusShuffleIndex + 1))
+      var statusTemp = statusAssignments[statusShuffleIndex]
+      statusAssignments[statusShuffleIndex] = statusAssignments[statusSwapIndex]
+      statusAssignments[statusSwapIndex] = statusTemp
+    }
 
     var rowMetadata = rows.map(function (row, index) {
       return {
-        caseType: index < caseTypeAssignments.length ? caseTypeAssignments[index] : null,
-        status: statuses[index % statuses.length]
+        caseType: caseTypeAssignments[index] || null,
+        status: statusAssignments[index]
       }
+    })
+
+    // Keep the status shown in the table in sync with the status used for filtering
+    var statusLabels = {
+      'new-case': 'New case',
+      'validated': 'Validated',
+      'invalid': 'Invalid',
+      'allocate-inspector': 'Allocate inspector',
+      'in-progress': 'In progress',
+      'decision-recommendation-issued': 'Decision / recommendation issued',
+      'final-check': 'Final check',
+      'closed': 'Closed',
+      'closed-opened-in-error': 'Closed - opened in error'
+    }
+    rows.forEach(function (row, index) {
+      var cells = row.querySelectorAll('td')
+      var statusCell = cells[cells.length - 1]
+      if (statusCell) statusCell.textContent = statusLabels[rowMetadata[index].status] || ''
     })
 
     // Calculate counts
@@ -599,7 +782,7 @@
     function renderPagination(total, itemsPerPage, currentPage) {
       var totalPages = Math.max(1, Math.ceil(total / itemsPerPage))
       var pageLinks = paginationNav.querySelector('.govuk-pagination__list')
-      
+
       function pageHref(pageNumber) {
         var params = new URLSearchParams(window.location.search)
         params.set('page', pageNumber)
@@ -636,6 +819,7 @@
       var options = pagination.querySelector('.pins-pagination-options')
       var sizes = [25, 50, 100]
       options.innerHTML = '<span><strong>Results per page</strong></span>'
+      options.appendChild(document.createTextNode('  '))
       sizes.forEach(function (size, index) {
         if (index > 0) options.appendChild(document.createTextNode('  |  '))
         var value = document.createElement(size === itemsPerPage ? 'strong' : 'a')
@@ -683,8 +867,8 @@
         var searchable = (row.textContent + ' ' + (metadata.caseType || '')).toLowerCase()
         var matchesCaseType = !selectedCaseTypes.length || (metadata.caseType && selectedCaseTypes.indexOf(metadata.caseType) !== -1)
         return matchesCaseType &&
-               (!selectedStatuses.length || selectedStatuses.indexOf(metadata.status) !== -1) &&
-               (!keyword || searchable.indexOf(keyword) !== -1)
+          (!selectedStatuses.length || selectedStatuses.indexOf(metadata.status) !== -1) &&
+          (!keyword || searchable.indexOf(keyword) !== -1)
       })
 
       var total = filtered.length
