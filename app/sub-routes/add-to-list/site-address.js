@@ -77,29 +77,46 @@ router.post('/cases/site-address/step-1', function(req, res) {
   var county = req.body['addressCounty'];
   var postcode = req.body['addressPostcode'];
 
-  var error = false;
-  var errorMsg = "";
+  var errors = [];
+  var addressLine1Error;
+  var addressTownError;
+  var addressPostcodeError;
 
-  // Bespoke postcode validation
-  if (postcode && postcode.trim() !== "") {
+  if (!line1 || line1.trim() === "") {
+    addressLine1Error = { text: "Enter address line 1" };
+    errors.push({ text: addressLine1Error.text, href: "#address-line-1" });
+  }
+  if (!town || town.trim() === "") {
+    addressTownError = { text: "Enter town or city" };
+    errors.push({ text: addressTownError.text, href: "#address-town" });
+  }
+  if (!postcode || postcode.trim() === "") {
+    addressPostcodeError = { text: "Enter postcode" };
+    errors.push({ text: addressPostcodeError.text, href: "#address-postcode" });
+  } else {
+    // Bespoke postcode validation
     var cleanPostcode = postcode.replace(/\s+/g, '').toUpperCase();
     var postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
 
     if (cleanPostcode.length < 5 || cleanPostcode.length > 7) {
-      error = true;
-      errorMsg = "Postcode must be between 5 and 7 characters (excluding spaces)";
+      addressPostcodeError = { text: "Enter a valid postcode" };
     } else if (!postcodeRegex.test(cleanPostcode)) {
-      error = true;
-      errorMsg = "Enter a real postcode";
+      addressPostcodeError = { text: "Enter a real postcode" };
+    }
+    if (addressPostcodeError) {
+      errors.push({ text: addressPostcodeError.text, href: "#address-postcode" });
     }
   }
 
   // Stop and show errors
-  if (error) {
+  if (errors.length) {
     return res.render('cases/add-to-list/site-address/site-address-question', {
       ref: req.query.ref, id: req.query.id,
       addressLine1: line1, addressLine2: line2, addressTown: town, addressCounty: county, addressPostcode: postcode,
-      error: true, errorMessage: { text: errorMsg }
+      errorList: errors,
+      addressLine1Error: addressLine1Error,
+      addressTownError: addressTownError,
+      addressPostcodeError: addressPostcodeError
     });
   }
 
