@@ -1,0 +1,21 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Remove costs application - Costs applications
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/features-and-components/costs-applications/v1/case"
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div id="costs-app" data-page="remove"></div>
+  {% include "features-and-components/costs-applications/v1/_engine.njk" %}
+{% endblock %}
+
+{% block footer %}
+  {% include "features-and-components/costs-applications/v1/_footer.njk" %}
+{% endblock %}
