@@ -1,18 +1,11 @@
 {% extends "layouts/main.html" %}
 
 {% block pageTitle %}
-  Manage parties - Costs applications
-{% endblock %}
-
-{% block beforeContent %}
-  {{ govukBackLink({
-    text: "Back",
-    href: "javascript:history.back()"
-  }) }}
+  Change note - Costs applications
 {% endblock %}
 
 {% block content %}
-  <div id="costs-app" data-page="partyManage"></div>
+  <div id="costs-app" data-page="note-change"></div>
   {% include "features-and-components/costs-applications/v1/_engine.njk" %}
 {% endblock %}
 
