@@ -35,7 +35,6 @@
             decisionMakerType: 'Inspector',
             inspectorName: 'Carol Danvers',
             outcomeType: 'Decision only',
-            reportRequired: 'No',
             decisionIssued: '2026-10-15',
             outcome: 'Costs granted'
           }, {
@@ -47,7 +46,6 @@
             respondents: ['Northbridge Borough Council'],
             decisionMakerType: 'Costs Branch',
             outcomeType: 'Decision only',
-            reportRequired: 'No',
             decisionIssued: '2026-08-01',
             outcome: 'Costs refused'
           }, {
@@ -135,35 +133,20 @@
       }
 
       function status(a) {
-        if (a.withdrawn === 'Yes') 
+        if (a.withdrawn === 'Yes')
           return {text: 'Withdrawn', cls: 'govuk-tag--grey'};
-        if (a.outcome) 
-          return {text: 'Decided', cls: 'govuk-tag--green'};
-        var started = [
-          'deadline',
-          'commentsReceived',
-          'commentsShared',
-          'finalCommentsReceived',
-          'decisionMakerType',
-          'reportRequired',
-          'reportIssued',
-          'decisionIssued'
-        ].some(function (k) {
-          return a[k];
-        });
-        return started
-          ? {
-            text: 'In progress',
-            cls: 'govuk-tag--blue'
-          }
-          : {
-            text: 'Draft',
-            cls: 'govuk-tag--light-blue'
-          };
+        if (a.outcome) {
+          var outcome = String(a.outcome).replace(/^Costs\s+/i, '').toLowerCase();
+          return {text: 'Decided: ' + outcome, cls: 'govuk-tag--green'};
+        }
+        return {text: 'In progress', cls: 'govuk-tag--blue'};
       }
       function tag(a) {
         var s = status(a);
         return '<strong class="govuk-tag ' + s.cls + '">' + s.text + '</strong>';
+      }
+      function hasReport(a) {
+        return a.outcomeType === 'Report and decision';
       }
 
       /* ---------- validation (user story business rules) ---------- */
@@ -197,13 +180,13 @@
               e[x] = msgX;
             }
           }
-        var hasReport = a.reportRequired === 'Yes';
+        var requiresReport = hasReport(a);
         cmp('dateMade', 'deadline', false, 'The deadline for comments must be on or after the date the application was submitted', 'The date submitted must be on or before the deadline for comments');
         cmp('dateMade', 'commentsReceived', false, 'The date comments were received must be on or after the date the application was submitted', 'The date submitted must be on or before the date comments were received');
         cmp('commentsReceived', 'finalCommentsReceived', true, 'The date final comments were received must be after the date comments were received', 'The date comments were received must be before the date final comments were received');
         cmp('dateMade', 'reportIssued', false, 'The date the report was issued must be on or after the date the application was submitted', 'The date submitted must be on or before the date the report was issued');
         cmp('dateMade', 'decisionIssued', false, 'The date the decision was issued must be on or after the date the application was submitted', 'The date submitted must be on or before the date the decision was issued');
-        if (hasReport) {
+        if (requiresReport) {
           cmp('commentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date comments were received', 'The date comments were received must be on or before the date the report was issued');
           cmp('finalCommentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date final comments were received', 'The date final comments were received must be on or before the date the report was issued');
           cmp('reportIssued', 'decisionIssued', false, 'The date the decision was issued must be on or after the date the report was issued', 'The date the report was issued must be on or before the date the decision was issued');
@@ -217,7 +200,7 @@
       var OUTCOMES = ['Costs granted', 'Costs refused', 'Costs partially awarded'];
       var PAGES = {
         dateMade: {
-          title: 'What is the date the application was submitted?',
+          title: 'When was the costs application submitted?',
           inputs: [
             {
               key: 'dateMade',
@@ -260,7 +243,7 @@
           ]
         },
         commentsReceived: {
-          title: 'What date were comments received?',
+          title: 'When were the comments received?',
           inputs: [
             {
               key: 'commentsReceived',
@@ -300,36 +283,23 @@
           ]
         },
         inspectorName: {
-          title: 'Which inspector?',
+          title: 'Which inspector is making the decision?',
           inputs: [
             {
               key: 'inspectorName',
-              type: 'select',
+              type: 'radios',
               options: INSPECTORS,
               required: 'Select an inspector'
             }
           ]
         },
         outcomeType: {
-          title: 'What type of cost outcome is this?',
+          title: 'What type of outcome is expected?',
           inputs: [
             {
               key: 'outcomeType',
               type: 'radios',
               options: ['Decision only', 'Report and decision']
-            }
-          ]
-        },
-        reportRequired: {
-          title: 'Is a costs report required?',
-          inputs: [
-            {
-              key: 'reportRequired',
-              type: 'radios',
-              options: [
-                'Yes', 'No'
-              ],
-              required: 'Select whether a costs report is required'
             }
           ]
         },
@@ -348,7 +318,7 @@
           inputs: [
             {
               key: 'reportAuthor',
-              type: 'select',
+              type: 'radios',
               options: INSPECTORS
             }
           ]
@@ -374,7 +344,7 @@
           ]
         },
         decisionIssued: {
-          title: 'What date was the decision issued?',
+          title: 'When was the decision issued?',
           inputs: [
             {
               key: 'decisionIssued',
@@ -388,7 +358,7 @@
           inputs: [
             {
               key: 'decisionAuthor',
-              type: 'select',
+              type: 'radios',
               options: INSPECTORS
             }
           ]
@@ -704,10 +674,7 @@
             .join('');
           if (!one) 
             inner = '<h1 class="govuk-heading-l">' + esc(page.title) + '</h1>' + inner;
-          root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">' + errorSummary(errors, keys) + '<span class="govuk-caption-l">' + esc(CASE_REF) + (
-            opts.mode === 'edit'
-            ? ' · ' + esc(rec.id)
-            : '') + '</span>' + '<form novalidate>' + inner + '<div class="govuk-button-group"><button class="govuk-button" data-module="govuk-button">' + (
+          root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">' + errorSummary(errors, keys) + '<form novalidate>' + inner + '<div class="govuk-button-group"><button class="govuk-button" data-module="govuk-button">' + (
             opts.mode === 'edit'
             ? 'Save'
             : 'Continue') + '</button></div></form></div></div>';
@@ -768,83 +735,19 @@
         };
         var h = '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' + arr
           .map(function (p, i) {
-            return li(p, i > 2);
+            return li(p, i > 1);
           })
           .join('') + '</ul>';
-        if (arr.length > 3) {
-          var n = arr.length - 3;
+        if (arr.length > 2) {
+          var n = arr.length - 2;
           h += '<a href="#" class="govuk-link costs-party-toggle" data-more="View ' + n + ' more" data-less="View less" aria-expanded="false">View ' + n + ' more</a>';
         }
         return h;
       }
-      function partyRow(a, label, key) {
-        return '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">' + label + '</dt><dd class="govuk-summary-list__value">' + partyList(a[key]) + '</dd><dd class="govuk-summary-list__actions"><a class="govuk-link" href="' + BASE + 'party-manage?id=' + a.id + '&key=' + key + '">Change<span class="govuk-visually-hidden"> ' + label.toLowerCase() + '</span></a></dd></div>';
-      }
-      function section(title, rows) {
-        return '<h2 class="govuk-heading-m govuk-!-margin-top-8">' + title + '</h2><dl class="govuk-summary-list">' + rows.join('') + '</dl>';
-      }
-
-      function viewPage(root) {
-        var a = find(qs('id'));
-        if (!a) {
-          root.innerHTML = '<p class="govuk-body">Costs application not found.</p>';
-          return;
-        }
-        var wasJustCreated = qs('created');
-        var withdrawn = a.withdrawn === 'Yes',
-          rows;
-        var h = '';
-        if (wasJustCreated) 
-          h += '<div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">Success</h2></div><div class="govuk-notification-banner__content"><h3 class="govuk-notification-banner__heading">Costs application ' + esc(a.id) + ' created</h3></div></div>';
-        h += '<span class="govuk-caption-l">' + esc(CASE_REF) + '</span><h1 class="govuk-heading-l">Costs application ' + esc(a.id) + '</h1><p class="govuk-body">' + tag(a) + '</p>';
-        h += section('Application details', [
-          '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Costs application reference</dt><dd class="govuk-summary-list__value">' + esc(a.id) + '</dd><dd class="govuk-summary-list__actions"></dd></div>',
-
-          partyRow(a, 'Applicants', 'applicants'),
-          partyRow(a, 'Respondents', 'respondents'),
-          row(a, 'Date submitted', 'dateMade', fmt(a.dateMade), 'dateMade')
-        ]);
-        if (!withdrawn) {
-          h += section('Comment exchange', [
-            row(a, 'Deadline for comments', 'deadline', fmt(a.deadline), 'deadline'),
-            row(a, 'Date comments received', 'commentsReceived', fmt(a.commentsReceived), 'commentsReceived'),
-            row(a, 'Date comments shared', 'commentsShared', fmt(a.commentsShared), 'commentsShared'),
-            row(a, 'Date final comments received', 'finalCommentsReceived', fmt(a.finalCommentsReceived), 'finalCommentsReceived')
-          ]);
-          var dm = [row(a, 'Decision maker type', 'decisionMakerType', esc(a.decisionMakerType), 'decisionMakerType')];
-          if (a.decisionMakerType === 'Inspector' || a.reportAuthor || a.decisionAuthor) 
-            dm.push(row(a, 'Inspector name', 'inspectorName', esc(a.inspectorName), 'inspectorName'));
-          dm.push(row(a, 'Cost outcome type', 'outcomeType', esc(a.outcomeType), 'outcomeType'));
-          h += section('Decision maker', dm);
-          var rep = [row(a, 'Cost report required', 'reportRequired', esc(a.reportRequired), 'reportRequired')];
-          if (a.reportRequired === 'Yes') 
-            rep.push(row(a, 'Date report issued', 'reportIssued', fmt(a.reportIssued), 'reportIssued'), row(a, 'Report author', 'reportAuthor', esc(a.reportAuthor), 'reportAuthor'));
-          h += section('Report', rep);
-          h += section('Decision', [
-            row(a, 'Final comments', 'finalComments', esc(a.finalComments), 'finalComments'),
-            row(a, 'Date decision issued', 'decisionIssued', fmt(a.decisionIssued), 'decisionIssued'),
-            row(a, 'Decision author', 'decisionAuthor', esc(a.decisionAuthor), 'decisionAuthor'),
-            row(a, 'Decision type', 'decisionMakerType', esc(
-              a.decisionMakerType
-              ? a.decisionMakerType + ' decision'
-              : ''), 'decisionMakerType'),
-            row(a, 'Outcome', 'outcome', esc(a.outcome), 'outcome')
-          ]);
-        }
-        h += section('Withdrawal', [row(a, 'Withdrawn', 'withdrawn', esc(a.withdrawn || 'No'), 'withdrawal')].concat(
-          withdrawn
-          ? [
-            row(a, 'Withdrawal date', 'withdrawalDate', fmt(a.withdrawalDate), 'withdrawal'),
-            row(a, 'Withdrawal reason', 'withdrawalReason', esc(a.withdrawalReason), 'withdrawal')
-          ]
-          : []));
-        h += '<div class="govuk-button-group govuk-!-margin-top-6"><a class="govuk-button" href="' + BASE + 'case">Back to costs applications</a><a class="govuk-link" href="' + BASE + 'remove?id=' + a.id + '">Remove costs application</a></div>';
-        root.innerHTML = h;
+      function bindPartyToggles(root) {
         root.addEventListener('click', function (ev) {
-          var t = ev
-            .target
-            .closest('.costs-party-toggle');
-          if (!t) 
+          var t = ev.target.closest('.costs-party-toggle');
+          if (!t)
             return;
           ev.preventDefault();
           var open = t.getAttribute('aria-expanded') !== 'true';
@@ -860,6 +763,73 @@
             : t.getAttribute('data-more');
         });
       }
+      function partyRow(a, label, key) {
+        return '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">' + label + '</dt><dd class="govuk-summary-list__value">' + partyList(a[key]) + '</dd><dd class="govuk-summary-list__actions"><a class="govuk-link" href="' + BASE + 'party-manage?id=' + a.id + '&key=' + key + '">Change<span class="govuk-visually-hidden"> ' + label.toLowerCase() + '</span></a></dd></div>';
+      }
+      function section(title, rows) {
+        return '<h2 class="govuk-heading-m govuk-!-margin-top-8">' + title + '</h2><dl class="govuk-summary-list">' + rows.join('') + '</dl>';
+      }
+
+      function viewPage(root) {
+        var a = find(qs('id'));
+        if (!a) {
+          root.innerHTML = '<p class="govuk-body">Costs application not found.</p>';
+          return;
+        }
+        var wasJustCreated = qs('created');
+        var wasUpdated = qs('updated');
+        var withdrawn = a.withdrawn === 'Yes',
+          rows;
+        var h = '';
+        if (wasJustCreated)
+          h += '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">Success</h2></div><div class="govuk-notification-banner__content"><h3 class="govuk-notification-banner__heading">Costs application ' + esc(a.id) + ' created</h3></div></div></div></div>';
+        else if (wasUpdated)
+          h += '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">Success</h2></div><div class="govuk-notification-banner__content"><h3 class="govuk-notification-banner__heading">Costs application updated</h3></div></div></div></div>';
+        h += '<span class="govuk-caption-l">' + esc(CASE_REF) + '</span><h1 class="govuk-heading-l">View costs application</h1>';
+        h += section('Application details', [
+          '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Costs application reference</dt><dd class="govuk-summary-list__value">' + esc(a.id) + '</dd><dd class="govuk-summary-list__actions"></dd></div>',
+          row(a, 'Date submitted', 'dateMade', fmt(a.dateMade), 'dateMade'),
+          partyRow(a, 'Applicants', 'applicants'),
+          partyRow(a, 'Respondents', 'respondents')
+        ]);
+        if (!withdrawn) {
+          h += section('Comment exchange', [
+            row(a, 'Deadline for comments', 'deadline', fmt(a.deadline), 'deadline'),
+            row(a, 'Date comments received', 'commentsReceived', fmt(a.commentsReceived), 'commentsReceived'),
+            row(a, 'Date comments shared', 'commentsShared', fmt(a.commentsShared), 'commentsShared'),
+            row(a, 'Date final comments received', 'finalCommentsReceived', fmt(a.finalCommentsReceived), 'finalCommentsReceived')
+          ]);
+          var dm = [row(a, 'Decision type', 'decisionMakerType', esc(
+            a.decisionMakerType
+            ? a.decisionMakerType + ' decision'
+            : ''), 'decisionMakerType')];
+          if (a.decisionMakerType === 'Inspector' || a.reportAuthor || a.decisionAuthor) 
+            dm.push(row(a, 'Inspector name', 'inspectorName', esc(a.inspectorName), 'inspectorName'));
+          dm.push(row(a, 'Outcome type', 'outcomeType', esc(a.outcomeType), 'outcomeType'));
+          h += section('Decision maker', dm);
+          if (hasReport(a)) {
+            h += section('Report', [
+              row(a, 'Date report issued', 'reportIssued', fmt(a.reportIssued), 'reportIssued'),
+              row(a, 'Report author', 'reportAuthor', esc(a.reportAuthor), 'reportAuthor')
+            ]);
+          }
+          h += section('Decision', [
+            row(a, 'Final comments', 'finalComments', esc(a.finalComments), 'finalComments'),
+            row(a, 'Date decision issued', 'decisionIssued', fmt(a.decisionIssued), 'decisionIssued'),
+            row(a, 'Decision author', 'decisionAuthor', esc(a.decisionAuthor), 'decisionAuthor'),
+            row(a, 'Outcome', 'outcome', esc(a.outcome), 'outcome')
+          ]);
+        }
+        h += section('Withdrawal', [row(a, 'Withdrawn', 'withdrawn', esc(a.withdrawn || 'No'), 'withdrawal')].concat(
+          withdrawn
+          ? [
+            row(a, 'Withdrawal date', 'withdrawalDate', fmt(a.withdrawalDate), 'withdrawal'),
+            row(a, 'Withdrawal reason', 'withdrawalReason', esc(a.withdrawalReason), 'withdrawal')
+          ]
+          : []));
+        root.innerHTML = h;
+        bindPartyToggles(root);
+      }
 
       /* ---------- list page ---------- */
       function listPage(root) {
@@ -870,32 +840,16 @@
               .localeCompare(x.dateMade);
           })
           .map(function (a) {
-            var s = status(a),
-              result = a.outcome
-                ? a
-                  .outcome
-                  .replace('Costs ', '')
-                : s.text;
-            result = result
-              .charAt(0)
-              .toUpperCase() + result.slice(1);
-            var cls = a.outcome
-              ? 'govuk-tag--blue'
-              : s.cls;
+            var s = status(a);
             var party = function (arr) {
-              return arr.length > 1
-                ? '<ul class="govuk-list govuk-list--bullet govuk-!-margin-0">' + arr
-                  .map(function (p) {
-                    return '<li>' + esc(p) + '</li>';
-                  })
-                  .join('') + '</ul>'
-                : list(arr);
+              return partyList(arr).replace('govuk-!-margin-bottom-0', 'govuk-!-margin-0');
             };
-            return '<tr class="govuk-table__row"><td class="govuk-table__cell">' + fmt(a.dateMade) + '</td><td class="govuk-table__cell">' + party(a.applicants) + '</td><td class="govuk-table__cell">' + party(a.respondents) + '</td><td class="govuk-table__cell"><strong class="govuk-tag ' + cls + '">' + esc(result) + '</strong></td><td class="govuk-table__cell" style="white-space:nowrap"><a class="govuk-link" href="' + BASE + 'view?id=' + a.id + '">View</a> | <a class="govuk-link" href="' + BASE + 'remove?id=' + a.id + '">Remove</a></td></tr>';
+            return '<tr class="govuk-table__row"><td class="govuk-table__cell">' + fmt(a.dateMade) + '</td><td class="govuk-table__cell">' + party(a.applicants) + '</td><td class="govuk-table__cell">' + party(a.respondents) + '</td><td class="govuk-table__cell"><strong class="govuk-tag ' + s.cls + '">' + esc(s.text) + '</strong></td><td class="govuk-table__cell" style="white-space:nowrap"><a class="govuk-link" href="' + BASE + 'view?id=' + a.id + '">View</a> | <a class="govuk-link" href="' + BASE + 'remove?id=' + a.id + '">Remove</a></td></tr>';
           })
           .join('');
-        root.innerHTML = '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">Date submitted</th><th scope="col" class="govuk-table__header">Claimant</th><th scope="col" class="govuk-table__header">Respondent</th><th scope="col" class="govuk-table__header">Outcome</th><th scope="col" class="govuk-table__header">Actions</th></tr></thead><tbody class="govuk-table__body">' + (
+        root.innerHTML = '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">Date submitted</th><th scope="col" class="govuk-table__header">Claimant</th><th scope="col" class="govuk-table__header">Respondent</th><th scope="col" class="govuk-table__header">Status</th><th scope="col" class="govuk-table__header">Actions</th></tr></thead><tbody class="govuk-table__body">' + (
         rows || '<tr class="govuk-table__row"><td class="govuk-table__cell" colspan="5">There are no costs applications on this case.</td></tr>') + '</tbody></table>';
+        bindPartyToggles(root);
       }
 
       /* ---------- remove page ---------- */
@@ -998,7 +952,7 @@
           root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">' + (
             errMsgText
             ? '<div class="govuk-error-summary" data-module="govuk-error-summary"><div role="alert"><h2 class="govuk-error-summary__title">There is a problem</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#party-0">' + esc(errMsgText) + '</a></li></ul></div></div></div>'
-            : '') + '<span class="govuk-caption-l">' + esc(CASE_REF) + '</span><form novalidate><div class="govuk-form-group' + err + '"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h1 class="govuk-fieldset__heading">' + esc(c.cfg.entry) + '</h1></legend>' + (
+            : '') + '<form novalidate><div class="govuk-form-group' + err + '"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h1 class="govuk-fieldset__heading">' + esc(c.cfg.entry) + '</h1></legend>' + (
             errMsgText
             ? '<p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> ' + esc(errMsgText) + '</p>'
             : '') + '<div class="govuk-checkboxes" data-module="govuk-checkboxes">' + avail
@@ -1096,7 +1050,7 @@
             return '<tr class="govuk-table__row"><td class="govuk-table__cell">' + esc(p) + '</td><td class="govuk-table__cell"><a class="govuk-link" href="' + BASE + 'party-entry?' + c.q + '&i=' + i + '">Change<span class="govuk-visually-hidden"> ' + esc(p) + '</span></a> | <a class="govuk-link" href="' + BASE + 'party-manage?' + c.q + '&remove=' + i + '">Remove<span class="govuk-visually-hidden"> ' + esc(p) + '</span></a></td></tr>';
           })
           .join('');
-        root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><span class="govuk-caption-l">' + esc(CASE_REF) + '</span><h1 class="govuk-heading-l">' + esc(c.cfg.manage) + '</h1>' + '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">' + esc(c.cfg.col) + '</th><th scope="col" class="govuk-table__header">Actions</th></tr></thead><tbody class="govuk-table__body">' + rows + '</tbody></table>' + '<a class="govuk-button govuk-button--secondary" href="' + BASE + 'party-entry?' + c.q + '" role="button">Add another</a><br>' + '<a class="govuk-button" href="' + BASE + (
+        root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><h1 class="govuk-heading-l">' + esc(c.cfg.manage) + '</h1>' + '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">' + esc(c.cfg.col) + '</th><th scope="col" class="govuk-table__header">Actions</th></tr></thead><tbody class="govuk-table__body">' + rows + '</tbody></table>' + '<a class="govuk-button govuk-button--secondary" href="' + BASE + 'party-entry?' + c.q + '" role="button">Add another</a><br>' + '<a class="govuk-button" href="' + BASE + (
           c.id
           ? 'view?id=' + c.id
           : (
@@ -1149,7 +1103,7 @@
             cancel: BASE + 'view?id=' + id,
             onSave: function (rec) {
               update(rec);
-              location.href = BASE + 'view?id=' + id;
+              location.href = BASE + 'view?id=' + id + '&updated=1';
             }
           });
         }
