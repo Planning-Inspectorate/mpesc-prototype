@@ -1,0 +1,201 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Example case - Costs applications
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .costs-applications-page {
+        width: 100%;
+    }
+
+    /*
+   * local tab navigation
+   */
+
+    .costs-tabs {
+        border-bottom: 1px solid #b1b4b6;
+        margin-bottom: 35px;
+    }
+
+    .costs-tabs__list {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .costs-tabs__item {
+        margin: 0;
+    }
+
+    .costs-tabs__link {
+        display: inline-block;
+        padding: 0 0 12px;
+        text-decoration: none;
+        color: #1d70b8;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 19px;
+    }
+
+    .costs-tabs__link:hover {
+        color: #003078;
+    }
+
+    .costs-tabs__item--current .costs-tabs__link {
+        color: #0b0c0c;
+        font-weight: 700;
+        border-bottom: 4px solid #00857a;
+        margin-bottom: -1px;
+    }
+
+    /*
+   * table tweaks
+   */
+
+    .costs-applications-page .govuk-table__cell ul {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding-left: 18px;
+    }
+
+    .costs-applications-page .govuk-table__header {
+        vertical-align: top;
+    }
+
+    .costs-applications-page .govuk-table__cell {
+        vertical-align: top;
+    }
+
+    .costs-applications-page .govuk-tag {
+        margin-bottom: 0;
+    }
+
+    /*
+   * action links
+   */
+
+    .costs-action-links {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="costs-applications-page">
+
+    {{ govukBackLink({
+    text: "Back",
+    href: "#"
+    }) }}
+
+    <span class="govuk-caption-l">
+        SOS/ENG/10001
+    </span>
+
+    <h1 class="govuk-heading-l">
+        Example case
+    </h1>
+
+    <div class="govuk-button-group govuk-!-margin-bottom-7">
+
+        {{ govukButton({
+        text: "Manage case files",
+        href: "#",
+        classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+        text: "Download this case",
+        href: "#",
+        classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+        text: "Download all contacts",
+        href: "#",
+        classes: "govuk-button--secondary"
+        }) }}
+
+    </div>
+
+    <nav class="costs-tabs" aria-label="Case navigation">
+
+        <ul class="costs-tabs__list">
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Overview
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Timetable
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Team
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Contacts
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Resources
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Invoicing
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    History
+                </a>
+            </li>
+
+            <li class="costs-tabs__item">
+                <a class="costs-tabs__link" href="#">
+                    Case notes
+                </a>
+            </li>
+
+            <li class="costs-tabs__item costs-tabs__item--current">
+                <a class="costs-tabs__link" href="#" aria-current="page">
+                    Costs applications
+                </a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+    {{ govukButton({
+    text: "Add costs application",
+    href: "/features-and-components/costs-applications/v1/create/when-submitted",
+    classes: "govuk-button--secondary"
+    }) }}
+
+    <div id="costs-app" data-page="list"></div>
+    {% include "features-and-components/costs-applications/v1/_engine.njk" %}
+
+</div>
+
+{% endblock %}
+
+{% block footer %}
+  {% include "features-and-components/costs-applications/v1/_footer.njk" %}
+{% endblock %}

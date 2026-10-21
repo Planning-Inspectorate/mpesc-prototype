@@ -1,0 +1,32 @@
+  <style>
+    .costs-application-footer {
+      background: #f3f2f1;
+      border-top: 4px solid #13a19b;
+      color: #0b0c0c;
+      font: 16px Arial, Helvetica, sans-serif;
+      padding: 30px 0;
+    }
+
+    .costs-application-footer__content {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 600px) {
+      .costs-application-footer__content {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+  </style>
+
+  <footer class="costs-application-footer" role="contentinfo">
+    <div class="govuk-width-container">
+      <div class="costs-application-footer__content">
+        <a class="govuk-link" href="#">Report a problem</a>
+        <span>© Planning Inspectorate</span>
+      </div>
+    </div>
+  </footer>
