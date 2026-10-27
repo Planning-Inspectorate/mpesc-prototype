@@ -1,0 +1,81 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+Check site address details - Planning Inspectorate Portal
+{% endblock %}
+
+{% block header %}
+<p class="govuk-body govuk-!-margin-0">Choose scenario:
+  {% for n in scenarios %}
+  <a class="govuk-button govuk-!-margin-1{% if n != total %} govuk-button--secondary{% endif %}"
+    href="/features-and-components/multiple-plots/v1/plots?plots={{ n }}">Show {{ n }} plots</a>
+  {% endfor %}
+</p>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    <h1 class="govuk-heading-l">Check site address details</h1>
+
+    {% if total >= 25 %}
+    <p class="govuk-body" id="results-count">Showing <strong>{{ from }}</strong> to <strong>{{ to }}</strong> of
+      <strong>{{ total }}</strong> plots</p>
+
+    <p class="pins-pagination-options govuk-!-margin-bottom-4">
+      <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+      {% for size in pageSizes %}
+        {% if size == pageSize %}
+          <span class="govuk-body">{{ size }}</span>
+        {% else %}
+          <a class="govuk-link--no-visited-state" href="/features-and-components/multiple-plots/v1/plots?plots={{ total }}&perPage={{ size }}">{{ size }}</a>
+        {% endif %}
+        {% if not loop.last %}&nbsp;&nbsp;|&nbsp;&nbsp;{% endif %}
+      {% endfor %}
+    </p>
+    {% endif %}
+
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Plot</th>
+          <th scope="col" class="govuk-table__header">Site Address</th>
+          <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for plot in plots %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Plot {{ plot.number }}</td>
+          <td class="govuk-table__cell">{% for line in plot.lines %}{{ line }}{% if not loop.last %}<br>{% endif %}{%
+            endfor %}</td>
+          <td class="govuk-table__cell">
+            <ul class="govuk-summary-list__actions-list">
+              <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="#">Change<span
+                    class="govuk-visually-hidden"> Plot {{ plot.number }}</span></a></li>
+              <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="#">Remove<span
+                    class="govuk-visually-hidden"> Plot {{ plot.number }}</span></a></li>
+            </ul>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if pagination %}
+    {{ govukPagination(pagination) }}
+    {% endif %}
+
+    <div class="govuk-button-group">
+      {{ govukButton({ text: "Add details", classes: "govuk-button--secondary", href: "#" }) }}
+    </div>
+
+    <div class="govuk-button-group">
+      {{ govukButton({ text: "Save and continue", href: "#" }) }}
+      {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "#" }) }}
+    </div>
+  </div>
+</div>
+{% endblock %}

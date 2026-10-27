@@ -76,6 +76,7 @@ require('./sub-routes/all-case-notes');
 require('./sub-routes/features/case-notes');
 require('./sub-routes/features/filter-redesign');
 require('./sub-routes/features/file-rename');
+require('./sub-routes/features/multiple-plots');
 
 
 // --- IMPORT ADD TO LIST ROUTERS ---
