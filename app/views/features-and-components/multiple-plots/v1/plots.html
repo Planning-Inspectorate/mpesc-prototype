@@ -73,9 +73,22 @@ Check site address details - Planning Inspectorate Portal
     </div>
 
     <div class="govuk-button-group">
-      {{ govukButton({ text: "Save and continue", href: "#" }) }}
-      {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "#" }) }}
+      {{ govukButton({ text: "Save and continue", href: "/features-and-components/multiple-plots/v1/case-details?plots=" + total }) }}
+      {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/features-and-components/multiple-plots/v1/case-details?plots=" + total }) }}
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block bodyEnd %}
+{{ super() }}
+<script>
+  // Prototype isolation: neutralise layout links that lead into the main prototype
+  document.querySelectorAll('a[href^="/"]').forEach(function (a) {
+    var href = a.getAttribute('href');
+    if (href.indexOf('/features-and-components/multiple-plots/') !== 0) {
+      a.setAttribute('href', '#');
+    }
+  });
+</script>
 {% endblock %}
