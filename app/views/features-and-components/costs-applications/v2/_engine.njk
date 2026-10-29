@@ -1,0 +1,1159 @@
+{% raw %}
+  <link rel="stylesheet" href="/public/css/accessible-autocomplete.min.css">
+  <script src="/public/javascripts/accessible-autocomplete.min.js"></script>
+  <script>
+    (function () {
+      var BASE = '/features-and-components/costs-applications/v2/';
+      var CASE_REF = 'SOS/ENG/10001';
+      var NOTE_AUTHOR = 'Amelia Scanlan';
+      var STORE = 'costsApplicationsV1';
+      var DRAFT = 'costsApplicationsV1Draft';
+
+      var PARTIES = ['Northbridge Borough Council', 'Greenfield Developments Ltd', 'Oak Valley Residents Association', 'Aisha Rahman', 'Sophie Williams'];
+      var AUTHOR_FIXED = ['Secretary of State', 'Costs Branch'];
+      var INSPECTORS = ['Carol Danvers', 'Jean Grey', 'Peter Parker', 'Natasha Romanoff'];
+      var USERS = INSPECTORS.concat(['Bruce Banner', 'Clint Barton', 'Scott Lang', 'Hope van Dyne']).sort();
+      var MONTHS = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+      ];
+
+      /* ---------- storage ---------- */
+      function seed() {
+        return [
+          {
+            id: 'CA-0003',
+            dateMade: '2026-10-07',
+            applicants: ['Northbridge Borough Council'],
+            respondents: ['Greenfield Developments Ltd'],
+            commentsReceived: '2026-10-10',
+            decisionMakerType: 'Inspector',
+            inspectorName: 'Carol Danvers',
+            outcomeType: 'Decision only',
+            decisionIssued: '2026-10-15',
+            outcome: 'Costs granted'
+          }, {
+            id: 'CA-0002',
+            dateMade: '2026-07-07',
+            applicants: [
+              'Aisha Rahman', 'Sophie Williams'
+            ],
+            respondents: ['Northbridge Borough Council'],
+            decisionMakerType: 'Costs Branch',
+            outcomeType: 'Decision only',
+            decisionIssued: '2026-08-01',
+            outcome: 'Costs refused'
+          }, {
+            id: 'CA-0001',
+            dateMade: '2026-09-16',
+            applicants: ['Oak Valley Residents Association'],
+            respondents: [
+              'Greenfield Developments Ltd', 'Northbridge Borough Council'
+            ],
+            withdrawn: 'Yes',
+            withdrawalDate: '2026-09-30',
+            withdrawalReason: 'Matter resolved between the parties.'
+          }
+        ];
+      }
+      function all() {
+        var raw = localStorage.getItem(STORE);
+        if (!raw) {
+          localStorage.setItem(STORE, JSON.stringify(seed()));
+          raw = localStorage.getItem(STORE);
+        }
+        return JSON.parse(raw);
+      }
+      function saveAll(list) {
+        localStorage.setItem(STORE, JSON.stringify(list));
+      }
+      function find(id) {
+        return all().filter(function (a) {
+          return a.id === id;
+        })[0];
+      }
+      function update(rec) {
+        saveAll(all().map(function (a) {
+          return a.id === rec.id
+            ? rec
+            : a;
+        }));
+      }
+      function nextId() {
+        var max = all().reduce(function (m, a) {
+          return Math.max(m, parseInt(a.id.split('-')[1], 10));
+        }, 0);
+        return 'CA-' + (
+        '0000' + (
+        max + 1)).slice(-4);
+      }
+      function getDraft() {
+        return JSON.parse(sessionStorage.getItem(DRAFT) || '{}');
+      }
+      function setDraft(d) {
+        sessionStorage.setItem(DRAFT, JSON.stringify(d));
+      }
+
+      /* ---------- helpers ---------- */
+      function esc(s) {
+        return String(
+          s == null
+          ? ''
+          : s).replace(/[&<>"']/g, function (c) {
+          return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
+        });
+      }
+      function qs(name) {
+        return new URLSearchParams(location.search).get(name);
+      }
+      function iso(y, m, d) {
+        return y + '-' + (
+        '0' + m).slice(-2) + '-' + (
+        '0' + d).slice(-2);
+      }
+      function fmt(s) {
+        if (!s) 
+          return '';
+        var p = s.split('-');
+        return parseInt(p[2], 10) + ' ' + MONTHS[parseInt(p[1], 10) - 1] + ' ' + p[0];
+      }
+      function todayIso() {
+        var t = new Date();
+        return iso(t.getFullYear(), t.getMonth() + 1, t.getDate());
+      }
+      function list(arr) {
+        return (arr || [])
+          .map(esc)
+          .join('<br>');
+      }
+
+      function status(a) {
+        if (a.withdrawn === 'Yes')
+          return {text: 'Withdrawn', cls: 'govuk-tag--grey'};
+        if (a.outcome) {
+          var outcome = String(a.outcome).replace(/^Costs\s+/i, '').toLowerCase();
+          return {text: 'Decided: ' + outcome, cls: 'govuk-tag--green'};
+        }
+        return {text: 'In progress', cls: 'govuk-tag--blue'};
+      }
+      function tag(a) {
+        var s = status(a);
+        return '<strong class="govuk-tag ' + s.cls + '">' + s.text + '</strong>';
+      }
+      function hasReport(a) {
+        return a.outcomeType === 'Report and decision';
+      }
+
+      /* ---------- validation (user story business rules) ---------- */
+      var LABEL = {
+        dateMade: 'date the application was submitted',
+        withdrawalDate: 'withdrawal date',
+        deadline: 'deadline for comments',
+        commentsReceived: 'date comments were received',
+        deadlineFinalComments: 'deadline for final comments',
+        finalCommentsReceived: 'date final comments were received',
+        reportIssued: 'date the report was issued',
+        decisionIssued: 'date the decision was issued'
+      };
+      function validate(a) {
+        var e = {},
+          today = todayIso();
+        ['dateMade', 'withdrawalDate', 'reportIssued', 'decisionIssued'].forEach(function (k) {
+          if (a[k] && a[k] > today) 
+            e[k] = 'The ' + LABEL[k] + ' must be today or in the past';
+          }
+        );
+        if (a.withdrawn === 'Yes' && !a.withdrawalDate) 
+          e.withdrawalDate = 'Enter the withdrawal date';
+        function cmp(x, y, strict, msgY, msgX) {
+          if (a[x] && a[y] && (
+            strict
+            ? a[x] >= a[y]
+            : a[x] > a[y])) {
+            if (!e[y]) 
+              e[y] = msgY;
+            if (!e[x]) 
+              e[x] = msgX;
+            }
+          }
+        var requiresReport = hasReport(a);
+        cmp('dateMade', 'deadline', false, 'The deadline for comments must be on or after the date the application was submitted', 'The date submitted must be on or before the deadline for comments');
+        cmp('dateMade', 'commentsReceived', false, 'The date comments were received must be on or after the date the application was submitted', 'The date submitted must be on or before the date comments were received');
+        cmp('commentsReceived', 'finalCommentsReceived', true, 'The date final comments were received must be after the date comments were received', 'The date comments were received must be before the date final comments were received');
+        cmp('dateMade', 'deadlineFinalComments', false, 'The deadline for final comments must be on or after the date the application was submitted', 'The date submitted must be on or before the deadline for final comments');
+        cmp('dateMade', 'reportIssued', false, 'The date the report was issued must be on or after the date the application was submitted', 'The date submitted must be on or before the date the report was issued');
+        cmp('dateMade', 'decisionIssued', false, 'The date the decision was issued must be on or after the date the application was submitted', 'The date submitted must be on or before the date the decision was issued');
+        if (requiresReport) {
+          cmp('commentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date comments were received', 'The date comments were received must be on or before the date the report was issued');
+          cmp('finalCommentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date final comments were received', 'The date final comments were received must be on or before the date the report was issued');
+          cmp('reportIssued', 'decisionIssued', false, 'The date the decision was issued must be on or after the date the report was issued', 'The date the report was issued must be on or before the date the decision was issued');
+        }
+        cmp('commentsReceived', 'decisionIssued', false, 'The date the decision was issued must be on or after the date comments were received', 'The date comments were received must be on or before the date the decision was issued');
+        cmp('finalCommentsReceived', 'decisionIssued', false, 'The date the decision was issued must be on or after the date final comments were received', 'The date final comments were received must be on or before the date the decision was issued');
+        return e;
+      }
+
+      /* ---------- question pages ---------- */
+      var OUTCOMES = ['Costs granted', 'Costs refused', 'Costs partially awarded'];
+      var PAGES = {
+        dateMade: {
+          title: 'When was the costs application submitted?',
+          inputs: [
+            {
+              key: 'dateMade',
+              type: 'date',
+              required: 'Enter the date the application was submitted',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        applicants: {
+          title: 'Who is the applicant?',
+          inputs: [
+            {
+              key: 'applicants',
+              type: 'parties',
+              hint: 'Select all that apply. If the person or organisation you are looking for is not listed, add them to the case before creating the costs application.',
+              required: 'Select at least one applicant'
+            }
+          ]
+        },
+        respondents: {
+          title: 'Who is the respondent?',
+          inputs: [
+            {
+              key: 'respondents',
+              type: 'parties',
+              hint: 'Select all that apply. If the person or organisation you are looking for is not listed, add them to the case before creating the costs application.',
+              required: 'Select at least one respondent'
+            }
+          ]
+        },
+        deadline: {
+          title: 'What is the deadline for comments?',
+          inputs: [
+            {
+              key: 'deadline',
+              type: 'date',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        commentsReceived: {
+          title: 'When were the comments received?',
+          inputs: [
+            {
+              key: 'commentsReceived',
+              type: 'date',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        commentsShared: {
+          title: 'What date were the comments shared?',
+          inputs: [
+            {
+              key: 'commentsShared',
+              type: 'date',
+              hint: 'The date comments were cross-copied to the other party. For example, 6 2 2026'
+            }
+          ]
+        },
+        deadlineFinalComments: {
+          title: 'What is the deadline for final comments?',
+          inputs: [
+            {
+              key: 'deadlineFinalComments',
+              type: 'date',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        finalCommentsReceived: {
+          title: 'What date were final comments received?',
+          inputs: [
+            {
+              key: 'finalCommentsReceived',
+              type: 'date',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        decisionMakerType: {
+          title: 'Who is the decision maker?',
+          inputs: [
+            {
+              key: 'decisionMakerType',
+              type: 'radios',
+              options: ['Inspector', 'Costs Branch', 'Secretary of State']
+            }
+          ]
+        },
+        inspectorName: {
+          title: 'Which inspector is making the decision?',
+          inputs: [
+            {
+              key: 'inspectorName',
+              type: 'radios',
+              options: INSPECTORS,
+              required: 'Select an inspector'
+            }
+          ]
+        },
+        outcomeType: {
+          title: 'What type of outcome is expected?',
+          inputs: [
+            {
+              key: 'outcomeType',
+              type: 'radios',
+              options: ['Decision only', 'Report and decision']
+            }
+          ]
+        },
+        reportIssued: {
+          title: 'What date was the report issued?',
+          inputs: [
+            {
+              key: 'reportIssued',
+              type: 'date',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        reportAuthor: {
+          title: 'Who is the report author?',
+          inputs: [
+            {
+              key: 'reportAuthor',
+              type: 'author'
+            }
+          ]
+        },
+        reportRecommendation: {
+          title: 'What is the report recommendation?',
+          inputs: [
+            {
+              key: 'reportRecommendation',
+              type: 'radios',
+              options: OUTCOMES
+            }
+          ]
+        },
+        comments: {
+          title: 'Comments',
+          inputs: [
+            {
+              key: 'comments',
+              type: 'textarea',
+              hint: 'General notes about this application.'
+            }
+          ]
+        },
+        decisionIssued: {
+          title: 'When was the decision issued?',
+          inputs: [
+            {
+              key: 'decisionIssued',
+              type: 'date',
+              hint: 'For example, 6 2 2026'
+            }
+          ]
+        },
+        decisionAuthor: {
+          title: 'Who is the decision author?',
+          inputs: [
+            {
+              key: 'decisionAuthor',
+              type: 'author'
+            }
+          ]
+        },
+        outcome: {
+          title: 'What was the outcome?',
+          inputs: [
+            {
+              key: 'outcome',
+              type: 'radios',
+              options: OUTCOMES,
+              required: 'Select the outcome'
+            }
+          ]
+        },
+        withdrawal: {
+          title: 'Has the costs application been withdrawn?',
+          inputs: [
+            {
+              key: 'withdrawn',
+              type: 'radios',
+              options: [
+                'Yes', 'No'
+              ],
+              required: 'Select whether the application has been withdrawn',
+              conditional: {
+                Yes: [
+                  {
+                    key: 'withdrawalDate',
+                    type: 'date',
+                    label: 'Withdrawal date',
+                    hint: 'For example, 6 2 2026'
+                  }, {
+                    key: 'withdrawalReason',
+                    type: 'textarea',
+                    label: 'Reason for withdrawal (optional)'
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      };
+
+      function dateVal(a, k, part) {
+        var v = a[k];
+        if (!v) 
+          return '';
+        return v
+          .split('-')[
+            {
+              y: 0,
+              m: 1,
+              d: 2
+            }[part]]
+          .replace(/^0/, '');
+      }
+      function errMsg(errors, key) {
+        return errors[key]
+          ? '<p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> ' + esc(errors[key]) + '</p>'
+          : '';
+      }
+
+      function renderInput(inp, a, errors, isOnly, title) {
+        var k = inp.key,
+          err = errors[k],
+          hasErr = err
+            ? ' govuk-form-group--error'
+            : '';
+        var label = inp.label || title;
+        var legendCls = isOnly
+          ? 'govuk-fieldset__legend--l'
+          : 'govuk-fieldset__legend--s';
+        var legendInner = isOnly
+          ? '<h1 class="govuk-fieldset__heading">' + esc(label) + '</h1>'
+          : esc(label);
+        var hint = inp.hint
+          ? '<div id="' + k + '-hint" class="govuk-hint">' + esc(inp.hint) + '</div>'
+          : '';
+        var h = '';
+        if (inp.type === 'date') {
+          var ec = err
+            ? ' govuk-input--error'
+            : '';
+          h = '<div class="govuk-form-group' + hasErr + '"><fieldset class="govuk-fieldset" role="group"><legend class="govuk-fieldset__legend ' + legendCls + '">' + legendInner + '</legend>' + hint + errMsg(errors, k) + '<div class="govuk-date-input" id="' + k + '">' + [
+            [
+              'd', 'Day', 2
+            ],
+            [
+              'm', 'Month', 2
+            ],
+            [
+              'y', 'Year', 4
+            ]
+          ]
+            .map(function (p) {
+              return '<div class="govuk-date-input__item"><div class="govuk-form-group"><label class="govuk-label govuk-date-input__label" for="' + k + '-' + p[0] + '">' + p[1] + '</label>' + '<input class="govuk-input govuk-date-input__input govuk-input--width-' + p[2] + ec + '" id="' + k + '-' + p[0] + '" name="' + k + '-' + p[0] + '" type="text" inputmode="numeric" value="' + esc(dateVal(a, k, p[0])) + '"></div></div>';
+            })
+            .join('') + '</div></fieldset></div>';
+        } else if (inp.type === 'textarea') {
+          h = '<div class="govuk-form-group' + hasErr + '"><h1 class="' + (
+            isOnly
+            ? 'govuk-label-wrapper'
+            : '') + '"><label class="govuk-label ' + (
+            isOnly
+            ? 'govuk-label--l'
+            : 'govuk-label--s') + '" for="' + k + '">' + esc(label) + '</label></h1>' + hint + errMsg(errors, k) + '<textarea class="govuk-textarea' + (
+            err
+            ? ' govuk-textarea--error'
+            : '') + '" id="' + k + '" name="' + k + '" rows="5">' + esc(a[k]) + '</textarea></div>';
+        } else if (inp.type === 'select') {
+          h = '<div class="govuk-form-group' + hasErr + '"><h1 class="govuk-label-wrapper"><label class="govuk-label govuk-label--l" for="' + k + '">' + esc(label) + '</label></h1>' + hint + errMsg(errors, k) + '<select class="govuk-select' + (
+            err
+            ? ' govuk-select--error'
+            : '') + '" id="' + k + '" name="' + k + '"><option value="">Select</option>' + inp
+            .options
+            .map(function (o) {
+              return '<option' + (
+                a[k] === o
+                ? ' selected'
+                : '') + '>' + esc(o) + '</option>';
+            })
+            .join('') + '</select></div>';
+        } else if (inp.type === 'radios') {
+          h = '<div class="govuk-form-group' + hasErr + '"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend ' + legendCls + '">' + legendInner + '</legend>' + hint + errMsg(errors, k) + '<div class="govuk-radios" data-module="govuk-radios" id="' + k + '">' + inp
+            .options
+            .map(function (o, i) {
+              var cond = inp.conditional && inp.conditional[o];
+              var id = k + '-' + i;
+              return '<div class="govuk-radios__item"><input class="govuk-radios__input" id="' + id + '" name="' + k + '" type="radio" value="' + esc(o) + '"' + (
+                a[k] === o
+                ? ' checked'
+                : '') + (
+                cond
+                ? ' data-aria-controls="c-' + id + '"'
+                : '') + '>' + '<label class="govuk-label govuk-radios__label" for="' + id + '">' + esc(o) + '</label></div>' + (
+                cond
+                ? '<div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="c-' + id + '">' + cond.map(function (c) {
+                  return renderInput(c, a, errors, false, c.label);
+                }).join('') + '</div>'
+                : '');
+            })
+            .join('') + '</div></fieldset></div>';
+        } else if (inp.type === 'author') {
+          var isName = !!a[k] && AUTHOR_FIXED.indexOf(a[k]) < 0;
+          h = '<div class="govuk-form-group' + hasErr + '"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend ' + legendCls + '">' + legendInner + '</legend>' + hint + errMsg(errors, k) + '<div class="govuk-radios" data-module="govuk-radios" id="' + k + '">' + AUTHOR_FIXED.map(function (o, i) {
+            return '<div class="govuk-radios__item"><input class="govuk-radios__input" id="' + k + '-' + i + '" name="' + k + '" type="radio" value="' + esc(o) + '"' + (a[k] === o ? ' checked' : '') + '><label class="govuk-label govuk-radios__label" for="' + k + '-' + i + '">' + esc(o) + '</label></div>';
+          }).join('') + '<div class="govuk-radios__item"><input class="govuk-radios__input" id="' + k + '-name-radio" name="' + k + '" type="radio" value="Name" data-aria-controls="c-' + k + '-name"' + (isName ? ' checked' : '') + '><label class="govuk-label govuk-radios__label" for="' + k + '-name-radio">Named person</label></div><div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="c-' + k + '-name"><div class="govuk-form-group"><label class="govuk-label" for="' + k + '-name">Name</label><div class="author-autocomplete" data-key="' + k + '" data-value="' + esc(isName ? a[k] : '') + '"></div></div></div></div></fieldset></div>';
+        } else if (inp.type === 'parties') {
+          var sel = a[k] || [];
+          var extra = sel.filter(function (p) {
+            return PARTIES.indexOf(p) < 0;
+          })[0] || '';
+          h = '<div class="govuk-form-group' + hasErr + '"><fieldset class="govuk-fieldset" aria-describedby="' + k + '-hint"><legend class="govuk-fieldset__legend ' + legendCls + '">' + legendInner + '</legend>' + hint + errMsg(errors, k) + '<div class="govuk-checkboxes" data-module="govuk-checkboxes" id="' + k + '">' + PARTIES
+            .map(function (p, i) {
+              return '<div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="' + k + '-' + i + '" name="' + k + '" type="checkbox" value="' + esc(p) + '"' + (
+                sel.indexOf(p) > -1
+                ? ' checked'
+                : '') + '>' + '<label class="govuk-label govuk-checkboxes__label" for="' + k + '-' + i + '">' + esc(p) + '</label></div>';
+            })
+            .join('') + '</div></fieldset></div>';
+        }
+        return h;
+      }
+
+      function readInput(inp, form, out, errors) {
+        var k = inp.key;
+        if (inp.type === 'date') {
+          var d = form[k + '-d']
+              .value
+              .trim(),
+            m = form[k + '-m']
+              .value
+              .trim(),
+            y = form[k + '-y']
+              .value
+              .trim();
+          if (!d && !m && !y) {
+            out[k] = '';
+            if (inp.required) 
+              errors[k] = inp.required;
+            return;
+          }
+          var missing = [
+            !d && 'day',
+            !m && 'month',
+            !y && 'year'
+          ].filter(Boolean);
+          if (missing.length) {
+            errors[k] = 'The date must include a ' + missing.join(' and ');
+            return;
+          }
+          var dt = new Date(+ y, + m - 1, + d);
+          if (!/^\d+$/.test(d + m + y) || y.length !== 4 || dt.getDate() !== + d || dt.getMonth() !== + m - 1) {
+            errors[k] = 'The date must be a real date';
+            return;
+          }
+          out[k] = iso(y, m, d);
+        } else if (inp.type === 'parties') {
+          var vals = Array
+            .prototype
+            .slice
+            .call(form.querySelectorAll('input[name="' + k + '"]:checked'))
+            .map(function (i) {
+              return i.value;
+            });
+          out[k] = vals;
+          if (!vals.length) 
+            errors[k] = inp.required;
+          }
+        else if (inp.type === 'author') {
+          var ac = form.querySelector('input[name="' + k + '"]:checked');
+          out[k] = ac ? ac.value : '';
+          if (out[k] === 'Name') {
+            var typed = form.querySelector('#' + k + '-name');
+            out[k] = typed ? typed.value.trim() : '';
+            if (!out[k] || USERS.indexOf(out[k]) < 0) {
+              errors[k] = 'Enter a name and select a user from the list';
+              out[k] = '';
+            }
+          }
+        }
+        else if (inp.type === 'radios') {
+          var c = form.querySelector('input[name="' + k + '"]:checked');
+          out[k] = c
+            ? c.value
+            : '';
+          if (!out[k] && inp.required) {
+            errors[k] = inp.required;
+            return;
+          }
+          if (inp.conditional) 
+            Object
+              .keys(inp.conditional)
+              .forEach(function (opt) {
+                inp
+                  .conditional[opt]
+                  .forEach(function (ci) {
+                    if (out[k] === opt) 
+                      readInput(ci, form, out, errors);
+                    else 
+                      out[ci.key] = '';
+                    }
+                  );
+              });
+          }
+        else {
+          out[k] = form[k]
+            .value
+            .trim();
+          if (!out[k] && inp.required) 
+            errors[k] = inp.required;
+          }
+        }
+
+      function errorSummary(errors, keys) {
+        var ks = Object
+          .keys(errors)
+          .filter(function (k) {
+            return keys.indexOf(k) > -1;
+          });
+        if (!ks.length) 
+          return '';
+        return '<div class="govuk-error-summary" data-module="govuk-error-summary"><div role="alert"><h2 class="govuk-error-summary__title">There is a problem</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list">' + ks
+          .map(function (k) {
+            var target = k + (
+              /Date|deadline|Received|Issued|dateMade|commentsShared/.test(k) && k !== 'inspectorName'
+              ? '-d'
+              : '');
+            return '<li><a href="#' + target + '">' + esc(errors[k]) + '</a></li>';
+          })
+          .join('') + '</div></div></div>';
+      }
+
+      function flatKeys(page) {
+        var ks = [];
+        page
+          .inputs
+          .forEach(function (i) {
+            ks.push(i.key);
+            if (i.conditional) 
+              Object
+                .keys(i.conditional)
+                .forEach(function (o) {
+                  i
+                    .conditional[o]
+                    .forEach(function (c) {
+                      ks.push(c.key);
+                    });
+                });
+            }
+          );
+        return ks;
+      }
+
+      /* mode: 'create' (draft, flow = sequence) or 'edit' (existing record) */
+      function initAuthorAutocompletes(root) {
+        if (!window.accessibleAutocomplete) 
+          return;
+        Array.prototype.forEach.call(root.querySelectorAll('.author-autocomplete'), function (el) {
+          var k = el.getAttribute('data-key');
+          accessibleAutocomplete({
+            element: el,
+            id: k + '-name',
+            name: k + '-name',
+            source: USERS,
+            defaultValue: el.getAttribute('data-value') || '',
+            showAllValues: true,
+            autoselect: false,
+            confirmOnBlur: false
+          });
+        });
+      }
+
+      function questionPage(root, pageKey, opts) {
+        var page = PAGES[pageKey],
+          keys = flatKeys(page);
+        var rec = opts.mode === 'edit'
+          ? find(opts.id)
+          : getDraft();
+        if (!rec) {
+          location.href = BASE + 'case';
+          return;
+        }
+        var errors = {};
+
+        function draw(a) {
+          var one = page.inputs.length === 1;
+          var inner = page
+            .inputs
+            .map(function (i) {
+              return renderInput(i, a, errors, one, page.title);
+            })
+            .join('');
+          if (!one) 
+            inner = '<h1 class="govuk-heading-l">' + esc(page.title) + '</h1>' + inner;
+          root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">' + errorSummary(errors, keys) + '<form novalidate>' + inner + '<div class="govuk-button-group"><button class="govuk-button" data-module="govuk-button">' + (
+            opts.mode === 'edit'
+            ? 'Save'
+            : 'Continue') + '</button></div></form></div></div>';
+          if (window.GOVUKFrontend && GOVUKFrontend.initAll) {
+            try {
+              GOVUKFrontend.initAll({scope: root});
+            } catch (e) {}
+          }
+          initAuthorAutocompletes(root);
+          var form = root.querySelector('form');
+          form.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            var out = {};
+            errors = {};
+            page
+              .inputs
+              .forEach(function (i) {
+                readInput(i, form, out, errors);
+              });
+            var next = Object.assign({}, rec, out);
+            if (!Object.keys(errors).length) {
+              var rule = validate(next);
+              keys.forEach(function (k) {
+                if (rule[k]) 
+                  errors[k] = rule[k];
+                }
+              );
+            }
+            if (Object.keys(errors).length) {
+              draw(next);
+              window.scrollTo(0, 0);
+              return;
+            }
+            opts.onSave(next);
+          });
+        }
+        draw(rec);
+      }
+
+      /* ---------- summary page ---------- */
+      function row(a, label, key, value, pageKey) {
+        var v = value === undefined
+          ? a[key]
+          : value;
+        var shown = v
+          ? v
+          : '-';
+        return '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">' + esc(label) + '</dt><dd class="govuk-summary-list__value">' + shown + '</dd>' + '<dd class="govuk-summary-list__actions"><a class="govuk-link" href="' + BASE + 'edit?id=' + a.id + '&page=' + pageKey + '">Change<span class="govuk-visually-hidden"> ' + esc(label.toLowerCase()) + '</span></a></dd></div>';
+      }
+      function partyList(arr) {
+        arr = arr || [];
+        if (arr.length < 2) 
+          return list(arr);
+        var li = function (p, hide) {
+          return '<li' + (
+            hide
+            ? ' class="costs-party-more" hidden'
+            : '') + '>' + esc(p) + '</li>';
+        };
+        var h = '<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">' + arr
+          .map(function (p, i) {
+            return li(p, i > 1);
+          })
+          .join('') + '</ul>';
+        if (arr.length > 2) {
+          var n = arr.length - 2;
+          h += '<a href="#" class="govuk-link costs-party-toggle" data-more="View ' + n + ' more" data-less="View less" aria-expanded="false">View ' + n + ' more</a>';
+        }
+        return h;
+      }
+      function bindPartyToggles(root) {
+        root.addEventListener('click', function (ev) {
+          var t = ev.target.closest('.costs-party-toggle');
+          if (!t)
+            return;
+          ev.preventDefault();
+          var open = t.getAttribute('aria-expanded') !== 'true';
+          t
+            .parentNode
+            .querySelectorAll('.costs-party-more')
+            .forEach(function (li) {
+              li.hidden = !open;
+            });
+          t.setAttribute('aria-expanded', open);
+          t.textContent = open
+            ? t.getAttribute('data-less')
+            : t.getAttribute('data-more');
+        });
+      }
+      function partyRow(a, label, key) {
+        return '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">' + label + '</dt><dd class="govuk-summary-list__value">' + partyList(a[key]) + '</dd><dd class="govuk-summary-list__actions"><a class="govuk-link" href="' + BASE + 'party-entry?id=' + a.id + '&key=' + key + '">Change<span class="govuk-visually-hidden"> ' + label.toLowerCase() + '</span></a></dd></div>';
+      }
+      function section(title, rows) {
+        return '<h2 class="govuk-heading-m govuk-!-margin-top-8">' + title + '</h2><dl class="govuk-summary-list">' + rows.join('') + '</dl>';
+      }
+
+      function viewPage(root) {
+        var a = find(qs('id'));
+        if (!a) {
+          root.innerHTML = '<p class="govuk-body">Costs application not found.</p>';
+          return;
+        }
+        var wasJustCreated = qs('created');
+        var wasUpdated = qs('updated');
+        var withdrawn = a.withdrawn === 'Yes',
+          rows;
+        var h = '';
+        if (wasJustCreated)
+          h += '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">Success</h2></div><div class="govuk-notification-banner__content"><h3 class="govuk-notification-banner__heading">Costs application ' + esc(a.id) + ' created</h3></div></div></div></div>';
+        else if (wasUpdated)
+          h += '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">Success</h2></div><div class="govuk-notification-banner__content"><h3 class="govuk-notification-banner__heading">Costs application updated</h3></div></div></div></div>';
+        h += '<span class="govuk-caption-l">' + esc(CASE_REF) + '</span><h1 class="govuk-heading-l">View costs application</h1>';
+        h += '<div id="costs-notes"></div>';
+        h += section('Application details', [
+          '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Costs application reference</dt><dd class="govuk-summary-list__value">' + esc(a.id) + '</dd><dd class="govuk-summary-list__actions"></dd></div>',
+          row(a, 'Date submitted', 'dateMade', fmt(a.dateMade), 'dateMade'),
+          partyRow(a, 'Applicants', 'applicants'),
+          partyRow(a, 'Respondents', 'respondents')
+        ]);
+        if (!withdrawn) {
+          h += section('Comment exchange', [
+            row(a, 'Deadline for comments', 'deadline', fmt(a.deadline), 'deadline'),
+            row(a, 'Date comments received', 'commentsReceived', fmt(a.commentsReceived), 'commentsReceived'),
+            row(a, 'Date comments shared', 'commentsShared', fmt(a.commentsShared), 'commentsShared'),
+            row(a, 'Deadline for final comments', 'deadlineFinalComments', fmt(a.deadlineFinalComments), 'deadlineFinalComments'),
+            row(a, 'Date final comments received', 'finalCommentsReceived', fmt(a.finalCommentsReceived), 'finalCommentsReceived')
+          ]);
+          var dm = [row(a, 'Decision type', 'decisionMakerType', esc(
+            a.decisionMakerType
+            ? a.decisionMakerType + ' decision'
+            : ''), 'decisionMakerType')];
+          if (a.decisionMakerType === 'Inspector' || a.reportAuthor || a.decisionAuthor) 
+            dm.push(row(a, 'Inspector name', 'inspectorName', esc(a.inspectorName), 'inspectorName'));
+          dm.push(row(a, 'Outcome type', 'outcomeType', esc(a.outcomeType), 'outcomeType'));
+          h += section('Decision maker', dm);
+          if (hasReport(a)) {
+            h += section('Report', [
+              row(a, 'Date report issued', 'reportIssued', fmt(a.reportIssued), 'reportIssued'),
+              row(a, 'Report author', 'reportAuthor', esc(a.reportAuthor), 'reportAuthor'),
+              row(a, 'Report recommendation', 'reportRecommendation', esc(a.reportRecommendation), 'reportRecommendation')
+            ]);
+          }
+          h += section('Decision', [
+            row(a, 'Date decision issued', 'decisionIssued', fmt(a.decisionIssued), 'decisionIssued'),
+            row(a, 'Decision author', 'decisionAuthor', esc(a.decisionAuthor), 'decisionAuthor'),
+            row(a, 'Outcome', 'outcome', esc(a.outcome), 'outcome')
+          ]);
+        }
+        h += section('Withdrawal', [row(a, 'Withdrawn', 'withdrawn', esc(a.withdrawn || 'No'), 'withdrawal')].concat(
+          withdrawn
+          ? [
+            row(a, 'Withdrawal date', 'withdrawalDate', fmt(a.withdrawalDate), 'withdrawal'),
+            row(a, 'Withdrawal reason', 'withdrawalReason', esc(a.withdrawalReason), 'withdrawal')
+          ]
+          : []));
+        root.innerHTML = h;
+        bindPartyToggles(root);
+        renderNotes(root.querySelector('#costs-notes'), a.id);
+      }
+
+
+      function notePageContext(root) {
+        var a = find(qs('id'));
+        var idx = Number(qs('index'));
+        var back = BASE + 'view?id=' + encodeURIComponent(qs('id')) + '&notes=1';
+        if (!a || !a.notes || !a.notes[idx]) {
+          location.href = a ? back : BASE + 'case';
+          return null;
+        }
+        return {a: a, idx: idx, back: back, note: a.notes[idx]};
+      }
+      function noteChangePage(root, errorMsg, value) {
+        var c = notePageContext(root);
+        if (!c) 
+          return;
+        var val = value == null ? c.note.text : value;
+        root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><a href="' + c.back + '" class="govuk-back-link">Back</a>' + (errorMsg ? '<div class="govuk-error-summary" data-module="govuk-error-summary"><div role="alert"><h2 class="govuk-error-summary__title">There is a problem</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#updated-note">' + esc(errorMsg) + '</a></li></ul></div></div></div>' : '') + '<h1 class="govuk-heading-l govuk-!-margin-bottom-3">Change note</h1><div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">Warning</span>You should only change minor parts of the note such as typos.</strong></div><form novalidate><div class="govuk-form-group' + (errorMsg ? ' govuk-form-group--error' : '') + '"><label class="govuk-label govuk-visually-hidden" for="updated-note">Edit costs application note</label>' + (errorMsg ? '<p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> ' + esc(errorMsg) + '</p>' : '') + '<textarea class="govuk-textarea' + (errorMsg ? ' govuk-textarea--error' : '') + '" id="updated-note" rows="5">' + esc(val) + '</textarea></div><button class="govuk-button" type="submit">Save changes</button><p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="' + c.back + '">Cancel</a></p></form></div></div>';
+        root.querySelector('form').addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          var text = root.querySelector('#updated-note').value.trim().slice(0, 500);
+          if (!text) 
+            return noteChangePage(root, 'Enter a costs application note', '');
+          var rec = find(c.a.id);
+          rec.notes[c.idx].text = text;
+          rec.notes[c.idx].editedDate = new Date().toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'});
+          update(rec);
+          location.href = c.back;
+        });
+      }
+      function noteRemovePage(root) {
+        var c = notePageContext(root);
+        if (!c) 
+          return;
+        root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><a href="' + c.back + '" class="govuk-back-link">Back</a><h1 class="govuk-heading-l govuk-!-margin-bottom-3">Remove note</h1><p class="govuk-body govuk-!-margin-bottom-4">This will remove the note from the costs application.</p><div class="govuk-inset-text">' + esc(c.note.text) + '</div><button class="govuk-button govuk-button--warning" id="confirm-remove-note" type="button">Remove note</button><p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="' + c.back + '">Cancel</a></p></div></div>';
+        root.querySelector('#confirm-remove-note').addEventListener('click', function () {
+          var rec = find(c.a.id);
+          rec.notes.splice(c.idx, 1);
+          update(rec);
+          location.href = c.back;
+        });
+      }
+
+      /* ---------- costs application notes ---------- */
+      function renderNotes(el, id) {
+        var rec = find(id);
+        var notes = rec.notes || [];
+        var open = el.dataset.open === 'true' || !!qs('notes');
+        var list = notes.map(function (n, i) {
+          var href = BASE + 'note-%s?id=' + encodeURIComponent(id) + '&index=' + i;
+          return '<section><p class="govuk-body govuk-!-margin-bottom-1 govuk-!-text-break-word">' + esc(n.text) + '</p><p class="govuk-hint govuk-!-margin-bottom-1">' + esc(n.meta) + (n.editedDate ? ' (Changed ' + esc(n.editedDate) + ')' : '') + '</p><ul class="govuk-list govuk-list--inline govuk-!-margin-bottom-6"><li><a class="govuk-link" href="' + href.replace('%s', 'change') + '">Change<span class="govuk-visually-hidden"> costs application note</span></a></li><li><a class="govuk-link" href="' + href.replace('%s', 'remove') + '">Remove<span class="govuk-visually-hidden"> costs application note</span></a></li></ul><hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible"></section>';
+        }).join('');
+        el.innerHTML = '<details class="govuk-details"' + (open ? ' open' : '') + '><summary class="govuk-details__summary"><span class="govuk-details__summary-text">' + notes.length + ' costs application note' + (notes.length === 1 ? '' : 's') + '</span></summary><div class="govuk-details__text">' + '<div class="govuk-character-count" data-module="govuk-character-count" data-maxlength="500"><div class="govuk-form-group"><label class="govuk-label govuk-visually-hidden" for="costs-note">Add costs application note</label><textarea class="govuk-textarea govuk-js-character-count" id="costs-note" name="costs-note" rows="5"></textarea></div><div id="costs-note-info" class="govuk-hint govuk-character-count__message">You can enter up to 500 characters</div></div>' + '<button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-1" id="add-costs-note" type="button">Add costs application note</button>' + (list ? '<hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">' + list : '') + '</div></details>';
+        if (window.GOVUKFrontend && GOVUKFrontend.initAll) {
+          try {
+            GOVUKFrontend.initAll({scope: el});
+          } catch (x) {}
+        }
+        el.querySelector('#add-costs-note').addEventListener('click', function () {
+          var text = el.querySelector('#costs-note').value.trim().slice(0, 500);
+          if (!text) 
+            return;
+          var now = new Date();
+          var time = now.toLocaleTimeString('en-GB', {hour: 'numeric', minute: '2-digit', hour12: true}).toLowerCase();
+          var date = now.toLocaleDateString('en-GB', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+          var r = find(id);
+          r.notes = [{text: text, meta: time + ' on ' + date + ' by ' + NOTE_AUTHOR}].concat(r.notes || []);
+          update(r);
+          el.dataset.open = 'true';
+          renderNotes(el, id);
+        });
+      }
+
+      /* ---------- list page ---------- */
+      function listPage(root) {
+        var rows = all()
+          .sort(function (x, y) {
+            return y
+              .dateMade
+              .localeCompare(x.dateMade);
+          })
+          .map(function (a) {
+            var s = status(a);
+            var party = function (arr) {
+              return partyList(arr).replace('govuk-!-margin-bottom-0', 'govuk-!-margin-0');
+            };
+            return '<tr class="govuk-table__row"><td class="govuk-table__cell"><a class="govuk-link" href="' + BASE + 'view?id=' + a.id + '">' + esc(a.id) + '</a></td><td class="govuk-table__cell">' + fmt(a.dateMade) + '</td><td class="govuk-table__cell">' + party(a.applicants) + '</td><td class="govuk-table__cell">' + party(a.respondents) + '</td><td class="govuk-table__cell"><strong class="govuk-tag ' + s.cls + '">' + esc(s.text) + '</strong></td></tr>';
+          })
+          .join('');
+        root.innerHTML = '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">Case reference</th><th scope="col" class="govuk-table__header">Date submitted</th><th scope="col" class="govuk-table__header">Claimant</th><th scope="col" class="govuk-table__header">Respondent</th><th scope="col" class="govuk-table__header">Status</th></tr></thead><tbody class="govuk-table__body">' + (
+        rows || '<tr class="govuk-table__row"><td class="govuk-table__cell" colspan="5">There are no costs applications on this case.</td></tr>') + '</tbody></table>';
+        bindPartyToggles(root);
+      }
+
+      /* ---------- applicants / respondents entry ---------- */
+      var PARTY = {
+        applicants: {
+          entry: 'Who is the applicant?',
+          next: 'respondents'
+        },
+        respondents: {
+          entry: 'Who is the application made against?',
+          next: null
+        }
+      };
+      function partyCtx() {
+        var id = qs('id'),
+          key = qs('key');
+        if (!PARTY[key]) {
+          location.href = BASE + 'case';
+          return null;
+        }
+        var rec = id
+          ? find(id)
+          : getDraft();
+        if (!rec) {
+          location.href = BASE + 'case';
+          return null;
+        }
+        return {
+          id: id,
+          key: key,
+          rec: rec,
+          cfg: PARTY[key],
+          q: (
+            id
+            ? 'id=' + id + '&'
+            : '') + 'key=' + key,
+          save: function (r) {
+            if (id) 
+              update(r);
+            else 
+              setDraft(r);
+            }
+          };
+      }
+      function partyEntryPage(root) {
+        var c = partyCtx();
+        if (!c) 
+          return;
+        var selectedNow = c.rec[c.key] || [];
+        var avail = c.key === 'respondents'
+          ? PARTIES.filter(function (party) {
+            return (c.rec.applicants || []).indexOf(party) === -1;
+          })
+          : PARTIES;
+        var errMsgText = '';
+        function draw() {
+          var err = errMsgText
+            ? ' govuk-form-group--error'
+            : '';
+          root.innerHTML = '<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">' + (
+            errMsgText
+            ? '<div class="govuk-error-summary" data-module="govuk-error-summary"><div role="alert"><h2 class="govuk-error-summary__title">There is a problem</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#party-0">' + esc(errMsgText) + '</a></li></ul></div></div></div>'
+            : '') + '<form novalidate><div class="govuk-form-group' + err + '"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h1 class="govuk-fieldset__heading">' + esc(c.cfg.entry) + '</h1></legend>' + (
+            errMsgText
+            ? '<p class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> ' + esc(errMsgText) + '</p>'
+            : '') + '<div class="govuk-hint">If the person or organisation you are looking for is not listed, add them to the case before creating the costs application.</div>' + (
+              avail.length
+                ? '<div class="govuk-checkboxes" data-module="govuk-checkboxes">' + avail
+            .map(function (p, i) {
+              return '<div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="party-' + i + '" name="party" type="checkbox" value="' + esc(p) + '"' + (
+                selectedNow.indexOf(p) > -1
+                ? ' checked'
+                : '') + '><label class="govuk-label govuk-checkboxes__label" for="party-' + i + '">' + esc(p) + '</label></div>';
+            })
+            .join('') + '</div>'
+                : '<p class="govuk-body">There are no contacts available to select as respondents.</p>'
+            ) + '</fieldset></div><div class="govuk-button-group"><button class="govuk-button" data-module="govuk-button">Continue</button></div></form></div></div>';
+          if (window.GOVUKFrontend && GOVUKFrontend.initAll) {
+            try {
+              GOVUKFrontend.initAll({scope: root});
+            } catch (x) {}
+          }
+          root
+            .querySelector('form')
+            .addEventListener('submit', function (ev) {
+              ev.preventDefault();
+              var selected = Array
+                .prototype
+                .slice
+                .call(root.querySelectorAll('input[name="party"]:checked'))
+                .map(function (input) {
+                  return input.value;
+                });
+              if (!selected.length) {
+                errMsgText = 'Select at least one ' + (
+                  c.key === 'applicants'
+                  ? 'applicant'
+                  : 'respondent');
+                return draw();
+              }
+              c.rec[c.key] = selected;
+              if (c.key === 'applicants' && c.rec.respondents) {
+                c.rec.respondents = c.rec.respondents.filter(function (respondent) {
+                  return selected.indexOf(respondent) === -1;
+                });
+              }
+              c.save(c.rec);
+              location.href = BASE + (
+                c.id
+                ? 'view?id=' + c.id
+                : (
+                  c.cfg.next
+                  ? 'party-entry?key=' + c.cfg.next
+                  : 'create-application'));
+            });
+        }
+        draw();
+      }
+      function createApplication() {
+        var d = getDraft();
+        if (!d.dateMade || !(d.applicants || []).length || !(d.respondents || []).length) {
+          location.href = BASE + 'case';
+          return;
+        }
+        var created = Object.assign({}, d, {id: nextId()});
+        var l = all();
+        l.push(created);
+        saveAll(l);
+        setDraft({});
+        location.replace(BASE + 'view?id=' + created.id + '&created=1');
+      }
+
+      /* ---------- bootstrap ---------- */
+      document.addEventListener('DOMContentLoaded', function () {
+        var root = document.getElementById('costs-app');
+        if (!root) 
+          return;
+        var page = root.getAttribute('data-page');
+        if (page === 'list') 
+          return listPage(root);
+        if (page === 'view') 
+          return viewPage(root);
+        if (page === 'note-change') 
+          return noteChangePage(root);
+        if (page === 'note-remove') 
+          return noteRemovePage(root);
+        if (page === 'partyEntry') 
+          return partyEntryPage(root);
+        if (page === 'createApplication') 
+          return createApplication();
+        if (page === 'edit') {
+          var id = qs('id'),
+            p = qs('page');
+          if (!PAGES[p] || !find(id)) {
+            location.href = BASE + 'case';
+            return;
+          }
+          return questionPage(root, p, {
+            mode: 'edit',
+            id: id,
+            cancel: BASE + 'view?id=' + id,
+            onSave: function (rec) {
+              update(rec);
+              location.href = BASE + 'view?id=' + id + '&updated=1';
+            }
+          });
+        }
+        if (page === 'reset') {
+          localStorage.removeItem(STORE);
+          sessionStorage.removeItem(DRAFT);
+          location.href = BASE + 'case';
+          return;
+        }
+        // create journey steps
+        var flow = {
+          dateMade: 'party-entry?key=applicants'
+        };
+        if (page === 'dateMade' && !qs('keep')) 
+          setDraft({});
+        questionPage(root, page, {
+          mode: 'create',
+          cancel: BASE + 'case',
+          onSave: function (rec) {
+            var nxt = flow[page];
+            if (nxt) {
+              setDraft(rec);
+              location.href = BASE + nxt;
+              return;
+            }
+          }
+        });
+      });
+    })();
+  </script>
+{% endraw %}

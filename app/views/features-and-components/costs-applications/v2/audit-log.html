@@ -1,0 +1,269 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Case history - Costs applications
+{% endblock %}
+
+{% block content %}
+<style>
+  .audit-log-page {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .audit-log-page .govuk-back-link {
+    color: #0b0c0c;
+    font-size: 14px;
+  }
+
+  .audit-log-page__controls {
+    margin-bottom: 24px;
+  }
+
+  .audit-log-table {
+    border-collapse: collapse;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .audit-log-table th,
+  .audit-log-table td {
+    border-bottom: 1px solid #d8dcde;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 14px 12px 14px 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .audit-log-table td {
+    overflow-wrap: anywhere;
+  }
+
+  .audit-log-table th {
+    font-weight: 700;
+  }
+
+  .audit-log-table th:first-child,
+  .audit-log-table td:first-child {
+    width: 16%;
+  }
+
+  .audit-log-table th:last-child,
+  .audit-log-table td:last-child {
+    width: 20%;
+  }
+
+  .audit-log-pagination {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    margin: 28px 0 40px;
+    padding: 0;
+  }
+
+  .audit-log-pagination a,
+  .audit-log-pagination span {
+    display: inline-block;
+    padding: 8px 10px;
+  }
+
+  .audit-log-pagination__current {
+    background: #1d70b8;
+    color: #fff;
+  }
+
+  @media (max-width: 600px) {
+    .audit-log-table {
+      font-size: 14px;
+    }
+
+    .audit-log-table th,
+    .audit-log-table td {
+      font-size: 14px;
+      padding-right: 6px;
+    }
+
+    .audit-log-table th:first-child,
+    .audit-log-table td:first-child {
+      width: 20%;
+    }
+
+    .audit-log-table th:last-child,
+    .audit-log-table td:last-child {
+      width: 21%;
+    }
+  }
+</style>
+
+<div class="audit-log-page">
+  {{ govukBackLink({
+    text: "Back to case details",
+    href: "/features-and-components/costs-applications/v2/case"
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full govuk-!-margin-bottom-3">
+      <span class="govuk-caption-m">ROW/S14D/10010</span>
+      <h1 class="govuk-heading-l">Case history</h1>
+    </div>
+  </div>
+
+  <div class="audit-log-page__controls">
+    <p class="govuk-body govuk-!-margin-bottom-2">
+      Showing <strong>1</strong> to <strong>25</strong> of <strong>28</strong> results
+    </p>
+    <p class="govuk-body govuk-!-margin-bottom-0">
+      <strong>Results per page</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+      <span>25</span>&nbsp;&nbsp;|&nbsp;&nbsp;
+      <a class="govuk-link--no-visited-state" href="#">50</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+      <a class="govuk-link--no-visited-state" href="#">100</a>
+    </p>
+  </div>
+
+  <table class="govuk-table audit-log-table">
+    <thead>
+      <tr>
+        <th scope="col" class="govuk-table__header">Date and time</th>
+        <th scope="col" class="govuk-table__header">Details</th>
+        <th scope="col" class="govuk-table__header">User</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>29 October 2026<br>10:42am</td>
+        <td>Costs application CA-004: Costs application note was updated from 'Application recieved' to 'Application received'.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>29 October 2026<br>10:36am</td>
+        <td>Costs application CA-002: Deadline for comments was changed from 22 October 2026 to 29 October 2026.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>28 October 2026<br>4:18pm</td>
+        <td>Costs application CA-003: Respondent was changed from Greenfield Developments Ltd to North Frindville District Council.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>28 October 2026<br>4:12pm</td>
+        <td>Costs application CA-001: Applicant was changed from Olivia Prescott to North Frindville District Council.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>28 October 2026<br>3:55pm</td>
+        <td>Costs application CA-002: Costs application note was added: Awaiting confirmation of the applicant's costs schedule.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>27 October 2026<br>2:20pm</td>
+        <td>Costs application CA-003: Decision maker was changed from Costs Branch to Inspector.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>27 October 2026<br>2:18pm</td>
+        <td>Costs application CA-001: Inspector was changed from Jean Grey to Carol Danvers.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>24 October 2026<br>11:05am</td>
+        <td>Costs application CA-004: Outcome was changed from Costs refused to Costs granted.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>23 October 2026<br>3:44pm</td>
+        <td>Costs application CA-002: Costs application note was updated from 'Report due next week' to 'Report due 30 October'.</td>
+        <td>Jean<br>Grey</td>
+      </tr>
+      <tr>
+        <td>23 October 2026<br>3:40pm</td>
+        <td>Costs application CA-001: Date comments were received was changed from 10 October 2026 to 12 October 2026.</td>
+        <td>Jean<br>Grey</td>
+      </tr>
+      <tr>
+        <td>21 October 2026<br>9:16am</td>
+        <td>Costs application CA-004: Respondent was changed from North Frindville District Council to Greenfield Developments Ltd.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>21 October 2026<br>9:10am</td>
+        <td>Costs application CA-002: Applicant was changed from Oak Valley Residents Association to Olivia Prescott.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>20 October 2026<br>4:02pm</td>
+        <td>Costs application CA-001: Costs application note was added: Final comments received from both parties.</td>
+        <td>Jean<br>Grey</td>
+      </tr>
+      <tr>
+        <td>17 October 2026<br>1:30pm</td>
+        <td>Costs application CA-003: Application status was changed from In progress to Withdrawn.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>17 October 2026<br>1:29pm</td>
+        <td>Costs application CA-003: Withdrawal reason was added: Matter resolved between the parties.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>15 October 2026<br>10:48am</td>
+        <td>Costs application CA-004: Decision issued date was changed from 1 August 2026 to 15 October 2026.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>15 October 2026<br>10:44am</td>
+        <td>Costs application CA-003: Outcome was changed from Costs granted to Costs refused.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>14 October 2026<br>2:25pm</td>
+        <td>Costs application CA-001: Costs application note was updated from 'Decision issued' to 'Decision issued to all parties'.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>13 October 2026<br>11:17am</td>
+        <td>Costs application CA-002: Respondent was changed from Northbridge Borough Council to North Frindville District Council.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>12 October 2026<br>4:09pm</td>
+        <td>Costs application CA-004: Applicant was changed from Aisha Rahman to Olivia Prescott.</td>
+        <td>Jean<br>Grey</td>
+      </tr>
+      <tr>
+        <td>9 October 2026<br>9:38am</td>
+        <td>Costs application CA-003: Costs application note was added: Check whether final comments have been received.</td>
+        <td>Jean<br>Grey</td>
+      </tr>
+      <tr>
+        <td>7 October 2026<br>3:14pm</td>
+        <td>Costs application CA-002: Deadline for comments was changed from 1 October 2026 to 7 October 2026.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>6 October 2026<br>1:52pm</td>
+        <td>Costs application CA-004: Costs application note was updated from 'Awaiting comments' to 'Comments received and under review'.</td>
+        <td>Carol<br>Danvers</td>
+      </tr>
+      <tr>
+        <td>1 October 2026<br>10:05am</td>
+        <td>Costs application CA-003: Costs application was created with applicant Northbridge Borough Council and respondent Greenfield Developments Ltd.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+      <tr>
+        <td>30 September 2026<br>4:26pm</td>
+        <td>Costs application CA-001: Costs application note was added: Initial application details checked.</td>
+        <td>Amelia<br>Scanlan</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <nav aria-label="Pagination">
+    <ul class="audit-log-pagination">
+      <li><span class="audit-log-pagination__current" aria-current="page">1</span></li>
+      <li><a class="govuk-link" href="#">2</a></li>
+      <li><a class="govuk-link" href="#">Next &rarr;</a></li>
+    </ul>
+  </nav>
+
+</div>
+{% endblock %}
