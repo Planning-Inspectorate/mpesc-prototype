@@ -1,0 +1,21 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Party - Costs applications
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "javascript:history.back()"
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div id="costs-app" data-page="partyEntry"></div>
+  {% include "features-and-components/costs-applications/v2/_engine.njk" %}
+{% endblock %}
+
+{% block footer %}
+  {% include "features-and-components/costs-applications/v2/_footer.njk" %}
+{% endblock %}

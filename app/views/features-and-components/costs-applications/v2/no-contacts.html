@@ -1,0 +1,105 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}
+  Example case - No contacts - Costs applications
+{% endblock %}
+
+{% block content %}
+<style>
+  .costs-applications-page {
+    width: 100%;
+  }
+
+  .costs-tabs {
+    border-bottom: 1px solid #b1b4b6;
+    margin-bottom: 35px;
+  }
+
+  .costs-tabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .costs-tabs__item {
+    margin: 0;
+  }
+
+  .costs-tabs__link {
+    color: #1d70b8;
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 19px;
+    padding: 0 0 12px;
+    text-decoration: none;
+  }
+
+  .costs-tabs__item--current .costs-tabs__link {
+    border-bottom: 4px solid #00857a;
+    color: #0b0c0c;
+    font-weight: 700;
+    margin-bottom: -1px;
+  }
+</style>
+
+<div class="costs-applications-page">
+  {{ govukBackLink({
+    text: "Back",
+    href: "/features-and-components/costs-applications/index.html"
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">There is a problem</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>
+                <a href="#add-costs-application">You cannot add a costs application because there are no contacts associated with this case.</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <span class="govuk-caption-l">SOS/ENG/10001</span>
+  <h1 class="govuk-heading-l">Example case</h1>
+
+  <nav class="costs-tabs" aria-label="Case navigation">
+    <ul class="costs-tabs__list">
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Overview</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Timetable</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Team</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Contacts</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Resources</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Invoicing</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">History</a></li>
+      <li class="costs-tabs__item"><a class="costs-tabs__link" href="#">Case notes</a></li>
+      <li class="costs-tabs__item costs-tabs__item--current">
+        <a class="costs-tabs__link" href="#" aria-current="page">Costs applications</a>
+      </li>
+    </ul>
+  </nav>
+
+  {{ govukButton({
+    text: "Add costs application",
+    href: "#add-costs-application",
+    classes: "govuk-button--secondary",
+    attributes: {
+      id: "add-costs-application"
+    }
+  }) }}
+
+  <p class="govuk-body">There are no costs applications on this case.</p>
+</div>
+{% endblock %}
+
+{% block footer %}
+  {% include "features-and-components/costs-applications/v2/_footer.njk" %}
+{% endblock %}
