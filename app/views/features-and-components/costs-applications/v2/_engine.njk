@@ -173,8 +173,6 @@
             e[k] = 'The ' + LABEL[k] + ' must be today or in the past';
           }
         );
-        if (a.withdrawn === 'Yes' && !a.withdrawalDate) 
-          e.withdrawalDate = 'Enter the withdrawal date';
         function cmp(x, y, strict, msgY, msgX) {
           if (a[x] && a[y] && (
             strict
@@ -402,17 +400,23 @@
               conditional: {
                 Yes: [
                   {
-                    key: 'withdrawalDate',
-                    type: 'date',
-                    label: 'Withdrawal date',
-                    hint: 'For example, 6 2 2026'
-                  }, {
                     key: 'withdrawalReason',
                     type: 'textarea',
                     label: 'Reason for withdrawal (optional)'
                   }
                 ]
               }
+            }
+          ]
+        },
+        withdrawalDetails: {
+          title: 'When was the costs application withdrawn?',
+          inputs: [
+            {
+              key: 'withdrawalDate',
+              type: 'date',
+              required: 'Enter the withdrawal date',
+              hint: 'For example, 6 2 2026'
             }
           ]
         }
@@ -862,8 +866,8 @@
         h += section('Withdrawal', [row(a, 'Withdrawn', 'withdrawn', esc(a.withdrawn || 'No'), 'withdrawal')].concat(
           withdrawn
           ? [
-            row(a, 'Withdrawal date', 'withdrawalDate', fmt(a.withdrawalDate), 'withdrawal'),
-            row(a, 'Withdrawal reason', 'withdrawalReason', esc(a.withdrawalReason), 'withdrawal')
+            row(a, 'Withdrawal reason', 'withdrawalReason', esc(a.withdrawalReason), 'withdrawal'),
+            row(a, 'Withdrawal date', 'withdrawalDate', fmt(a.withdrawalDate), 'withdrawalDetails')
           ]
           : []));
         root.innerHTML = h;
