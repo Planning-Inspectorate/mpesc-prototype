@@ -216,13 +216,13 @@
           ]
         },
         applicants: {
-          title: 'Who is the applicant?',
+          title: 'Who is the claimant?',
           inputs: [
             {
               key: 'applicants',
               type: 'parties',
               hint: 'Select all that apply. If the person or organisation you are looking for is not listed, add them to the case before creating the costs application.',
-              required: 'Select at least one applicant'
+              required: 'Select at least one claimant'
             }
           ]
         },
@@ -831,7 +831,7 @@
         h += section('Application details', [
           '<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Costs application reference</dt><dd class="govuk-summary-list__value">' + esc(a.id) + '</dd><dd class="govuk-summary-list__actions"></dd></div>',
           row(a, 'Date submitted', 'dateMade', fmt(a.dateMade), 'dateMade'),
-          partyRow(a, 'Applicants', 'applicants'),
+          partyRow(a, 'Claimants', 'applicants'),
           partyRow(a, 'Respondents', 'respondents')
         ]);
         if (!withdrawn) {
@@ -963,19 +963,19 @@
             return '<tr class="govuk-table__row"><td class="govuk-table__cell"><a class="govuk-link" href="' + BASE + 'view?id=' + a.id + '">' + esc(a.id) + '</a></td><td class="govuk-table__cell">' + fmt(a.dateMade) + '</td><td class="govuk-table__cell">' + party(a.applicants) + '</td><td class="govuk-table__cell">' + party(a.respondents) + '</td><td class="govuk-table__cell"><strong class="govuk-tag ' + s.cls + '">' + esc(s.text) + '</strong></td></tr>';
           })
           .join('');
-        root.innerHTML = '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">Case reference</th><th scope="col" class="govuk-table__header">Date submitted</th><th scope="col" class="govuk-table__header">Claimant</th><th scope="col" class="govuk-table__header">Respondent</th><th scope="col" class="govuk-table__header">Status</th></tr></thead><tbody class="govuk-table__body">' + (
+        root.innerHTML = '<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">Costs application reference</th><th scope="col" class="govuk-table__header">Date submitted</th><th scope="col" class="govuk-table__header">Claimant</th><th scope="col" class="govuk-table__header">Respondent</th><th scope="col" class="govuk-table__header">Status</th></tr></thead><tbody class="govuk-table__body">' + (
         rows || '<tr class="govuk-table__row"><td class="govuk-table__cell" colspan="5">There are no costs applications on this case.</td></tr>') + '</tbody></table>';
         bindPartyToggles(root);
       }
 
-      /* ---------- applicants / respondents entry ---------- */
+      /* ---------- claimants / respondents entry ---------- */
       var PARTY = {
         applicants: {
-          entry: 'Who is the applicant?',
+          entry: 'Who is the claimant?',
           next: 'respondents'
         },
         respondents: {
-          entry: 'Who is the application made against?',
+          entry: 'Who is the respondent?',
           next: null
         }
       };
@@ -1062,7 +1062,7 @@
               if (!selected.length) {
                 errMsgText = 'Select at least one ' + (
                   c.key === 'applicants'
-                  ? 'applicant'
+                  ? 'claimant'
                   : 'respondent');
                 return draw();
               }
