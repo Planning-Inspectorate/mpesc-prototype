@@ -8,7 +8,7 @@
     "@govuk-prototype-kit/common-templates": "3.0.0",
     "@ministryofjustice/frontend": "^9.0.0",
     "accessible-autocomplete": "^3.0.1",
-    "govuk-frontend": "6.0.0",
+    "govuk-frontend": "6.6.0",
     "govuk-prototype-kit": "14.0.2"
   }
 }
