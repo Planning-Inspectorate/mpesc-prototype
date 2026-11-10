@@ -6,6 +6,9 @@ To get started:
 
 `npm run dev`
 
+The startup scripts add `node_modules` to Sass's search path so MOJ Frontend
+can resolve GOV.UK Frontend styles. Restart the prototype after dependency changes.
+
 ## Feature navigation
 
 Put each feature's index at `app/views/features-and-components/<feature>/index.html`
