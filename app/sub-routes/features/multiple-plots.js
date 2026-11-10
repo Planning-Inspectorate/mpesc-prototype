@@ -2,8 +2,7 @@ const govukPrototypeKit = require('govuk-prototype-kit');
 
 const router = govukPrototypeKit.requests.setupRouter();
 
-const PAGE_SIZES = [25, 50, 100];
-const DEFAULT_PAGE_SIZE = 25;
+const { paginateSiteAddresses } = require('../../pagination/site-addresses');
 const SCENARIOS = [12, 70, 234];
 
 const streets = ['High Street', 'Station Road', 'Church Lane', 'Park Avenue', 'Mill Road', 'Victoria Road', 'Green Lane', 'Queens Road', 'Kings Street', 'The Crescent'];
@@ -28,50 +27,18 @@ function buildPlots(count) {
   return plots;
 }
 
-router.get('/features-and-components/multiple-plots/v1/plots', function (req, res) {
+router.get('/features-and-components/added/multiple-plots/v1/plots', function (req, res) {
   let total = parseInt(req.query.plots, 10);
   if (!SCENARIOS.includes(total)) total = 12;
 
-  let pageSize = parseInt(req.query.perPage, 10);
-  if (!PAGE_SIZES.includes(pageSize)) pageSize = DEFAULT_PAGE_SIZE;
-
   const plots = buildPlots(total);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  let page = parseInt(req.query.page, 10);
-  if (!(page >= 1)) page = 1;
-  if (page > totalPages) page = totalPages;
+  const result = paginateSiteAddresses(plots, req.query.page, req.query.perPage,
+    `/features-and-components/added/multiple-plots/v1/plots?plots=${total}`);
 
-  const start = (page - 1) * pageSize;
-  const pagePlots = plots.slice(start, start + pageSize);
-  const base = `/features-and-components/multiple-plots/v1/plots?plots=${total}&perPage=${pageSize}`;
-  const href = p => `${base}&page=${p}`;
-
-  let pagination = null;
-  if (totalPages > 1) {
-    // GOV.UK pagination: first, last, current and neighbours, with ellipses
-    const items = [];
-    for (let p = 1; p <= totalPages; p++) {
-      if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
-        items.push({ number: p, href: href(p), current: p === page });
-      } else if (items.length && !items[items.length - 1].ellipsis) {
-        items.push({ ellipsis: true });
-      }
-    }
-    pagination = { items };
-    if (page > 1) pagination.previous = { href: href(page - 1) };
-    if (page < totalPages) pagination.next = { href: href(page + 1) };
-  }
-
-  res.render('features-and-components/multiple-plots/v1/plots', {
+  res.render('features-and-components/added/multiple-plots/v1/plots', {
     scenarios: SCENARIOS,
-    total,
-    page,
-    plots: pagePlots,
-    from: start + 1,
-    to: start + pagePlots.length,
-    pagination,
-    pageSize,
-    pageSizes: PAGE_SIZES
+    ...result,
+    plots: result.addresses
   });
 });
 
@@ -97,7 +64,7 @@ const dummyCase = {
   caseNotes: [{ text: 'Dummy case note for the prototype.', meta: '10:30am on Monday 26 October 2026 by Case Officer' }]
 };
 
-router.get('/features-and-components/multiple-plots/v1/case-details', function (req, res) {
+router.get('/features-and-components/added/multiple-plots/v1/case-details', function (req, res) {
   let total = parseInt(req.query.plots, 10);
   if (!SCENARIOS.includes(total)) total = 12;
 
@@ -107,7 +74,7 @@ router.get('/features-and-components/multiple-plots/v1/case-details', function (
     return { addressLine1, addressTown, addressCounty: rest[0] || '', addressPostcode };
   });
 
-  res.render('features-and-components/multiple-plots/v1/case-details', {
+  res.render('features-and-components/added/multiple-plots/v1/case-details', {
     scenarios: SCENARIOS,
     total,
     currentCase: Object.assign({}, dummyCase, { siteAddresses })

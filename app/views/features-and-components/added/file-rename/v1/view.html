@@ -11,14 +11,14 @@
     {# 1. Always show the root 'Manage case files' link #}
     <li class="govuk-breadcrumbs__list-item">
       <a class="govuk-breadcrumbs__link"
-        href="/features-and-components/file-rename/index.html?ref={{ currentCase.reference }}">File rename</a>
+        href="/features-and-components/added/file-rename/index.html?ref={{ currentCase.reference }}">File rename</a>
     </li>
 
     {# 2. If we are inside a subfolder, show the Parent Folder link #}
     {% if parentFolder %}
     <li class="govuk-breadcrumbs__list-item">
       <a class="govuk-breadcrumbs__link"
-        href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ parentFolder.id }}">
+        href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ parentFolder.id }}">
         {{ parentFolder.name }}
       </a>
     </li>
@@ -149,7 +149,7 @@
   <div class="govuk-grid-column-two-thirds">
     {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'><a
         class='govuk-notification-banner__link'
-        href='/features-and-components/file-rename/v1/view?ref=" + currentCase.reference + "&folderId=" + successBanner.id + "'>"
+        href='/features-and-components/added/file-rename/v1/view?ref=" + currentCase.reference + "&folderId=" + successBanner.id + "'>"
         + successBanner.name + "</a> folder created</h3>", type: "success" }) }}
   </div>
 </div>
@@ -237,16 +237,16 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full govuk-button-group">
-    <a href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+    <a href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
       role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button"
       data-cy="create-subfolder-btn">
       Create subfolder
     </a>
-    <a href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+    <a href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
       role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
       Rename folder
     </a>
-    <a href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+    <a href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
       role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
       Delete folder
     </a>
@@ -285,7 +285,7 @@
               {% for sub in folder.subfolders %}
               <li class="govuk-!-margin-bottom-4">
                 <a class="govuk-link govuk-heading-s govuk-!-margin-bottom-0"
-                  href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ sub.id }}">
+                  href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ sub.id }}">
                   {{ sub.name }}
                 </a>
               </li>
@@ -299,7 +299,7 @@
 </div>
 {% endif %}
 
-<form method="get" action="/features-and-components/file-rename/v1/view">
+<form method="get" action="/features-and-components/added/file-rename/v1/view">
   <input type="hidden" name="ref" value="{{ currentCase.reference }}">
   <input type="hidden" name="folderId" value="{{ folder.id }}">
   <input type="hidden" name="isFilterSubmit" value="true">
@@ -363,7 +363,7 @@
       {% for item in readList %}
       {% if item and item != "_unchecked" %}
       {% set readItems = (readItems.push({ text: item, href:
-      "/features-and-components/file-rename/v1/view/remove-filter/fileReadStatus/" + item + "?ref=" +
+      "/features-and-components/added/file-rename/v1/view/remove-filter/fileReadStatus/" + item + "?ref=" +
       currentCase.reference + "&folderId=" + folder.id }), readItems) %}
       {% endif %}
       {% endfor %}
@@ -379,7 +379,7 @@
       {% for item in flagList %}
       {% if item and item != "_unchecked" %}
       {% set flagItems = (flagItems.push({ text: item, href:
-      "/features-and-components/file-rename/v1/view/remove-filter/fileFlaggedStatus/" + item + "?ref=" +
+      "/features-and-components/added/file-rename/v1/view/remove-filter/fileFlaggedStatus/" + item + "?ref=" +
       currentCase.reference + "&folderId=" + folder.id }), flagItems) %}
       {% endif %}
       {% endfor %}
@@ -393,7 +393,7 @@
       heading: { text: "Selected filters" },
       clearLink: {
       text: "Clear filters",
-      href: "/features-and-components/file-rename/v1/view/clear-filters?ref=" + currentCase.reference + "&folderId=" +
+      href: "/features-and-components/added/file-rename/v1/view/clear-filters?ref=" + currentCase.reference + "&folderId=" +
       folder.id,
       classes: "govuk-!-font-size-16"
       },
@@ -418,14 +418,14 @@
     <p class="govuk-body govuk-!-font-weight-bold">File actions</p>
 
     <form
-      action="/features-and-components/file-rename/v1/view/move-files?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+      action="/features-and-components/added/file-rename/v1/view/move-files?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
       method="POST">
 
       {# --- IF NO DOCUMENTS --- #}
       {% if not folder.documents or folder.documents.length === 0 %}
 
       <div class="govuk-button-group">
-        <a href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+        <a href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
           class="govuk-button govuk-button--secondary" data-module="govuk-button">
           Upload files
         </a>
@@ -466,22 +466,22 @@
 
       {# Buttons group #}
       <div class="govuk-button-group govuk-!-margin-bottom-4">
-        <a href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+        <a href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
           class="govuk-button govuk-button--secondary" data-module="govuk-button">
           Upload files
         </a>
         <button type="submit" class="govuk-button govuk-button--secondary"
-          formaction="/features-and-components/file-rename/v1/view/move-files?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+          formaction="/features-and-components/added/file-rename/v1/view/move-files?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
           data-module="govuk-button">
           Move selected
         </button>
         <button type="submit" class="govuk-button govuk-button--secondary"
-          formaction="/features-and-components/file-rename/v1/view/download-selected?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+          formaction="/features-and-components/added/file-rename/v1/view/download-selected?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
           data-module="govuk-button">
           Download selected
         </button>
         <button type="submit" class="govuk-button govuk-button--secondary"
-          formaction="/features-and-components/file-rename/v1/view/delete-selected?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+          formaction="/features-and-components/added/file-rename/v1/view/delete-selected?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
           data-module="govuk-button">
           Delete selected
         </button>
@@ -586,7 +586,7 @@
                 </li>
                 <li class="govuk-!-margin-bottom-2">
                   <a class="govuk-link govuk-link--no-visited-state"
-                    href="/features-and-components/file-rename/v1/rename?ref={{ currentCase.reference }}&folderId={{ folder.id }}&docId={{ doc.id }}">
+                    href="/features-and-components/added/file-rename/v1/rename?ref={{ currentCase.reference }}&folderId={{ folder.id }}&docId={{ doc.id }}">
                     Rename
                   </a>
                 </li>
@@ -605,7 +605,7 @@
       {% else %}
 
       <div class="govuk-button-group govuk-!-margin-bottom-6">
-        <a href="/features-and-components/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+        <a href="/features-and-components/added/file-rename/v1/view?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
           class="govuk-button govuk-button--secondary" data-module="govuk-button">
           Upload files
         </a>
@@ -614,7 +614,7 @@
       <div class="govuk-!-margin-top-4 govuk-!-margin-bottom-4">
         <h2 class="govuk-heading-m">No files found</h2>
         <p class="govuk-body">No files match your selected filters. Try <a
-            href="/features-and-components/file-rename/v1/view/clear-filters?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
+            href="/features-and-components/added/file-rename/v1/view/clear-filters?ref={{ currentCase.reference }}&folderId={{ folder.id }}"
             class="govuk-link">clearing your filters</a>.</p>
       </div>
 
@@ -717,7 +717,7 @@
     };
 
     const updateBackendStatus = (docId, actionType, newValue) => {
-      fetch(`/features-and-components/file-rename/v1/view/${docId}/toggle-status?folderId={{ folder.id }}`, {
+      fetch(`/features-and-components/added/file-rename/v1/view/${docId}/toggle-status?folderId={{ folder.id }}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -801,5 +801,4 @@
 
   });
 </script>
-<script src="/public/javascripts/features/file-rename.js"></script>
 {% endblock %}

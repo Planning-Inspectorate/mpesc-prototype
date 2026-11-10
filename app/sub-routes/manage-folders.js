@@ -2,7 +2,7 @@ const govukPrototypeKit = require('govuk-prototype-kit');
 const router = govukPrototypeKit.requests.setupRouter();
 
 // Use ../ to go up one folder (from /sub-routes/ to /app/)
-const { getCase, addAuditLog, findFolderDeep, getDefaultFolders } = require('../helpers');
+const { getCase, addAuditLog, findFolderDeep, getDefaultFolders, getFileNameParts, validateFileName, countSubfolderFiles } = require('../helpers');
 
 // ==============================================
 // MANAGE CASE FILES (FOLDERS & SUBFOLDERS)
@@ -162,6 +162,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   var moveBanner = req.session.data['filesMovedBanner'];
   var downloadBanner = req.session.data['filesDownloadedBanner'];
   var bulkDeleteBanner = req.session.data['filesBulkDeletedBanner'];
+  var fileRenameBanner = req.session.data['renamedFile'];
   var moveFileError = req.session.data['moveFileError'];
   
   if (successBanner) delete req.session.data['folderCreated'];
@@ -171,6 +172,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
   if (moveBanner) delete req.session.data['filesMovedBanner'];
   if (downloadBanner) delete req.session.data['filesDownloadedBanner'];
   if (bulkDeleteBanner) delete req.session.data['filesBulkDeletedBanner'];
+  if (fileRenameBanner) delete req.session.data['renamedFile'];
   
   let errorList = null;
   if (moveFileError) {
@@ -254,6 +256,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     currentCase: currentCase,
     folder: activeFolder,
     parentFolder: parentFolder,
+    subfolderFileCount: countSubfolderFiles(activeFolder),
     successBanner: successBanner,
     renameBanner: renameBanner,
     deleteBanner: deleteBanner,
@@ -262,6 +265,7 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug', function(req, res
     errorList: errorList,
     downloadBanner: downloadBanner,
     bulkDeleteBanner: bulkDeleteBanner,
+    fileRenameBanner: fileRenameBanner,
     paginatedDocuments: paginatedDocuments, 
     totalDocs: totalDocsCount,
     folderTotalDocs: (activeFolder.documents || []).length, // Absolute total for the text above table
@@ -808,6 +812,59 @@ router.get('/cases/manage-folders/view/:folderId/:folderSlug/delete-selected/rem
   }
 
   res.redirect(`/cases/manage-folders/view/${folderId}/${folderSlug}/delete-selected/confirm?ref=${ref}`);
+});
+
+// ==============================================
+// RENAME A FILE
+// ==============================================
+
+// Find the existing file within the case's folder tree for both form requests.
+function findFileToRename(req) {
+  const currentCase = getCase(req);
+  if (!currentCase) return null;
+  const foundFolder = findFolderDeep(currentCase.folders || [], req.params.folderId);
+  if (!foundFolder) return null;
+  const folder = foundFolder.target;
+  const doc = (folder.documents || []).find(file => file.id === req.params.docId);
+  return doc ? { currentCase, folder, doc } : null;
+}
+
+const renameFilePath = '/cases/manage-folders/view/:folderId/:folderSlug/:docId/rename';
+
+router.get(renameFilePath, function(req, res) {
+  const file = findFileToRename(req);
+  if (!file) return res.redirect(`/cases/manage-folders?ref=${encodeURIComponent(req.query.ref || '')}`);
+
+  const { baseName, extension } = getFileNameParts(file.doc.name);
+  res.render('cases/manage-folders/rename-file', {
+    ...file,
+    newName: baseName,
+    extension
+  });
+});
+
+router.post(renameFilePath, function(req, res) {
+  const file = findFileToRename(req);
+  if (!file) return res.redirect(`/cases/manage-folders?ref=${encodeURIComponent(req.body.ref || req.query.ref || '')}`);
+
+  const { extension } = getFileNameParts(file.doc.name);
+  const { baseName, errorMessage } = validateFileName(req.body.newName, extension);
+  if (errorMessage) {
+    return res.render('cases/manage-folders/rename-file', {
+      ...file,
+      newName: baseName,
+      extension,
+      errorList: [{ text: errorMessage, href: '#newName' }],
+      errorMessage
+    });
+  }
+
+  // Save the name without changing the extension and record the change on the case.
+  const oldName = file.doc.name;
+  file.doc.name = baseName + extension;
+  addAuditLog(req, file.currentCase.reference, `File renamed from "${oldName}" to "${file.doc.name}" in ${file.folder.name}`);
+  req.session.data['renamedFile'] = { name: file.doc.name };
+  res.redirect(`/cases/manage-folders/view/${encodeURIComponent(file.folder.id)}/${encodeURIComponent(file.folder.slug)}?ref=${encodeURIComponent(file.currentCase.reference)}`);
 });
 
 // ==============================================

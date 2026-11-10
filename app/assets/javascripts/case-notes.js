@@ -1,27 +1,22 @@
 (function () {
+  function focusNotificationBanner() {
+    const banner = document.querySelector('.govuk-notification-banner');
+    if (!banner) return;
 
-document.addEventListener('DOMContentLoaded', function () {
+    if (!banner.hasAttribute('tabindex')) {
+      banner.setAttribute('tabindex', '-1');
+    }
 
-// Example: confirm removal fallback (if you later inline delete)
+    banner.scrollIntoView({ block: 'start' });
+    banner.focus();
+  }
 
-const removeLinks = document.querySelectorAll('[data-module="confirm-remove"]')
+  function initCaseNotesFeature() {
+    focusNotificationBanner();
+  }
 
-removeLinks.forEach(link => {
-
-link.addEventListener('click', function (e) {
-
-const confirmed = window.confirm('Are you sure you want to remove this note?')
-
-if (!confirmed) {
-
-e.preventDefault()
-
-}
-
-})
-
-})
-
-})
-
-})()
+  document.addEventListener('DOMContentLoaded', initCaseNotesFeature);
+  window.addEventListener('load', function () {
+    window.requestAnimationFrame(initCaseNotesFeature);
+  });
+})();

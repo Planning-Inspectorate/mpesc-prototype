@@ -1,0 +1,50 @@
+{% extends "layouts/main.html" %}
+
+{% set returnUrl = returnUrl or "/cases/manage-folders/view/" + folder.id + "/" + folder.slug + "?ref=" + currentCase.reference %}
+
+{% block pageTitle %}
+{% if errorList %}Error: {% endif %}Rename file - Planning Inspectorate Portal
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({ text: "Back", href: returnUrl }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if errorList %}
+    {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+    {% endif %}
+
+    <form method="post" novalidate>
+      <input type="hidden" name="ref" value="{{ currentCase.reference }}">
+      <input type="hidden" name="folderId" value="{{ folder.id }}">
+      <input type="hidden" name="docId" value="{{ doc.id }}">
+
+      <div class="govuk-form-group{% if errorMessage %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--l" for="newName">Rename file</label>
+        {% if errorMessage %}
+        <span id="newName-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ errorMessage }}
+        </span>
+        {% endif %}
+        <div class="govuk-input__wrapper">
+          <input class="govuk-input{% if errorMessage %} govuk-input--error{% endif %}" id="newName"
+            name="newName" type="text" value="{{ newName }}"{% if errorMessage %} aria-describedby="newName-error"{% endif %}>
+          {% if extension %}
+          <div class="govuk-input__suffix" aria-hidden="true">{{ extension }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="govuk-button-group govuk-!-margin-top-4">
+        {{ govukButton({ text: "Save" }) }}
+      </div>
+    </form>
+
+    <p class="govuk-hint">
+      <a class="govuk-link" href="{{ returnUrl }}">Cancel and return to files</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

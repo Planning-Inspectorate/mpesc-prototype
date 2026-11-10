@@ -1,6 +1,6 @@
 const govukPrototypeKit = require('govuk-prototype-kit');
 const router = govukPrototypeKit.requests.setupRouter();
-const { getCase, addAuditLog, findFolderDeep, getDefaultFolders } = require('../../helpers');
+const { addAuditLog, findFolderDeep, getDefaultFolders, getFileNameParts, validateFileName } = require('../../helpers');
 
 function preserveRef(req) {
   const ref = req.query.ref || req.body.ref;
@@ -70,7 +70,7 @@ function cleanArray(sessionValue) {
   return [sessionValue].filter(item => item && item !== '_unchecked');
 }
 
-router.get('/features-and-components/file-rename/v1/view', function (req, res) {
+router.get('/features-and-components/added/file-rename/v1/view', function (req, res) {
   const ref = preserveRef(req) || 'COM/WCL/10088';
   const currentCase = ensureCaseWithFolders(req, ref);
 
@@ -79,7 +79,7 @@ router.get('/features-and-components/file-rename/v1/view', function (req, res) {
   const folder = foundFolder ? foundFolder.target : (currentCase.folders.length > 0 ? currentCase.folders[0] : null);
   const parentFolder = foundFolder ? foundFolder.parent : null;
 
-  if (!folder) return res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(currentCase.reference)}`);
+  if (!folder) return res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(currentCase.reference)}`);
 
   if (req.query.clearFilters === 'true') {
     delete req.session.data['fileRenameReadStatus'];
@@ -132,7 +132,7 @@ router.get('/features-and-components/file-rename/v1/view', function (req, res) {
   }
 
   let previousPage = null;
-  const baseUrl = `/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}` + (folderId ? `&folderId=${folder.id}` : '');
+  const baseUrl = `/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}` + (folderId ? `&folderId=${folder.id}` : '');
   pagesToShow.forEach(i => {
     if (previousPage && i - previousPage > 1) pageItems.push({ ellipsis: true });
     pageItems.push({ number: i, current: i === currentPage, href: `${baseUrl}&page=${i}` });
@@ -142,7 +142,7 @@ router.get('/features-and-components/file-rename/v1/view', function (req, res) {
   const renameBanner = req.session.data['fileRenameSuccess'];
   if (renameBanner) delete req.session.data['fileRenameSuccess'];
 
-  res.render('features-and-components/file-rename/v1/view', {
+  res.render('features-and-components/added/file-rename/v1/view', {
     currentCase: currentCase,
     folder: folder,
     parentFolder: parentFolder,
@@ -163,15 +163,15 @@ router.get('/features-and-components/file-rename/v1/view', function (req, res) {
   });
 });
 
-router.get('/features-and-components/file-rename/v1/view/clear-filters', function (req, res) {
+router.get('/features-and-components/added/file-rename/v1/view/clear-filters', function (req, res) {
   const ref = preserveRef(req);
   const folderId = req.query.folderId || req.body.folderId;
   delete req.session.data['fileRenameReadStatus'];
   delete req.session.data['fileRenameFlaggedStatus'];
-  res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+  res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
 });
 
-router.get('/features-and-components/file-rename/v1/view/remove-filter/:filterCategory/:filterValue', function (req, res) {
+router.get('/features-and-components/added/file-rename/v1/view/remove-filter/:filterCategory/:filterValue', function (req, res) {
   const ref = preserveRef(req);
   const folderId = req.query.folderId || req.body.folderId;
   const category = req.params.filterCategory;
@@ -186,28 +186,28 @@ router.get('/features-and-components/file-rename/v1/view/remove-filter/:filterCa
     req.session.data[sessionKey] = values.length ? values : undefined;
   }
 
-  res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+  res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
 });
 
-router.post('/features-and-components/file-rename/v1/view/move-files', function (req, res) {
+router.post('/features-and-components/added/file-rename/v1/view/move-files', function (req, res) {
   const ref = preserveRef(req);
   const folderId = req.query.folderId || req.body.folderId;
-  res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+  res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
 });
 
-router.post('/features-and-components/file-rename/v1/view/download-selected', function (req, res) {
+router.post('/features-and-components/added/file-rename/v1/view/download-selected', function (req, res) {
   const ref = preserveRef(req);
   const folderId = req.query.folderId || req.body.folderId;
-  res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+  res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
 });
 
-router.post('/features-and-components/file-rename/v1/view/delete-selected', function (req, res) {
+router.post('/features-and-components/added/file-rename/v1/view/delete-selected', function (req, res) {
   const ref = preserveRef(req);
   const folderId = req.query.folderId || req.body.folderId;
-  res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+  res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
 });
 
-router.post('/features-and-components/file-rename/v1/view/:docId/toggle-status', function (req, res) {
+router.post('/features-and-components/added/file-rename/v1/view/:docId/toggle-status', function (req, res) {
   const ref = req.body.ref;
   const actionType = req.body.actionType;
   const newValue = req.body.newValue;
@@ -229,7 +229,7 @@ router.post('/features-and-components/file-rename/v1/view/:docId/toggle-status',
   res.json({ success: true });
 });
 
-router.get('/features-and-components/file-rename/v1/rename', function (req, res) {
+router.get('/features-and-components/added/file-rename/v1/rename', function (req, res) {
   const ref = preserveRef(req) || 'COM/WCL/10088';
   const folderId = req.query.folderId;
   const docId = req.query.docId;
@@ -239,13 +239,12 @@ router.get('/features-and-components/file-rename/v1/rename', function (req, res)
   const doc = folder ? (folder.documents || []).find(d => d.id === docId) : null;
 
   if (!folder || !doc) {
-    return res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+    return res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
   }
 
-  const extension = doc.name.includes('.') ? doc.name.slice(doc.name.lastIndexOf('.')) : '';
-  const baseName = extension ? doc.name.slice(0, -extension.length) : doc.name;
+  const { baseName, extension } = getFileNameParts(doc.name);
 
-  res.render('features-and-components/file-rename/v1/rename', {
+  res.render('features-and-components/added/file-rename/v1/rename', {
     currentCase: currentCase,
     folder: folder,
     doc: doc,
@@ -254,49 +253,30 @@ router.get('/features-and-components/file-rename/v1/rename', function (req, res)
   });
 });
 
-router.post('/features-and-components/file-rename/v1/rename', function (req, res) {
+router.post('/features-and-components/added/file-rename/v1/rename', function (req, res) {
   const ref = preserveRef(req) || 'COM/WCL/10088';
   const folderId = req.body.folderId;
   const docId = req.body.docId;
-  const submittedName = (req.body.newName || '').trim();
   const currentCase = ensureCaseWithFolders(req, ref);
   const foundFolder = folderId ? findFolderDeep(currentCase.folders, folderId) : null;
   const folder = foundFolder ? foundFolder.target : null;
   const doc = folder ? (folder.documents || []).find(d => d.id === docId) : null;
 
   if (!folder || !doc) {
-    return res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
+    return res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}${folderId ? `&folderId=${encodeURIComponent(folderId)}` : ''}`);
   }
 
-  const extension = doc.name.includes('.') ? doc.name.slice(doc.name.lastIndexOf('.')) : '';
-  let baseName = submittedName;
-  if (extension && baseName.endsWith(extension)) {
-    baseName = baseName.slice(0, -extension.length).trim();
-  }
+  const { extension } = getFileNameParts(doc.name);
+  const { baseName, errorMessage } = validateFileName(req.body.newName, extension);
 
-  const errors = [];
-  let errorMessage = null;
-  const allowedFileNamePattern = /^(?!.*'')[A-Za-z0-9._()&' -]+$/;
-
-  if (!baseName) {
-    errorMessage = 'Enter a file name';
-    errors.push({ text: errorMessage, href: '#newName' });
-  } else if (baseName.length > 100) {
-    errorMessage = 'File name must be 100 characters or fewer';
-    errors.push({ text: errorMessage, href: '#newName' });
-  } else if (!allowedFileNamePattern.test(baseName)) {
-    errorMessage = 'File name can only include letters, numbers, spaces, dots, hyphens, underscores, brackets, ampersands and single apostrophes';
-    errors.push({ text: errorMessage, href: '#newName' });
-  }
-
-  if (errors.length) {
-    return res.render('features-and-components/file-rename/v1/rename', {
+  if (errorMessage) {
+    return res.render('features-and-components/added/file-rename/v1/rename', {
       currentCase: currentCase,
       folder: folder,
       doc: doc,
       newName: baseName,
       extension: extension,
-      errorList: errors,
+      errorList: [{ text: errorMessage, href: '#newName' }],
       errorMessage: errorMessage
     });
   }
@@ -306,7 +286,7 @@ router.post('/features-and-components/file-rename/v1/rename', function (req, res
   addAuditLog(req, ref, `File renamed from "${oldName}" to "${doc.name}" in ${folder.name}`);
   req.session.data['fileRenameSuccess'] = { name: doc.name };
 
-  res.redirect(`/features-and-components/file-rename/v1/view?ref=${encodeURIComponent(ref)}&folderId=${encodeURIComponent(folderId)}`);
+  res.redirect(`/features-and-components/added/file-rename/v1/view?ref=${encodeURIComponent(ref)}&folderId=${encodeURIComponent(folderId)}`);
 });
 
 module.exports = router;

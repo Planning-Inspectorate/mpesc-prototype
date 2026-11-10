@@ -189,11 +189,11 @@ function addAuditLog(req, caseRef, details) {
     targetCase.auditLog.unshift({
       date: `${dateStr}<br>${timeStr}`,
       details: details,
-      user: req.session.data['currentUser'] || "User Account"
+      user: req.session.data['currentUser'] || "Kieran De La Kruz"
     });
 
     targetCase.lastModified = `${dateStr} at ${timeStr}`;
-    targetCase.lastModifiedBy = req.session.data['currentUser'] || "User Account";
+    targetCase.lastModifiedBy = req.session.data['currentUser'] || "Kieran De La Kruz";
   }
 }
 

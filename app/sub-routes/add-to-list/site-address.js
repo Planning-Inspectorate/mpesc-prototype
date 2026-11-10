@@ -3,6 +3,7 @@ const router = govukPrototypeKit.requests.setupRouter();
 
 // Import the shared helpers using ../../
 const { getCase, addAuditLog } = require('../../helpers');
+const { paginateSiteAddresses } = require('../../pagination/site-addresses');
 
 // ==============================================================================
 // SITE ADDRESS (Working Draft Array Pattern)
@@ -31,6 +32,7 @@ router.get('/cases/site-address/start', function(req, res) {
   if (!c) return res.redirect('/cases-page'); // Safety bounce
   
   req.session.data['tempSiteAddresses'] = [];
+  delete req.session.data['siteAddressPagination'];
   res.render('cases/add-to-list/site-address/site-address-first', { ref: c.reference });
 });
 
@@ -50,7 +52,15 @@ router.get('/cases/site-address/hub', function(req, res) {
   var keysToClear = ['temp_sa_line1', 'temp_sa_line2', 'temp_sa_town', 'temp_sa_county', 'temp_sa_postcode'];
   keysToClear.forEach(key => delete req.session.data[key]);
   
-  res.render('cases/add-to-list/site-address/check', { ref: c.reference, addresses: req.session.data['tempSiteAddresses'] });
+  // Keep the selected page while editing the draft; clamp it if a plot is removed.
+  const savedPage = req.session.data['siteAddressPagination'];
+  const previous = savedPage && savedPage.ref === c.reference ? savedPage : {};
+  const pageSize = req.query.perPage || previous.pageSize;
+  const page = req.query.page || (req.query.perPage ? 1 : previous.page);
+  const pagination = paginateSiteAddresses(req.session.data['tempSiteAddresses'], page, pageSize,
+    `/cases/site-address/hub?ref=${encodeURIComponent(c.reference)}`);
+  req.session.data['siteAddressPagination'] = { ref: c.reference, page: pagination.page, pageSize: pagination.pageSize };
+  res.render('cases/add-to-list/site-address/check', { ref: c.reference, ...pagination });
 });
 
 // --- 2. STEP 1: INPUT ADDRESS ---
@@ -181,6 +191,7 @@ router.post('/cases/site-address/commit', function(req, res) {
   delete c['siteAddress']; delete c['site-address']; delete c['addressLine1']; delete c['addressLine2']; delete c['addressTown']; delete c['addressCounty']; delete c['addressPostcode'];
   
   req.session.data['tempSiteAddresses'] = null; 
+  delete req.session.data['siteAddressPagination'];
   
   // Build beautiful audit log string combining all plots
   var auditStrings = draft.map(function(addr, index) {
@@ -207,6 +218,7 @@ router.get('/cases/site-address/cancel', function(req, res) {
 
   if (JSON.stringify(original) === JSON.stringify(draft)) {
     req.session.data['tempSiteAddresses'] = null;
+    delete req.session.data['siteAddressPagination'];
     return res.redirect('/cases/case-details?ref=' + ref);
   }
   res.render('cases/add-to-list/site-address/cancel-site-address', { ref: ref });
@@ -220,8 +232,11 @@ router.post('/cases/site-address/cancel', function(req, res) {
   
   if (confirm === 'yes') {
     req.session.data['tempSiteAddresses'] = null;
+    delete req.session.data['siteAddressPagination'];
     res.redirect('/cases/case-details?ref=' + ref);
   } else {
     res.redirect('/cases/site-address/hub?ref=' + ref);
   }
 });
+
+module.exports = router;

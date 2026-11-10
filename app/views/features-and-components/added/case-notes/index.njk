@@ -189,7 +189,7 @@
                 {% set caseNotesHtml %}
 
                 {# ADD NOTE #}
-                <form method="POST" action="/features-and-components/case-notes/add?ref={{ currentCase.reference }}">
+                <form method="POST" action="/features-and-components/added/case-notes/add?ref={{ currentCase.reference }}">
 
                     {{ govukCharacterCount({
       name: "comment",
@@ -221,7 +221,7 @@
                                     {% if data.editIndex == loop.index0 %}
 
                                         {# EDIT MODE #}
-                                        <form method="POST" action="/features-and-components/case-notes/update?ref={{ currentCase.reference }}&index={{ loop.index0 }}">
+                                        <form method="POST" action="/features-and-components/added/case-notes/update?ref={{ currentCase.reference }}&index={{ loop.index0 }}">
 
                                             {{ govukTextarea({
                   name: "updatedNote",
@@ -237,7 +237,7 @@
                 }) }}
 
                                             <p class="govuk-body">
-                                                <a href="/features-and-components/case-notes?ref={{ currentCase.reference }}#case-notes" class="govuk-link">
+                                                <a href="/features-and-components/added/case-notes?ref={{ currentCase.reference }}#case-notes" class="govuk-link">
                                                     Cancel
                                                 </a>
                                             </p>
@@ -258,13 +258,13 @@
                                         <ul class="govuk-list govuk-list--inline govuk-!-margin-bottom-6">
 
                                             <li>
-                                                <a href="/features-and-components/case-notes/change?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">
+                                                <a href="/features-and-components/added/case-notes/change?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">
                                                     Change
                                                 </a>
                                             </li>
 
                                             <li>
-                                                <a href="/features-and-components/case-notes/remove?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">
+                                                <a href="/features-and-components/added/case-notes/remove?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">
                                                     Remove
                                                 </a>
                                             </li>
@@ -282,7 +282,7 @@
 
                         {% if currentCase.caseNotes.length > 4 %}
                             <p class="govuk-body govuk-!-text-align-centre">
-                                <a class="govuk-link" href="#">
+                                <a class="govuk-link" href="/cases/all-case-notes?ref={{ currentCase.reference }}">
                                     Show all notes
                                 </a>
                             </p>
@@ -346,7 +346,7 @@
             });
         </script>
 
-        <script src="/public/javascripts/features/case-notes.js"></script>
+        <script src="/public/javascripts/case-notes.js"></script>
 
         {# ========================================== #}
         {# --- ROW 3: SUMMARY CARDS ---               #}
@@ -1409,7 +1409,7 @@
     { 
       key: { text: "Case history" },
       value: { text: "" },
-      actions: { items: [{ href: "case-notes/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
+      actions: { items: [{ href: "/features-and-components/added/case-notes/case-history?ref=" + currentCase.reference, text: "View", visuallyHiddenText: "case history" }] } 
     }
   ]
 }) }}

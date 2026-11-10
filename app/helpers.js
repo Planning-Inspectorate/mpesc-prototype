@@ -35,11 +35,11 @@ function addAuditLog(req, caseRef, details) {
     targetCase.auditLog.unshift({
       date: `${dateStr}<br>${timeStr}`,
       details: details,
-      user: req.session.data['currentUser'] || "User Account"
+      user: req.session.data['currentUser'] || "Kieran De La Kruz"
     });
 
     targetCase.lastModified = `${dateStr} at ${timeStr}`;
-    targetCase.lastModifiedBy = req.session.data['currentUser'] || "User Account";
+    targetCase.lastModifiedBy = req.session.data['currentUser'] || "Kieran De La Kruz";
   }
 }
 
@@ -250,6 +250,39 @@ function findFolderDeep(folders, targetId, parent = null) {
   return null;
 }
 
+// Count all files below the current folder, excluding files in the folder itself.
+function countSubfolderFiles(folder) {
+  function countFiles(folderToCount) {
+    return (folderToCount.documents || []).length +
+      (folderToCount.subfolders || []).reduce((total, subfolder) => total + countFiles(subfolder), 0);
+  }
+  return (folder.subfolders || []).reduce((total, subfolder) => total + countFiles(subfolder), 0);
+}
+
+// Keep the existing extension separate so renaming cannot change the file type.
+function getFileNameParts(name) {
+  const extension = name.includes('.') ? name.slice(name.lastIndexOf('.')) : '';
+  return { baseName: extension ? name.slice(0, -extension.length) : name, extension };
+}
+
+// Both the main journey and the archived feature use the same filename rules.
+function validateFileName(submittedName, extension) {
+  let baseName = (submittedName || '').trim();
+  if (extension && baseName.endsWith(extension)) {
+    baseName = baseName.slice(0, -extension.length).trim();
+  }
+
+  let errorMessage = null;
+  if (!baseName) {
+    errorMessage = 'Enter a file name';
+  } else if (baseName.length > 100) {
+    errorMessage = 'File name must be 100 characters or fewer';
+  } else if (!/^(?!.*'')[A-Za-z0-9._()&' -]+$/.test(baseName)) {
+    errorMessage = 'File name can only include letters, numbers, spaces, dots, hyphens, underscores, brackets, ampersands and single apostrophes';
+  }
+  return { baseName, errorMessage };
+}
+
 // ========================================================================================================
 // 8. GET DEFAULT FOLDERS HELPER -- used to create the specific folders upon case creation for that case type
 // ========================================================================================================
@@ -318,5 +351,8 @@ module.exports = {
   validateAndSaveDateTime,
   validateAndSaveNumber,
   findFolderDeep,
+  countSubfolderFiles,
+  getFileNameParts,
+  validateFileName,
   getDefaultFolders
 };

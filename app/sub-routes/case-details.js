@@ -2,7 +2,7 @@ const govukPrototypeKit = require('govuk-prototype-kit');
 const router = govukPrototypeKit.requests.setupRouter();
 
 // Use ../ to go up one folder (from /sub-routes/ to /app/)
-const { getCase, addAuditLog } = require('../helpers');
+const { getCase } = require('../helpers');
 
 // ==============================================================================
 // 1. MAIN CASE DETAILS HUB (Page Render & Banner Logic)
@@ -33,52 +33,6 @@ router.get('/cases/case-details', function(req, res) {
     currentCase: foundCase,       
     flashSection: sectionToJumpTo 
   });
-});
-
-// ==============================================================================
-// 2. CASE NOTES ROUTE
-// ==============================================================================
-
-router.post('/cases/add-case-note', function(req, res) {
-  var ref = req.query.ref;
-  var c = getCase(req);
-  if (!c) return res.redirect('/cases-page'); // Safety bounce
-
-  var comment = req.body.comment;
-
-  // Only save if they actually typed something!
-  if (comment && comment.trim() !== "") {
-    
-    if (!c.caseNotes) c.caseNotes = [];
-
-    // Generate the specific date & time format
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-    
-    // The Summary Card uses the weekday (e.g. Monday 23 March)
-    const metaDateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    
-    // The Table does NOT use the weekday (e.g. 23 March)
-    const tableDateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    // Hardcoded user to match the prototype design
-    const userStr = "Kieran De La Kruz"; 
-
-    // Add the new note to the TOP of the array so it shows up first
-    c.caseNotes.unshift({
-      text: comment,
-      meta: `${timeStr} on ${metaDateStr} by ${userStr}`,
-      tableDate: tableDateStr,
-      tableTime: timeStr,
-      tableUser: userStr
-    });
-
-    if (typeof addAuditLog === "function") {
-      addAuditLog(req, ref, "Case note added");
-    }
-  }
-
-  res.redirect('/cases/case-details?ref=' + ref);
 });
 
 // ==============================================================================
