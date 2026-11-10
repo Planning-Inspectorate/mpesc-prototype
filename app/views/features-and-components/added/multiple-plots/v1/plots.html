@@ -8,7 +8,7 @@ Check site address details - Planning Inspectorate Portal
 <p class="govuk-body govuk-!-margin-0">Choose scenario:
   {% for n in scenarios %}
   <a class="govuk-button govuk-!-margin-1{% if n != total %} govuk-button--secondary{% endif %}"
-    href="/features-and-components/multiple-plots/v1/plots?plots={{ n }}">Show {{ n }} plots</a>
+    href="/features-and-components/added/multiple-plots/v1/plots?plots={{ n }}">Show {{ n }} plots</a>
   {% endfor %}
 </p>
 {{ super() }}
@@ -30,7 +30,7 @@ Check site address details - Planning Inspectorate Portal
         {% if size == pageSize %}
           <span class="govuk-body">{{ size }}</span>
         {% else %}
-          <a class="govuk-link--no-visited-state" href="/features-and-components/multiple-plots/v1/plots?plots={{ total }}&perPage={{ size }}">{{ size }}</a>
+          <a class="govuk-link--no-visited-state" href="/features-and-components/added/multiple-plots/v1/plots?plots={{ total }}&perPage={{ size }}">{{ size }}</a>
         {% endif %}
         {% if not loop.last %}&nbsp;&nbsp;|&nbsp;&nbsp;{% endif %}
       {% endfor %}
@@ -73,8 +73,8 @@ Check site address details - Planning Inspectorate Portal
     </div>
 
     <div class="govuk-button-group">
-      {{ govukButton({ text: "Save and continue", href: "/features-and-components/multiple-plots/v1/case-details?plots=" + total }) }}
-      {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/features-and-components/multiple-plots/v1/case-details?plots=" + total }) }}
+      {{ govukButton({ text: "Save and continue", href: "/features-and-components/added/multiple-plots/v1/case-details?plots=" + total }) }}
+      {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", href: "/features-and-components/added/multiple-plots/v1/case-details?plots=" + total }) }}
     </div>
   </div>
 </div>
@@ -86,7 +86,7 @@ Check site address details - Planning Inspectorate Portal
   // Prototype isolation: neutralise layout links that lead into the main prototype
   document.querySelectorAll('a[href^="/"]').forEach(function (a) {
     var href = a.getAttribute('href');
-    if (href.indexOf('/features-and-components/multiple-plots/') !== 0) {
+    if (!a.classList.contains('pins-service-nav__title') && href.indexOf('/features-and-components/added/multiple-plots/') !== 0) {
       a.setAttribute('href', '#');
     }
   });

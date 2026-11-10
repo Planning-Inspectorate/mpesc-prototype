@@ -80,6 +80,10 @@
   }
   .moj-filter__tag:hover::after { background-image: url("/public/images/icon-tag-remove-cross-white.svg") !important; }
 
+  .hide-controls .govuk-accordion__show-all { display: none !important; }
+  .hide-controls .govuk-accordion__section-heading-text { display: none !important; }
+  .hide-controls .govuk-accordion__section-button { padding-top: 10px; padding-bottom: 10px; }
+
 </style>
 
 {# --- ERROR SUMMARY --- #}
@@ -109,6 +113,17 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       {{ govukNotificationBanner({ html: "<h3 class='govuk-notification-banner__heading'>Folder renamed to " + renameBanner.name + "</h3>", type: "success" }) }}
+    </div>
+  </div>
+{% endif %}
+
+{% if fileRenameBanner %}
+  {% set fileRenameBannerHtml %}
+    <h3 class="govuk-notification-banner__heading">File renamed to {{ fileRenameBanner.name }}</h3>
+  {% endset %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukNotificationBanner({ html: fileRenameBannerHtml, type: "success" }) }}
     </div>
   </div>
 {% endif %}
@@ -192,41 +207,6 @@
     </a>
   </div>
 </div>
-
-{# --- ACCORDION FOR SUBFOLDERS --- #}
-{% if folder.subfolders and folder.subfolders.length > 0 %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <style>
-        .hide-controls .govuk-accordion__show-all { display: none !important; }
-        .hide-controls .govuk-accordion__section-heading-text { display: none !important; }
-        .hide-controls .govuk-accordion__section-button { padding-top: 10px; padding-bottom: 10px; }
-      </style>
-      <div class="govuk-accordion hide-controls" data-module="govuk-accordion" id="sub-folders-accordion" data-i18n.hide-section="Show subfolders list" data-i18n.show-section="Show subfolders list">
-        <div class="govuk-accordion__section">
-          <div class="govuk-accordion__section-header">
-            <h2 class="govuk-accordion__section-heading">
-              <span class="govuk-accordion__section-button" id="sub-folders-accordion-heading-1"></span>
-            </h2>
-          </div>
-          <div id="sub-folders-accordion-content-1" class="govuk-accordion__section-content">
-            <div class="pins-link-menu">
-              <ul class="govuk-list">
-                {% for sub in folder.subfolders %}
-                  <li class="govuk-!-margin-bottom-4">
-                    <a class="govuk-link govuk-heading-s govuk-!-margin-bottom-0" href="/cases/manage-folders/view/{{ sub.id }}/{{ sub.slug }}?ref={{ currentCase.reference }}">
-                      {{ sub.name }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endif %}
 
 <form method="get" action="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}">
   <input type="hidden" name="ref" value="{{ currentCase.reference }}">
@@ -328,7 +308,31 @@
       
     {# --- FILES SECTION --- #}
     <div id="pagination" class="govuk-body">
-      <p class="govuk-body govuk-!-font-weight-bold">File actions</p>
+      {% if folder.subfolders and folder.subfolders.length > 0 %}
+      <h3 class="govuk-heading-s">Subfolders</h3>
+      <p class="govuk-body"><strong>{{ folder.subfolders.length }}</strong> subfolders containing <strong>{{ subfolderFileCount }}</strong> files</p>
+      <div class="govuk-accordion hide-controls" data-module="govuk-accordion" id="sub-folders-accordion" data-i18n.hide-section="Show subfolders" data-i18n.show-section="Show subfolders">
+        <div class="govuk-accordion__section">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="sub-folders-accordion-heading-1"></span>
+            </h2>
+          </div>
+          <div id="sub-folders-accordion-content-1" class="govuk-accordion__section-content">
+            <div class="pins-link-menu">
+              <ul class="govuk-list">
+                {% for sub in folder.subfolders %}
+                <li class="govuk-!-margin-bottom-4">
+                  <a class="govuk-link govuk-heading-s govuk-!-margin-bottom-0" href="/cases/manage-folders/view/{{ sub.id }}/{{ sub.slug }}?ref={{ currentCase.reference }}">{{ sub.name }}</a>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <h3 class="govuk-heading-s">File actions</h3>
       
       <form action="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/move-files?ref={{ currentCase.reference }}" method="POST">
 
@@ -463,6 +467,9 @@
                       <a class="govuk-link govuk-link--no-visited-state js-flag-toggle" href="#" data-doc-id="{{ doc.id }}">
                         {% if doc.isFlagged %}Unflag{% else %}Flag{% endif %}
                       </a>
+                    </li>
+                    <li class="govuk-!-margin-bottom-2">
+                      <a class="govuk-link govuk-link--no-visited-state" href="/cases/manage-folders/view/{{ folder.id }}/{{ folder.slug }}/{{ doc.id }}/rename?ref={{ currentCase.reference }}">Rename</a>
                     </li>
                     <li>
                       <a class="govuk-link govuk-link--no-visited-state" href="#">Download</a>

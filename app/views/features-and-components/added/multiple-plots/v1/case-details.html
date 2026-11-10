@@ -8,7 +8,7 @@
 <p class="govuk-body govuk-!-margin-0">Choose scenario:
   {% for n in scenarios %}
   <a class="govuk-button govuk-!-margin-1{% if n != total %} govuk-button--secondary{% endif %}"
-    href="/features-and-components/multiple-plots/v1/case-details?plots={{ n }}">Show {{ n }} plots</a>
+    href="/features-and-components/added/multiple-plots/v1/case-details?plots={{ n }}">Show {{ n }} plots</a>
   {% endfor %}
 </p>
 {{ super() }}
@@ -17,14 +17,14 @@
 {% block beforeContent %}
 {{ govukBackLink({
 text: "Back",
-href: "/features-and-components/multiple-plots/"
+href: "/features-and-components/added/multiple-plots/"
 }) }}
 {% endblock %}
 
 {% block content %}
 
 {# currentCase is the dummy case supplied by the feature route #}
-{% set plotsUrl = "/features-and-components/multiple-plots/v1/plots?plots=" + total %}
+{% set plotsUrl = "/features-and-components/added/multiple-plots/v1/plots?plots=" + total %}
 
 {% if currentCase %}
 
@@ -1390,7 +1390,7 @@ href: "/features-and-components/multiple-plots/"
   // Prototype isolation: neutralise layout links that lead into the main prototype
   document.querySelectorAll('a[href^="/"]').forEach(function (a) {
     var href = a.getAttribute('href');
-    if (href.indexOf('/features-and-components/multiple-plots/') !== 0) {
+    if (!a.classList.contains('pins-service-nav__title') && href.indexOf('/features-and-components/added/multiple-plots/') !== 0) {
       a.setAttribute('href', '#');
     }
   });

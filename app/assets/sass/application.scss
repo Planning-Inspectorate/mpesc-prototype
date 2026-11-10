@@ -124,6 +124,10 @@ body,
 
 
 /* Custom PINS header styles */
+.pins-header-demo__logo:focus {
+  outline: none;
+}
+
 .pins-header-demo {
   padding-top: 24px;
   padding-bottom: 24px;

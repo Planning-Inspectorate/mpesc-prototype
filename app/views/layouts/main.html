@@ -133,17 +133,19 @@
 <div class="pins-header-demo">
   <header role="banner">
     <div class="govuk-width-container">
-      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40" style="width:auto; vertical-align:middle;">
+      <a href="/index" class="pins-header-demo__logo">
+        <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate home" height="40" style="width:auto; vertical-align:middle;">
+      </a>
     </div>
   </header>
 </div>
 
 <nav class="pins-service-nav" aria-label="Service navigation">
   <div class="govuk-width-container pins-service-nav__container">
-    <a href="/index" class="pins-service-nav__title">MPESC</a>
+    <a href="{{ serviceHomeUrl or '/index' }}" class="pins-service-nav__title">MPESC</a>
     <ul class="pins-service-nav__list">
       <li class="pins-service-nav__item {% if activePage == 'assigned-to-me' %}pins-service-nav__item--active{% endif %}">
-        <a href="/assigned-to-me/my-cases" class="pins-service-nav__link">Assigned to me</a>
+        <a href="/assigned-to-me/my-cases" class="pins-service-nav__link">My cases</a>
       </li>
       <li class="pins-service-nav__item {% if activePage == 'all-cases' %}pins-service-nav__item--active{% endif %}">
         <a href="/cases-page" class="pins-service-nav__link">All cases</a>

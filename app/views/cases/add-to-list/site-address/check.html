@@ -9,6 +9,22 @@ Site address - Planning Inspectorate Portal
   <div class="govuk-grid-column-full">
     <h1 class="govuk-heading-l">Check site address details</h1>
 
+    {% if total >= 25 %}
+    <p class="govuk-body" id="results-count">Showing <strong>{{ from }}</strong> to <strong>{{ to }}</strong> of
+      <strong>{{ total }}</strong> plots</p>
+    <p class="pins-pagination-options govuk-!-margin-bottom-4">
+      <span><strong>Results per page</strong></span>&nbsp;&nbsp;&nbsp;&nbsp;
+      {% for size in pageSizes %}
+        {% if size == pageSize %}
+          <span class="govuk-body">{{ size }}</span>
+        {% else %}
+          <a class="govuk-link--no-visited-state" href="/cases/site-address/hub?ref={{ ref | urlencode }}&perPage={{ size }}">{{ size }}</a>
+        {% endif %}
+        {% if not loop.last %}&nbsp;&nbsp;|&nbsp;&nbsp;{% endif %}
+      {% endfor %}
+    </p>
+    {% endif %}
+
     {% if addresses and addresses.length > 0 %}
       <table class="govuk-table" data-module="moj-sortable-table">
         <thead class="govuk-table__head">
@@ -21,7 +37,7 @@ Site address - Planning Inspectorate Portal
         <tbody class="govuk-table__body">
           {% for item in addresses %}
             <tr class="govuk-table__row">
-              <td class="govuk-table__cell">Plot {{ loop.index }}</td>
+              <td class="govuk-table__cell">Plot {{ from + loop.index0 }}</td>
               <td class="govuk-table__cell">
                 {{ item.addressLine1 }}{% if item.addressLine1 %}<br>{% endif %}
                 {{ item.addressLine2 }}{% if item.addressLine2 %}<br>{% endif %}
@@ -41,6 +57,10 @@ Site address - Planning Inspectorate Portal
       </table>
     {% else %}
       <p class="govuk-body">Add one or more site addresses. No site address details have been added.</p>
+    {% endif %}
+
+    {% if pagination %}
+    {{ govukPagination(pagination) }}
     {% endif %}
 
     <form action="/cases/site-address/commit?ref={{ ref }}" method="post" novalidate>

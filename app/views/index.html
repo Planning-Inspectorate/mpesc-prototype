@@ -42,8 +42,10 @@
 <div class="pins-header-demo">
   <header role="banner">
     <div class="govuk-width-container">
-      <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate black logo" height="40"
-        style="width:auto; vertical-align:middle;">
+      <a href="/index" class="govuk-link">
+        <img src="/public/images/pins-logo-landscape.png" alt="Planning Inspectorate home" height="40"
+          style="width:auto; vertical-align:middle;">
+      </a>
     </div>
   </header>
 </div>
@@ -51,7 +53,7 @@
 {% endblock %}
 
 {% block pageTitle %}
-MPESC Prototype - Home
+MPESC prototype - Home
 {% endblock %}
 
 {% block content %}
@@ -125,7 +127,7 @@ type: "success"
           </li>
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/assigned-to-me/my-cases">Assigned to me</a>
+              <a class="govuk-link govuk-task-list__link" href="/assigned-to-me/my-cases">My cases</a>
               <div class="govuk-task-list__hint">
                 View cases assigned only to you or see cases assigned to another case officer or inspector.
               </div>
@@ -150,7 +152,8 @@ type: "success"
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/features-and-components/smart-evidence-marking">Smart
+              <a class="govuk-link govuk-task-list__link"
+                href="/features-and-components/added/smart-evidence-marking/index.html">Smart
                 evidence marking</a>
               <div class="govuk-task-list__hint">
                 Features that allow a user to read or unread, flag or unflag files related to the case. These status'
@@ -161,7 +164,8 @@ type: "success"
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/features-and-components/filters">Filters</a>
+              <a class="govuk-link govuk-task-list__link"
+                href="/features-and-components/added/filters/index.html">Filters</a>
               <div class="govuk-task-list__hint">
                 Three filters enhanced upon from NSIP, MoJ, and Appeals services that apply to short or long filter
                 lists.
@@ -171,7 +175,8 @@ type: "success"
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/features-and-components/dynamic-cards">Dynamic
+              <a class="govuk-link govuk-task-list__link"
+                href="/features-and-components/added/dynamic-cards/index.html">Dynamic
                 cards</a>
               <div class="govuk-task-list__hint">
                 Dynamically add summary cards and anchor links to a case details page when adding data from an add to
@@ -182,7 +187,8 @@ type: "success"
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/features-and-components/audit-log">Audit log</a>
+              <a class="govuk-link govuk-task-list__link"
+                href="/features-and-components/added/audit-log/index.html">Audit log</a>
               <div class="govuk-task-list__hint">
                 Track details of every change made to your case in a table, labelling the time and date and which user
                 made the change.
@@ -192,7 +198,8 @@ type: "success"
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/features-and-components/success-banner">Success
+              <a class="govuk-link govuk-task-list__link"
+                href="/features-and-components/added/success-banner/index.html">Success
                 banner</a>
               <div class="govuk-task-list__hint">
                 Success banner with an anchor link to jump straight to the section you edited.
@@ -202,7 +209,8 @@ type: "success"
 
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="/features-and-components/working-draft-array">Working
+              <a class="govuk-link govuk-task-list__link"
+                href="/features-and-components/added/working-draft-array/index.html">Working
                 draft array</a>
               <div class="govuk-task-list__hint">
                 Add to list array logic to mimic how data is handled in dev enivronments, enforcing the user to save
@@ -380,18 +388,6 @@ type: "success"
         <li class="govuk-task-list__item govuk-task-list__item--with-link">
           <div class="govuk-task-list__name-and-hint">
             <a class="govuk-link govuk-task-list__link"
-              href="features-and-components/multiple-plots/index.html">Multiple
-              plots</a>
-            <div class="govuk-task-list__hint">Support display of a large number of plots.</div>
-          </div>
-          <div class="govuk-task-list__status">
-            <strong class="govuk-tag govuk-tag--green">Oct 2026</strong>
-          </div>
-        </li>
-
-        <li class="govuk-task-list__item govuk-task-list__item--with-link">
-          <div class="govuk-task-list__name-and-hint">
-            <a class="govuk-link govuk-task-list__link"
               href="features-and-components/costs-applications/index.html">Costs
               applications</a>
             <div class="govuk-task-list__hint">Allow users to add costs applications to a case.</div>
@@ -403,16 +399,6 @@ type: "success"
 
         <li class="govuk-task-list__item govuk-task-list__item--with-link">
           <div class="govuk-task-list__name-and-hint">
-            <a class="govuk-link govuk-task-list__link" href="features-and-components/file-rename/index.html">File
-              rename</a>
-            <div class="govuk-task-list__hint">Allow users to rename files.</div>
-          </div>
-          <div class="govuk-task-list__status">
-            <strong class="govuk-tag govuk-tag--green">Sept 2026</strong>
-          </div>
-        </li>
-        <li class="govuk-task-list__item govuk-task-list__item--with-link">
-          <div class="govuk-task-list__name-and-hint">
             <a class="govuk-link govuk-task-list__link" href="features-and-components/new-subnav/v1/overview.html">Sub
               nav</a>
             <div class="govuk-task-list__hint">Introduce subnav to mirror other services.</div>
@@ -422,17 +408,6 @@ type: "success"
           </div>
         </li>
 
-        <li class="govuk-task-list__item govuk-task-list__item--with-link">
-          <div class="govuk-task-list__name-and-hint">
-            <a class="govuk-link govuk-task-list__link"
-              href="features-and-components/subfolder-count/index.html">Document
-              management improvements</a>
-            <div class="govuk-task-list__hint">Usability improvements to show count of subfolder contents.</div>
-          </div>
-          <div class="govuk-task-list__status">
-            <strong class="govuk-tag govuk-tag--green">Aug 2026</strong>
-          </div>
-        </li>
         <ul class="govuk-task-list">
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
@@ -445,37 +420,7 @@ type: "success"
               <strong class="govuk-tag govuk-tag--green">Design complete</strong>
             </div>
           </li>
-          <li class="govuk-task-list__item govuk-task-list__item--with-link">
-            <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link"
-                href="features-and-components/case-notes/index.njk?ref=COM/WCL/10088">Case note
-                enhancements</a>
-              <div class="govuk-task-list__hint">Allow users to delete and edit case notes.</div>
-            </div>
-            <div class="govuk-task-list__status">
-              <strong class="govuk-tag govuk-tag--green">Design complete</strong>
-            </div>
-          </li>
-          <li class="govuk-task-list__item govuk-task-list__item--with-link">
-            <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="#">Task lists</a>
-              <div class="govuk-task-list__hint">Task list to indicate to users what actions they need to complete.
-              </div>
-            </div>
-            <div class="govuk-task-list__status">
-              <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
-            </div>
-          </li>
-          <li class="govuk-task-list__item govuk-task-list__item--with-link">
-            <div class="govuk-task-list__name-and-hint">
-              <a class="govuk-link govuk-task-list__link" href="#">Add to list branching contact user journey.</a>
-              <div class="govuk-task-list__hint">Branching for if the user requires recording joint groups or
-                individuals.</div>
-            </div>
-            <div class="govuk-task-list__status">
-              <strong class="govuk-tag govuk-tag--blue">In backlog</strong>
-            </div>
-          </li>
+
 
         </ul>
         '
@@ -485,6 +430,46 @@ type: "success"
         summaryText: "Previously added",
         html: '
         <ul class="govuk-task-list">
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="features-and-components/added/multiple-plots/index.html">Multiple plots</a>
+              <div class="govuk-task-list__hint">Support display of a large number of plots.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">10 Nov 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="features-and-components/added/case-notes/index.njk?ref=COM/WCL/10088">Case notes</a>
+              <div class="govuk-task-list__hint">Allow users to delete and edit case notes.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">10 Nov 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="features-and-components/added/subfolder-count/index.html">Subfolder count</a>
+              <div class="govuk-task-list__hint">Usability improvements to show count of subfolder contents.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">10 Nov 2026</strong>
+            </div>
+          </li>
+          <li class="govuk-task-list__item govuk-task-list__item--with-link">
+            <div class="govuk-task-list__name-and-hint">
+              <a class="govuk-link govuk-task-list__link"
+                href="features-and-components/added/file-rename/index.html">File rename</a>
+              <div class="govuk-task-list__hint">Allow users to rename files.</div>
+            </div>
+            <div class="govuk-task-list__status">
+              <strong class="govuk-tag govuk-tag--green">10 Nov 2026</strong>
+            </div>
+          </li>
           <li class="govuk-task-list__item govuk-task-list__item--with-link">
             <div class="govuk-task-list__name-and-hint">
               <a class="govuk-link govuk-task-list__link" href="#">Linked and lead case</a>

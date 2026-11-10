@@ -165,7 +165,7 @@ href: "/cases-page"
     </div>
 
     {# Case Notes Section #}
-    <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Case note actions</h2>
+    <h2 id="case-notes" class="govuk-heading-s govuk-!-margin-bottom-2">Case note actions</h2>
 
     {% set caseNotesHtml %}
     {# 1. Point the form to the new route #}
@@ -200,9 +200,13 @@ href: "/cases-page"
         <p class="govuk-body govuk-!-margin-bottom-1 govuk-!-text-break-word">
           {{ note.text }}
         </p>
-        <p class="govuk-hint govuk-!-margin-bottom-6">
+        <p class="govuk-hint govuk-!-margin-bottom-2">
           {{ note.meta }}{% if note.editedDate %} (Changed {{ note.editedDate }}){% endif %}
         </p>
+        <ul class="govuk-list govuk-list--inline govuk-!-margin-bottom-6">
+          <li><a href="/cases/case-notes/change?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">Change</a></li>
+          <li><a href="/cases/case-notes/remove?ref={{ currentCase.reference }}&index={{ loop.index0 }}" class="govuk-link">Remove</a></li>
+        </ul>
         <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
         </section>
         {% endif %}
@@ -265,6 +269,9 @@ href: "/cases-page"
     }
   });
 </script>
+{% if flashSection == "case-notes" %}
+<script src="/public/javascripts/case-notes.js"></script>
+{% endif %}
 
 {# ========================================== #}
 {# --- ROW 3: SUMMARY CARDS --- #}

@@ -1,7 +1,23 @@
 const govukPrototypeKit = require('govuk-prototype-kit')
+const fs = require('fs')
+const path = require('path')
 const { applyAzureHostingFix } = require('./azure-hosting-fix');
 applyAzureHostingFix();
 const router = govukPrototypeKit.requests.setupRouter()
+
+router.use(function (req, res, next) {
+  const feature = req.path.match(/^\/features-and-components\/((?:added\/)?[a-zA-Z0-9_-]+)(?:\/|$)/)
+  if (feature) {
+    const featureDirectory = path.join(__dirname, 'views', 'features-and-components', feature[1])
+    const indexExtension = ['html', 'njk'].find(extension =>
+      fs.existsSync(path.join(featureDirectory, `index.${extension}`))
+    )
+    if (indexExtension) {
+      res.locals.serviceHomeUrl = `/features-and-components/${feature[1]}/index.${indexExtension}`
+    }
+  }
+  next()
+})
 
 /* Notes and information:
 
@@ -24,7 +40,10 @@ The sub route files in the folder app/sub-routes/ are:
       (contains the route for the dedicated case notes page that shows all case notes in one place)
 
   - case-details.js 
-      (contains the main route for the case details page which includes the banner logic, and also contains the route for adding a case note to a case)
+      (contains the main route for the case details page and its banner logic)
+
+  - case-notes.js
+      (contains the add, change and remove routes for main and archived case notes)
 
   - create-a-case.js 
       (contains all the create a case journey routes, including the only add to list flow in the journey - applicant/appellant)
@@ -73,7 +92,7 @@ require('./sub-routes/overview-outcome');
 require('./sub-routes/procedures');
 require('./sub-routes/case-details');
 require('./sub-routes/all-case-notes');
-require('./sub-routes/features/case-notes');
+require('./sub-routes/case-notes');
 require('./sub-routes/features/filter-redesign');
 require('./sub-routes/features/file-rename');
 require('./sub-routes/features/multiple-plots');
@@ -464,4 +483,3 @@ router.get('/cases/generate-dummy', function (req, res) {
 
 
 module.exports = router;
-
