@@ -158,8 +158,8 @@
       var LABEL = {
         dateMade: 'date the application was submitted',
         withdrawalDate: 'withdrawal date',
-        deadline: 'deadline for comments',
-        commentsReceived: 'date comments were received',
+        deadline: 'deadline for initial comments',
+        commentsReceived: 'date initial comments were received',
         deadlineFinalComments: 'deadline for final comments',
         finalCommentsReceived: 'date final comments were received',
         reportIssued: 'date the report was issued',
@@ -185,18 +185,18 @@
             }
           }
         var requiresReport = hasReport(a);
-        cmp('dateMade', 'deadline', false, 'The deadline for comments must be on or after the date the application was submitted', 'The date submitted must be on or before the deadline for comments');
-        cmp('dateMade', 'commentsReceived', false, 'The date comments were received must be on or after the date the application was submitted', 'The date submitted must be on or before the date comments were received');
-        cmp('commentsReceived', 'finalCommentsReceived', true, 'The date final comments were received must be after the date comments were received', 'The date comments were received must be before the date final comments were received');
+        cmp('dateMade', 'deadline', false, 'The deadline for initial comments must be on or after the date the application was submitted', 'The date submitted must be on or before the deadline for initial comments');
+        cmp('dateMade', 'commentsReceived', false, 'The date initial comments were received must be on or after the date the application was submitted', 'The date submitted must be on or before the date initial comments were received');
+        cmp('commentsReceived', 'finalCommentsReceived', true, 'The date final comments received must be after the date initial comments were received', 'The date initial comments were received must be before the date final comments were received');
         cmp('dateMade', 'deadlineFinalComments', false, 'The deadline for final comments must be on or after the date the application was submitted', 'The date submitted must be on or before the deadline for final comments');
         cmp('dateMade', 'reportIssued', false, 'The date the report was issued must be on or after the date the application was submitted', 'The date submitted must be on or before the date the report was issued');
         cmp('dateMade', 'decisionIssued', false, 'The date the decision was issued must be on or after the date the application was submitted', 'The date submitted must be on or before the date the decision was issued');
         if (requiresReport) {
-          cmp('commentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date comments were received', 'The date comments were received must be on or before the date the report was issued');
+          cmp('commentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date initial comments were received', 'The date initial comments were received must be on or before the date the report was issued');
           cmp('finalCommentsReceived', 'reportIssued', false, 'The date the report was issued must be on or after the date final comments were received', 'The date final comments were received must be on or before the date the report was issued');
           cmp('reportIssued', 'decisionIssued', false, 'The date the decision was issued must be on or after the date the report was issued', 'The date the report was issued must be on or before the date the decision was issued');
         }
-        cmp('commentsReceived', 'decisionIssued', false, 'The date the decision was issued must be on or after the date comments were received', 'The date comments were received must be on or before the date the decision was issued');
+        cmp('commentsReceived', 'decisionIssued', false, 'The date the decision was issued must be on or after the date initial comments were received', 'The date initial comments were received must be on or before the date the decision was issued');
         cmp('finalCommentsReceived', 'decisionIssued', false, 'The date the decision was issued must be on or after the date final comments were received', 'The date final comments were received must be on or before the date the decision was issued');
         return e;
       }
@@ -238,32 +238,29 @@
           ]
         },
         deadline: {
-          title: 'What is the deadline for comments?',
+          title: 'What is the deadline for initial comments?',
           inputs: [
             {
               key: 'deadline',
-              type: 'date',
-              hint: 'For example, 6 2 2026'
+              type: 'date'
             }
           ]
         },
         commentsReceived: {
-          title: 'When were the comments received?',
+          title: 'When were the initial comments received?',
           inputs: [
             {
               key: 'commentsReceived',
-              type: 'date',
-              hint: 'For example, 6 2 2026'
+              type: 'date'
             }
           ]
         },
         commentsShared: {
-          title: 'What date were the comments shared?',
+          title: 'What date were the initial comments shared?',
           inputs: [
             {
               key: 'commentsShared',
-              type: 'date',
-              hint: 'The date comments were cross-copied to the other party. For example, 6 2 2026'
+              type: 'date'
             }
           ]
         },
@@ -272,8 +269,7 @@
           inputs: [
             {
               key: 'deadlineFinalComments',
-              type: 'date',
-              hint: 'For example, 6 2 2026'
+              type: 'date'
             }
           ]
         },
@@ -282,8 +278,16 @@
           inputs: [
             {
               key: 'finalCommentsReceived',
-              type: 'date',
-              hint: 'For example, 6 2 2026'
+              type: 'date'
+            }
+          ]
+        },
+        finalCommentsShared: {
+          title: 'What date were final comments shared?',
+          inputs: [
+            {
+              key: 'finalCommentsShared',
+              type: 'date'
             }
           ]
         },
@@ -836,11 +840,12 @@
         ]);
         if (!withdrawn) {
           h += section('Comment exchange', [
-            row(a, 'Deadline for comments', 'deadline', fmt(a.deadline), 'deadline'),
-            row(a, 'Date comments received', 'commentsReceived', fmt(a.commentsReceived), 'commentsReceived'),
-            row(a, 'Date comments shared', 'commentsShared', fmt(a.commentsShared), 'commentsShared'),
+            row(a, 'Deadline for initial comments', 'deadline', fmt(a.deadline), 'deadline'),
+            row(a, 'Date initial comments received', 'commentsReceived', fmt(a.commentsReceived), 'commentsReceived'),
+            row(a, 'Date initial comments shared', 'commentsShared', fmt(a.commentsShared), 'commentsShared'),
             row(a, 'Deadline for final comments', 'deadlineFinalComments', fmt(a.deadlineFinalComments), 'deadlineFinalComments'),
-            row(a, 'Date final comments received', 'finalCommentsReceived', fmt(a.finalCommentsReceived), 'finalCommentsReceived')
+            row(a, 'Date final comments received', 'finalCommentsReceived', fmt(a.finalCommentsReceived), 'finalCommentsReceived'),
+            row(a, 'Date final comments shared', 'finalCommentsShared', fmt(a.finalCommentsShared), 'finalCommentsShared')
           ]);
           var dm = [row(a, 'Decision type', 'decisionMakerType', esc(
             a.decisionMakerType
