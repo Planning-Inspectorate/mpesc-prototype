@@ -12,7 +12,7 @@ Case list
 
   /* Indeterminate state - add visual indicator */
   /* The native input is hidden by GDS; the visible box is label::before and the tick is label::after */
-  .container .govuk-checkboxes__input:indeterminate + .govuk-checkboxes__label::after {
+  .container .govuk-checkboxes__input:indeterminate+.govuk-checkboxes__label::after {
     top: 20px;
     left: 6px;
     width: 12px;
@@ -29,11 +29,12 @@ Case list
   .container {
     width: 100%;
     max-width: 275px;
-    height: 400px;
+    height: 300px;
     border: 1px solid #00000061;
     margin: 0px;
     padding: 0px 10px;
     overflow-y: scroll;
+    resize: vertical;
     background-color: white;
     overflow-x: hidden;
     box-sizing: border-box;
@@ -228,203 +229,203 @@ Case list
         </summary>
         <fieldset class="govuk-fieldset">
           <legend class="govuk-fieldset__legend govuk-visually-hidden">Planning, Environmental and Applications</legend>
-        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes"
-          data-govuk-checkboxes-init="">
+          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes"
+            data-govuk-checkboxes-init="">
 
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="select-all-peas" name="type" type="checkbox" value="PEAS"
-              data-select-all-target="peas-container" data-group-label="Planning, Environmental and Applications">
-            <label class="govuk-label govuk-checkboxes__label" for="select-all-peas">
-              Select all (175)
-            </label>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="select-all-peas" name="type" type="checkbox" value="PEAS"
+                data-select-all-target="peas-container" data-group-label="Planning, Environmental and Applications">
+              <label class="govuk-label govuk-checkboxes__label" for="select-all-peas">
+                Select all (175)
+              </label>
 
+            </div>
           </div>
-        </div>
-        <div class="container" id="peas-container">
+          <div class="container" id="peas-container">
 
-        <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
-          <input id="peas-search"
-            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
-            data-filter-target="peas-container" type="text" placeholder="Search subtype" aria-controls="peas-container"
-            onkeydown="return event.key != 'Enter';">
-          <button type="button" class="filter-search-clear" aria-label="Clear search" hidden>&times;</button>
-        </div>
-        <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
-          data-govuk-checkboxes-init="">
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-drought" name="type" type="checkbox" value="drought">
-            <label class="govuk-label govuk-checkboxes__label" for="type-drought">
-              Drought (48)
-            </label>
+            <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
+              <input id="peas-search"
+                class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
+                data-filter-target="peas-container" type="text" placeholder="Search subtype"
+                aria-controls="peas-container" onkeydown="return event.key != 'Enter';">
+              <button type="button" class="filter-search-clear" aria-label="Clear search" hidden>&times;</button>
+            </div>
+            <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+              data-govuk-checkboxes-init="">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-drought" name="type" type="checkbox" value="drought">
+                <label class="govuk-label govuk-checkboxes__label" for="type-drought">
+                  Drought (48)
+                </label>
 
-          </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-drought" name="subType" type="checkbox"
-                value="drought-permits">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-drought">
-                Drought permits (9)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-drought-2" name="subType" type="checkbox"
-                value="drought-orders">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-drought-2">
-                Drought orders (39)
-              </label>
-            </div>
-          </div>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-drought" name="subType" type="checkbox"
+                    value="drought-permits">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-drought">
+                    Drought permits (9)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-drought-2" name="subType" type="checkbox"
+                    value="drought-orders">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-drought-2">
+                    Drought orders (39)
+                  </label>
+                </div>
+              </div>
 
 
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-2" name="type"
-              type="checkbox" value="housing-planning-cpos">
-            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-2">
-              Housing and planning CPOs (51)
-            </label>
-          </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos" name="subType" type="checkbox"
-                value="housing">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos">
-                Housing (42)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos-2" name="subType" type="checkbox"
-                value="planning-sub">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos-2">
-                Planning (6)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos-3" name="subType" type="checkbox"
-                value="adhoc">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos-3">
-                Ad hoc (3)
-              </label>
-            </div>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-3" name="type"
-              type="checkbox" value="other-sos-casework">
-            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-3">
-              Other Secretary of State casework (14)
-            </label>
-          </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework" name="subType" type="checkbox"
-                value="defra-cpo">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework">
-                DEFRA CPO (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-2" name="subType" type="checkbox"
-                value="desnz-cpo">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-2">
-                DESNZ CPO (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-3" name="subType" type="checkbox"
-                value="dft-cpo">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-3">
-                DfT CPO (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-4" name="subType" type="checkbox"
-                value="ad-hoc-cpo">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-4">
-                Ad hoc CPO (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-5" name="subType" type="checkbox"
-                value="advert">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-5">
-                Advert (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-6" name="subType" type="checkbox"
-                value="completion-notice">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-6">
-                Completion notice (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-7" name="subType" type="checkbox"
-                value="discontinuance-notice">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-7">
-                Discontinuance notice (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-8" name="subType" type="checkbox"
-                value="modification-to-pp">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-8">
-                Modification to planning permission (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-9" name="subType" type="checkbox"
-                value="review-of-mineral-pp">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-9">
-                Review of mineral permission (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-other-sos-casework-10" name="subType" type="checkbox"
-                value="revocation">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-10">
-                Revocation (3)
-              </label>
-            </div>
-          </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-planning-environment-applications-2" name="type"
+                  type="checkbox" value="housing-planning-cpos">
+                <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-2">
+                  Housing and planning CPOs (51)
+                </label>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos" name="subType"
+                    type="checkbox" value="housing">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos">
+                    Housing (42)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos-2" name="subType"
+                    type="checkbox" value="planning-sub">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos-2">
+                    Planning (6)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-housing-planning-cpos-3" name="subType"
+                    type="checkbox" value="adhoc">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-housing-planning-cpos-3">
+                    Ad hoc (3)
+                  </label>
+                </div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-planning-environment-applications-3" name="type"
+                  type="checkbox" value="other-sos-casework">
+                <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-3">
+                  Other Secretary of State casework (14)
+                </label>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework" name="subType" type="checkbox"
+                    value="defra-cpo">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework">
+                    DEFRA CPO (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-2" name="subType"
+                    type="checkbox" value="desnz-cpo">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-2">
+                    DESNZ CPO (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-3" name="subType"
+                    type="checkbox" value="dft-cpo">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-3">
+                    DfT CPO (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-4" name="subType"
+                    type="checkbox" value="ad-hoc-cpo">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-4">
+                    Ad hoc CPO (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-5" name="subType"
+                    type="checkbox" value="advert">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-5">
+                    Advert (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-6" name="subType"
+                    type="checkbox" value="completion-notice">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-6">
+                    Completion notice (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-7" name="subType"
+                    type="checkbox" value="discontinuance-notice">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-7">
+                    Discontinuance notice (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-8" name="subType"
+                    type="checkbox" value="modification-to-pp">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-8">
+                    Modification to planning permission (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-9" name="subType"
+                    type="checkbox" value="review-of-mineral-pp">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-9">
+                    Review of mineral permission (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-other-sos-casework-10" name="subType"
+                    type="checkbox" value="revocation">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-other-sos-casework-10">
+                    Revocation (3)
+                  </label>
+                </div>
+              </div>
 
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-4" name="type"
-              type="checkbox" value="purchase-notices">
-            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-4">
-              Purchase notices (20)
-            </label>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-planning-environment-applications-5" name="type"
-              type="checkbox" value="wayleaves">
-            <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-5">
-              Wayleaves (42)
-            </label>
-          </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-wayleaves" name="subType" type="checkbox"
-                value="new-lines">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves">
-                New lines (37)
-              </label>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-planning-environment-applications-4" name="type"
+                  type="checkbox" value="purchase-notices">
+                <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-4">
+                  Purchase notices (20)
+                </label>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-planning-environment-applications-5" name="type"
+                  type="checkbox" value="wayleaves">
+                <label class="govuk-label govuk-checkboxes__label" for="type-planning-environment-applications-5">
+                  Wayleaves (42)
+                </label>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-wayleaves" name="subType" type="checkbox"
+                    value="new-lines">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves">
+                    New lines (37)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-wayleaves-2" name="subType" type="checkbox"
+                    value="tree-lopping">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves-2">
+                    Tree lopping (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-wayleaves-3" name="subType" type="checkbox"
+                    value="wayleaves-generic">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves-3">
+                    Wayleaves (3)
+                  </label>
+                </div>
+              </div>
             </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-wayleaves-2" name="subType" type="checkbox"
-                value="tree-lopping">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves-2">
-                Tree lopping (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-wayleaves-3" name="subType" type="checkbox"
-                value="wayleaves-generic">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-wayleaves-3">
-                Wayleaves (3)
-              </label>
-            </div>
           </div>
-        </div>
-      </div>
         </fieldset>
       </details>
 
@@ -434,245 +435,245 @@ Case list
         </summary>
         <fieldset class="govuk-fieldset">
           <legend class="govuk-fieldset__legend govuk-visually-hidden">Rights of Way and Common Land</legend>
-        <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
-          data-govuk-checkboxes-init="">
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="select-all-rowcl" name="type" type="checkbox" value="ROWandCL"
-              data-select-all-target="rowcl-container" data-group-label="Rights of Way and Common Land">
-            <label class="govuk-label govuk-checkboxes__label" for="select-all-rowcl">
-              Select all (129)
-            </label>
+          <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+            data-govuk-checkboxes-init="">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="select-all-rowcl" name="type" type="checkbox" value="ROWandCL"
+                data-select-all-target="rowcl-container" data-group-label="Rights of Way and Common Land">
+              <label class="govuk-label govuk-checkboxes__label" for="select-all-rowcl">
+                Select all (129)
+              </label>
+            </div>
           </div>
-        </div>
 
-      <div class="container" id="rowcl-container">
-        <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
-          <input id="rowcl-search"
-            class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
-            data-filter-target="rowcl-container" type="text" placeholder="Search subtype"
-            aria-controls="rowcl-container" onkeydown="return event.key != 'Enter';">
-          <button type="button" class="filter-search-clear" aria-label="Clear search" hidden>&times;</button>
-        </div>
-        <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
-          data-govuk-checkboxes-init="">
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land" name="type" type="checkbox"
-              value="coastal-access">
-            <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land">
-              Coastal access (12)
-            </label>
+          <div class="container" id="rowcl-container">
+            <div class="govuk-!-padding-top-1 filter-search-wrapper autocomplete__wrapper">
+              <input id="rowcl-search"
+                class="app-list-filter__filter-input govuk-input autocomplete__input filter-search-input"
+                data-filter-target="rowcl-container" type="text" placeholder="Search subtype"
+                aria-controls="rowcl-container" onkeydown="return event.key != 'Enter';">
+              <button type="button" class="filter-search-clear" aria-label="Clear search" hidden>&times;</button>
+            </div>
+            <div class="govuk-checkboxes govuk-checkboxes--small content" data-module="govuk-checkboxes"
+              data-govuk-checkboxes-init="">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land" name="type" type="checkbox"
+                  value="coastal-access">
+                <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land">
+                  Coastal access (12)
+                </label>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-coastal-access" name="subType" type="checkbox"
+                    value="coastal-access-appeal">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access">
+                    Coastal access appeal (5)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-coastal-access-2" name="subType" type="checkbox"
+                    value="notice-appeal">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-2">
+                    Notice appeal (3)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-coastal-access-3" name="subType" type="checkbox"
+                    value="objection">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-3">
+                    Objection (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-coastal-access-4" name="subType" type="checkbox"
+                    value="restriction-appeal">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-4">
+                    Restriction appeal (access land) (3)
+                  </label>
+                </div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land-2" name="type" type="checkbox"
+                  value="common-land">
+                <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land-2">
+                  Common land (20)
+                </label>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land" name="subType" type="checkbox"
+                    value="commons-ecclesiastical">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land">
+                    Commons for ecclesiastical purposes (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-2" name="subType" type="checkbox"
+                    value="commons-greater-london">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-2">
+                    Commons in Greater London (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-3" name="subType" type="checkbox"
+                    value="compulsory-purchase-cl">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-3">
+                    Compulsory purchase of common land (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-4" name="subType" type="checkbox"
+                    value="deregistration-exchange">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-4">
+                    Deregistration &amp; exchange (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-5" name="subType" type="checkbox"
+                    value="inclosure">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-5">
+                    Inclosure (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-6" name="subType" type="checkbox"
+                    value="inclosure-obsolescent">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-6">
+                    Inclosure : obsolescent functions (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-7" name="subType" type="checkbox"
+                    value="land-exchange">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-7">
+                    Land exchange (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-8" name="subType" type="checkbox"
+                    value="local-acts">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-8">
+                    Local acts and provisional order confirmation acts (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-9" name="subType" type="checkbox"
+                    value="public-access-limitations">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-9">
+                    Public access to commons - limitations and restrictions (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-10" name="subType" type="checkbox"
+                    value="referred-applications">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-10">
+                    Referred applications from Commons Registration Authorities (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-11" name="subType" type="checkbox"
+                    value="scheme-of-management">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-11">
+                    Scheme of management (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-12" name="subType" type="checkbox"
+                    value="stint-rates">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-12">
+                    Stint rates (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-13" name="subType" type="checkbox"
+                    value="works-common-land">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-13">
+                    Works on common land (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-common-land-14" name="subType" type="checkbox"
+                    value="works-common-land-nt">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-14">
+                    Works on common land (National Trust) (2)
+                  </label>
+                </div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land-3" name="type" type="checkbox"
+                  value="rights-of-way">
+                <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land-3">
+                  Rights of way (97)
+                </label>
+              </div>
+              <div class="child-inset">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way" name="subType" type="checkbox"
+                    value="dispensation-ha80">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way">
+                    Dispensation for serving notice HA80 (3)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-2" name="subType" type="checkbox"
+                    value="dispensation-tcpa90">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-2">
+                    Dispensation for serving notice TCPA90 (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-3" name="subType" type="checkbox"
+                    value="dispensation-wca81">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-3">
+                    Dispensation for serving notice WCA81 (1)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-4" name="subType" type="checkbox"
+                    value="opposed-dmmo">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-4">
+                    Opposed definitive map modification order (DMMO) (73)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-5" name="subType" type="checkbox"
+                    value="opposed-ppo-ha80">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-5">
+                    Opposed public path order (PPO) HA80 (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-6" name="subType" type="checkbox"
+                    value="opposed-ppo-tcpa90">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-6">
+                    Opposed public path order (PPO) TCPA90 (0)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-7" name="subType" type="checkbox"
+                    value="schedule-14-appeal">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-7">
+                    Schedule 14 appeal (2)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-8" name="subType" type="checkbox"
+                    value="schedule-14-direction">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-8">
+                    Schedule 14 direction (12)
+                  </label>
+                </div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="subType-rights-of-way-9" name="subType" type="checkbox"
+                    value="schedule-13-a-appeal">
+                  <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-9">
+                    Schedule 13A appeal (0)
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-coastal-access" name="subType" type="checkbox"
-                value="coastal-access-appeal">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access">
-                Coastal access appeal (5)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-coastal-access-2" name="subType" type="checkbox"
-                value="notice-appeal">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-2">
-                Notice appeal (3)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-coastal-access-3" name="subType" type="checkbox"
-                value="objection">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-3">
-                Objection (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-coastal-access-4" name="subType" type="checkbox"
-                value="restriction-appeal">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-coastal-access-4">
-                Restriction appeal (access land) (3)
-              </label>
-            </div>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land-2" name="type" type="checkbox"
-              value="common-land">
-            <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land-2">
-              Common land (20)
-            </label>
-          </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land" name="subType" type="checkbox"
-                value="commons-ecclesiastical">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land">
-                Commons for ecclesiastical purposes (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-2" name="subType" type="checkbox"
-                value="commons-greater-london">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-2">
-                Commons in Greater London (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-3" name="subType" type="checkbox"
-                value="compulsory-purchase-cl">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-3">
-                Compulsory purchase of common land (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-4" name="subType" type="checkbox"
-                value="deregistration-exchange">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-4">
-                Deregistration &amp; exchange (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-5" name="subType" type="checkbox"
-                value="inclosure">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-5">
-                Inclosure (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-6" name="subType" type="checkbox"
-                value="inclosure-obsolescent">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-6">
-                Inclosure : obsolescent functions (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-7" name="subType" type="checkbox"
-                value="land-exchange">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-7">
-                Land exchange (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-8" name="subType" type="checkbox"
-                value="local-acts">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-8">
-                Local acts and provisional order confirmation acts (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-9" name="subType" type="checkbox"
-                value="public-access-limitations">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-9">
-                Public access to commons - limitations and restrictions (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-10" name="subType" type="checkbox"
-                value="referred-applications">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-10">
-                Referred applications from Commons Registration Authorities (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-11" name="subType" type="checkbox"
-                value="scheme-of-management">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-11">
-                Scheme of management (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-12" name="subType" type="checkbox"
-                value="stint-rates">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-12">
-                Stint rates (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-13" name="subType" type="checkbox"
-                value="works-common-land">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-13">
-                Works on common land (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-common-land-14" name="subType" type="checkbox"
-                value="works-common-land-nt">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-common-land-14">
-                Works on common land (National Trust) (2)
-              </label>
-            </div>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="type-rights-of-way-common-land-3" name="type" type="checkbox"
-              value="rights-of-way">
-            <label class="govuk-label govuk-checkboxes__label" for="type-rights-of-way-common-land-3">
-              Rights of way (97)
-            </label>
-          </div>
-          <div class="child-inset">
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way" name="subType" type="checkbox"
-                value="dispensation-ha80">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way">
-                Dispensation for serving notice HA80 (3)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-2" name="subType" type="checkbox"
-                value="dispensation-tcpa90">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-2">
-                Dispensation for serving notice TCPA90 (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-3" name="subType" type="checkbox"
-                value="dispensation-wca81">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-3">
-                Dispensation for serving notice WCA81 (1)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-4" name="subType" type="checkbox"
-                value="opposed-dmmo">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-4">
-                Opposed definitive map modification order (DMMO) (73)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-5" name="subType" type="checkbox"
-                value="opposed-ppo-ha80">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-5">
-                Opposed public path order (PPO) HA80 (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-6" name="subType" type="checkbox"
-                value="opposed-ppo-tcpa90">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-6">
-                Opposed public path order (PPO) TCPA90 (0)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-7" name="subType" type="checkbox"
-                value="schedule-14-appeal">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-7">
-                Schedule 14 appeal (2)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-8" name="subType" type="checkbox"
-                value="schedule-14-direction">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-8">
-                Schedule 14 direction (12)
-              </label>
-            </div>
-            <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="subType-rights-of-way-9" name="subType" type="checkbox"
-                value="schedule-13-a-appeal">
-              <label class="govuk-label govuk-checkboxes__label" for="subType-rights-of-way-9">
-                Schedule 13A appeal (0)
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
         </fieldset>
       </details>
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
