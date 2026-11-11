@@ -10,6 +10,18 @@ Case list
     background-color: white !important;
   }
 
+  /* Indeterminate state - add visual indicator */
+  /* The native input is hidden by GDS; the visible box is label::before and the tick is label::after */
+  .container .govuk-checkboxes__input:indeterminate + .govuk-checkboxes__label::after {
+    top: 20px;
+    left: 6px;
+    width: 12px;
+    height: 0;
+    border-width: 0 0 3px 0;
+    transform: none;
+    opacity: 1;
+  }
+
   .filter-search-input::placeholder {
     font-size: 16px;
   }
@@ -1048,6 +1060,10 @@ Case list
       selectAll.addEventListener('change', function () {
         descendants.forEach(function (child) {
           child.checked = selectAll.checked;
+          // Only dispatch change on subtype checkboxes to trigger parent indeterminate state updates
+          if (child.name === 'subType') {
+            child.dispatchEvent(new Event('change', { bubbles: true }));
+          }
         });
       });
 
