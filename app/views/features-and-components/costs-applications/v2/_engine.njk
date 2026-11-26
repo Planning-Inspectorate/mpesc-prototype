@@ -32,7 +32,7 @@
       function seed() {
         return [
           {
-            id: 'CA-0003',
+            id: 'CA-A7F2B-3E8D1',
             dateMade: '2026-10-07',
             applicants: ['Northbridge Borough Council'],
             respondents: ['Greenfield Developments Ltd'],
@@ -43,7 +43,7 @@
             decisionIssued: '2026-10-15',
             outcome: 'Costs granted'
           }, {
-            id: 'CA-0002',
+            id: 'CA-5C4E9-B2F6D',
             dateMade: '2026-07-07',
             applicants: [
               'Aisha Rahman', 'Sophie Williams'
@@ -54,7 +54,7 @@
             decisionIssued: '2026-08-01',
             outcome: 'Costs refused'
           }, {
-            id: 'CA-0001',
+            id: 'CA-9D1A7-6F4C2',
             dateMade: '2026-09-16',
             applicants: ['Oak Valley Residents Association'],
             respondents: [
@@ -90,12 +90,9 @@
         }));
       }
       function nextId() {
-        var max = all().reduce(function (m, a) {
-          return Math.max(m, parseInt(a.id.split('-')[1], 10));
-        }, 0);
-        return 'CA-' + (
-        '0000' + (
-        max + 1)).slice(-4);
+        var randomHex = Math.random().toString(16).substring(2, 7).padEnd(5, '0').toUpperCase();
+        var randomHex2 = Math.random().toString(16).substring(2, 7).padEnd(5, '0').toUpperCase();
+        return 'CA-' + randomHex + '-' + randomHex2;
       }
       function getDraft() {
         return JSON.parse(sessionStorage.getItem(DRAFT) || '{}');
